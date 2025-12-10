@@ -1,0 +1,19 @@
+[project]
+name = "vividoc"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "google-genai>=1.53.0",
+    "openai>=2.9.0",
+    "tqdm>=4.66.0",
+]
+
+
+[tool.setuptools]
+packages = ["vividoc", "prompts"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
