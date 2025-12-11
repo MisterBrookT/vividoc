@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "google-genai>=1.53.0",
     "openai>=2.9.0",
+    "pillow>=12.0.0",
     "tqdm>=4.66.0",
     "typer>=0.20.0",
 ]
@@ -19,6 +20,11 @@ packages = ["vividoc", "prompts"]
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
 
 [project.scripts]
 vividoc = "vividoc.cli:main"
