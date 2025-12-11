@@ -1,5 +1,6 @@
 import json
 import re
+
 def extract_from_markdown(text: str) -> dict | str:
     """
     Extract content from LLM response with fenced code block.

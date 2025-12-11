@@ -43,14 +43,3 @@ class GoogleCaller(LLMCaller):
             ],
         )
         return response.text
-
-    def generate_image(self, model: str, prompt: str, **kwargs: Any) -> PILImage:
-        response = self._client.models.generate_content(
-            model=model,
-            contents=[prompt],
-        )
-        image = None
-        for part in response.parts:
-            if part.inline_data is not None:
-                image = part.as_image()
-        return image
