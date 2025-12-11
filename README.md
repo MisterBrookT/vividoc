@@ -18,6 +18,10 @@ cd viviDoc
 # 使用 uv 安装依赖
 uv sync --dev
 ```
+### 执行
+```bash
+vividoc --help
+```
 
 ## 数据集
 
