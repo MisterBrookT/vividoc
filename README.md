@@ -16,7 +16,7 @@ git clone <repository-url>
 cd viviDoc
 
 # 使用 uv 安装依赖
-uv sync
+uv sync --dev
 ```
 
 ## 数据集
@@ -30,7 +30,3 @@ uv sync
 - **Planner Agent**: 负责生成文档结构和逻辑规划
 - **Exec Agent**: 负责文本和交互式代码的生成
 - **Eval Agent**: 负责评估文档的连贯性和运行时正确性
-
-## 许可证
-
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
