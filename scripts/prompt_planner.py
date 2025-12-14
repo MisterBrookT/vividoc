@@ -6,7 +6,7 @@ Please design a teaching outline of the topic "{topic}".
 Please strictly follow the JSON structure below:
 {{
     "topic": "{topic}",
-    "knowledge_units: [
+    "knowledge_units": [
         {{
             "id": "ku1",
             "unit_content": "summary of the core knowledge points",
