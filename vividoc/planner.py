@@ -1,13 +1,13 @@
 """Planner workflow for vividoc pipeline."""
 
 import json
-import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
-import google.generativeai as genai
 from prompts.prompt_planner import build_planner_prompt
+from vividoc.utils.io import extract_from_markdown
+from vividoc.utils.llm.client import LLMClient
 
 @dataclass
 class KnowledgeUnit:
@@ -27,6 +27,7 @@ class PlannerConfig:
     topic: str|None = None
     model_name: str = "gemini-2.5-pro"
     output_dir: Path = Path("outputs")
+    llm_provider: Optional[str] = None
 
 class Planner:
     """Handles the planning phase of the vividoc pipeline."""
@@ -34,18 +35,8 @@ class Planner:
     def __init__(self, config: PlannerConfig):
         """Initialize planner with configuration."""
         self.config = config
-
-        api_key = os.environ.get("GOOGLE_API_KEY")
-        if not api_key:
-            raise RuntimeError(
-                "GOOGLE_API_KEY is not set. "
-                "Please export it as an environment variable."
-            )
-        genai.configure(api_key=api_key)
-
-        self.model = genai.GenerativeModel(
-            model_name = self.config.model_name
-        )
+        provider = self.config.llm_provider or "google"
+        self.client = LLMClient(provider)
     
     def run(self) -> TeachingPlan:
         """Execute the planning phase."""
@@ -55,21 +46,17 @@ class Planner:
                 "PlannerConfig.topic is not set. "
                 "CLI must provide topic via configuration."
             )
-        prompt=build_planner_prompt(topic)
-        response=self.model.generate_content(
-            prompt,
-            generation_config = {"response_mime_type": "application/json"}
+        prompt = build_planner_prompt(topic)
+        llm_response = self.client.call_text_generation(
+            model=self.config.model_name,
+            prompt=prompt,
         )
-        text = response.text
-        
-        try:
-            raw_data = json.loads(text)
-        except json.JSONDecodeError as e:
-            raise ValueError(
-                f"Failed to parse LLM response as JSON: {e}\n"
-                f"Response was:\n{text}"
-            )
-        
+
+        if not isinstance(llm_response, str):
+            raw_data = llm_response
+        else:
+            normalized = extract_from_markdown(llm_response)
+            raw_data = normalized if isinstance(normalized, dict) else json.loads(normalized)
         units: List[KnowledgeUnit] = []
         for item in raw_data.get("knowledge_units",[]):
             unit = KnowledgeUnit(
