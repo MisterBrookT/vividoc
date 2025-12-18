@@ -15,13 +15,13 @@ app = typer.Typer(no_args_is_help=True)
 
 @app.command()
 def plan(
-    arg1: Optional[str] = typer.Argument(None, help="First argument"),
-    arg2: Optional[str] = typer.Argument(None, help="Second argument")
+    topic: Optional[str] = typer.Argument(None, help="Topic to plan for"),
+    provider: Optional[str] = typer.Option(None, "--provider", "-p", help="LLM provider name (e.g. google, openai)"),
 ):
     """
     Execute planning phase - Stage 1
     """
-    cfg = PlannerConfig()
+    cfg = PlannerConfig(topic=topic, llm_provider=provider)
     typer.echo("🎯 Plan Phase: Creating execution plan")
     
     planner = Planner(config=cfg)
