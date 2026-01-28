@@ -1,9 +1,10 @@
 from PIL.Image import Image as PILImage
-from typing import Any
+from typing import Any, Type
 from .caller_registry import register_caller
 from google import genai
 from google.genai import types
 from openai import OpenAI
+from pydantic import BaseModel
 import os
 
 class LLMCaller():
@@ -16,6 +17,11 @@ class LLMCaller():
         raise NotImplementedError
 
     def generate_image(self, model: str, prompt: str, **kwargs: Any) -> PILImage:
+        raise NotImplementedError
+
+    def generate_structured(
+        self, model: str, prompt: str, schema: Type[BaseModel], **kwargs: Any
+    ) -> str:
         raise NotImplementedError
 
 
@@ -41,5 +47,19 @@ class GoogleCaller(LLMCaller):
                 types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
                 prompt,
             ],
+        )
+        return response.text
+
+    def generate_structured(
+        self, model: str, prompt: str, schema: Type[BaseModel], **kwargs: Any
+    ) -> str:
+        """Generate structured output using Pydantic schema."""
+        response = self._client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json",
+                "response_json_schema": schema.model_json_schema(),
+            },
         )
         return response.text

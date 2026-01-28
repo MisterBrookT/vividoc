@@ -1,9 +1,10 @@
-from typing import Any
+from typing import Any, Type
 
 from .caller_registry import CALLER_REGISTRY
 from PIL.Image import Image as PILImage
 from ..io import extract_from_markdown
 from .llm_caller import LLMCaller
+from pydantic import BaseModel
 
 
 class LLMClient:
@@ -35,3 +36,10 @@ class LLMClient:
     def call_image_generation(self, model: str, prompt: str, **kwargs: Any) -> PILImage:
         pil_image = self._caller.generate_image(model, prompt, **kwargs)
         return pil_image
+
+    def call_structured_output(
+        self, model: str, prompt: str, schema: Type[BaseModel], **kwargs: Any
+    ) -> BaseModel:
+        """Call LLM with structured output using Pydantic schema."""
+        response = self._caller.generate_structured(model, prompt, schema, **kwargs)
+        return schema.model_validate_json(response)

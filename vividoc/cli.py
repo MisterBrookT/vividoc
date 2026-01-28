@@ -1,76 +1,101 @@
 """Simple CLI pipeline for vividoc."""
 
 import typer
-from typing import Optional
-
-from .planner import Planner, PlannerConfig
-from .executor import Executor, ExecutorConfig
-from .evaluator import Evaluator, EvaluatorConfig
-from .runner import Runner, RunnerConfig
+from pathlib import Path
+from vividoc.planner import Planner, PlannerConfig
+from vividoc.executor import Executor, ExecutorConfig
+from vividoc.evaluator import Evaluator, EvaluatorConfig
+from vividoc.runner import Runner, RunnerConfig
+from vividoc.models import DocumentSpec, GeneratedDocument
+from vividoc.utils.io import save_json, load_json
+from vividoc.utils.logger import logger
 
 # Create main app
 app = typer.Typer(no_args_is_help=True)
 
 
-
 @app.command()
 def plan(
-    arg1: Optional[str] = typer.Argument(None, help="First argument"),
-    arg2: Optional[str] = typer.Argument(None, help="Second argument")
+    topic: str = typer.Argument(..., help="Topic for the document"),
+    output: str = typer.Option("output/doc_spec.json", help="Output file path")
 ):
-    """
-    Execute planning phase - Stage 1
-    """
-    cfg = PlannerConfig()
-    typer.echo("🎯 Plan Phase: Creating execution plan")
+    """Execute planning phase - Generate document specification."""
+    typer.echo(f"🎯 Planning document for topic: {topic}")
     
-    planner = Planner(config=cfg)
-    planner.run()
+    config = PlannerConfig(output_path=output)
+    planner = Planner(config=config)
+    
+    doc_spec = planner.run(topic)
+    save_json(doc_spec, output)
+    
+    typer.echo(f"✅ Generated {len(doc_spec.knowledge_units)} knowledge units")
+    typer.echo(f"📄 Saved to: {output}")
 
 
 @app.command()
 def exec(
-    arg1: Optional[str] = typer.Argument(None, help="First argument"),
-    arg2: Optional[str] = typer.Argument(None, help="Second argument")
+    spec_file: str = typer.Argument(..., help="Path to document spec JSON file"),
+    output: str = typer.Option("output/generated_doc.json", help="Output file path")
 ):
-    """
-    Execute plan - Stage 2
-    """
-    cfg = ExecutorConfig()
-    typer.echo("🚀 Exec Phase: Executing plan")
+    """Execute execution phase - Generate text and code."""
+    typer.echo(f"🚀 Executing document generation from: {spec_file}")
     
-    executor = Executor(config=cfg)
-    executor.run()
+    # Load spec
+    doc_spec = load_json(spec_file, DocumentSpec)
+    
+    config = ExecutorConfig(output_path=output)
+    executor = Executor(config=config)
+    
+    generated_doc = executor.run(doc_spec)
+    save_json(generated_doc, output)
+    
+    typer.echo(f"✅ Generated {len(generated_doc.knowledge_units)} knowledge units")
+    typer.echo(f"📄 Saved to: {output}")
 
 
 @app.command()
 def eval(
-    arg1: Optional[str] = typer.Argument(None, help="First argument"),
-    arg2: Optional[str] = typer.Argument(None, help="Second argument")
+    doc_file: str = typer.Argument(..., help="Path to generated document JSON file"),
+    output: str = typer.Option("output/evaluation.json", help="Output file path")
 ):
-    """
-    Evaluate execution results - Stage 3
-    """
-    cfg = EvaluatorConfig()
-    typer.echo("📊 Eval Phase: Evaluating execution results")
+    """Execute evaluation phase - Validate document quality."""
+    typer.echo(f"📊 Evaluating document from: {doc_file}")
     
-    evaluator = Evaluator(config=cfg)
-    evaluator.run()
+    # Load document
+    generated_doc = load_json(doc_file, GeneratedDocument)
+    
+    config = EvaluatorConfig(output_path=output)
+    evaluator = Evaluator(config=config)
+    
+    feedback = evaluator.run(generated_doc)
+    save_json(feedback, output)
+    
+    if feedback.requires_revision:
+        typer.echo(f"⚠️  Document requires revision: {len(feedback.component_issues)} issues")
+    else:
+        typer.echo("✅ Document validated successfully")
+    
+    typer.echo(f"📄 Saved to: {output}")
 
 
 @app.command()
 def run(
-    arg1: Optional[str] = typer.Argument(None, help="First argument"),
-    arg2: Optional[str] = typer.Argument(None, help="Second argument")
+    topic: str = typer.Argument(..., help="Topic for the document"),
+    output_dir: str = typer.Option("output", help="Output directory"),
+    resume: bool = typer.Option(False, "--resume", help="Resume from existing files if available")
 ):
-    """
-    Run complete pipeline: plan → exec → eval
-    """
-    cfg = RunnerConfig()
-    typer.echo("🔄 Running complete pipeline...")
+    """Run complete pipeline: plan → exec → eval."""
+    typer.echo(f"🔄 Running complete pipeline for topic: {topic}")
+    if resume:
+        typer.echo("📂 Resume mode: will skip existing files")
     
-    runner = Runner(config=cfg)
-    runner.run()
+    config = RunnerConfig(output_dir=output_dir, resume=resume)
+    runner = Runner(config=config)
+    
+    generated_doc = runner.run(topic)
+    
+    typer.echo(f"✅ Pipeline completed!")
+    typer.echo(f"📁 Output directory: {output_dir}")
 
 
 def main():

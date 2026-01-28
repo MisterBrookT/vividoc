@@ -1,3 +1,7 @@
+# Env Setup
+.vscode
+.DS_store
+
 # Python-generated files
 __pycache__/
 *.py[oc]
@@ -9,9 +13,9 @@ wheels/
 # Virtual environments
 .venv
 
-
 # outputs
 outputs/
+output/
 
 # dev folders
 tmp/
