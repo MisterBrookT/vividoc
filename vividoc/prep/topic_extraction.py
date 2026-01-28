@@ -24,7 +24,7 @@ def extract_topic(url: str) -> dict:
         contents=prompt_topic_extraction(url),
         config=GenerateContentConfig(
             tools=tools,
-        )
+        ),
     ).text
     return extract_from_markdown(result)
 
@@ -42,7 +42,7 @@ def main():
     # check if output file exists and read already processed URLs
     processed_urls = set()
     file_exists = os.path.exists(OUTPUT_JSONL)
-    
+
     if file_exists:
         with open(OUTPUT_JSONL, "r") as f:
             for line in f:
@@ -50,14 +50,14 @@ def main():
                     data = json.loads(line)
                     processed_urls.add(data["url"])
         print(f"Found {len(processed_urls)} already processed URLs. Resuming...")
-    
+
     # filter out already processed rows
     rows_to_process = [r for r in rows if r["link"] not in processed_urls]
-    
+
     if not rows_to_process:
         print("All URLs already processed!")
         return
-    
+
     print(f"Processing {len(rows_to_process)} remaining URLs out of {len(rows)} total")
 
     # extract topics for each link and write immediately
@@ -66,7 +66,7 @@ def main():
 
         try:
             result = extract_topic(url)
-            
+
             # create output record
             output_record = {
                 "field": r.get("field", ""),
@@ -74,11 +74,11 @@ def main():
                 "topic": result.get("topic", ""),
                 "interaction_forms": result.get("interaction_forms", []),
             }
-            
+
             # append to JSONL file immediately
             with open(OUTPUT_JSONL, "a") as f:
                 f.write(json.dumps(output_record, ensure_ascii=False) + "\n")
-                
+
         except Exception as e:
             print(f"\nError for {url}: {e}")
             # Write error record

@@ -5,12 +5,12 @@ from vividoc.models import DocumentSpec
 
 def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
     """Create initial HTML document skeleton with empty sections.
-    
+
     Args:
         doc_spec: Document specification with knowledge units
         output_path: Path to save the HTML skeleton
     """
-    
+
     # Generate section skeletons
     sections = []
     for idx, ku in enumerate(doc_spec.knowledge_units, 1):
@@ -25,11 +25,11 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
         </div>
     </section>'''
         sections.append(section_html)
-    
+
     sections_html = "\n\n".join(sections)
-    
+
     # Complete HTML template
-    html_content = f'''<!DOCTYPE html>
+    html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -254,8 +254,8 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
     </script>
 </body>
 </html>
-'''
-    
+"""
+
     # Write to file
-    with open(output_path, 'w', encoding='utf-8') as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_content)

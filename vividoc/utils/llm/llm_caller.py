@@ -7,7 +7,8 @@ from openai import OpenAI
 from pydantic import BaseModel
 import os
 
-class LLMCaller():
+
+class LLMCaller:
     def generate_text(self, model: str, prompt: str, **kwargs: Any) -> str:
         raise NotImplementedError
 

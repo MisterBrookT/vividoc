@@ -1,6 +1,6 @@
 import csv
 
-INPUT = "datasets/prepped/prepped.csv"   # ← 换成你的输入文件名
+INPUT = "datasets/prepped/prepped.csv"  # ← 换成你的输入文件名
 
 # Output files
 OUT_EXPLORABLE = "datasets/prepped/explorable.csv"
@@ -29,11 +29,13 @@ with open(INPUT, newline="") as f:
 
 header = ["field", "link", "accessible", "is_explorable"]
 
+
 def write_csv(filename, rows):
     with open(filename, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=header)
         writer.writeheader()
         writer.writerows(rows)
+
 
 write_csv(OUT_EXPLORABLE, explorable)
 write_csv(OUT_ACCESSIBLE_NOT_EXP, non_explorable)

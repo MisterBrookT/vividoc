@@ -17,17 +17,17 @@ app = typer.Typer(no_args_is_help=True)
 @app.command()
 def plan(
     topic: str = typer.Argument(..., help="Topic for the document"),
-    output: str = typer.Option("output/doc_spec.json", help="Output file path")
+    output: str = typer.Option("output/doc_spec.json", help="Output file path"),
 ):
     """Execute planning phase - Generate document specification."""
     typer.echo(f"🎯 Planning document for topic: {topic}")
-    
+
     config = PlannerConfig(output_path=output)
     planner = Planner(config=config)
-    
+
     doc_spec = planner.run(topic)
     save_json(doc_spec, output)
-    
+
     typer.echo(f"✅ Generated {len(doc_spec.knowledge_units)} knowledge units")
     typer.echo(f"📄 Saved to: {output}")
 
@@ -35,20 +35,20 @@ def plan(
 @app.command()
 def exec(
     spec_file: str = typer.Argument(..., help="Path to document spec JSON file"),
-    output: str = typer.Option("output/generated_doc.json", help="Output file path")
+    output: str = typer.Option("output/generated_doc.json", help="Output file path"),
 ):
     """Execute execution phase - Generate text and code."""
     typer.echo(f"🚀 Executing document generation from: {spec_file}")
-    
+
     # Load spec
     doc_spec = load_json(spec_file, DocumentSpec)
-    
+
     config = ExecutorConfig(output_path=output)
     executor = Executor(config=config)
-    
+
     generated_doc = executor.run(doc_spec)
     save_json(generated_doc, output)
-    
+
     typer.echo(f"✅ Generated {len(generated_doc.knowledge_units)} knowledge units")
     typer.echo(f"📄 Saved to: {output}")
 
@@ -56,25 +56,27 @@ def exec(
 @app.command()
 def eval(
     doc_file: str = typer.Argument(..., help="Path to generated document JSON file"),
-    output: str = typer.Option("output/evaluation.json", help="Output file path")
+    output: str = typer.Option("output/evaluation.json", help="Output file path"),
 ):
     """Execute evaluation phase - Validate document quality."""
     typer.echo(f"📊 Evaluating document from: {doc_file}")
-    
+
     # Load document
     generated_doc = load_json(doc_file, GeneratedDocument)
-    
+
     config = EvaluatorConfig(output_path=output)
     evaluator = Evaluator(config=config)
-    
+
     feedback = evaluator.run(generated_doc)
     save_json(feedback, output)
-    
+
     if feedback.requires_revision:
-        typer.echo(f"⚠️  Document requires revision: {len(feedback.component_issues)} issues")
+        typer.echo(
+            f"⚠️  Document requires revision: {len(feedback.component_issues)} issues"
+        )
     else:
         typer.echo("✅ Document validated successfully")
-    
+
     typer.echo(f"📄 Saved to: {output}")
 
 
@@ -82,18 +84,20 @@ def eval(
 def run(
     topic: str = typer.Argument(..., help="Topic for the document"),
     output_dir: str = typer.Option("output", help="Output directory"),
-    resume: bool = typer.Option(False, "--resume", help="Resume from existing files if available")
+    resume: bool = typer.Option(
+        False, "--resume", help="Resume from existing files if available"
+    ),
 ):
     """Run complete pipeline: plan → exec → eval."""
     typer.echo(f"🔄 Running complete pipeline for topic: {topic}")
     if resume:
         typer.echo("📂 Resume mode: will skip existing files")
-    
+
     config = RunnerConfig(output_dir=output_dir, resume=resume)
     runner = Runner(config=config)
-    
+
     generated_doc = runner.run(topic)
-    
+
     typer.echo(f"✅ Pipeline completed!")
     typer.echo(f"📁 Output directory: {output_dir}")
 

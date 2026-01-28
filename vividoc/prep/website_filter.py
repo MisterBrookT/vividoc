@@ -7,23 +7,27 @@ from google import genai
 from google.genai.types import GenerateContentConfig
 from vividoc.utils.io import extract_from_markdown
 from vividoc.utils.logger import logger
+
 client = genai.Client()
 
 INPUT_CSV = "datasets/raw/raw.csv"
 OUTPUT_CSV = "datasets/prepped/prepped.csv"
 
 tools = [
-  {"url_context": {}},
+    {"url_context": {}},
 ]
+
+
 def classify_url(url: str) -> str:
     prompt = prompt_website_category(url)
     return client.models.generate_content(
         model="gemini-2.5-pro",
         contents=prompt,
-        config = GenerateContentConfig(
+        config=GenerateContentConfig(
             tools=tools,
-        )
+        ),
     ).text
+
 
 def main():
     rows = []
@@ -37,31 +41,28 @@ def main():
     # check if output file exists and read already processed URLs
     processed_urls = set()
     file_exists = os.path.exists(OUTPUT_CSV)
-    
+
     if file_exists:
         with open(OUTPUT_CSV, newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 processed_urls.add(row["link"])
         print(f"Found {len(processed_urls)} already processed URLs. Resuming...")
-    
+
     # filter out already processed rows
     rows_to_process = [r for r in rows if r["link"] not in processed_urls]
-    
+
     if not rows_to_process:
         print("All URLs already processed!")
         return
-    
+
     print(f"Processing {len(rows_to_process)} remaining URLs out of {len(rows)} total")
 
     # if file doesn't exist, create it with header
     if not file_exists:
         with open(OUTPUT_CSV, "w", newline="") as f:
             writer = csv.DictWriter(
-                f, fieldnames=[
-                    "field", "link", "accessible",
-                    "is_explorable"
-                ]
+                f, fieldnames=["field", "link", "accessible", "is_explorable"]
             )
             writer.writeheader()
 
@@ -82,14 +83,11 @@ def main():
             "accessible": result["accessible"],
             "is_explorable": result["is_explorable"],
         }
-        
+
         # append to file immediately
         with open(OUTPUT_CSV, "a", newline="") as f:
             writer = csv.DictWriter(
-                f, fieldnames=[
-                    "field", "link", "accessible",
-                    "is_explorable"
-                ]
+                f, fieldnames=["field", "link", "accessible", "is_explorable"]
             )
             writer.writerow(output_row)
 

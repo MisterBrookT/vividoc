@@ -100,16 +100,16 @@ Return the complete HTML document with the interactive content added for section
 def get_stage1_prompt(current_html: str, scope_id: str, text_description: str) -> str:
     """Generate Stage 1 prompt for filling text content."""
     return STAGE1_TEXT_PROMPT.format(
-        current_html=current_html,
-        scope_id=scope_id,
-        text_description=text_description
+        current_html=current_html, scope_id=scope_id, text_description=text_description
     )
 
 
-def get_stage2_prompt(current_html: str, scope_id: str, interaction_description: str) -> str:
+def get_stage2_prompt(
+    current_html: str, scope_id: str, interaction_description: str
+) -> str:
     """Generate Stage 2 prompt for adding interactive content."""
     return STAGE2_INTERACTIVE_PROMPT.format(
         current_html=current_html,
         scope_id=scope_id,
-        interaction_description=interaction_description
+        interaction_description=interaction_description,
     )
