@@ -27,3 +27,8 @@ def test_google_gemini_2_5_pro():
     """Test Google gemini-2.5-pro model."""
     setup_test_suite("google", "gemini-2.5-pro")
 
+def test_google_gemini_3_flash():
+    """Test Google gemini-3-flash model."""
+    setup_test_suite("google", "gemini-3-flash-preview")
+
+

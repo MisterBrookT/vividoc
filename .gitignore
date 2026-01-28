@@ -12,3 +12,9 @@ wheels/
 
 # outputs
 outputs/
+
+# dev folders
+tmp/
+
+# agents
+.kiro

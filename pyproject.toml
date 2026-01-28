@@ -8,6 +8,7 @@ dependencies = [
     "google-genai>=1.53.0",
     "openai>=2.9.0",
     "pillow>=12.0.0",
+    "pydantic>=2.12.5",
     "tqdm>=4.66.0",
     "typer>=0.20.0",
 ]
