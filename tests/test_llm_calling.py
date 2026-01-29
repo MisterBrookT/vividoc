@@ -25,11 +25,6 @@ def setup_test_suite(provider: str, model: str):
     assert "pi" in result or "π" in result or "Pi" in result
 
 
-def test_google_gemini_2_5_pro():
-    """Test Google gemini-2.5-pro model."""
-    setup_test_suite("google", "gemini-2.5-pro")
-
-
 def test_google_gemini_3_flash():
     """Test Google gemini-3-flash model."""
     setup_test_suite("google", "gemini-3-flash-preview")

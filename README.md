@@ -1,36 +1,105 @@
-# viviDoc
+# ViviDoc
 
-viviDoc 是一个用于生成交互式文档的系统，采用多智能体架构，包括规划、执行和评估三个核心组件。
+ViviDoc is an interactive educational document generation system with a web-based UI.
 
-## 安装
+## Features
 
-### 前置要求
+- **Spec Generation**: Generate document specifications from topics using AI
+- **Interactive Editing**: Edit, reorder, and manage knowledge units
+- **Document Generation**: Create interactive HTML documents with visualizations
+- **Progress Monitoring**: Real-time progress tracking during generation
+- **Local Storage**: Specs automatically saved to local filesystem
 
-- [uv](https://github.com/astral-sh/uv) (安装方法: `curl -LsSf https://astral.sh/uv/install.sh | sh`)
+## Architecture
 
-### 安装步骤
+- **Backend**: FastAPI + Python (Planner, Executor, Evaluator agents)
+- **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS v4
+- **Storage**: Local filesystem (`outputs/` directory)
+
+## Installation
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- [uv](https://github.com/astral-sh/uv) package manager
+
+### Setup
 
 ```bash
-# 克隆仓库
+# Clone repository
 git clone <repository-url>
 cd viviDoc
 
-# 使用 uv 安装依赖
+# Install Python dependencies
 uv sync --dev
+
+# Install frontend dependencies
+cd frontend
+npm install
+cd ..
 ```
-### 执行
+
+## Running the Application
+
+### Start Backend
+
 ```bash
+# From project root
+cd backend
+./run.sh
+```
+
+Backend will run on `http://localhost:8000`
+
+### Start Frontend
+
+```bash
+# From project root
+cd frontend
+npm run dev
+```
+
+Frontend will run on `http://localhost:5173`
+
+## Usage
+
+1. Open `http://localhost:5173` in your browser
+2. Enter a topic in the input field
+3. Click "Generate Spec" to create a document specification
+4. Edit knowledge units as needed (drag to reorder, click Edit/Delete)
+5. Click "Generate Document" to create the interactive HTML
+6. View progress in the right panel
+7. Preview and download the generated document
+
+## Project Structure
+
+```
+viviDoc/
+├── backend/           # FastAPI backend
+│   ├── api/          # API routes
+│   ├── models/       # Data models
+│   └── services/     # Business logic
+├── frontend/         # React frontend
+│   └── src/
+│       ├── components/  # UI components
+│       ├── api/        # API client
+│       └── types/      # TypeScript types
+├── vividoc/          # Core agents
+│   ├── planner.py    # Spec generation
+│   ├── executor.py   # Document generation
+│   └── evaluator.py  # Quality evaluation
+├── outputs/          # Generated specs (UUID-based folders)
+└── datasets/         # Training data
+```
+
+## CLI Usage
+
+```bash
+# Generate document from command line
 vividoc --help
 ```
 
-## 数据集
+## License
 
-数据集位于 `datasets/prepped/topic.jsonl` 目录下，包含处理后的 JSONL 格式数据文件。
-
-## 流程描述
-
-详细的流程和方法说明请参考 `docs/` 目录下的文档，特别是 `docs/method.md`，其中描述了：
-
-- **Planner Agent**: 负责生成文档结构和逻辑规划
-- **Exec Agent**: 负责文本和交互式代码的生成
-- **Eval Agent**: 负责评估文档的连贯性和运行时正确性
+MIT
