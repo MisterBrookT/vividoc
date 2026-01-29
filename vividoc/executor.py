@@ -59,13 +59,15 @@ class Executor:
         """Stage 1: Fill text content."""
         from vividoc.utils.logger import logger
 
-        logger.info("  Stage 1: Generating text content...")
-
         # Read current HTML
         current_html = self._read_html(html_path)
 
         # Try up to max_fix_attempts times
         for attempt in range(1, self.config.max_fix_attempts + 1):
+            logger.info(
+                f"  Stage 1: Generating text content... (attempt {attempt}/{self.config.max_fix_attempts})"
+            )
+
             # Generate prompt
             prompt = get_stage1_prompt(
                 current_html=current_html,
@@ -91,10 +93,12 @@ class Executor:
             ):
                 # Write back
                 self._write_html(html_path, updated_html)
+                if attempt > 1:
+                    logger.info(f"  ✓ Stage 1 succeeded on attempt {attempt}")
                 return updated_html
             else:
                 logger.warning(
-                    f"  Attempt {attempt}/{self.config.max_fix_attempts}: Invalid HTML generated, retrying..."
+                    f"  ✗ Attempt {attempt}/{self.config.max_fix_attempts}: Invalid HTML generated, retrying..."
                 )
 
         # If all attempts failed, log error and return original
@@ -107,13 +111,15 @@ class Executor:
         """Stage 2: Add interactive content."""
         from vividoc.utils.logger import logger
 
-        logger.info("  Stage 2: Adding interactive content...")
-
         # Read current HTML (with text content)
         current_html = self._read_html(html_path)
 
         # Try up to max_fix_attempts times
         for attempt in range(1, self.config.max_fix_attempts + 1):
+            logger.info(
+                f"  Stage 2: Adding interactive content... (attempt {attempt}/{self.config.max_fix_attempts})"
+            )
+
             # Generate prompt
             prompt = get_stage2_prompt(
                 current_html=current_html,
@@ -139,10 +145,12 @@ class Executor:
             ):
                 # Write back
                 self._write_html(html_path, final_html)
+                if attempt > 1:
+                    logger.info(f"  ✓ Stage 2 succeeded on attempt {attempt}")
                 return final_html
             else:
                 logger.warning(
-                    f"  Attempt {attempt}/{self.config.max_fix_attempts}: Invalid HTML generated, retrying from stage1..."
+                    f"  ✗ Attempt {attempt}/{self.config.max_fix_attempts}: Invalid HTML generated, retrying from stage1..."
                 )
                 # Reload stage1 HTML for retry
                 current_html = self._read_html(html_path)
