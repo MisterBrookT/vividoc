@@ -1,14 +1,12 @@
 """Simple CLI pipeline for vividoc."""
 
 import typer
-from pathlib import Path
 from vividoc.planner import Planner, PlannerConfig
 from vividoc.executor import Executor, ExecutorConfig
 from vividoc.evaluator import Evaluator, EvaluatorConfig
 from vividoc.runner import Runner, RunnerConfig
 from vividoc.models import DocumentSpec, GeneratedDocument
 from vividoc.utils.io import save_json, load_json
-from vividoc.utils.logger import logger
 
 # Create main app
 app = typer.Typer(no_args_is_help=True)
@@ -96,9 +94,9 @@ def run(
     config = RunnerConfig(output_dir=output_dir, resume=resume)
     runner = Runner(config=config)
 
-    generated_doc = runner.run(topic)
+    _ = runner.run(topic)
 
-    typer.echo(f"✅ Pipeline completed!")
+    typer.echo("✅ Pipeline completed!")
     typer.echo(f"📁 Output directory: {output_dir}")
 
 

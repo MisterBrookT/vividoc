@@ -3,9 +3,7 @@ from typing import Any, Type
 from .caller_registry import register_caller
 from google import genai
 from google.genai import types
-from openai import OpenAI
 from pydantic import BaseModel
-import os
 
 
 class LLMCaller:

@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import List
 from vividoc.utils.llm.client import LLMClient
 from vividoc.models import GeneratedDocument, EvaluationFeedback
-from prompts.evaluator_prompt import get_coherence_check_prompt
 
 
 @dataclass
