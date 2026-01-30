@@ -28,7 +28,6 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
     try {
       const response = await generateSpec(topic);
       onSpecGenerated(response.spec_id, response.spec);
-      toast.success('Spec generated successfully');
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.error ||
@@ -46,7 +45,6 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
       await updateSpec(spec.id, updatedSpec);
       onSpecUpdated(updatedSpec);
-      toast.success('Spec updated');
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.error ||
@@ -64,7 +62,6 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
     try {
       const response = await generateDocument(spec.id);
       onGenerateDocument(response.job_id);
-      toast.success('Document generation started');
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.error ||

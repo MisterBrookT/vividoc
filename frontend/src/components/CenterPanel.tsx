@@ -112,7 +112,6 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
           if (!hasCompletedRef.current && status.result?.document_id) {
             hasCompletedRef.current = true;
             onJobCompleted(status.result.document_id);
-            toast.success("Generation Complete!");
           }
         } else if (status.status === 'failed') {
           if (pollingIntervalRef.current) {
@@ -142,7 +141,6 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
     if (!documentId) return;
     const downloadUrl = getDocumentDownloadUrl(documentId);
     window.open(downloadUrl, '_blank');
-    toast.success('Download started');
   };
 
   // Helper to determine status text
