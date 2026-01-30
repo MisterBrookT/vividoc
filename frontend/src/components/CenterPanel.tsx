@@ -85,7 +85,7 @@ const CenterPanel: React.FC<CenterPanelProps> = ({ documentId, liveHtml }) => {
           <button
             onClick={handleDownload}
             disabled={loading || !!error}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm border border-white/5 shadow-lg hover:shadow-zinc-500/10 active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2 btn-primary rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-lg hover:shadow-indigo-500/25 active:scale-95"
           >
             <Download className="w-4 h-4" />
             Download HTML

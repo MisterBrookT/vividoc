@@ -73,7 +73,7 @@ const SortableKUItem: React.FC<SortableKUItemProps & { index: number }> = ({ ku,
             <span className="text-[10px] font-bold text-[var(--accent-primary)] uppercase tracking-wider mb-0.5">
               KU({index + 1})
             </span>
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] leading-tight line-clamp-2">
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] leading-tight">
               {ku.title}
             </h3>
           </div>

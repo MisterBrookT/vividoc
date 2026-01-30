@@ -51,10 +51,19 @@ const ProgressMonitor: React.FC<ProgressMonitorProps> = ({ jobStatus }) => {
       label: 'Evaluating',
       description: 'Assessing content quality...',
       icon: '✓'
+    },
+    completed: {
+      label: 'Complete',
+      description: 'Ready for download.',
+      icon: '✓'
     }
   };
 
-  const currentPhase = phaseConfig[progress.phase];
+
+
+  const currentPhase = (status === 'completed' || progress.overall_percent === 100)
+    ? phaseConfig.completed
+    : phaseConfig[progress.phase] || phaseConfig.planning;
 
   const statusConfig = {
     running: {
@@ -155,23 +164,7 @@ const ProgressMonitor: React.FC<ProgressMonitorProps> = ({ jobStatus }) => {
         </div>
       )}
 
-      {/* Completion Message */}
-      {status === 'completed' && !error && (
-        <div
-          className="bg-green-50/50 border border-green-100 rounded-xl p-4"
-          data-testid="completion-message"
-        >
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 bg-green-100 rounded-md">
-              <span className="text-green-600 text-sm block">✓</span>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-green-900">Complete</h4>
-              <p className="text-xs text-green-700 mt-1">Ready for download.</p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Completion Message Removed */}
     </div>
   );
 };
