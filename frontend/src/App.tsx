@@ -3,7 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import type { DocumentSpec } from './types/models';
 import LeftSidebar from './components/LeftSidebar';
 import CenterPanel from './components/CenterPanel';
-import RightPanel from './components/RightPanel';
+
 import './App.css';
 
 function App() {
@@ -81,13 +81,11 @@ function App() {
         <CenterPanel
           documentId={documentId}
           liveHtml={liveHtml}
-        />
-
-        <RightPanel
           jobId={jobId}
           onJobCompleted={handleJobCompleted}
           onLiveHtmlUpdate={handleLiveHtmlUpdate}
         />
+
       </div>
     </>
   );
