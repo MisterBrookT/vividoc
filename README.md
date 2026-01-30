@@ -46,11 +46,15 @@ cd ..
 
 ```bash
 # From project root
-cd backend
-./run.sh
+vividoc serve
 ```
 
 Backend will run on `http://localhost:8000`
+
+Optional flags:
+- `--host`: Host to bind to (default: 0.0.0.0)
+- `--port`: Port to bind to (default: 8000)
+- `--reload`: Enable auto-reload for development
 
 ### Start Frontend
 
@@ -76,29 +80,46 @@ Frontend will run on `http://localhost:5173`
 
 ```
 viviDoc/
-├── backend/           # FastAPI backend
-│   ├── api/          # API routes
-│   ├── models/       # Data models
-│   └── services/     # Business logic
+├── vividoc/          # Core package
+│   ├── entrypoint/   # Web server & API
+│   │   ├── api/      # API routes
+│   │   ├── models/   # API data models
+│   │   ├── services/ # Business logic (JobManager, SpecService, DocumentService)
+│   │   └── web_server.py  # FastAPI app factory
+│   ├── planner.py    # Spec generation agent
+│   ├── executor.py   # Document generation agent
+│   ├── evaluator.py  # Quality evaluation agent
+│   ├── runner.py     # CLI pipeline runner
+│   └── cli.py        # CLI commands
 ├── frontend/         # React frontend
 │   └── src/
 │       ├── components/  # UI components
 │       ├── api/        # API client
 │       └── types/      # TypeScript types
-├── vividoc/          # Core agents
-│   ├── planner.py    # Spec generation
-│   ├── executor.py   # Document generation
-│   └── evaluator.py  # Quality evaluation
-├── outputs/          # Generated specs (UUID-based folders)
+├── outputs/          # Generated specs & documents (UUID-based folders)
+├── tests/            # Test suite
 └── datasets/         # Training data
 ```
 
 ## CLI Usage
 
 ```bash
-# Generate document from command line
+# View all commands
 vividoc --help
+
+# Start web server
+vividoc serve
+
+# Run complete pipeline (plan → execute → evaluate)
+vividoc run "Your topic here"
+
+# Individual phases
+vividoc plan "Your topic" --output spec.json
+vividoc exec spec.json --output doc.json
+vividoc eval doc.json --output eval.json
 ```
+
+All generated files are saved to `outputs/{uuid}/` where UUID is deterministically generated from the topic.
 
 ## License
 

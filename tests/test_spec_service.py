@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import Mock
 from vividoc.models import DocumentSpec, KnowledgeUnitSpec
-from backend.services.spec_service import SpecService
+from vividoc.entrypoint.services.spec_service import SpecService
 
 
 @pytest.fixture

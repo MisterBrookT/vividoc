@@ -25,10 +25,8 @@ class SpecService:
         self.specs: Dict[str, DocumentSpec] = {}
         self.spec_metadata: Dict[str, dict] = {}  # Store topic and time
 
-        # Use absolute path from project root
-        from pathlib import Path
-
-        project_root = Path(__file__).parent.parent.parent
+        # Use absolute path from project root (3 levels up from this file)
+        project_root = Path(__file__).parent.parent.parent.parent
         self.storage_base_dir = project_root / storage_base_dir
         self.storage_base_dir.mkdir(parents=True, exist_ok=True)
 

@@ -2,7 +2,7 @@
 
 import pytest
 import threading
-from backend.services.job_manager import JobManager
+from vividoc.entrypoint.services.job_manager import JobManager
 
 
 def test_concurrent_job_creation():

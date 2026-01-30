@@ -1,1 +1,0 @@
-"""ViviDoc Web UI Backend."""

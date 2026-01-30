@@ -1,7 +1,7 @@
 """Unit tests for ExecutorWithProgress."""
 
 from unittest.mock import Mock, MagicMock, patch
-from backend.services.executor_with_progress import ExecutorWithProgress
+from vividoc.entrypoint.services.executor_with_progress import ExecutorWithProgress
 from vividoc.executor import ExecutorConfig
 from vividoc.models import DocumentSpec, KnowledgeUnitSpec
 

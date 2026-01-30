@@ -13,6 +13,24 @@ app = typer.Typer(no_args_is_help=True)
 
 
 @app.command()
+def serve(
+    host: str = typer.Option("0.0.0.0", help="Host to bind to"),
+    port: int = typer.Option(8000, help="Port to bind to"),
+    reload: bool = typer.Option(False, "--reload", help="Enable auto-reload"),
+):
+    """Start the web server for ViviDoc UI."""
+    import uvicorn
+    from vividoc.entrypoint import create_app
+
+    typer.echo(f"🚀 Starting ViviDoc web server on {host}:{port}")
+    if reload:
+        typer.echo("🔄 Auto-reload enabled")
+
+    app_instance = create_app()
+    uvicorn.run(app_instance, host=host, port=port, reload=reload)
+
+
+@app.command()
 def plan(
     topic: str = typer.Argument(..., help="Topic for the document"),
     output: str = typer.Option("output/doc_spec.json", help="Output file path"),
@@ -81,7 +99,7 @@ def eval(
 @app.command()
 def run(
     topic: str = typer.Argument(..., help="Topic for the document"),
-    output_dir: str = typer.Option("output", help="Output directory"),
+    output_dir: str = typer.Option("outputs", help="Output directory"),
     resume: bool = typer.Option(
         False, "--resume", help="Resume from existing files if available"
     ),

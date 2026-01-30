@@ -1,7 +1,7 @@
 """API route definitions."""
 
 from fastapi import APIRouter, HTTPException, Response
-from backend.models import (
+from vividoc.entrypoint.models import (
     SpecGenerateRequest,
     SpecGenerateResponse,
     SpecUpdateRequest,
@@ -15,7 +15,7 @@ from backend.models import (
     doc_spec_to_api,
     api_to_doc_spec,
 )
-from backend.services import JobManager, SpecService, DocumentService
+from vividoc.entrypoint.services import JobManager, SpecService, DocumentService
 
 # Create router
 router = APIRouter(prefix="/api")

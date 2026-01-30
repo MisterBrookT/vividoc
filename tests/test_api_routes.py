@@ -5,10 +5,10 @@ from fastapi.testclient import TestClient
 from unittest.mock import Mock
 from vividoc.models import DocumentSpec, KnowledgeUnitSpec
 
-from backend.main import app
-from backend.api.routes import init_services
-from backend.services import JobManager, SpecService, DocumentService
-from backend.models import doc_spec_to_api
+from vividoc.entrypoint.web_server import create_app
+from vividoc.entrypoint.api.routes import init_services
+from vividoc.entrypoint.services import JobManager, SpecService, DocumentService
+from vividoc.entrypoint.models import doc_spec_to_api
 
 
 @pytest.fixture
@@ -31,6 +31,7 @@ def mock_services():
 @pytest.fixture
 def client():
     """Create test client."""
+    app = create_app()
     return TestClient(app)
 
 

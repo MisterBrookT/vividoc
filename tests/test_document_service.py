@@ -2,8 +2,8 @@
 
 import pytest
 from unittest.mock import Mock, patch
-from backend.services.document_service import DocumentService
-from backend.services.job_manager import JobManager, KUProgress
+from vividoc.entrypoint.services.document_service import DocumentService
+from vividoc.entrypoint.services.job_manager import JobManager, KUProgress
 from vividoc.models import DocumentSpec, KnowledgeUnitSpec, GeneratedDocument
 from vividoc.executor import ExecutorConfig
 from vividoc.evaluator import Evaluator
@@ -124,7 +124,7 @@ class TestDocumentServiceGenerateDocument:
 class TestDocumentServiceExecuteGeneration:
     """Tests for _execute_generation background task."""
 
-    @patch("backend.services.document_service.ExecutorWithProgress")
+    @patch("vividoc.entrypoint.services.document_service.ExecutorWithProgress")
     def test_execute_generation_initializes_ku_progress(
         self, mock_executor_class, document_service, sample_spec
     ):
@@ -157,7 +157,7 @@ class TestDocumentServiceExecuteGeneration:
         assert job.progress.ku_progress[1].ku_id == "ku2"
         assert job.progress.ku_progress[1].title == "ku_2"
 
-    @patch("backend.services.document_service.ExecutorWithProgress")
+    @patch("vividoc.entrypoint.services.document_service.ExecutorWithProgress")
     def test_execute_generation_creates_executor_with_callback(
         self, mock_executor_class, document_service, sample_spec
     ):
@@ -187,7 +187,7 @@ class TestDocumentServiceExecuteGeneration:
         assert "progress_callback" in call_args[1]
         assert callable(call_args[1]["progress_callback"])
 
-    @patch("backend.services.document_service.ExecutorWithProgress")
+    @patch("vividoc.entrypoint.services.document_service.ExecutorWithProgress")
     def test_execute_generation_runs_executor(
         self, mock_executor_class, document_service, sample_spec
     ):
@@ -213,7 +213,7 @@ class TestDocumentServiceExecuteGeneration:
         # Assert
         mock_executor.run.assert_called_once_with(sample_spec)
 
-    @patch("backend.services.document_service.ExecutorWithProgress")
+    @patch("vividoc.entrypoint.services.document_service.ExecutorWithProgress")
     @patch("uuid.uuid4")
     def test_execute_generation_stores_document(
         self, mock_uuid, mock_executor_class, document_service, sample_spec
@@ -251,7 +251,7 @@ class TestDocumentServiceExecuteGeneration:
 
         assert document_service.document_specs["doc_123"] == "spec_123"
 
-    @patch("backend.services.document_service.ExecutorWithProgress")
+    @patch("vividoc.entrypoint.services.document_service.ExecutorWithProgress")
     def test_execute_generation_marks_job_completed(
         self, mock_executor_class, document_service, sample_spec
     ):
@@ -281,7 +281,7 @@ class TestDocumentServiceExecuteGeneration:
         assert "document_id" in job.result
         assert job.progress.overall_percent == 100.0
 
-    @patch("backend.services.document_service.ExecutorWithProgress")
+    @patch("vividoc.entrypoint.services.document_service.ExecutorWithProgress")
     def test_execute_generation_handles_exceptions(
         self, mock_executor_class, document_service, sample_spec
     ):
@@ -302,7 +302,7 @@ class TestDocumentServiceExecuteGeneration:
         assert job.status == "failed"
         assert job.error == "Test error"
 
-    @patch("backend.services.document_service.ExecutorWithProgress")
+    @patch("vividoc.entrypoint.services.document_service.ExecutorWithProgress")
     def test_execute_generation_calls_evaluator(
         self, mock_executor_class, document_service, sample_spec
     ):
@@ -335,7 +335,7 @@ class TestDocumentServiceExecuteGeneration:
         assert doc_metadata["evaluation"]["score"] == 0.85
         assert doc_metadata["evaluation"]["feedback"] == "Well structured"
 
-    @patch("backend.services.document_service.ExecutorWithProgress")
+    @patch("vividoc.entrypoint.services.document_service.ExecutorWithProgress")
     def test_execute_generation_handles_evaluator_errors(
         self, mock_executor_class, document_service, sample_spec
     ):
@@ -584,7 +584,7 @@ class TestDocumentServiceGetHtml:
 class TestDocumentServiceIntegration:
     """Integration tests for DocumentService."""
 
-    @patch("backend.services.document_service.ExecutorWithProgress")
+    @patch("vividoc.entrypoint.services.document_service.ExecutorWithProgress")
     def test_full_document_generation_workflow(
         self, mock_executor_class, document_service, sample_spec, tmp_path
     ):

@@ -2,24 +2,26 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from backend.main import app
-from backend.models import (
+from vividoc.entrypoint.web_server import create_app
+from vividoc.entrypoint.models import (
     SpecGenerateRequest,
     JobStatusResponse,
     ProgressInfo,
     KUProgress,
 )
-from backend.services import JobManager, SpecService, DocumentService
+from vividoc.entrypoint.services import JobManager, SpecService, DocumentService
 
 
 def test_fastapi_app_creation():
     """Test that FastAPI app is created successfully."""
+    app = create_app()
     assert app is not None
     assert app.title == "ViviDoc Web UI API"
 
 
 def test_health_endpoint():
     """Test health check endpoint."""
+    app = create_app()
     client = TestClient(app)
     response = client.get("/health")
     assert response.status_code == 200
@@ -28,6 +30,7 @@ def test_health_endpoint():
 
 def test_root_endpoint():
     """Test root endpoint."""
+    app = create_app()
     client = TestClient(app)
     response = client.get("/")
     assert response.status_code == 200
@@ -38,6 +41,7 @@ def test_root_endpoint():
 
 def test_cors_middleware():
     """Test that CORS middleware is configured."""
+    app = create_app()
     # Check that middleware is present
     # FastAPI wraps middleware in Middleware objects
     assert len(app.user_middleware) > 0
