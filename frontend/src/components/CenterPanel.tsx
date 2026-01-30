@@ -179,9 +179,20 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
           <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-slate-200 shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
           </div>
-          <h2 className="text-sm font-semibold text-[var(--text-primary)]">
-            {documentId ? 'Generated Document' : 'Document Preview'}
-          </h2>
+          <div>
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+              {documentId ? 'Generated Document' : 'Document Preview'}
+            </h2>
+            {liveHtml && !documentId && (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-wider">Live Preview</p>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
@@ -189,11 +200,12 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
           {isRunning && (
             <div className="flex items-center gap-3 bg-[var(--surface-color)]/50 px-4 py-1.5 rounded-full border border-[var(--border-color)] backdrop-blur-md shadow-sm">
               {/* Colorful Ring Animation */}
-              <div className="relative w-5 h-5">
-                <div className="absolute inset-0 rounded-full border-2 border-indigo-500/30"></div>
-                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-indigo-500 border-r-purple-500 animate-spin"></div>
+              <div className="relative w-5 h-5 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full border-2 border-slate-200/50"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-indigo-500 border-r-purple-500 border-b-pink-500 animate-spin"></div>
+                <div className="w-1.5 h-1.5 bg-[var(--accent-primary)] rounded-full animate-pulse"></div>
               </div>
-              <span className="text-xs font-medium text-[var(--text-secondary)] animate-pulse">
+              <span className="text-xs font-semibold text-[var(--text-primary)] tracking-wide">
                 {statusText}
               </span>
             </div>
