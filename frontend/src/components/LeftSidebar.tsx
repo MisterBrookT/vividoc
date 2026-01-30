@@ -77,14 +77,14 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
   };
 
   return (
-    <div className="w-80 border-r border-white/5 flex flex-col glass-panel relative z-10 backdrop-blur-2xl bg-zinc-900/40">
+    <div className="w-80 border-r border-[var(--border-color)] flex flex-col glass-panel relative z-10 backdrop-blur-2xl">
       {/* Header */}
-      <div className="p-6 border-b border-white/5">
+      <div className="p-6 border-b border-[var(--border-color)]">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-2 h-8 bg-indigo-500 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
-          <h1 className="text-xl font-bold text-white tracking-tight">ViviDoc</h1>
+          <div className="w-2 h-8 bg-[var(--accent-primary)] rounded-full shadow-[0_0_15px_rgba(79,70,229,0.3)]" />
+          <h1 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">ViviDoc</h1>
         </div>
-        <p className="text-xs text-zinc-400 pl-4 font-medium">Interactive Document Generator</p>
+        <p className="text-xs text-[var(--text-secondary)] pl-4 font-medium">Interactive Document Generator</p>
       </div>
 
       {/* Topic Input */}
@@ -96,11 +96,11 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
           <SpecEditor spec={spec} onUpdate={handleSpecUpdate} />
         ) : (
           <div className="flex items-center justify-center h-full p-8">
-            <div className="text-center p-6 rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/30">
-              <div className="w-12 h-12 bg-zinc-800/50 rounded-full mx-auto mb-3 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-zinc-700 rounded-sm" />
+            <div className="text-center p-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
+              <div className="w-12 h-12 bg-white rounded-full mx-auto mb-3 flex items-center justify-center shadow-sm">
+                <div className="w-6 h-6 border-2 border-slate-300 rounded-sm" />
               </div>
-              <p className="text-sm text-zinc-500 font-medium">
+              <p className="text-sm text-[var(--text-secondary)] font-medium">
                 Generate a spec to start editing
               </p>
             </div>
@@ -110,7 +110,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
       {/* Generate Document Button */}
       {spec && (
-        <div className="p-6 border-t border-white/5 bg-zinc-900/20 backdrop-blur-sm">
+        <div className="p-6 border-t border-[var(--border-color)] bg-white/50 backdrop-blur-sm">
           <button
             onClick={handleGenerateDocument}
             disabled={generatingDocument}

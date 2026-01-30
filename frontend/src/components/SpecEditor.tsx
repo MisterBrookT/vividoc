@@ -59,7 +59,7 @@ const SortableKUItem: React.FC<SortableKUItemProps> = ({ ku, onEdit, onDelete })
             <button
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
               aria-label="Drag to reorder"
             >
               <svg
@@ -76,15 +76,15 @@ const SortableKUItem: React.FC<SortableKUItemProps> = ({ ku, onEdit, onDelete })
                 />
               </svg>
             </button>
-            <h3 className="text-sm font-semibold text-zinc-100">{ku.title}</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">{ku.title}</h3>
           </div>
-          <p className="text-xs text-zinc-400 mb-3 ml-9 leading-relaxed">{ku.description}</p>
+          <p className="text-xs text-[var(--text-secondary)] mb-3 ml-9 leading-relaxed">{ku.description}</p>
           {ku.learning_objectives && ku.learning_objectives.length > 0 && (
             <div className="ml-9">
-              <h4 className="text-[10px] uppercase font-bold text-zinc-600 mb-1 tracking-wider">
+              <h4 className="text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">
                 Objectives
               </h4>
-              <ul className="text-xs text-zinc-500 list-disc list-inside space-y-1">
+              <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
                 {ku.learning_objectives.map((obj, idx) => (
                   <li key={idx} className="truncate">{obj}</li>
                 ))}
@@ -95,14 +95,14 @@ const SortableKUItem: React.FC<SortableKUItemProps> = ({ ku, onEdit, onDelete })
         <div className="flex gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onEdit(ku)}
-            className="p-2 text-zinc-500 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors"
+            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
             aria-label="Edit knowledge unit"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
           </button>
           <button
             onClick={() => onDelete(ku.id)}
-            className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             aria-label="Delete knowledge unit"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>

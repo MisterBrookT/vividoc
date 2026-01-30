@@ -1,19 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --bg-app: #09090b;
-  /* zinc-950 */
-  --bg-panel: #18181b;
-  /* zinc-900 */
-  --bg-card: #27272a;
-  /* zinc-800 */
-  --accent-primary: #6366f1;
-  /* indigo-500 */
-  --accent-secondary: #8b5cf6;
-  /* violet-500 */
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --border-color: #27272a;
+  /* Light Theme Palette - Transformer Explainer inspired */
+  --bg-app: #f8f9fc; /* Very light cool gray */
+  --bg-panel: rgba(255, 255, 255, 0.7);
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --accent-primary: #4f46e5; /* Indigo-600 */
+  --accent-secondary: #7c3aed; /* Violet-600 */
+  --text-primary: #1e293b; /* Slate-800 */
+  --text-secondary: #64748b; /* Slate-500 */
+  --border-color: #e2e8f0; /* Slate-200 */
 }
 
 @layer base {
@@ -28,34 +24,32 @@
 
 @layer components {
   .glass-panel {
-    @apply bg-[#18181b]/80 backdrop-blur-xl border border-white/5 shadow-xl;
+    @apply bg-[var(--bg-panel)] backdrop-blur-xl border border-slate-200/50 shadow-sm;
   }
-
+  
   .glass-card {
-    @apply bg-[#27272a]/50 backdrop-blur-md border border-white/5 shadow-lg hover:bg-[#27272a]/70 transition-all duration-200;
+    @apply bg-[var(--bg-card)] backdrop-blur-md border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300;
   }
 
   .input-modern {
-    @apply bg-zinc-900/50 border border-zinc-800 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 rounded-xl shadow-inner;
+    @apply bg-white border border-slate-200 rounded-lg px-4 py-2 outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/20 transition-all duration-200;
   }
 
   .btn-primary {
-    @apply bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-lg shadow-indigo-500/20 border border-indigo-500/20;
+    @apply bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white font-medium rounded-lg shadow-lg hover:shadow-indigo-500/30 active:scale-95 transition-all duration-200;
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar for Light Theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  @apply bg-zinc-800 rounded-full;
+  @apply bg-slate-300 rounded-full hover:bg-slate-400;
 }
 
 ::-webkit-scrollbar-thumb:hover {

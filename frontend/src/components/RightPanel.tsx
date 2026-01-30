@@ -122,16 +122,16 @@ const RightPanel: React.FC<RightPanelProps> = ({ jobId, onJobCompleted, onLiveHt
   // If no jobId, show placeholder
   if (!jobId) {
     return (
-      <div className="w-80 border-l border-white/5 glass-panel backdrop-blur-2xl bg-zinc-900/40 p-6 relative z-10" data-testid="right-panel">
-        <div className="h-full flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 mb-4 bg-zinc-800/30 rounded-2xl flex items-center justify-center border border-dashed border-zinc-700">
-            <Activity className="w-8 h-8 text-zinc-600" />
+      <div className="w-80 glass-panel border-l border-[var(--border-color)] p-6 relative z-10 flex flex-col items-center justify-center h-full" data-testid="right-panel">
+        <div className="text-center">
+          <div className="w-16 h-16 mb-6 bg-slate-100 rounded-full flex items-center justify-center mx-auto ring-4 ring-slate-50">
+            <Activity className="w-6 h-6 text-indigo-500" />
           </div>
-          <p className="text-sm font-medium text-zinc-500">
-            No active job
-          </p>
-          <p className="text-xs text-zinc-600 mt-1 max-w-[80%]">
-            Generate a document to see progress
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
+            Ready to Generate
+          </h3>
+          <p className="text-xs text-[var(--text-secondary)] max-w-[200px] mx-auto leading-relaxed">
+            Select a topic and generate a spec to start creating your document.
           </p>
         </div>
       </div>
@@ -139,30 +139,31 @@ const RightPanel: React.FC<RightPanelProps> = ({ jobId, onJobCompleted, onLiveHt
   }
 
   return (
-    <div className="w-80 border-l border-white/5 glass-panel backdrop-blur-2xl bg-zinc-900/40 p-6 overflow-y-auto relative z-10" data-testid="right-panel">
-      {/* Polling Error Banner */}
-      {pollingError && (
-        <div
-          className="mb-4 bg-yellow-950/50 border border-yellow-900/50 rounded-lg p-3"
-          data-testid="polling-error"
-          role="alert"
-        >
-          <div className="flex items-start gap-2">
-            <span className="text-yellow-500 text-sm">⚠️</span>
+    <div className="w-80 glass-panel border-l border-[var(--border-color)] flex flex-col h-full relative z-10" data-testid="right-panel">
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Polling Error Banner - Sophisticated Style */}
+        {pollingError && (
+          <div
+            className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-3 shadow-sm"
+            data-testid="polling-error"
+            role="alert"
+          >
+            <span className="text-amber-500 mt-0.5">⚠️</span>
             <div className="flex-1">
-              <p className="text-xs text-yellow-200">
-                <strong>Connection Issue:</strong> {pollingError}
+              <p className="text-xs font-medium text-amber-800">
+                Connection Paused
               </p>
-              <p className="text-xs text-yellow-300/70 mt-1">
-                Retrying automatically...
+              <p className="text-[10px] text-amber-600 mt-0.5 leading-tight">
+                {pollingError}. Retrying...
               </p>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Progress Monitor */}
-      <ProgressMonitor jobStatus={jobStatus} />
+        <ProgressMonitor jobStatus={jobStatus} />
+      </div>
     </div>
   );
 };

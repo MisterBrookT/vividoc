@@ -20,73 +20,44 @@ interface KUProgressCardProps {
  * Requirements: 4.3, 4.4
  */
 const KUProgressCard: React.FC<KUProgressCardProps> = ({ ku }) => {
-  // Status badge configuration
+  // Status badge configuration - minimal dots
   const statusConfig = {
-    pending: {
-      label: 'Pending',
-      bgColor: 'bg-gray-200',
-      textColor: 'text-gray-700',
-      borderColor: 'border-gray-300'
-    },
-    stage1: {
-      label: 'Stage 1',
-      bgColor: 'bg-yellow-100',
-      textColor: 'text-yellow-800',
-      borderColor: 'border-yellow-300'
-    },
-    stage2: {
-      label: 'Stage 2',
-      bgColor: 'bg-blue-100',
-      textColor: 'text-blue-800',
-      borderColor: 'border-blue-300'
-    },
-    completed: {
-      label: 'Completed',
-      bgColor: 'bg-green-100',
-      textColor: 'text-green-800',
-      borderColor: 'border-green-300'
-    }
+    pending: { label: 'Pending', color: 'bg-slate-300' },
+    stage1: { label: 'Drafting', color: 'bg-amber-400' },
+    stage2: { label: 'Refining', color: 'bg-indigo-500' },
+    completed: { label: 'Done', color: 'bg-emerald-500' }
   };
 
   const config = statusConfig[ku.status];
 
   return (
-    <div 
-      className={`ku-progress-card border rounded-lg p-3 mb-2 transition-all duration-200 ${config.borderColor}`}
+    <div
+      className="bg-white rounded-lg p-3 shadow-sm border border-slate-100 hover:shadow-md transition-shadow duration-200 group"
       data-testid={`ku-progress-${ku.ku_id}`}
     >
-      <div className="flex items-start justify-between gap-2">
-        {/* KU Title */}
+      <div className="flex items-center gap-3">
+        {/* Status Dot */}
+        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${config.color} ${ku.status.includes('stage') ? 'animate-pulse' : ''}`} />
+
+        {/* Title */}
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-gray-900 truncate" title={ku.title}>
+          <h4 className="text-xs font-medium text-[var(--text-primary)] truncate" title={ku.title}>
             {ku.title}
           </h4>
         </div>
 
-        {/* Status Badge */}
-        <div className="flex-shrink-0">
-          <span 
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bgColor} ${config.textColor}`}
-            data-testid={`status-badge-${ku.status}`}
-          >
+        {/* Status Label (only if active/completed) */}
+        {ku.status !== 'pending' && (
+          <span className="text-[10px] text-[var(--text-secondary)] font-medium">
             {config.label}
           </span>
-        </div>
+        )}
       </div>
 
-      {/* Optional: Progress indicator for active stages */}
+      {/* Progress Line for active stages */}
       {(ku.status === 'stage1' || ku.status === 'stage2') && (
-        <div className="mt-2">
-          <div className="flex items-center gap-2 text-xs text-gray-600">
-            <div className="animate-pulse flex space-x-1">
-              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
-              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
-              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
-            </div>
-            <span>
-              {ku.status === 'stage1' ? 'Generating text...' : 'Generating code...'}
-            </span>
-          </div>
+        <div className="mt-2.5 w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+          <div className="h-full bg-indigo-500/50 w-full animate-progress-indeterminate"></div>
         </div>
       )}
     </div>

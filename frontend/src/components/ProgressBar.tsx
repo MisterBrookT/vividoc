@@ -18,34 +18,34 @@ interface ProgressBarProps {
  * 
  * Requirements: 4.4
  */
-const ProgressBar: React.FC<ProgressBarProps> = ({ 
-  percent, 
+const ProgressBar: React.FC<ProgressBarProps> = ({
+  percent,
   showLabel = true,
   height = 'md'
 }) => {
   // Clamp percent between 0 and 100
   const clampedPercent = Math.min(Math.max(percent, 0), 100);
-  
+
   // Height classes
   const heightClasses = {
-    sm: 'h-2',
-    md: 'h-4',
-    lg: 'h-6'
+    sm: 'h-1.5',
+    md: 'h-2.5',
+    lg: 'h-4'
   };
 
   return (
     <div className="progress-bar w-full">
       {showLabel && (
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">Progress</span>
-          <span className="text-sm font-semibold text-gray-900">
+        <div className="flex justify-between items-center mb-1.5">
+          <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Progress</span>
+          <span className="text-xs font-bold text-[var(--accent-primary)]">
             {clampedPercent.toFixed(0)}%
           </span>
         </div>
       )}
-      <div className={`w-full bg-gray-200 rounded-full overflow-hidden ${heightClasses[height]}`}>
+      <div className={`w-full bg-slate-100 rounded-full overflow-hidden ${heightClasses[height]}`}>
         <div
-          className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
+          className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(99,102,241,0.3)]"
           style={{ width: `${clampedPercent}%` }}
           role="progressbar"
           aria-valuenow={clampedPercent}
