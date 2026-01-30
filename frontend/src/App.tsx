@@ -33,14 +33,14 @@ function App() {
   const handleJobCompleted = (docId: string) => {
     setDocumentId(docId);
   };
-  
+
   const handleLiveHtmlUpdate = (html: string | null) => {
     setLiveHtml(html);
   };
 
   return (
     <>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
@@ -65,7 +65,7 @@ function App() {
           },
         }}
       />
-      
+
       <div className="flex h-screen bg-[var(--bg-app)] selection:bg-indigo-500/30 selection:text-indigo-200 overflow-hidden relative">
         {/* Ambient background effects */}
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/10 rounded-full blur-[100px] pointer-events-none" />
@@ -78,8 +78,8 @@ function App() {
           onGenerateDocument={handleGenerateDocument}
         />
 
-        <CenterPanel 
-          documentId={documentId} 
+        <CenterPanel
+          documentId={documentId}
           liveHtml={liveHtml}
         />
 

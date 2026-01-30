@@ -30,7 +30,7 @@ interface SortableKUItemProps {
 }
 
 // Sortable KU Card component
-const SortableKUItem: React.FC<SortableKUItemProps> = ({ ku, onEdit, onDelete }) => {
+const SortableKUItem: React.FC<SortableKUItemProps & { index: number }> = ({ ku, index, onEdit, onDelete }) => {
   const {
     attributes,
     listeners,
@@ -50,60 +50,47 @@ const SortableKUItem: React.FC<SortableKUItemProps> = ({ ku, onEdit, onDelete })
     <div
       ref={setNodeRef}
       style={style}
-      className="glass-card rounded-xl p-4 mb-3 group"
+      className="glass-card rounded-xl border border-[var(--border-color)] bg-[var(--surface-color)] p-3 mb-3 group hover:shadow-md transition-all relative overflow-hidden"
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            {/* Drag handle */}
-            <button
-              {...attributes}
-              {...listeners}
-              className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              aria-label="Drag to reorder"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 8h16M4 16h16"
-                />
-              </svg>
-            </button>
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">{ku.title}</h3>
+      {/* Decorative gradient overlay */}
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500 opacity-80" />
+
+      <div className="flex items-center justify-between pl-3">
+        <div className="flex-1 flex items-center gap-3">
+          {/* Drag handle */}
+          <button
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Drag to reorder"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+            </svg>
+          </button>
+
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-[var(--accent-primary)] uppercase tracking-wider mb-0.5">
+              KU({index + 1})
+            </span>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] leading-tight line-clamp-2">
+              {ku.title}
+            </h3>
           </div>
-          <p className="text-xs text-[var(--text-secondary)] mb-3 ml-9 leading-relaxed">{ku.description}</p>
-          {ku.learning_objectives && ku.learning_objectives.length > 0 && (
-            <div className="ml-9">
-              <h4 className="text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">
-                Objectives
-              </h4>
-              <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
-                {ku.learning_objectives.map((obj, idx) => (
-                  <li key={idx} className="truncate">{obj}</li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
-        <div className="flex gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+
+        <div className="flex flex-col gap-1 ml-2 border-l border-[var(--border-color)] pl-2">
           <button
             onClick={() => onEdit(ku)}
-            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-            aria-label="Edit knowledge unit"
+            className="p-1.5 text-[var(--text-secondary)] hover:text-indigo-600 hover:bg-indigo-50/50 rounded-md transition-colors"
+            aria-label="Edit"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
           </button>
           <button
             onClick={() => onDelete(ku.id)}
-            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            aria-label="Delete knowledge unit"
+            className="p-1.5 text-[var(--text-secondary)] hover:text-red-600 hover:bg-red-50/50 rounded-md transition-colors"
+            aria-label="Delete"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
           </button>
@@ -169,13 +156,13 @@ export const SpecEditor: React.FC<SpecEditorProps> = ({ spec, onUpdate }) => {
   return (
     <div className="mt-2">
       <div className="mb-6 px-1">
-        <h2 className="text-sm font-semibold text-zinc-100 mb-1">Specification</h2>
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
-          <span className="bg-zinc-800/50 px-2 py-0.5 rounded text-zinc-400 font-mono">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Specification</h2>
+        <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+          <span className="bg-[var(--surface-color)] border border-[var(--border-color)] px-2 py-0.5 rounded text-[var(--text-secondary)] font-mono">
             {spec.knowledge_units.length} unit{spec.knowledge_units.length !== 1 ? 's' : ''}
           </span>
           <span>•</span>
-          <span className="truncate max-w-[150px]">{spec.topic}</span>
+          <span className="truncate max-w-[150px] font-medium">{spec.topic}</span>
         </div>
       </div>
 
@@ -189,10 +176,11 @@ export const SpecEditor: React.FC<SpecEditorProps> = ({ spec, onUpdate }) => {
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-1">
-            {spec.knowledge_units.map((ku) => (
+            {spec.knowledge_units.map((ku, index) => (
               <SortableKUItem
                 key={ku.id}
                 ku={ku}
+                index={index}
                 onEdit={handleEditKU}
                 onDelete={handleDeleteKU}
               />

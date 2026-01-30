@@ -60,8 +60,8 @@ Task:
 6. You can use D3.js, Chart.js (already loaded)
 7. Keep all other sections unchanged
 
-IMPORTANT - Chart.js Best Practice:
-When using Chart.js with maintainAspectRatio: false, the canvas container MUST have an explicit height (e.g., height: 300px). Otherwise, the chart will expand infinitely.
+IMPORTANT:
+1. When using Chart.js with maintainAspectRatio: false, the canvas container MUST have an explicit height (e.g., height: 300px). Otherwise, the chart will expand infinitely.
 
 Example interactive content:
 ```html
