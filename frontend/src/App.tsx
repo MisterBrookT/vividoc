@@ -26,6 +26,9 @@ function App() {
   // State for job and document management
   const [jobId, setJobId] = useState<string | null>(null);
   const [documentId, setDocumentId] = useState<string | null>(null);
+  
+  // State for real-time HTML preview
+  const [liveHtml, setLiveHtml] = useState<string | null>(null);
 
   /**
    * Callback invoked when a new spec is generated
@@ -38,6 +41,7 @@ function App() {
     // Reset document state when new spec is generated
     setDocumentId(null);
     setJobId(null);
+    setLiveHtml(null);
   };
 
   /**
@@ -56,6 +60,7 @@ function App() {
     setJobId(jId);
     // Clear previous document when starting new generation
     setDocumentId(null);
+    setLiveHtml(null);
   };
 
   /**
@@ -64,6 +69,14 @@ function App() {
    */
   const handleJobCompleted = (docId: string) => {
     setDocumentId(docId);
+  };
+  
+  /**
+   * Callback invoked when live HTML is updated during generation
+   * @param html - The current HTML content
+   */
+  const handleLiveHtmlUpdate = (html: string | null) => {
+    setLiveHtml(html);
   };
 
   return (
@@ -77,12 +90,16 @@ function App() {
       />
 
       {/* Center Panel - Document Viewer */}
-      <CenterPanel documentId={documentId} />
+      <CenterPanel 
+        documentId={documentId} 
+        liveHtml={liveHtml}
+      />
 
       {/* Right Panel - Progress Monitor */}
       <RightPanel
         jobId={jobId}
         onJobCompleted={handleJobCompleted}
+        onLiveHtmlUpdate={handleLiveHtmlUpdate}
       />
     </div>
   );

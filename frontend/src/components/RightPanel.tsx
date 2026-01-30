@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ProgressMonitor from './ProgressMonitor';
-import { getJobStatus } from '../api/services';
+import { getJobStatus, getJobHtml } from '../api/services';
 import type { JobStatus } from '../types/models';
 
 interface RightPanelProps {
   jobId: string | null;
   onJobCompleted: (documentId: string) => void;
+  onLiveHtmlUpdate: (html: string | null) => void;
 }
 
 /**
@@ -21,7 +22,7 @@ interface RightPanelProps {
  * 
  * Requirements: 4.1, 4.2, 4.4, 4.5
  */
-const RightPanel: React.FC<RightPanelProps> = ({ jobId, onJobCompleted }) => {
+const RightPanel: React.FC<RightPanelProps> = ({ jobId, onJobCompleted, onLiveHtmlUpdate }) => {
   const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
   const [pollingError, setPollingError] = useState<string | null>(null);
   const pollingIntervalRef = useRef<number | null>(null);
@@ -55,6 +56,17 @@ const RightPanel: React.FC<RightPanelProps> = ({ jobId, onJobCompleted }) => {
         const status = await getJobStatus(jobId);
         setJobStatus(status);
         setPollingError(null); // Clear any previous errors
+
+        // Fetch live HTML during generation
+        try {
+          const htmlData = await getJobHtml(jobId);
+          if (htmlData.html) {
+            onLiveHtmlUpdate(htmlData.html);
+          }
+        } catch (htmlError) {
+          console.error('Error fetching live HTML:', htmlError);
+          // Don't fail the whole polling if HTML fetch fails
+        }
 
         // Check if job is complete or failed
         if (status.status === 'completed') {
@@ -104,7 +116,7 @@ const RightPanel: React.FC<RightPanelProps> = ({ jobId, onJobCompleted }) => {
         pollingIntervalRef.current = null;
       }
     };
-  }, [jobId, onJobCompleted]);
+  }, [jobId, onJobCompleted, onLiveHtmlUpdate]);
 
   // If no jobId, show placeholder
   if (!jobId) {

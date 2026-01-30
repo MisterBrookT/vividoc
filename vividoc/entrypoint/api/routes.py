@@ -244,3 +244,47 @@ async def get_job_status(job_id: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/jobs/{job_id}/html")
+async def get_job_html(job_id: str):
+    """Get current HTML content for a running or completed job.
+
+    This endpoint allows real-time preview of the document being generated.
+    Returns the current state of the HTML file, even if generation is still in progress.
+    """
+    try:
+        job = job_manager.get_status(job_id)
+
+        if job is None:
+            raise HTTPException(status_code=404, detail=f"Job not found: {job_id}")
+
+        # Get spec_id from job metadata (we need to store this when creating the job)
+        # For now, try to get it from the result if job is completed
+        if job.status == "completed" and job.result and "document_id" in job.result:
+            # Job completed, get HTML from document service
+            document_id = job.result["document_id"]
+            html_content = document_service.get_html(document_id)
+            return {"html": html_content, "status": "completed"}
+
+        # Job is still running or failed
+        # Try to read the HTML file directly from the spec output directory
+        spec_id = document_service.get_spec_id_for_job(job_id)
+        if spec_id:
+            from pathlib import Path
+
+            project_root = Path(__file__).parent.parent.parent.parent
+            html_path = project_root / "outputs" / spec_id / "document.html"
+
+            if html_path.exists():
+                with open(html_path, "r", encoding="utf-8") as f:
+                    html_content = f.read()
+                return {"html": html_content, "status": job.status}
+
+        # No HTML available yet
+        return {"html": None, "status": job.status}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -32,6 +32,7 @@ class DocumentService:
         self.job_manager = job_manager
         self.documents: Dict[str, Dict] = {}  # document_id -> metadata
         self.document_specs: Dict[str, str] = {}  # document_id -> spec_id
+        self.job_specs: Dict[str, str] = {}  # job_id -> spec_id
 
     def generate_document(self, spec_id: str, spec: DocumentSpec) -> str:
         """
@@ -46,6 +47,9 @@ class DocumentService:
         """
         # Create job
         job_id = self.job_manager.create_job("document_generation")
+
+        # Track job_id to spec_id mapping for real-time HTML access
+        self.job_specs[job_id] = spec_id
 
         # Start background execution
         self.job_manager.start_job(
@@ -256,3 +260,15 @@ class DocumentService:
             html_content = f.read()
 
         return html_content
+
+    def get_spec_id_for_job(self, job_id: str) -> Optional[str]:
+        """
+        Get spec_id associated with a job.
+
+        Args:
+            job_id: Job identifier
+
+        Returns:
+            Spec identifier or None if not found
+        """
+        return self.job_specs.get(job_id)

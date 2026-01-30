@@ -65,3 +65,10 @@ export const getJobStatus = async (jobId: string): Promise<JobStatus> => {
   const response = await apiClient.get<JobStatus>(`/api/jobs/${jobId}/status`);
   return response.data;
 };
+
+export const getJobHtml = async (jobId: string): Promise<{ html: string | null; status: string }> => {
+  const response = await apiClient.get<{ html: string | null; status: string }>(
+    `/api/jobs/${jobId}/html`
+  );
+  return response.data;
+};

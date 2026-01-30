@@ -19,17 +19,29 @@ import { getDocumentHtml, getDocumentDownloadUrl } from '../api/services';
 interface CenterPanelProps {
   /** Document ID to display, null if no document is generated yet */
   documentId: string | null;
+  /** Live HTML content being generated (real-time preview) */
+  liveHtml: string | null;
 }
 
-const CenterPanel: React.FC<CenterPanelProps> = ({ documentId }) => {
+const CenterPanel: React.FC<CenterPanelProps> = ({ documentId, liveHtml }) => {
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch HTML content when documentId changes
+  // Update HTML when liveHtml changes (real-time preview)
+  useEffect(() => {
+    if (liveHtml) {
+      setHtml(liveHtml);
+    }
+  }, [liveHtml]);
+
+  // Fetch HTML content when documentId changes (final document)
   useEffect(() => {
     if (!documentId) {
-      setHtml(null);
+      // Don't clear HTML if we have liveHtml
+      if (!liveHtml) {
+        setHtml(null);
+      }
       setError(null);
       return;
     }
@@ -50,7 +62,7 @@ const CenterPanel: React.FC<CenterPanelProps> = ({ documentId }) => {
     };
 
     fetchHtml();
-  }, [documentId]);
+  }, [documentId, liveHtml]);
 
   // Handle download button click - open download endpoint in new tab
   const handleDownload = () => {
