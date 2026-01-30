@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Activity } from 'lucide-react';
 import ProgressMonitor from './ProgressMonitor';
 import { getJobStatus, getJobHtml } from '../api/services';
 import type { JobStatus } from '../types/models';
@@ -91,13 +92,13 @@ const RightPanel: React.FC<RightPanelProps> = ({ jobId, onJobCompleted, onLiveHt
       } catch (error) {
         // Handle polling errors gracefully
         console.error('Error fetching job status:', error);
-        
+
         // Set error message but continue polling (transient errors)
-        const errorMessage = error instanceof Error 
-          ? error.message 
+        const errorMessage = error instanceof Error
+          ? error.message
           : 'Failed to fetch job status';
         setPollingError(errorMessage);
-        
+
         // Don't stop polling on error - it might be transient
         // The interval will continue and retry
       }
@@ -121,11 +122,16 @@ const RightPanel: React.FC<RightPanelProps> = ({ jobId, onJobCompleted, onLiveHt
   // If no jobId, show placeholder
   if (!jobId) {
     return (
-      <div className="w-1/4 border-l border-gray-200 bg-white p-6" data-testid="right-panel">
-        <div className="text-center text-gray-500 py-8">
-          <p className="text-lg font-medium">No Active Job</p>
-          <p className="text-sm mt-2">
-            Generate a document to see progress here
+      <div className="w-80 border-l border-white/5 glass-panel backdrop-blur-2xl bg-zinc-900/40 p-6 relative z-10" data-testid="right-panel">
+        <div className="h-full flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 mb-4 bg-zinc-800/30 rounded-2xl flex items-center justify-center border border-dashed border-zinc-700">
+            <Activity className="w-8 h-8 text-zinc-600" />
+          </div>
+          <p className="text-sm font-medium text-zinc-500">
+            No active job
+          </p>
+          <p className="text-xs text-zinc-600 mt-1 max-w-[80%]">
+            Generate a document to see progress
           </p>
         </div>
       </div>
@@ -133,23 +139,21 @@ const RightPanel: React.FC<RightPanelProps> = ({ jobId, onJobCompleted, onLiveHt
   }
 
   return (
-    <div className="w-1/4 border-l border-gray-200 bg-white p-6 overflow-y-auto" data-testid="right-panel">
+    <div className="w-80 border-l border-white/5 glass-panel backdrop-blur-2xl bg-zinc-900/40 p-6 overflow-y-auto relative z-10" data-testid="right-panel">
       {/* Polling Error Banner */}
       {pollingError && (
-        <div 
-          className="mb-4 bg-yellow-50 border border-yellow-300 rounded-lg p-3"
+        <div
+          className="mb-4 bg-yellow-950/50 border border-yellow-900/50 rounded-lg p-3"
           data-testid="polling-error"
           role="alert"
         >
           <div className="flex items-start gap-2">
-            <span className="text-yellow-600 text-sm" role="img" aria-label="Warning">
-              ⚠️
-            </span>
+            <span className="text-yellow-500 text-sm">⚠️</span>
             <div className="flex-1">
-              <p className="text-xs text-yellow-800">
+              <p className="text-xs text-yellow-200">
                 <strong>Connection Issue:</strong> {pollingError}
               </p>
-              <p className="text-xs text-yellow-700 mt-1">
+              <p className="text-xs text-yellow-300/70 mt-1">
                 Retrying automatically...
               </p>
             </div>

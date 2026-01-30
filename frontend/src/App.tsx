@@ -1,107 +1,95 @@
 import { useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import type { DocumentSpec } from './types/models';
 import LeftSidebar from './components/LeftSidebar';
 import CenterPanel from './components/CenterPanel';
 import RightPanel from './components/RightPanel';
 import './App.css';
 
-/**
- * Main application component with three-panel layout
- * 
- * Layout structure:
- * - Left Sidebar (25%): Topic input and spec editor
- * - Center Panel (50%): Document viewer
- * - Right Panel (25%): Progress monitor
- * 
- * State management:
- * - specId: Unique identifier for the generated spec
- * - spec: The document specification object
- * - jobId: Unique identifier for the document generation job
- * - documentId: Unique identifier for the generated document
- */
 function App() {
-  // State for spec management
   const [spec, setSpec] = useState<DocumentSpec | null>(null);
-  
-  // State for job and document management
   const [jobId, setJobId] = useState<string | null>(null);
   const [documentId, setDocumentId] = useState<string | null>(null);
-  
-  // State for real-time HTML preview
   const [liveHtml, setLiveHtml] = useState<string | null>(null);
 
-  /**
-   * Callback invoked when a new spec is generated
-   * @param id - The unique spec identifier
-   * @param newSpec - The generated specification
-   */
   const handleSpecGenerated = (id: string, newSpec: DocumentSpec) => {
     console.log('Spec generated with ID:', id);
     setSpec(newSpec);
-    // Reset document state when new spec is generated
     setDocumentId(null);
     setJobId(null);
     setLiveHtml(null);
   };
 
-  /**
-   * Callback invoked when the spec is updated (edited)
-   * @param newSpec - The updated specification
-   */
   const handleSpecUpdated = (newSpec: DocumentSpec) => {
     setSpec(newSpec);
   };
 
-  /**
-   * Callback invoked when document generation starts
-   * @param jId - The unique job identifier
-   */
   const handleGenerateDocument = (jId: string) => {
     setJobId(jId);
-    // Clear previous document when starting new generation
     setDocumentId(null);
     setLiveHtml(null);
   };
 
-  /**
-   * Callback invoked when document generation completes
-   * @param docId - The unique document identifier
-   */
   const handleJobCompleted = (docId: string) => {
     setDocumentId(docId);
   };
   
-  /**
-   * Callback invoked when live HTML is updated during generation
-   * @param html - The current HTML content
-   */
   const handleLiveHtmlUpdate = (html: string | null) => {
     setLiveHtml(html);
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Left Sidebar - Topic Input & Spec Editor */}
-      <LeftSidebar
-        spec={spec}
-        onSpecGenerated={handleSpecGenerated}
-        onSpecUpdated={handleSpecUpdated}
-        onGenerateDocument={handleGenerateDocument}
+    <>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#18181b',
+            color: '#fafafa',
+            border: '1px solid #27272a',
+            borderRadius: '8px',
+            fontSize: '14px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#22c55e',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
       />
+      
+      <div className="flex h-screen bg-[var(--bg-app)] selection:bg-indigo-500/30 selection:text-indigo-200 overflow-hidden relative">
+        {/* Ambient background effects */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-900/10 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Center Panel - Document Viewer */}
-      <CenterPanel 
-        documentId={documentId} 
-        liveHtml={liveHtml}
-      />
+        <LeftSidebar
+          spec={spec}
+          onSpecGenerated={handleSpecGenerated}
+          onSpecUpdated={handleSpecUpdated}
+          onGenerateDocument={handleGenerateDocument}
+        />
 
-      {/* Right Panel - Progress Monitor */}
-      <RightPanel
-        jobId={jobId}
-        onJobCompleted={handleJobCompleted}
-        onLiveHtmlUpdate={handleLiveHtmlUpdate}
-      />
-    </div>
+        <CenterPanel 
+          documentId={documentId} 
+          liveHtml={liveHtml}
+        />
+
+        <RightPanel
+          jobId={jobId}
+          onJobCompleted={handleJobCompleted}
+          onLiveHtmlUpdate={handleLiveHtmlUpdate}
+        />
+      </div>
+    </>
   );
 }
 

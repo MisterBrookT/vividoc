@@ -9,7 +9,7 @@ from vividoc.models import DocumentSpec, GeneratedDocument
 from vividoc.utils.io import save_json, load_json
 
 # Create main app
-app = typer.Typer(no_args_is_help=True)
+app = typer.Typer(no_args_is_help=True, pretty_exceptions_enable=False)
 
 
 @app.command()
