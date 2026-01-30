@@ -88,9 +88,23 @@ class DocumentService:
             ):
                 self._progress_callback(job_id, phase, ku_id, stage, ku_progress_list)
 
+            # Create executor config with spec-specific output directory
+            from pathlib import Path
+            from dataclasses import replace
+
+            # Get project root and create output directory for this spec
+            project_root = Path(__file__).parent.parent.parent.parent
+            spec_output_dir = project_root / "outputs" / spec_id
+            spec_output_dir.mkdir(parents=True, exist_ok=True)
+
+            # Create new config with updated output_dir
+            executor_config = replace(
+                self.executor_config, output_dir=str(spec_output_dir)
+            )
+
             # Create executor with progress callback
             executor = ExecutorWithProgress(
-                self.executor_config, progress_callback=progress_callback
+                executor_config, progress_callback=progress_callback
             )
 
             # Execute document generation

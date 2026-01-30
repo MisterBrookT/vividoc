@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from vividoc.planner import Planner, PlannerConfig
-from vividoc.executor import Executor, ExecutorConfig
+from vividoc.executor import ExecutorConfig
 from vividoc.evaluator import Evaluator, EvaluatorConfig
 
 from vividoc.entrypoint.services import JobManager, SpecService, DocumentService
@@ -37,11 +37,10 @@ def create_app() -> FastAPI:
     evaluator_config = EvaluatorConfig()
 
     planner = Planner(planner_config)
-    executor = Executor(executor_config)
     evaluator = Evaluator(evaluator_config)
 
     spec_service = SpecService(planner, storage_base_dir="outputs")
-    document_service = DocumentService(executor, evaluator, job_manager)
+    document_service = DocumentService(executor_config, evaluator, job_manager)
 
     # Initialize route dependencies
     init_services(job_manager, spec_service, document_service)
