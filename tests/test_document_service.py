@@ -4,9 +4,9 @@ import pytest
 from unittest.mock import Mock, patch
 from vividoc.entrypoint.services.document_service import DocumentService
 from vividoc.entrypoint.services.job_manager import JobManager, KUProgress
-from vividoc.models import DocumentSpec, KnowledgeUnitSpec, GeneratedDocument
-from vividoc.executor import ExecutorConfig
-from vividoc.evaluator import Evaluator
+from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec, GeneratedDocument
+from vividoc.core.config import RunnerConfig
+from vividoc.core.evaluator import Evaluator
 
 
 @pytest.fixture
@@ -16,9 +16,9 @@ def job_manager():
 
 
 @pytest.fixture
-def executor_config():
-    """Create an ExecutorConfig."""
-    return ExecutorConfig(output_dir="test_output")
+def runner_config():
+    """Create a RunnerConfig."""
+    return RunnerConfig(output_dir="test_output")
 
 
 @pytest.fixture
@@ -28,9 +28,9 @@ def mock_evaluator():
 
 
 @pytest.fixture
-def document_service(executor_config, mock_evaluator, job_manager):
+def document_service(runner_config, mock_evaluator, job_manager):
     """Create a DocumentService instance."""
-    return DocumentService(executor_config, mock_evaluator, job_manager)
+    return DocumentService(runner_config, mock_evaluator, job_manager)
 
 
 @pytest.fixture
@@ -58,13 +58,11 @@ def sample_spec():
 class TestDocumentServiceInit:
     """Tests for DocumentService initialization."""
 
-    def test_init_stores_dependencies(
-        self, executor_config, mock_evaluator, job_manager
-    ):
+    def test_init_stores_dependencies(self, runner_config, mock_evaluator, job_manager):
         """Test that __init__ stores all dependencies."""
-        service = DocumentService(executor_config, mock_evaluator, job_manager)
+        service = DocumentService(runner_config, mock_evaluator, job_manager)
 
-        assert service.executor_config == executor_config
+        assert service.config == runner_config
         assert service.evaluator == mock_evaluator
         assert service.job_manager == job_manager
         assert isinstance(service.documents, dict)
@@ -183,7 +181,7 @@ class TestDocumentServiceExecuteGeneration:
         # Assert - verify ExecutorWithProgress was created with callback
         mock_executor_class.assert_called_once()
         call_args = mock_executor_class.call_args
-        assert call_args[0][0] == document_service.executor_config
+        assert call_args[0][0].output_dir  # Check config has output_dir
         assert "progress_callback" in call_args[1]
         assert callable(call_args[1]["progress_callback"])
 

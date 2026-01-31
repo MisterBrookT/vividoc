@@ -1,6 +1,6 @@
 """HTML template generator for iterative document creation."""
 
-from vividoc.models import DocumentSpec
+from vividoc.core.models import DocumentSpec
 
 
 def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:

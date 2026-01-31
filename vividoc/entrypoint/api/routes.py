@@ -12,6 +12,7 @@ from vividoc.entrypoint.models import (
     DocumentHTMLResponse,
     ProgressInfo as APIProgressInfo,
     KUProgress as APIKUProgress,
+    ConfigUpdateRequest,
     doc_spec_to_api,
     api_to_doc_spec,
 )
@@ -286,5 +287,49 @@ async def get_job_html(job_id: str):
 
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Configuration Endpoints
+
+
+@router.get("/config")
+async def get_config():
+    """Get current configuration and available models."""
+    from vividoc.core.config import AVAILABLE_LLM_MODELS
+    from vividoc.entrypoint.models import ConfigResponse
+
+    # Get current model from planner config
+    current_model = spec_service.planner.config.llm_model
+
+    return ConfigResponse(
+        llm_model=current_model, available_models=sorted(list(AVAILABLE_LLM_MODELS))
+    )
+
+
+@router.put("/config")
+async def update_config(request: ConfigUpdateRequest):
+    """Update configuration (LLM model)."""
+    from vividoc.core.config import RunnerConfig
+    from vividoc.core import Planner, Evaluator
+    from vividoc.entrypoint.models import ConfigResponse
+    from vividoc.core.config import AVAILABLE_LLM_MODELS
+
+    try:
+        # Create new config with updated model
+        new_config = RunnerConfig(llm_model=request.llm_model)
+
+        # Update planner and evaluator
+        spec_service.planner = Planner(new_config)
+        document_service.config = new_config
+        document_service.evaluator = Evaluator(new_config)
+
+        return ConfigResponse(
+            llm_model=request.llm_model,
+            available_models=sorted(list(AVAILABLE_LLM_MODELS)),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

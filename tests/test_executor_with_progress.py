@@ -2,8 +2,8 @@
 
 from unittest.mock import Mock, MagicMock, patch
 from vividoc.entrypoint.services.executor_with_progress import ExecutorWithProgress
-from vividoc.executor import ExecutorConfig
-from vividoc.models import DocumentSpec, KnowledgeUnitSpec
+from vividoc.core.config import RunnerConfig
+from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
 
 
 class TestExecutorWithProgress:
@@ -11,7 +11,7 @@ class TestExecutorWithProgress:
 
     def test_init_with_callback(self):
         """Test initialization with progress callback."""
-        config = ExecutorConfig()
+        config = RunnerConfig()
         callback = Mock()
 
         executor = ExecutorWithProgress(config, progress_callback=callback)
@@ -21,7 +21,7 @@ class TestExecutorWithProgress:
 
     def test_init_without_callback(self):
         """Test initialization without progress callback."""
-        config = ExecutorConfig()
+        config = RunnerConfig()
 
         executor = ExecutorWithProgress(config)
 
@@ -30,7 +30,7 @@ class TestExecutorWithProgress:
 
     def test_report_progress_with_callback(self):
         """Test that _report_progress invokes callback when available."""
-        config = ExecutorConfig()
+        config = RunnerConfig()
         callback = Mock()
 
         executor = ExecutorWithProgress(config, progress_callback=callback)
@@ -40,7 +40,7 @@ class TestExecutorWithProgress:
 
     def test_report_progress_without_callback(self):
         """Test that _report_progress doesn't fail when callback is None."""
-        config = ExecutorConfig()
+        config = RunnerConfig()
 
         executor = ExecutorWithProgress(config)
         # Should not raise an exception
@@ -54,7 +54,7 @@ class TestExecutorWithProgress:
     ):
         """Test that run() invokes progress callback at key points."""
         # Setup
-        config = ExecutorConfig(output_dir="test_output")
+        config = RunnerConfig(output_dir="test_output")
         callback = Mock()
 
         # Create a simple spec with one KU
@@ -117,7 +117,7 @@ class TestExecutorWithProgress:
     ):
         """Test that run() reports progress for each KU."""
         # Setup
-        config = ExecutorConfig(output_dir="test_output")
+        config = RunnerConfig(output_dir="test_output")
         callback = Mock()
 
         # Create a spec with multiple KUs
@@ -176,16 +176,16 @@ class TestExecutorWithProgress:
 
     def test_inherits_from_executor(self):
         """Test that ExecutorWithProgress inherits from Executor."""
-        from vividoc.executor import Executor
+        from vividoc.core.executor import Executor
 
-        config = ExecutorConfig()
+        config = RunnerConfig()
         executor = ExecutorWithProgress(config)
 
         assert isinstance(executor, Executor)
 
     def test_has_all_executor_methods(self):
         """Test that ExecutorWithProgress has all base Executor methods."""
-        config = ExecutorConfig()
+        config = RunnerConfig()
         executor = ExecutorWithProgress(config)
 
         # Verify key methods exist

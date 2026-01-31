@@ -81,3 +81,8 @@ export interface ApiError {
   error: string;
   detail?: string;
 }
+
+export interface Config {
+  llm_model: string;
+  available_models: string[];
+}

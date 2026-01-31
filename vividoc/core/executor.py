@@ -1,32 +1,21 @@
 """Executor workflow for vividoc pipeline - Iterative HTML generation."""
 
-from dataclasses import dataclass
 from pathlib import Path
 from vividoc.utils.llm.client import LLMClient
-from vividoc.models import DocumentSpec, GeneratedDocument, KnowledgeUnitState
+from vividoc.core.models import DocumentSpec, GeneratedDocument, KnowledgeUnitState
+from vividoc.core.config import RunnerConfig
 from vividoc.utils.html.validator import HTMLValidator
 from vividoc.utils.html.template import create_document_skeleton
 from prompts.executor_prompt import get_stage1_prompt, get_stage2_prompt
 
 
-@dataclass
-class ExecutorConfig:
-    """Configuration for execution phase."""
-
-    llm_provider: str = "openrouter"
-    llm_model: str = "google/gemini-2.5-pro"
-    max_fix_attempts: int = 3
-    output_dir: str = "output"
-    resume: bool = False
-
-
 class Executor:
     """Handles the execution phase with iterative HTML generation."""
 
-    def __init__(self, config: ExecutorConfig):
+    def __init__(self, config: RunnerConfig):
         """Initialize executor with configuration."""
         self.config = config
-        self.llm_client = LLMClient(config.llm_provider)
+        self.llm_client = LLMClient(config.llm_model)
         self.html_validator = HTMLValidator()
 
     def _read_html(self, html_path: str) -> str:
@@ -76,9 +65,7 @@ class Executor:
             )
 
             # Call LLM
-            updated_html = self.llm_client.call_text_generation(
-                model=self.config.llm_model, prompt=prompt
-            )
+            updated_html = self.llm_client.call_text_generation(prompt=prompt)
 
             # Clean up markdown code blocks if present
             if "```html" in updated_html:
@@ -128,9 +115,7 @@ class Executor:
             )
 
             # Call LLM
-            final_html = self.llm_client.call_text_generation(
-                model=self.config.llm_model, prompt=prompt
-            )
+            final_html = self.llm_client.call_text_generation(prompt=prompt)
 
             # Clean up markdown code blocks if present
             if "```html" in final_html:

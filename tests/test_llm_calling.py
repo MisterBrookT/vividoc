@@ -14,13 +14,13 @@ class MathAnswer(BaseModel):
 @pytest.fixture
 def google_client():
     """Fixture to create LLMClient with google provider."""
-    return LLMClient("google")
+    return LLMClient("google/gemini-2.5-pro")
 
 
 @pytest.fixture
 def openrouter_client():
-    """Fixture to create LLMClient with google provider."""
-    return LLMClient("openrouter")
+    """Fixture to create LLMClient with openrouter provider."""
+    return LLMClient("openrouter/moonshotai/kimi-k2.5")
 
 
 def setup_test_data():
@@ -29,31 +29,31 @@ def setup_test_data():
     return topic
 
 
-def setup_test_suite(provider: str, model: str):
+def setup_test_suite(llm_model: str):
     """Test suite for different model types."""
-    client = LLMClient(provider)
+    client = LLMClient(llm_model)
     # Test text generation
     prompt = setup_test_data()
-    result = client.call_text_generation(model, prompt)
+    result = client.call_text_generation(prompt)
     logger.info(f"result: {result}")
     assert "pi" in result or "π" in result or "Pi" in result
 
 
 # def test_google_gemini_3_flash():
 # """Test Google gemini-3-flash model."""
-# setup_test_suite("google", "gemini-3-flash-preview")
+# setup_test_suite("google/gemini-3-flash-preview")
 
 
 def test_openrouter_kimi_k_2_5():
     """Test OpenRouter kimi-k-2.5 model."""
-    setup_test_suite("openrouter", "moonshotai/kimi-k2.5")
+    setup_test_suite("openrouter/moonshotai/kimi-k2.5")
 
 
-def setup_structured_test_suite(provider: str, model: str):
+def setup_structured_test_suite(llm_model: str):
     """Test suite for structured output."""
-    client = LLMClient(provider)
+    client = LLMClient(llm_model)
     prompt = "What is pi?"
-    result = client.call_structured_output(model, prompt, MathAnswer)
+    result = client.call_structured_output(prompt, MathAnswer)
 
     logger.info(f"Structured result: {result}")
     assert isinstance(result, MathAnswer)
@@ -66,4 +66,4 @@ def setup_structured_test_suite(provider: str, model: str):
 
 def test_openrouter_kimi_structured():
     """Test OpenRouter kimi with structured output."""
-    setup_structured_test_suite("openrouter", "moonshotai/kimi-k2.5")
+    setup_structured_test_suite("openrouter/moonshotai/kimi-k2.5")

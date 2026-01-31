@@ -6,8 +6,8 @@ import json
 import hashlib
 from pathlib import Path
 from datetime import datetime
-from vividoc.models import DocumentSpec, KnowledgeUnitSpec
-from vividoc.planner import Planner
+from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
+from vividoc.core.planner import Planner
 
 
 class SpecService:

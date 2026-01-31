@@ -3,9 +3,9 @@
 from typing import Dict, Optional
 import uuid
 from datetime import datetime
-from vividoc.models import DocumentSpec
-from vividoc.executor import ExecutorConfig
-from vividoc.evaluator import Evaluator
+from vividoc.core.models import DocumentSpec
+from vividoc.core.config import RunnerConfig
+from vividoc.core.evaluator import Evaluator
 from .job_manager import JobManager, KUProgress
 from .executor_with_progress import ExecutorWithProgress
 
@@ -15,7 +15,7 @@ class DocumentService:
 
     def __init__(
         self,
-        executor_config: ExecutorConfig,
+        config: RunnerConfig,
         evaluator: Evaluator,
         job_manager: JobManager,
     ):
@@ -23,11 +23,11 @@ class DocumentService:
         Initialize the document service.
 
         Args:
-            executor_config: ExecutorConfig for creating ExecutorWithProgress instances
+            config: RunnerConfig for creating ExecutorWithProgress instances
             evaluator: ViviDoc Evaluator instance
             job_manager: JobManager for async execution
         """
-        self.executor_config = executor_config
+        self.config = config
         self.evaluator = evaluator
         self.job_manager = job_manager
         self.documents: Dict[str, Dict] = {}  # document_id -> metadata
@@ -102,9 +102,7 @@ class DocumentService:
             spec_output_dir.mkdir(parents=True, exist_ok=True)
 
             # Create new config with updated output_dir
-            executor_config = replace(
-                self.executor_config, output_dir=str(spec_output_dir)
-            )
+            executor_config = replace(self.config, output_dir=str(spec_output_dir))
 
             # Create executor with progress callback
             executor = ExecutorWithProgress(

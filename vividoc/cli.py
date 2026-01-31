@@ -1,11 +1,15 @@
 """Simple CLI pipeline for vividoc."""
 
 import typer
-from vividoc.planner import Planner, PlannerConfig
-from vividoc.executor import Executor, ExecutorConfig
-from vividoc.evaluator import Evaluator, EvaluatorConfig
-from vividoc.runner import Runner, RunnerConfig
-from vividoc.models import DocumentSpec, GeneratedDocument
+from vividoc.core import (
+    Planner,
+    Executor,
+    Evaluator,
+    Runner,
+    RunnerConfig,
+    DocumentSpec,
+    GeneratedDocument,
+)
 from vividoc.utils.io import save_json, load_json
 
 # Create main app
@@ -33,12 +37,16 @@ def serve(
 @app.command()
 def plan(
     topic: str = typer.Argument(..., help="Topic for the document"),
+    llm_model: str = typer.Argument(
+        ..., help="LLM model in format provider/model-name"
+    ),
     output: str = typer.Option("output/doc_spec.json", help="Output file path"),
 ):
     """Execute planning phase - Generate document specification."""
     typer.echo(f"🎯 Planning document for topic: {topic}")
+    typer.echo(f"🤖 Using model: {llm_model}")
 
-    config = PlannerConfig(output_path=output)
+    config = RunnerConfig(llm_model=llm_model)
     planner = Planner(config=config)
 
     doc_spec = planner.run(topic)
@@ -51,15 +59,19 @@ def plan(
 @app.command()
 def exec(
     spec_file: str = typer.Argument(..., help="Path to document spec JSON file"),
+    llm_model: str = typer.Argument(
+        ..., help="LLM model in format provider/model-name"
+    ),
     output: str = typer.Option("output/generated_doc.json", help="Output file path"),
 ):
     """Execute execution phase - Generate text and code."""
     typer.echo(f"🚀 Executing document generation from: {spec_file}")
+    typer.echo(f"🤖 Using model: {llm_model}")
 
     # Load spec
     doc_spec = load_json(spec_file, DocumentSpec)
 
-    config = ExecutorConfig(output_path=output)
+    config = RunnerConfig(llm_model=llm_model, output_dir="output")
     executor = Executor(config=config)
 
     generated_doc = executor.run(doc_spec)
@@ -72,15 +84,19 @@ def exec(
 @app.command()
 def eval(
     doc_file: str = typer.Argument(..., help="Path to generated document JSON file"),
+    llm_model: str = typer.Argument(
+        ..., help="LLM model in format provider/model-name"
+    ),
     output: str = typer.Option("output/evaluation.json", help="Output file path"),
 ):
     """Execute evaluation phase - Validate document quality."""
     typer.echo(f"📊 Evaluating document from: {doc_file}")
+    typer.echo(f"🤖 Using model: {llm_model}")
 
     # Load document
     generated_doc = load_json(doc_file, GeneratedDocument)
 
-    config = EvaluatorConfig(output_path=output)
+    config = RunnerConfig(llm_model=llm_model)
     evaluator = Evaluator(config=config)
 
     feedback = evaluator.run(generated_doc)
@@ -99,6 +115,9 @@ def eval(
 @app.command()
 def run(
     topic: str = typer.Argument(..., help="Topic for the document"),
+    llm_model: str = typer.Argument(
+        ..., help="LLM model in format provider/model-name"
+    ),
     output_dir: str = typer.Option("outputs", help="Output directory"),
     resume: bool = typer.Option(
         False, "--resume", help="Resume from existing files if available"
@@ -106,10 +125,11 @@ def run(
 ):
     """Run complete pipeline: plan → exec → eval."""
     typer.echo(f"🔄 Running complete pipeline for topic: {topic}")
+    typer.echo(f"🤖 Using model: {llm_model}")
     if resume:
         typer.echo("📂 Resume mode: will skip existing files")
 
-    config = RunnerConfig(output_dir=output_dir, resume=resume)
+    config = RunnerConfig(output_dir=output_dir, resume=resume, llm_model=llm_model)
     runner = Runner(config=config)
 
     _ = runner.run(topic)

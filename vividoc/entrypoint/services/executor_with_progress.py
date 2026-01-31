@@ -1,8 +1,9 @@
 """Executor extension with progress callback support."""
 
 from typing import Optional, Callable
-from vividoc.executor import Executor, ExecutorConfig
-from vividoc.models import DocumentSpec, GeneratedDocument
+from vividoc.core.executor import Executor
+from vividoc.core.config import RunnerConfig
+from vividoc.core.models import DocumentSpec, GeneratedDocument
 
 
 class ExecutorWithProgress(Executor):
@@ -15,7 +16,7 @@ class ExecutorWithProgress(Executor):
 
     def __init__(
         self,
-        config: ExecutorConfig,
+        config: RunnerConfig,
         progress_callback: Optional[
             Callable[[str, Optional[str], Optional[str]], None]
         ] = None,
@@ -24,7 +25,7 @@ class ExecutorWithProgress(Executor):
         Initialize executor with progress callback support.
 
         Args:
-            config: ExecutorConfig for the base Executor
+            config: RunnerConfig for the base Executor
             progress_callback: Optional callback function with signature:
                 callback(phase: str, ku_id: Optional[str], stage: Optional[str])
                 - phase: "planning" | "executing" | "evaluating"
@@ -112,7 +113,7 @@ class ExecutorWithProgress(Executor):
                 logger.warning(f"  Validation warning: {error}")
 
             # Create KU state
-            from vividoc.models import KnowledgeUnitState
+            from vividoc.core.models import KnowledgeUnitState
 
             ku_state = KnowledgeUnitState(
                 id=ku_spec.id,

@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock
-from vividoc.models import DocumentSpec, KnowledgeUnitSpec
+from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
 
 from vividoc.entrypoint.web_server import create_app
 from vividoc.entrypoint.api.routes import init_services

@@ -2,7 +2,7 @@
 
 import pytest
 from unittest.mock import Mock
-from vividoc.models import DocumentSpec, KnowledgeUnitSpec
+from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
 from vividoc.entrypoint.services.spec_service import SpecService
 
 

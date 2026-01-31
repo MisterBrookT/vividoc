@@ -3,7 +3,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from vividoc.models import DocumentSpec, KnowledgeUnitSpec
+from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
 
 
 class KnowledgeUnit(BaseModel):
@@ -165,3 +165,16 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(
         default=None, description="Detailed error information"
     )
+
+
+class ConfigResponse(BaseModel):
+    """Response model for configuration."""
+
+    llm_model: str = Field(description="Currently selected LLM model")
+    available_models: List[str] = Field(description="List of available LLM models")
+
+
+class ConfigUpdateRequest(BaseModel):
+    """Request model for configuration update."""
+
+    llm_model: str = Field(description="LLM model to use")

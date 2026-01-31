@@ -72,3 +72,17 @@ export const getJobHtml = async (jobId: string): Promise<{ html: string | null; 
   );
   return response.data;
 };
+
+// Configuration APIs
+
+export const getConfig = async (): Promise<{ llm_model: string; available_models: string[] }> => {
+  const response = await apiClient.get<{ llm_model: string; available_models: string[] }>('/api/config');
+  return response.data;
+};
+
+export const updateConfig = async (llmModel: string): Promise<{ llm_model: string; available_models: string[] }> => {
+  const response = await apiClient.put<{ llm_model: string; available_models: string[] }>('/api/config', {
+    llm_model: llmModel,
+  });
+  return response.data;
+};

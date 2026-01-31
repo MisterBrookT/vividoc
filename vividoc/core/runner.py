@@ -1,25 +1,15 @@
 """Runner workflow for vividoc pipeline."""
 
-from dataclasses import dataclass
 from pathlib import Path
 import hashlib
 import uuid
-from vividoc.planner import Planner, PlannerConfig
-from vividoc.executor import Executor, ExecutorConfig
-from vividoc.evaluator import Evaluator, EvaluatorConfig
-from vividoc.models import GeneratedDocument, DocumentSpec
+from vividoc.core.planner import Planner
+from vividoc.core.executor import Executor
+from vividoc.core.evaluator import Evaluator
+from vividoc.core.models import GeneratedDocument, DocumentSpec
+from vividoc.core.config import RunnerConfig
 from vividoc.utils.io import save_json, load_json
 from vividoc.utils.logger import logger
-
-
-@dataclass
-class RunnerConfig:
-    """Configuration for running complete pipeline."""
-
-    llm_provider: str = "google"
-    llm_model: str = "gemini-2.5-pro"
-    output_dir: str = "outputs"
-    resume: bool = False
 
 
 def topic_to_uuid(topic: str) -> str:
@@ -38,27 +28,9 @@ class Runner:
         # Create base output directory
         Path(config.output_dir).mkdir(parents=True, exist_ok=True)
 
-        self.planner = Planner(
-            PlannerConfig(
-                llm_provider=config.llm_provider,
-                llm_model=config.llm_model,
-            )
-        )
-
-        self.executor = Executor(
-            ExecutorConfig(
-                llm_provider=config.llm_provider,
-                llm_model=config.llm_model,
-                resume=config.resume,
-            )
-        )
-
-        self.evaluator = Evaluator(
-            EvaluatorConfig(
-                llm_provider=config.llm_provider,
-                llm_model=config.llm_model,
-            )
-        )
+        self.planner = Planner(config)
+        self.executor = Executor(config)
+        self.evaluator = Evaluator(config)
 
     def _get_topic_dir(self, topic: str) -> Path:
         """Get output directory for a topic (using UUID)."""
@@ -89,7 +61,10 @@ class Runner:
 
         # Phase 2: Execution
         # Update executor output_dir to topic-specific directory
-        self.executor.config.output_dir = str(topic_dir)
+        from dataclasses import replace
+
+        self.executor.config = replace(self.executor.config, output_dir=str(topic_dir))
+
         doc_path = topic_dir / "generated_doc.json"
         if self.config.resume and doc_path.exists():
             logger.info("Phase 2: Execution (resuming from existing document)...")
@@ -102,7 +77,7 @@ class Runner:
         eval_path = topic_dir / "evaluation.json"
         if self.config.resume and eval_path.exists():
             logger.info("Phase 3: Evaluation (resuming from existing evaluation)...")
-            from vividoc.models import EvaluationFeedback
+            from vividoc.core.models import EvaluationFeedback
 
             feedback = load_json(str(eval_path), EvaluationFeedback)
         else:

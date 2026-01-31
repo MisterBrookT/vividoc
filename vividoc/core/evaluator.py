@@ -1,27 +1,18 @@
 """Evaluator workflow for vividoc pipeline."""
 
-from dataclasses import dataclass
 from typing import List
 from vividoc.utils.llm.client import LLMClient
-from vividoc.models import GeneratedDocument, EvaluationFeedback
-
-
-@dataclass
-class EvaluatorConfig:
-    """Configuration for evaluation phase."""
-
-    llm_provider: str = "google"
-    llm_model: str = "gemini-2.5-pro"
-    output_path: str = "output/evaluation.json"
+from vividoc.core.models import GeneratedDocument, EvaluationFeedback
+from vividoc.core.config import RunnerConfig
 
 
 class Evaluator:
     """Handles the evaluation phase of the vividoc pipeline."""
 
-    def __init__(self, config: EvaluatorConfig):
+    def __init__(self, config: RunnerConfig):
         """Initialize evaluator with configuration."""
         self.config = config
-        self.llm_client = LLMClient(config.llm_provider)
+        self.llm_client = LLMClient(config.llm_model)
 
     def check_coherence(self, generated_doc: GeneratedDocument) -> str:
         """Check text fluency and logical flow."""

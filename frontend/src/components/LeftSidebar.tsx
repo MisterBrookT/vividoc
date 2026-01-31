@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Play } from 'lucide-react';
+import { Play, Settings } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TopicInput from './TopicInput';
 import SpecEditor from './SpecEditor';
+import ConfigModal from './ConfigModal';
 import type { DocumentSpec } from '../types/models';
 import { generateSpec, updateSpec, generateDocument } from '../api/services';
 
@@ -21,6 +22,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [generatingDocument, setGeneratingDocument] = useState(false);
+  const [configModalOpen, setConfigModalOpen] = useState(false);
 
   const handleGenerateSpec = async (topic: string) => {
     setLoading(true);
@@ -127,6 +129,20 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
           </button>
         </div>
       )}
+
+      {/* Config Button */}
+      <div className="p-4 border-t border-[var(--border-color)] bg-white/30 backdrop-blur-sm">
+        <button
+          onClick={() => setConfigModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
+        >
+          <Settings className="w-4 h-4" />
+          <span>Configuration</span>
+        </button>
+      </div>
+
+      {/* Config Modal */}
+      <ConfigModal isOpen={configModalOpen} onClose={() => setConfigModalOpen(false)} />
     </div>
   );
 };
