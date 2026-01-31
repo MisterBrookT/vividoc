@@ -42,4 +42,5 @@ class LLMClient:
     ) -> BaseModel:
         """Call LLM with structured output using Pydantic schema."""
         response = self._caller.generate_structured(model, prompt, schema, **kwargs)
+        print(response)
         return schema.model_validate_json(response)

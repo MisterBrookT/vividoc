@@ -10,8 +10,8 @@ from prompts.planner_prompt import get_planner_prompt
 class PlannerConfig:
     """Configuration for planning phase."""
 
-    llm_provider: str = "google"
-    llm_model: str = "gemini-2.5-pro"
+    llm_provider: str = "openrouter"
+    llm_model: str = "google/gemini-2.5-pro"
     output_path: str = "output/doc_spec.json"
 
 

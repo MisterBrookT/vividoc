@@ -13,8 +13,8 @@ from prompts.executor_prompt import get_stage1_prompt, get_stage2_prompt
 class ExecutorConfig:
     """Configuration for execution phase."""
 
-    llm_provider: str = "google"
-    llm_model: str = "gemini-2.5-pro"
+    llm_provider: str = "openrouter"
+    llm_model: str = "google/gemini-2.5-pro"
     max_fix_attempts: int = 3
     output_dir: str = "output"
     resume: bool = False
