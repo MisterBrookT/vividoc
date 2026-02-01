@@ -61,5 +61,12 @@ def create_app() -> FastAPI:
 if __name__ == "__main__":
     import uvicorn
 
-    app = create_app()
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Run with hot reload in development mode
+    uvicorn.run(
+        "vividoc.entrypoint.web_server:create_app",
+        factory=True,
+        host="0.0.0.0",
+        port=8000,
+        reload=True,  # Enable hot reload
+        reload_dirs=["vividoc", "prompts"],  # Watch these directories
+    )

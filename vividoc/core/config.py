@@ -8,6 +8,7 @@ AVAILABLE_LLM_MODELS: Set[str] = {
     "google/gemini-2.5-pro",
     # OpenRouter
     "openrouter/google/gemini-2.5-pro",
+    "openrouter/google/gemini-3-flash-preview",
     "openrouter/moonshotai/kimi-k2.5",
 }
 

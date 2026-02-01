@@ -24,14 +24,25 @@ def serve(
 ):
     """Start the web server for ViviDoc UI."""
     import uvicorn
-    from vividoc.entrypoint import create_app
 
     typer.echo(f"🚀 Starting ViviDoc web server on {host}:{port}")
     if reload:
         typer.echo("🔄 Auto-reload enabled")
+        # Use factory mode for reload to work properly
+        uvicorn.run(
+            "vividoc.entrypoint.web_server:create_app",
+            factory=True,
+            host=host,
+            port=port,
+            reload=True,
+            reload_dirs=["vividoc", "prompts"],
+        )
+    else:
+        # Direct mode for production
+        from vividoc.entrypoint import create_app
 
-    app_instance = create_app()
-    uvicorn.run(app_instance, host=host, port=port, reload=reload)
+        app_instance = create_app()
+        uvicorn.run(app_instance, host=host, port=port)
 
 
 @app.command()
