@@ -37,9 +37,9 @@ const TopicInput: React.FC<TopicInputProps> = ({ onSubmit, loading = false }) =>
               type="text"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g., Machine Learning Basics"
+              placeholder="e.g., What is Pi?"
               disabled={loading}
-              className="w-full input-modern text-sm text-[var(--text-primary)] placeholder-slate-400"
+              className="w-full input-modern text-[12px] text-[var(--text-primary)] placeholder-slate-400"
             />
           </div>
         </div>

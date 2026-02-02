@@ -92,7 +92,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
                   : 'hover:bg-white/50 hover:border-slate-200 text-[var(--text-primary)]'
                   }`}
               >
-                <div className="font-medium truncate text-sm mb-0.5">{item.topic}</div>
+                <div className="font-medium truncate text-[13px] mb-0.5">{item.topic}</div>
                 <div className={`text-[10px] ${currentSpecId === item.id ? 'text-indigo-100' : 'text-slate-400'}`}>
                   {new Date(item.timestamp).toLocaleString()}
                 </div>
