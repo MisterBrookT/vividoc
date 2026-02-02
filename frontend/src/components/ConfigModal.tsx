@@ -70,7 +70,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
             <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
               <Settings className="w-5 h-5 text-indigo-600" />
             </div>
-            <h2 className="text-xl font-bold text-slate-900">Configuration</h2>
+            <h2 className="text-xl font-bold text-slate-900">Config</h2>
           </div>
           <button
             onClick={onClose}
@@ -103,7 +103,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
                 >
                   {availableModels.map((model) => (
                     <option key={model} value={model}>
-                      {model}
+                      {model.split('/').pop()}
                     </option>
                   ))}
                 </select>

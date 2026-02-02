@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Clock } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TopicInput from './TopicInput';
 import ConfigModal from './ConfigModal';
@@ -71,13 +71,12 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
       <TopicInput onSubmit={handleGenerateSpec} loading={loading} />
 
       {/* History List */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin">
-        <div className="flex items-center gap-2 px-2 pb-2 mb-2 border-b border-black/5">
-          <Clock className="w-4 h-4 text-slate-400" />
+      <div className="flex-1 overflow-y-auto px-4 py-2 scrollbar-thin">
+        <div className="flex items-center gap-2 px-2 pb-2 mb-2">
           <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">History</h3>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
           {history.length === 0 ? (
             <div className="text-center py-8 text-slate-400 text-sm">
               No history yet
@@ -87,7 +86,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => onSelectHistory(item.id)}
-                className={`text-left p-3 rounded-xl transition-all border border-transparent ${currentSpecId === item.id
+                className={`text-left p-2 rounded-xl transition-all border border-transparent ${currentSpecId === item.id
                   ? 'bg-[var(--accent-primary)] text-white shadow-lg shadow-indigo-500/20'
                   : 'hover:bg-white/50 hover:border-slate-200 text-[var(--text-primary)]'
                   }`}
@@ -103,13 +102,13 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
       </div>
 
       {/* Config Button */}
-      <div className="p-4 border-t border-[var(--border-color)] bg-white/30 backdrop-blur-sm">
+      <div className="p-3 border-t border-[var(--border-color)] bg-white/30 backdrop-blur-sm">
         <button
           onClick={() => onConfigModalChange(true)}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
         >
           <Settings className="w-4 h-4" />
-          <span>Configuration</span>
+          <span>Config</span>
         </button>
       </div>
 
