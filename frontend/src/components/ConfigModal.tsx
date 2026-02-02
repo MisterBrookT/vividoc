@@ -99,7 +99,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
                   id="llm-model-select"
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className="w-full px-2 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 >
                   {availableModels.map((model) => (
                     <option key={model} value={model}>
@@ -116,7 +116,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-between gap-3 px-8 py-3 border-t border-slate-200 bg-slate-50">
           <button
             onClick={onClose}
             disabled={saving}
@@ -135,7 +135,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
                 <span>Saving...</span>
               </>
             ) : (
-              <span>Save Changes</span>
+              <span>Save</span>
             )}
           </button>
         </div>
