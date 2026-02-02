@@ -71,8 +71,8 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
       <TopicInput onSubmit={handleGenerateSpec} loading={loading} />
 
       {/* History List */}
-      <div className="flex-1 overflow-y-auto px-4 py-2 scrollbar-thin">
-        <div className="flex items-center gap-2 px-2 pb-2 mb-2">
+      <div className="flex-1 overflow-y-auto px-4 py-3 scrollbar-thin">
+        <div className="flex items-center gap-2 pb-1 ">
           <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">History</h3>
         </div>
 

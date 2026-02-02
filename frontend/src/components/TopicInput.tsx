@@ -22,7 +22,7 @@ const TopicInput: React.FC<TopicInputProps> = ({ onSubmit, loading = false }) =>
   };
 
   return (
-    <div className="p-4 border-b border-[var(--border-color)]">
+    <div className="p-4 border-b-0 border-[var(--border-color)]">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
