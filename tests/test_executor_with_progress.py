@@ -11,7 +11,7 @@ class TestExecutorWithProgress:
 
     def test_init_with_callback(self):
         """Test initialization with progress callback."""
-        config = RunnerConfig()
+        config = RunnerConfig(llm_model="openrouter/google/gemini-3-flash-preview")
         callback = Mock()
 
         executor = ExecutorWithProgress(config, progress_callback=callback)
@@ -21,7 +21,7 @@ class TestExecutorWithProgress:
 
     def test_init_without_callback(self):
         """Test initialization without progress callback."""
-        config = RunnerConfig()
+        config = RunnerConfig(llm_model="openrouter/google/gemini-3-flash-preview")
 
         executor = ExecutorWithProgress(config)
 
@@ -30,7 +30,7 @@ class TestExecutorWithProgress:
 
     def test_report_progress_with_callback(self):
         """Test that _report_progress invokes callback when available."""
-        config = RunnerConfig()
+        config = RunnerConfig(llm_model="openrouter/google/gemini-3-flash-preview")
         callback = Mock()
 
         executor = ExecutorWithProgress(config, progress_callback=callback)
@@ -40,7 +40,7 @@ class TestExecutorWithProgress:
 
     def test_report_progress_without_callback(self):
         """Test that _report_progress doesn't fail when callback is None."""
-        config = RunnerConfig()
+        config = RunnerConfig(llm_model="openrouter/google/gemini-3-flash-preview")
 
         executor = ExecutorWithProgress(config)
         # Should not raise an exception
@@ -54,7 +54,10 @@ class TestExecutorWithProgress:
     ):
         """Test that run() invokes progress callback at key points."""
         # Setup
-        config = RunnerConfig(output_dir="test_output")
+        config = RunnerConfig(
+            llm_model="openrouter/google/gemini-3-flash-preview",
+            output_dir="test_output",
+        )
         callback = Mock()
 
         # Create a simple spec with one KU
@@ -81,7 +84,7 @@ class TestExecutorWithProgress:
 
         executor = ExecutorWithProgress(config, progress_callback=callback)
 
-        # Mock the processing methods
+        # Mock the processing methods (now with topic parameter)
         executor.process_stage1 = Mock(return_value="<html>stage1</html>")
         executor.process_stage2 = Mock(return_value="<html>stage2</html>")
         executor.validate_section = Mock(return_value=(True, ""))
@@ -109,6 +112,10 @@ class TestExecutorWithProgress:
         # Fourth call: completed for ku1
         assert calls[3][0] == ("executing", "ku1", "completed")
 
+        # Verify process methods were called with topic
+        executor.process_stage1.assert_called()
+        executor.process_stage2.assert_called()
+
     @patch("vividoc.utils.html.template.create_document_skeleton")
     @patch("vividoc.utils.io.save_json")
     @patch("pathlib.Path")
@@ -117,7 +124,10 @@ class TestExecutorWithProgress:
     ):
         """Test that run() reports progress for each KU."""
         # Setup
-        config = RunnerConfig(output_dir="test_output")
+        config = RunnerConfig(
+            llm_model="openrouter/google/gemini-3-flash-preview",
+            output_dir="test_output",
+        )
         callback = Mock()
 
         # Create a spec with multiple KUs
@@ -150,7 +160,7 @@ class TestExecutorWithProgress:
 
         executor = ExecutorWithProgress(config, progress_callback=callback)
 
-        # Mock the processing methods
+        # Mock the processing methods (now with topic parameter)
         executor.process_stage1 = Mock(return_value="<html>stage1</html>")
         executor.process_stage2 = Mock(return_value="<html>stage2</html>")
         executor.validate_section = Mock(return_value=(True, ""))
@@ -174,18 +184,22 @@ class TestExecutorWithProgress:
         assert any(call[0] == ("executing", "ku2", "stage2") for call in calls)
         assert any(call[0] == ("executing", "ku2", "completed") for call in calls)
 
+        # Verify process methods were called with topic
+        assert executor.process_stage1.call_count == 2  # Called for both KUs
+        assert executor.process_stage2.call_count == 2  # Called for both KUs
+
     def test_inherits_from_executor(self):
         """Test that ExecutorWithProgress inherits from Executor."""
         from vividoc.core.executor import Executor
 
-        config = RunnerConfig()
+        config = RunnerConfig(llm_model="openrouter/google/gemini-3-flash-preview")
         executor = ExecutorWithProgress(config)
 
         assert isinstance(executor, Executor)
 
     def test_has_all_executor_methods(self):
         """Test that ExecutorWithProgress has all base Executor methods."""
-        config = RunnerConfig()
+        config = RunnerConfig(llm_model="openrouter/google/gemini-3-flash-preview")
         executor = ExecutorWithProgress(config)
 
         # Verify key methods exist

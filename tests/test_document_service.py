@@ -18,7 +18,9 @@ def job_manager():
 @pytest.fixture
 def runner_config():
     """Create a RunnerConfig."""
-    return RunnerConfig(output_dir="test_output")
+    return RunnerConfig(
+        llm_model="openrouter/google/gemini-3-flash-preview", output_dir="test_output"
+    )
 
 
 @pytest.fixture

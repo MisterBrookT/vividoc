@@ -9,12 +9,12 @@ class TestValidateLLMModel:
 
     def test_valid_google_model(self):
         """Test that valid Google models are accepted."""
-        RunnerConfig.validate_llm_model("google/gemini-2.5-pro")
+        RunnerConfig.validate_llm_model("openrouter/google/gemini-3-flash-preview")
         # Should not raise
 
     def test_valid_openrouter_model(self):
         """Test that valid OpenRouter models are accepted."""
-        RunnerConfig.validate_llm_model("openrouter/google/gemini-2.5-pro")
+        RunnerConfig.validate_llm_model("openrouter/google/gemini-3-flash-preview")
         RunnerConfig.validate_llm_model("openrouter/moonshotai/kimi-k2.5")
         # Should not raise
 
@@ -47,13 +47,13 @@ class TestRunnerConfig:
 
     def test_default_config_is_valid(self):
         """Test that default configuration is valid."""
-        config = RunnerConfig()
+        config = RunnerConfig(llm_model="openrouter/google/gemini-3-flash-preview")
         assert config.llm_model in AVAILABLE_LLM_MODELS
 
     def test_valid_model_accepted(self):
         """Test that valid models are accepted in config."""
-        config = RunnerConfig(llm_model="google/gemini-2.5-pro")
-        assert config.llm_model == "google/gemini-2.5-pro"
+        config = RunnerConfig(llm_model="openrouter/moonshotai/kimi-k2.5")
+        assert config.llm_model == "openrouter/moonshotai/kimi-k2.5"
 
     def test_invalid_model_rejected(self):
         """Test that invalid models are rejected in config."""

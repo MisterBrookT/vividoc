@@ -75,3 +75,6 @@ Thumbs.db
 
 # UV lock file (optional - uncomment if you want to track it)
 # uv.lock
+
+# reference repo
+opencode/

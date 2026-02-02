@@ -1,16 +1,20 @@
-"""Executor workflow for vividoc pipeline - Iterative HTML generation."""
+"""Executor - Fragment-based HTML generation with context awareness."""
 
 from pathlib import Path
+from bs4 import BeautifulSoup
 from vividoc.utils.llm.client import LLMClient
 from vividoc.core.models import DocumentSpec, GeneratedDocument, KnowledgeUnitState
 from vividoc.core.config import RunnerConfig
 from vividoc.utils.html.validator import HTMLValidator
 from vividoc.utils.html.template import create_document_skeleton
-from prompts.executor_prompt import get_stage1_prompt, get_stage2_prompt
+from prompts.executor_prompt import (
+    get_fragment_stage1_prompt,
+    get_fragment_stage2_prompt,
+)
 
 
 class Executor:
-    """Handles the execution phase with iterative HTML generation."""
+    """Fragment-based executor with context awareness for style consistency."""
 
     def __init__(self, config: RunnerConfig):
         """Initialize executor with configuration."""
@@ -44,112 +48,196 @@ class Executor:
                 return f.read()
         return ""
 
-    def process_stage1(self, html_path: str, ku_spec, scope_id: str) -> str:
-        """Stage 1: Fill text content."""
+    def _extract_completed_sections(self, html: str, current_scope_id: str) -> str:
+        """Extract all completed sections before the current one for context."""
+        soup = BeautifulSoup(html, "html.parser")
+        sections = soup.find_all("section")
+
+        completed = []
+        for section in sections:
+            section_id = section.get("id", "")
+            if section_id == current_scope_id:
+                break  # Stop at current section
+
+            # Check if section has content
+            text_div = section.find("div", class_="text-content")
+            if text_div and text_div.get_text(strip=True):
+                completed.append(str(section))
+
+        if not completed:
+            return "(This is the first section)"
+
+        return "\n\n".join(completed)
+
+    def _clean_fragment(self, fragment: str) -> str:
+        """Clean LLM-generated fragment."""
+        # Remove markdown code blocks
+        if "```html" in fragment:
+            fragment = fragment.split("```html")[1].split("```")[0]
+        elif "```" in fragment:
+            fragment = fragment.split("```")[1].split("```")[0]
+
+        fragment = fragment.strip()
+
+        # Remove outer div if LLM added it
+        if fragment.startswith('<div class="text-content">'):
+            fragment = fragment[len('<div class="text-content">') : -6]
+        elif fragment.startswith('<div class="interactive-content">'):
+            fragment = fragment[len('<div class="interactive-content">') : -6]
+
+        return fragment.strip()
+
+    def _insert_into_div(
+        self, html: str, scope_id: str, class_name: str, content: str
+    ) -> str:
+        """Insert content into a specific div using BeautifulSoup."""
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Find target section
+        section = soup.find("section", id=scope_id)
+        if not section:
+            raise ValueError(f"Section {scope_id} not found in HTML")
+
+        # Find target div
+        target_div = section.find("div", class_=class_name)
+        if not target_div:
+            raise ValueError(
+                f"Div with class '{class_name}' not found in section {scope_id}"
+            )
+
+        # Clear and insert new content
+        target_div.clear()
+        content_soup = BeautifulSoup(content, "html.parser")
+        for element in content_soup:
+            target_div.append(element)
+
+        return str(soup)
+
+    def process_stage1(self, html_path: str, ku_spec, scope_id: str, topic: str) -> str:
+        """Stage 1: Generate and insert text content fragment."""
         from vividoc.utils.logger import logger
 
-        # Read current HTML
-        current_html = self._read_html(html_path)
+        html = self._read_html(html_path)
+
+        # Extract completed sections for context
+        completed_sections = self._extract_completed_sections(html, scope_id)
 
         # Try up to max_fix_attempts times
         for attempt in range(1, self.config.max_fix_attempts + 1):
             logger.info(
-                f"  Stage 1: Generating text content... (attempt {attempt}/{self.config.max_fix_attempts})"
+                f"  Stage 1: Generating text fragment... (attempt {attempt}/{self.config.max_fix_attempts})"
             )
 
-            # Generate prompt
-            prompt = get_stage1_prompt(
-                current_html=current_html,
+            # Generate prompt with context
+            prompt = get_fragment_stage1_prompt(
+                topic=topic,
+                completed_sections=completed_sections,
                 scope_id=scope_id,
+                unit_content=ku_spec.unit_content,
                 text_description=ku_spec.text_description,
             )
 
-            # Call LLM
-            updated_html = self.llm_client.call_text_generation(prompt=prompt)
+            # Call LLM to generate fragment
+            fragment = self.llm_client.call_text_generation(prompt=prompt)
+            fragment = self._clean_fragment(fragment)
 
-            # Clean up markdown code blocks if present
-            if "```html" in updated_html:
-                updated_html = updated_html.split("```html")[1].split("```")[0].strip()
-            elif "```" in updated_html:
-                updated_html = updated_html.split("```")[1].split("```")[0].strip()
+            # Validate fragment (basic check)
+            if not fragment or len(fragment) < 10:
+                logger.warning(
+                    f"  ✗ Attempt {attempt}: Fragment too short, retrying..."
+                )
+                continue
 
-            # Validate: check if it's a complete HTML document
-            if (
-                updated_html.strip().startswith("<!DOCTYPE html")
-                and "</html>" in updated_html
-            ):
-                # Write back
+            # Insert fragment into HTML
+            try:
+                updated_html = self._insert_into_div(
+                    html, scope_id, "text-content", fragment
+                )
                 self._write_html(html_path, updated_html)
+
                 if attempt > 1:
                     logger.info(f"  ✓ Stage 1 succeeded on attempt {attempt}")
+
                 return updated_html
-            else:
-                logger.warning(
-                    f"  ✗ Attempt {attempt}/{self.config.max_fix_attempts}: Invalid HTML generated, retrying..."
-                )
 
-        # If all attempts failed, log error and return original
+            except Exception as e:
+                logger.warning(f"  ✗ Attempt {attempt}: Failed to insert - {e}")
+                continue
+
+        # All attempts failed
         logger.error(
-            f"  Failed to generate valid HTML after {self.config.max_fix_attempts} attempts"
+            f"  Failed to generate valid fragment after {self.config.max_fix_attempts} attempts"
         )
-        return current_html
+        return html
 
-    def process_stage2(self, html_path: str, ku_spec, scope_id: str) -> str:
-        """Stage 2: Add interactive content."""
+    def process_stage2(self, html_path: str, ku_spec, scope_id: str, topic: str) -> str:
+        """Stage 2: Generate and insert interactive content fragment."""
         from vividoc.utils.logger import logger
 
-        # Read current HTML (with text content)
-        current_html = self._read_html(html_path)
+        html = self._read_html(html_path)
+
+        # Extract completed sections (now includes current section's text)
+        completed_sections = self._extract_completed_sections(html, scope_id)
+
+        # Also extract current section's text content for reference
+        soup = BeautifulSoup(html, "html.parser")
+        current_section = soup.find("section", id=scope_id)
+        current_text = ""
+        if current_section:
+            text_div = current_section.find("div", class_="text-content")
+            if text_div:
+                current_text = str(text_div)
 
         # Try up to max_fix_attempts times
         for attempt in range(1, self.config.max_fix_attempts + 1):
             logger.info(
-                f"  Stage 2: Adding interactive content... (attempt {attempt}/{self.config.max_fix_attempts})"
+                f"  Stage 2: Generating interactive fragment... (attempt {attempt}/{self.config.max_fix_attempts})"
             )
 
-            # Generate prompt
-            prompt = get_stage2_prompt(
-                current_html=current_html,
+            # Generate prompt with context
+            prompt = get_fragment_stage2_prompt(
+                topic=topic,
+                completed_sections=completed_sections,
                 scope_id=scope_id,
+                current_text_content=current_text,
                 interaction_description=ku_spec.interaction_description,
             )
 
-            # Call LLM
-            final_html = self.llm_client.call_text_generation(prompt=prompt)
+            # Call LLM to generate fragment
+            fragment = self.llm_client.call_text_generation(prompt=prompt)
+            fragment = self._clean_fragment(fragment)
 
-            # Clean up markdown code blocks if present
-            if "```html" in final_html:
-                final_html = final_html.split("```html")[1].split("```")[0].strip()
-            elif "```" in final_html:
-                final_html = final_html.split("```")[1].split("```")[0].strip()
+            # Validate fragment (basic check)
+            if not fragment or len(fragment) < 10:
+                logger.warning(
+                    f"  ✗ Attempt {attempt}: Fragment too short, retrying..."
+                )
+                continue
 
-            # Validate: check if it's a complete HTML document
-            if (
-                final_html.strip().startswith("<!DOCTYPE html")
-                and "</html>" in final_html
-            ):
-                # Write back
-                self._write_html(html_path, final_html)
+            # Insert fragment into HTML
+            try:
+                updated_html = self._insert_into_div(
+                    html, scope_id, "interactive-content", fragment
+                )
+                self._write_html(html_path, updated_html)
+
                 if attempt > 1:
                     logger.info(f"  ✓ Stage 2 succeeded on attempt {attempt}")
-                return final_html
-            else:
-                logger.warning(
-                    f"  ✗ Attempt {attempt}/{self.config.max_fix_attempts}: Invalid HTML generated, retrying from stage1..."
-                )
-                # Reload stage1 HTML for retry
-                current_html = self._read_html(html_path)
 
-        # If all attempts failed, log error but continue
+                return updated_html
+
+            except Exception as e:
+                logger.warning(f"  ✗ Attempt {attempt}: Failed to insert - {e}")
+                continue
+
+        # All attempts failed
         logger.error(
-            f"  Failed to generate valid HTML after {self.config.max_fix_attempts} attempts"
+            f"  Failed to generate valid fragment after {self.config.max_fix_attempts} attempts"
         )
-        # Keep the stage1 HTML
-        return current_html
+        return html
 
     def validate_section(self, html_content: str, scope_id: str) -> tuple[bool, str]:
         """Validate a specific section in the HTML."""
-        # Extract the section
         import re
 
         pattern = f'<section[^>]*id="{scope_id}"[^>]*>.*?</section>'
@@ -162,7 +250,12 @@ class Executor:
         return self.html_validator.validate(section_html)
 
     def process_knowledge_unit(
-        self, html_path: str, states_dir: Path, ku_spec, scope_id: str
+        self,
+        html_path: str,
+        states_dir: Path,
+        ku_spec,
+        scope_id: str,
+        topic: str,
     ) -> KnowledgeUnitState:
         """Process a single knowledge unit through both stages."""
         from vividoc.utils.logger import logger
@@ -189,7 +282,7 @@ class Executor:
                 ku_state.stage1_completed = True
 
                 # Process Stage 2 only
-                final_html = self.process_stage2(html_path, ku_spec, scope_id)
+                final_html = self.process_stage2(html_path, ku_spec, scope_id, topic)
                 self._save_state(states_dir, scope_id, "stage2", final_html)
                 ku_state.stage2_completed = True
 
@@ -204,13 +297,13 @@ class Executor:
         # Process from scratch
         logger.info(f"[{scope_id}] Starting from Stage 1")
 
-        # Stage 1
-        stage1_html = self.process_stage1(html_path, ku_spec, scope_id)
+        # Stage 1: Generate text content fragment
+        stage1_html = self.process_stage1(html_path, ku_spec, scope_id, topic)
         self._save_state(states_dir, scope_id, "stage1", stage1_html)
         ku_state.stage1_completed = True
 
-        # Stage 2
-        final_html = self.process_stage2(html_path, ku_spec, scope_id)
+        # Stage 2: Generate interactive content fragment
+        final_html = self.process_stage2(html_path, ku_spec, scope_id, topic)
         self._save_state(states_dir, scope_id, "stage2", final_html)
         ku_state.stage2_completed = True
 
@@ -223,7 +316,7 @@ class Executor:
         return ku_state
 
     def run(self, doc_spec: DocumentSpec) -> GeneratedDocument:
-        """Execute the iterative HTML generation process."""
+        """Execute the fragment-based HTML generation process."""
         from vividoc.utils.logger import logger
         from vividoc.utils.io import save_json
 
@@ -255,6 +348,7 @@ class Executor:
                 states_dir=states_dir,
                 ku_spec=ku_spec,
                 scope_id=scope_id,
+                topic=doc_spec.topic,
             )
             knowledge_units.append(ku_state)
 

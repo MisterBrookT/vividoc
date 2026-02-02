@@ -97,14 +97,18 @@ class ExecutorWithProgress(Executor):
             self._report_progress("executing", scope_id, "stage1")
 
             # Process Stage 1 (text generation)
-            stage1_html = self.process_stage1(str(html_path), ku_spec, scope_id)
+            stage1_html = self.process_stage1(
+                str(html_path), ku_spec, scope_id, doc_spec.topic
+            )
             self._save_state(states_dir, scope_id, "stage1", stage1_html)
 
             # Report Stage 2 start
             self._report_progress("executing", scope_id, "stage2")
 
             # Process Stage 2 (interactive content)
-            final_html = self.process_stage2(str(html_path), ku_spec, scope_id)
+            final_html = self.process_stage2(
+                str(html_path), ku_spec, scope_id, doc_spec.topic
+            )
             self._save_state(states_dir, scope_id, "stage2", final_html)
 
             # Validate
