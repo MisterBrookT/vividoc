@@ -4,10 +4,7 @@ from dataclasses import dataclass
 from typing import Set
 
 AVAILABLE_LLM_MODELS: Set[str] = {
-    # Google models
-    "google/gemini-2.5-pro",
     # OpenRouter
-    "openrouter/google/gemini-2.5-pro",
     "openrouter/google/gemini-3-flash-preview",
     "openrouter/moonshotai/kimi-k2.5",
 }
@@ -17,7 +14,7 @@ AVAILABLE_LLM_MODELS: Set[str] = {
 class RunnerConfig:
     """Unified configuration for running complete pipeline."""
 
-    llm_model: str = "openrouter/google/gemini-2.5-pro"
+    llm_model: str
     max_fix_attempts: int = 3
     output_dir: str = "output"
     resume: bool = False

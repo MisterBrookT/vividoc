@@ -22,7 +22,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [generatingDocument, setGeneratingDocument] = useState(false);
-  const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [configModalOpen, setConfigModalOpen] = useState(true);
 
   const handleGenerateSpec = async (topic: string) => {
     setLoading(true);

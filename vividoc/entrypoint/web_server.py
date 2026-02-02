@@ -30,8 +30,9 @@ def create_app() -> FastAPI:
     # Initialize services
     job_manager = JobManager()
 
-    # Create unified config
-    config = RunnerConfig()
+    # Create unified config with default model (can be changed via /config endpoint)
+    default_model = "openrouter/google/gemini-3-flash-preview"
+    config = RunnerConfig(llm_model=default_model)
 
     planner = Planner(config)
     evaluator = Evaluator(config)

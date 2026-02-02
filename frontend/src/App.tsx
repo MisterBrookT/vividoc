@@ -11,6 +11,7 @@ function App() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [liveHtml, setLiveHtml] = useState<string | null>(null);
+  const [configModalOpen, setConfigModalOpen] = useState(true);
 
   const handleSpecGenerated = (id: string, newSpec: DocumentSpec) => {
     console.log('Spec generated with ID:', id);
@@ -76,6 +77,8 @@ function App() {
           onSpecGenerated={handleSpecGenerated}
           onSpecUpdated={handleSpecUpdated}
           onGenerateDocument={handleGenerateDocument}
+          configModalOpen={configModalOpen}
+          onConfigModalChange={setConfigModalOpen}
         />
 
         <CenterPanel
