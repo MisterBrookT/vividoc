@@ -57,19 +57,14 @@ const MiddleSpecPanel: React.FC<MiddleSpecPanelProps> = ({
 
     if (collapsed) {
         return (
-            <div className="w-12 border-r border-[var(--border-color)] bg-white/50 backdrop-blur-md flex flex-col items-center py-4 z-10">
+            <div className="w-10 border-r border-[var(--border-color)] bg-white/50 backdrop-blur-md flex flex-col items-center py-4 z-10">
                 <button
                     onClick={onToggleCollapse}
-                    className="p-2 rounded-lg hover:bg-slate-200/50 text-slate-500 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-slate-200/50 text-slate-500 transition-colors"
                     title="Expand Spec Panel"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m13 17 5-5-5-5" /><path d="m6 17 5-5-5-5" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m13 17 5-5-5-5" /><path d="m6 17 5-5-5-5" /></svg>
                 </button>
-                <div className="mt-8 flex-1 flex flex-col items-center gap-4">
-                    <div className="writing-vertical-rl text-slate-400 font-medium tracking-wide text-xs uppercase transform rotate-180">
-                        Specification
-                    </div>
-                </div>
             </div>
         );
     }
