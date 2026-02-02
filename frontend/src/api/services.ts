@@ -10,6 +10,16 @@ import type {
   DocumentHtmlResponse,
 } from '../types/models';
 
+export interface HistoryItem {
+  id: string;
+  topic: string;
+  timestamp: string;
+}
+
+export interface HistoryResponse {
+  history: HistoryItem[];
+}
+
 // Spec Management APIs
 
 export const generateSpec = async (topic: string): Promise<SpecGenerateResponse> => {
@@ -22,6 +32,20 @@ export const generateSpec = async (topic: string): Promise<SpecGenerateResponse>
 export const getSpec = async (specId: string): Promise<{ spec: DocumentSpec }> => {
   const response = await apiClient.get<{ spec: DocumentSpec }>(`/api/spec/${specId}`);
   return response.data;
+};
+
+export const getHistory = async (): Promise<{ history: HistoryItem[] }> => {
+  const response = await apiClient.get<HistoryResponse>('/api/history');
+  return response.data;
+};
+
+export const getSpecHtml = async (specId: string): Promise<string | null> => {
+  try {
+    const response = await apiClient.get<DocumentHtmlResponse>(`/api/spec/${specId}/html`);
+    return response.data.html;
+  } catch (error) {
+    return null;
+  }
 };
 
 export const updateSpec = async (

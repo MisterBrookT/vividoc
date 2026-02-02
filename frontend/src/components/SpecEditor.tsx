@@ -154,17 +154,7 @@ export const SpecEditor: React.FC<SpecEditorProps> = ({ spec, onUpdate }) => {
   };
 
   return (
-    <div className="mt-2">
-      <div className="mb-6 px-1">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Specification</h2>
-        <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-          <span className="bg-[var(--surface-color)] border border-[var(--border-color)] px-2 py-0.5 rounded text-[var(--text-secondary)] font-mono">
-            {spec.knowledge_units.length} unit{spec.knowledge_units.length !== 1 ? 's' : ''}
-          </span>
-          <span>•</span>
-          <span className="truncate max-w-[150px] font-medium">{spec.topic}</span>
-        </div>
-      </div>
+    <div className="mt-2 text-left">
 
       <DndContext
         sensors={sensors}

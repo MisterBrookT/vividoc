@@ -138,6 +138,31 @@ async def update_spec(spec_id: str, request: SpecUpdateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/spec/{spec_id}/html", response_model=DocumentHTMLResponse)
+async def get_spec_html(spec_id: str):
+    """Get most recent HTML content for a spec."""
+    try:
+        html = document_service.get_html_for_spec(spec_id)
+        if html:
+            return DocumentHTMLResponse(html=html)
+        else:
+            raise HTTPException(status_code=404, detail="HTML not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/history")
+async def get_history():
+    """List all specification history."""
+    try:
+        specs = spec_service.list_specs()
+        return {"history": specs}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Document Generation Endpoints
 
 

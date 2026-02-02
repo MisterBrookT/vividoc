@@ -34,14 +34,31 @@ class SpecService:
         self._load_specs_from_disk()
 
     def _topic_to_uuid(self, topic: str) -> str:
-        """Generate deterministic UUID from topic using MD5 hash."""
-        # Use MD5 hash of topic to generate UUID
-        hash_obj = hashlib.md5(topic.encode("utf-8"))
+        """Generate unique UUID from topic and timestamp."""
+        # Use MD5 hash of topic + timestamp to generate unique UUID
+        unique_string = f"{topic}_{datetime.now().isoformat()}"
+        hash_obj = hashlib.md5(unique_string.encode("utf-8"))
         return str(uuid.UUID(hash_obj.hexdigest()))
 
-    def _get_spec_dir(self, topic_uuid: str) -> Path:
+    def _get_spec_dir(self, spec_id: str) -> Path:
         """Get the directory path for a spec."""
-        return self.storage_base_dir / topic_uuid
+        return self.storage_base_dir / spec_id
+
+    def list_specs(self) -> List[Dict]:
+        """List all available specs ordered by time (newest first)."""
+        specs_list = []
+        for spec_id, metadata in self.spec_metadata.items():
+            specs_list.append(
+                {
+                    "id": spec_id,
+                    "topic": metadata.get("topic", "Unknown Topic"),
+                    "timestamp": metadata.get("time", ""),
+                }
+            )
+
+        # Sort by timestamp descending
+        specs_list.sort(key=lambda x: x["timestamp"], reverse=True)
+        return specs_list
 
     def _load_specs_from_disk(self):
         """Load all specs from disk into memory."""
@@ -52,8 +69,12 @@ class SpecService:
                     try:
                         with open(spec_file, "r", encoding="utf-8") as f:
                             data = json.load(f)
+                            # Handle legacy or new format
                             spec = DocumentSpec(**data["spec"])
-                            spec_id = data["spec_id"]
+                            spec_id = data.get(
+                                "spec_id", spec_dir.name
+                            )  # Fallback to dir name if no spec_id
+
                             self.specs[spec_id] = spec
                             self.spec_metadata[spec_id] = {
                                 "topic": data.get("topic", spec.topic),
@@ -63,9 +84,9 @@ class SpecService:
                         print(f"Warning: Failed to load spec from {spec_file}: {e}")
 
     def _save_spec_to_disk(self, spec_id: str, spec: DocumentSpec, topic: str):
-        """Save a spec to disk in outputs/uuid/ directory."""
-        topic_uuid = self._topic_to_uuid(topic)
-        spec_dir = self._get_spec_dir(topic_uuid)
+        """Save a spec to disk in outputs/spec_id/ directory."""
+        # Use spec_id directly for directory name
+        spec_dir = self._get_spec_dir(spec_id)
         spec_dir.mkdir(parents=True, exist_ok=True)
 
         spec_file = spec_dir / "spec.json"
@@ -84,19 +105,16 @@ class SpecService:
 
     def _delete_spec_from_disk(self, spec_id: str):
         """Delete a spec directory from disk."""
-        if spec_id in self.spec_metadata:
-            topic = self.spec_metadata[spec_id]["topic"]
-            topic_uuid = self._topic_to_uuid(topic)
-            spec_dir = self._get_spec_dir(topic_uuid)
-            if spec_dir.exists():
-                import shutil
+        spec_dir = self._get_spec_dir(spec_id)
+        if spec_dir.exists():
+            import shutil
 
-                shutil.rmtree(spec_dir)
+            shutil.rmtree(spec_dir)
 
     def generate_spec(self, topic: str) -> Tuple[str, DocumentSpec]:
         """
         Generate spec using Planner, return spec_id and spec.
-        Saves to outputs/uuid/ directory where uuid is derived from topic.
+        Saves to outputs/spec_id/ directory.
 
         Args:
             topic: Topic for document generation
@@ -107,7 +125,7 @@ class SpecService:
         # Generate spec using Planner
         spec = self.planner.run(topic)
 
-        # Generate spec ID from topic (deterministic)
+        # Generate unique spec ID
         spec_id = self._topic_to_uuid(topic)
 
         # Store spec in memory and disk

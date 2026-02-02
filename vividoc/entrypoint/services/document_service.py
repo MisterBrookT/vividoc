@@ -270,3 +270,28 @@ class DocumentService:
             Spec identifier or None if not found
         """
         return self.job_specs.get(job_id)
+
+    def get_html_for_spec(self, spec_id: str) -> Optional[str]:
+        """
+        Get HTML content for a locally stored spec.
+
+        Args:
+            spec_id: Spec identifier
+
+        Returns:
+            HTML content as string or None if not found
+        """
+        from pathlib import Path
+
+        # Construct path: project_root/outputs/spec_id/document.html
+        project_root = Path(__file__).parent.parent.parent.parent
+        html_path = project_root / "outputs" / spec_id / "document.html"
+
+        if html_path.exists():
+            try:
+                with open(html_path, "r", encoding="utf-8") as f:
+                    return f.read()
+            except Exception as e:
+                print(f"Error reading HTML for spec {spec_id}: {e}")
+                return None
+        return None

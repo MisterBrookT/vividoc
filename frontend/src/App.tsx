@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import type { DocumentSpec } from './types/models';
 import LeftSidebar from './components/LeftSidebar';
+import MiddleSpecPanel from './components/MiddleSpecPanel';
 import CenterPanel from './components/CenterPanel';
+import { getSpec, getSpecHtml } from './api/services';
 
 import './App.css';
 
@@ -12,13 +14,16 @@ function App() {
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [liveHtml, setLiveHtml] = useState<string | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(true);
+  const [middlePanelCollapsed, setMiddlePanelCollapsed] = useState(false);
 
+  // When a new spec is generated (from Sidebar input)
   const handleSpecGenerated = (id: string, newSpec: DocumentSpec) => {
     console.log('Spec generated with ID:', id);
-    setSpec(newSpec);
+    setSpec({ ...newSpec, id }); // Ensure ID is part of spec object if not already
     setDocumentId(null);
     setJobId(null);
     setLiveHtml(null);
+    setMiddlePanelCollapsed(false); // Auto-expand when new spec is created
   };
 
   const handleSpecUpdated = (newSpec: DocumentSpec) => {
@@ -29,6 +34,7 @@ function App() {
     setJobId(jId);
     setDocumentId(null);
     setLiveHtml(null);
+    // Optionally collapse middle panel or keep it open? Let's keep it open for now
   };
 
   const handleJobCompleted = (docId: string) => {
@@ -37,6 +43,29 @@ function App() {
 
   const handleLiveHtmlUpdate = (html: string | null) => {
     setLiveHtml(html);
+  };
+
+  const handleSelectHistory = async (specId: string) => {
+    try {
+      // Fetch spec
+      const specData = await getSpec(specId);
+      setSpec(specData.spec);
+
+      // Reset document state
+      setDocumentId(null);
+      setJobId(null);
+      setLiveHtml(null);
+      setMiddlePanelCollapsed(false);
+
+      // Try to fetch associated HTML if exists
+      const htmlContent = await getSpecHtml(specId);
+      if (htmlContent) {
+        setLiveHtml(htmlContent);
+      }
+
+    } catch (error) {
+      console.error("Failed to load history item", error);
+    }
   };
 
   return (
@@ -73,12 +102,19 @@ function App() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-900/10 rounded-full blur-[100px] pointer-events-none" />
 
         <LeftSidebar
-          spec={spec}
           onSpecGenerated={handleSpecGenerated}
-          onSpecUpdated={handleSpecUpdated}
-          onGenerateDocument={handleGenerateDocument}
+          onSelectHistory={handleSelectHistory}
           configModalOpen={configModalOpen}
           onConfigModalChange={setConfigModalOpen}
+          currentSpecId={spec?.id || null}
+        />
+
+        <MiddleSpecPanel
+          spec={spec}
+          onSpecUpdated={handleSpecUpdated}
+          onGenerateDocument={handleGenerateDocument}
+          collapsed={middlePanelCollapsed}
+          onToggleCollapse={() => setMiddlePanelCollapsed(!middlePanelCollapsed)}
         />
 
         <CenterPanel
