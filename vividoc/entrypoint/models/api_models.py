@@ -18,6 +18,9 @@ class KnowledgeUnit(BaseModel):
     prerequisites: List[str] = Field(
         default_factory=list, description="List of prerequisites"
     )
+    interaction_description: Optional[str] = Field(
+        default=None, description="Description of interactive elements"
+    )
 
 
 class DocumentSpecAPI(BaseModel):
@@ -39,6 +42,7 @@ def ku_spec_to_api(ku_spec: KnowledgeUnitSpec) -> KnowledgeUnit:
         description=ku_spec.text_description,
         learning_objectives=[],  # Not available in KnowledgeUnitSpec
         prerequisites=[],  # Not available in KnowledgeUnitSpec
+        interaction_description=ku_spec.interaction_description,
     )
 
 
@@ -48,7 +52,7 @@ def api_to_ku_spec(ku_api: KnowledgeUnit) -> KnowledgeUnitSpec:
         id=ku_api.id,
         unit_content=ku_api.title,
         text_description=ku_api.description,
-        interaction_description=ku_api.description,  # Use same description for both
+        interaction_description=ku_api.interaction_description or ku_api.description,
     )
 
 

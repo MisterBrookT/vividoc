@@ -11,8 +11,11 @@ export interface KnowledgeUnit {
   id: string;
   title: string;
   description: string;
-  learning_objectives: string[];
-  prerequisites: string[];
+  learning_objectives?: string[];
+  prerequisites?: string[];
+  interaction_description?: string;
+  unit_content?: string;
+  text_description?: string;
 }
 
 export interface SpecMetadata {

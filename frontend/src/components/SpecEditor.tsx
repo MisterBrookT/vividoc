@@ -209,8 +209,8 @@ interface KUEditModalProps {
 const KUEditModal: React.FC<KUEditModalProps> = ({ ku, onSave, onClose }) => {
   const [title, setTitle] = useState(ku.title);
   const [description, setDescription] = useState(ku.description);
-  const [objectives, setObjectives] = useState(
-    (ku.learning_objectives || []).join('\n')
+  const [interactionDescription, setInteractionDescription] = useState(
+    ku.interaction_description || ''
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -219,25 +219,22 @@ const KUEditModal: React.FC<KUEditModalProps> = ({ ku, onSave, onClose }) => {
       ...ku,
       title: title.trim(),
       description: description.trim(),
-      learning_objectives: objectives
-        .split('\n')
-        .map((obj) => obj.trim())
-        .filter((obj) => obj.length > 0),
+      interaction_description: interactionDescription.trim(),
     };
     onSave(updatedKU);
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="glass-panel w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl border border-white/10">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-[var(--border-color)]">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-white mb-6">Edit Knowledge Unit</h2>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Edit Knowledge Unit</h2>
           <form onSubmit={handleSubmit}>
             <div className="space-y-5">
               <div>
                 <label
                   htmlFor="title"
-                  className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2"
+                  className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
                 >
                   Title
                 </label>
@@ -246,7 +243,7 @@ const KUEditModal: React.FC<KUEditModalProps> = ({ ku, onSave, onClose }) => {
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-700 text-zinc-100 rounded-xl focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all"
+                  className="w-full px-4 py-3 bg-white border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl focus:outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all"
                   required
                 />
               </div>
@@ -254,7 +251,7 @@ const KUEditModal: React.FC<KUEditModalProps> = ({ ku, onSave, onClose }) => {
               <div>
                 <label
                   htmlFor="description"
-                  className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2"
+                  className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
                 >
                   Description
                 </label>
@@ -263,40 +260,40 @@ const KUEditModal: React.FC<KUEditModalProps> = ({ ku, onSave, onClose }) => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-700 text-zinc-100 rounded-xl focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none"
+                  className="w-full px-4 py-3 bg-white border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl focus:outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all resize-none"
                   required
                 />
               </div>
 
               <div>
                 <label
-                  htmlFor="objectives"
-                  className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2"
+                  htmlFor="interactionDescription"
+                  className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
                 >
-                  Learning Objectives (one per line)
+                  Interaction Description
                 </label>
                 <textarea
-                  id="objectives"
-                  value={objectives}
-                  onChange={(e) => setObjectives(e.target.value)}
+                  id="interactionDescription"
+                  value={interactionDescription}
+                  onChange={(e) => setInteractionDescription(e.target.value)}
                   rows={6}
-                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-700 text-zinc-100 rounded-xl focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-mono text-sm resize-none"
-                  placeholder="Enter each learning objective on a new line"
+                  className="w-full px-4 py-3 bg-white border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl focus:outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all text-sm resize-none"
+                  placeholder="Describe the interactive elements and how users will engage with this knowledge unit"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-8 pt-6 border-t border-white/5">
+            <div className="flex gap-3 mt-8 pt-6 border-t border-[var(--border-color)]">
               <button
                 type="submit"
-                className="flex-1 btn-primary py-2.5 px-4 rounded-xl font-semibold transition-all active:scale-[0.98]"
+                className="flex-1 btn-primary py-2.5 px-4 rounded-xl font-semibold transition-all active:scale-[0.98] shadow-lg hover:shadow-indigo-500/25"
               >
                 Save Changes
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold py-2.5 px-4 rounded-xl transition-colors border border-white/5"
+                className="flex-1 bg-white hover:bg-slate-50 text-[var(--text-primary)] font-semibold py-2.5 px-4 rounded-xl transition-colors border border-[var(--border-color)] hover:border-slate-300"
               >
                 Cancel
               </button>
