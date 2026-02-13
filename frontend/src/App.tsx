@@ -14,7 +14,7 @@ function App() {
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [liveHtml, setLiveHtml] = useState<string | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(true);
-  const [middlePanelCollapsed, setMiddlePanelCollapsed] = useState(false);
+  const [middlePanelCollapsed, setMiddlePanelCollapsed] = useState(true); // Default to collapsed
 
   // When a new spec is generated (from Sidebar input)
   const handleSpecGenerated = (id: string, newSpec: DocumentSpec) => {
@@ -23,7 +23,7 @@ function App() {
     setDocumentId(null);
     setJobId(null);
     setLiveHtml(null);
-    setMiddlePanelCollapsed(false); // Auto-expand when new spec is created
+    // Keep collapsed by default, user can expand manually
   };
 
   const handleSpecUpdated = (newSpec: DocumentSpec) => {
@@ -55,7 +55,7 @@ function App() {
       setDocumentId(null);
       setJobId(null);
       setLiveHtml(null);
-      setMiddlePanelCollapsed(false);
+      // Keep collapsed by default
 
       // Try to fetch associated HTML if exists
       const htmlContent = await getSpecHtml(specId);
@@ -107,6 +107,8 @@ function App() {
           configModalOpen={configModalOpen}
           onConfigModalChange={setConfigModalOpen}
           currentSpecId={spec?.id || null}
+          onToggleSpec={() => setMiddlePanelCollapsed(!middlePanelCollapsed)}
+          specPanelCollapsed={middlePanelCollapsed}
         />
 
         <MiddleSpecPanel

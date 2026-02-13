@@ -56,17 +56,7 @@ const MiddleSpecPanel: React.FC<MiddleSpecPanelProps> = ({
     };
 
     if (collapsed) {
-        return (
-            <div className="w-10 border-r border-[var(--border-color)] bg-white/50 backdrop-blur-md flex flex-col items-center py-4 z-10">
-                <button
-                    onClick={onToggleCollapse}
-                    className="p-1.5 rounded-lg hover:bg-slate-200/50 text-slate-500 transition-colors"
-                    title="Expand Spec Panel"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m13 17 5-5-5-5" /><path d="m6 17 5-5-5-5" /></svg>
-                </button>
-            </div>
-        );
+        return null; // Completely hide when collapsed
     }
 
     return (
@@ -74,7 +64,7 @@ const MiddleSpecPanel: React.FC<MiddleSpecPanelProps> = ({
             {/* Header */}
             <div className="px-6 py-4 flex items-start justify-between border-b border-[var(--border-color)] bg-white/50 backdrop-blur-sm shrink-0">
                 {spec ? (
-                    <div>
+                    <div className="flex-1">
                         <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Specification</h2>
                         <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
                             <span className="bg-[var(--surface-color)] border border-[var(--border-color)] px-2 py-0.5 rounded text-[var(--text-secondary)] font-mono">
@@ -85,12 +75,13 @@ const MiddleSpecPanel: React.FC<MiddleSpecPanelProps> = ({
                         </div>
                     </div>
                 ) : (
-                    <h2 className="text-sm font-semibold text-[var(--text-primary)] self-center">Specification</h2>
+                    <h2 className="text-sm font-semibold text-[var(--text-primary)] self-center flex-1">Specification</h2>
                 )}
 
                 <button
                     onClick={onToggleCollapse}
                     className="p-1.5 rounded-lg hover:bg-slate-200/50 text-slate-400 hover:text-slate-600 transition-colors"
+                    title="Collapse Spec Panel"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m11 17-5-5 5-5" /><path d="m18 17-5-5 5-5" /></svg>
                 </button>
