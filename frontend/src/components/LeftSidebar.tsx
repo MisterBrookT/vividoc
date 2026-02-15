@@ -9,6 +9,7 @@ import type { HistoryItem } from '../api/services';
 
 interface LeftSidebarProps {
   onSpecGenerated: (specId: string, spec: DocumentSpec) => void;
+  onSpecGenerationStart?: () => void;
   onSelectHistory: (specId: string) => void;
   configModalOpen: boolean;
   onConfigModalChange: (open: boolean) => void;
@@ -19,6 +20,7 @@ interface LeftSidebarProps {
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({
   onSpecGenerated,
+  onSpecGenerationStart,
   onSelectHistory,
   configModalOpen,
   onConfigModalChange,
@@ -44,6 +46,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
   const handleGenerateSpec = async (topic: string) => {
     setLoading(true);
+    if (onSpecGenerationStart) onSpecGenerationStart();
 
     try {
       const response = await generateSpec(topic);
@@ -61,14 +64,16 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
   };
 
   return (
-    <div className="w-68 border-r border-[var(--border-color)] flex flex-col glass-panel relative z-10 backdrop-blur-2xl bg-white/40">
+    <div className="w-68 h-full border-r border-[var(--border-color)] flex flex-col glass-panel relative z-10 backdrop-blur-2xl bg-white/40">
       {/* Header */}
-      <div className="p-6 border-b border-[var(--border-color)]">
-        <div className="flex items-center gap-2 mb-1">
+      <div className="h-16 px-6 border-b border-[var(--border-color)] flex items-center">
+        <div className="flex items-center gap-2">
           <div className="w-2 h-8 bg-[var(--accent-primary)] rounded-full shadow-[0_0_15px_rgba(79,70,229,0.3)]" />
-          <h1 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">ViviDoc</h1>
+          <div>
+            <h1 className="text-xl font-bold text-[var(--text-primary)] tracking-tight leading-none">ViviDoc</h1>
+            <p className="text-[10px] text-[var(--text-secondary)] font-medium">Interactive Document Generator</p>
+          </div>
         </div>
-        <p className="text-xs text-[var(--text-secondary)] pl-4 font-medium">Interactive Document Generator</p>
       </div>
 
       {/* Topic Input */}
@@ -103,7 +108,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
                     {new Date(item.timestamp).toLocaleString()}
                   </div>
                 </button>
-                
+
                 {/* Toggle Spec Button */}
                 {currentSpecId === item.id && (
                   <button

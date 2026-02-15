@@ -4,7 +4,9 @@ import type { DocumentSpec } from './types/models';
 import LeftSidebar from './components/LeftSidebar';
 import MiddleSpecPanel from './components/MiddleSpecPanel';
 import CenterPanel from './components/CenterPanel';
+import RightChatPanel from './components/RightChatPanel';
 import { getSpec, getSpecHtml } from './api/services';
+import { useJobPolling } from './hooks/useJobPolling';
 
 import './App.css';
 
@@ -14,16 +16,28 @@ function App() {
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [liveHtml, setLiveHtml] = useState<string | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(true);
-  const [middlePanelCollapsed, setMiddlePanelCollapsed] = useState(true); // Default to collapsed
+  const [middlePanelCollapsed, setMiddlePanelCollapsed] = useState(true);
+  const [isSpecGenerating, setIsSpecGenerating] = useState(false);
 
-  // When a new spec is generated (from Sidebar input)
+  // Use the polling hook
+  const { jobStatus, liveHtml: polledHtml } = useJobPolling(
+    jobId,
+    (docId) => setDocumentId(docId), // onJobCompleted
+    (html) => setLiveHtml(html)      // onLiveHtmlUpdate
+  );
+
+  // Spec Generation Handlers
+  const handleSpecGenerationStart = () => {
+    setIsSpecGenerating(true);
+  };
+
   const handleSpecGenerated = (id: string, newSpec: DocumentSpec) => {
     console.log('Spec generated with ID:', id);
-    setSpec({ ...newSpec, id }); // Ensure ID is part of spec object if not already
+    setSpec({ ...newSpec, id });
     setDocumentId(null);
     setJobId(null);
     setLiveHtml(null);
-    // Keep collapsed by default, user can expand manually
+    setIsSpecGenerating(false);
   };
 
   const handleSpecUpdated = (newSpec: DocumentSpec) => {
@@ -34,38 +48,28 @@ function App() {
     setJobId(jId);
     setDocumentId(null);
     setLiveHtml(null);
-    // Optionally collapse middle panel or keep it open? Let's keep it open for now
-  };
-
-  const handleJobCompleted = (docId: string) => {
-    setDocumentId(docId);
-  };
-
-  const handleLiveHtmlUpdate = (html: string | null) => {
-    setLiveHtml(html);
   };
 
   const handleSelectHistory = async (specId: string) => {
     try {
-      // Fetch spec
       const specData = await getSpec(specId);
       setSpec(specData.spec);
-
-      // Reset document state
       setDocumentId(null);
       setJobId(null);
       setLiveHtml(null);
-      // Keep collapsed by default
 
-      // Try to fetch associated HTML if exists
       const htmlContent = await getSpecHtml(specId);
       if (htmlContent) {
         setLiveHtml(htmlContent);
       }
-
     } catch (error) {
       console.error("Failed to load history item", error);
     }
+  };
+
+  const handleSendMessage = (message: string) => {
+    // TODO: Implement chat logic with backend
+    console.log("User message:", message);
   };
 
   return (
@@ -96,13 +100,14 @@ function App() {
         }}
       />
 
-      <div className="flex h-screen bg-[var(--bg-app)] selection:bg-indigo-500/30 selection:text-indigo-200 overflow-hidden relative">
+      <div className="fixed inset-0 bg-[var(--bg-app)] selection:bg-indigo-500/30 selection:text-indigo-200 overflow-hidden flex">
         {/* Ambient background effects */}
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-900/10 rounded-full blur-[100px] pointer-events-none" />
 
         <LeftSidebar
           onSpecGenerated={handleSpecGenerated}
+          onSpecGenerationStart={handleSpecGenerationStart}
           onSelectHistory={handleSelectHistory}
           configModalOpen={configModalOpen}
           onConfigModalChange={setConfigModalOpen}
@@ -121,10 +126,18 @@ function App() {
 
         <CenterPanel
           documentId={documentId}
-          liveHtml={liveHtml}
-          jobId={jobId}
-          onJobCompleted={handleJobCompleted}
-          onLiveHtmlUpdate={handleLiveHtmlUpdate}
+          liveHtml={polledHtml || liveHtml}
+          jobStatus={jobStatus}
+          spec={spec}
+          onViewSpec={() => setMiddlePanelCollapsed(false)}
+        />
+
+        <RightChatPanel
+          jobStatus={jobStatus}
+          onSendMessage={handleSendMessage}
+          isGeneratingSpec={isSpecGenerating}
+          spec={spec}
+          onViewSpec={() => setMiddlePanelCollapsed(false)}
         />
 
       </div>

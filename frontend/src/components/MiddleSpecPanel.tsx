@@ -60,9 +60,9 @@ const MiddleSpecPanel: React.FC<MiddleSpecPanelProps> = ({
     }
 
     return (
-        <div className="w-[350px] border-r border-[var(--border-color)] bg-white/50 backdrop-blur-md flex flex-col relative z-10 transition-all duration-300">
+        <div className="w-[350px] h-full border-r border-[var(--border-color)] bg-white/50 backdrop-blur-md flex flex-col relative z-10 transition-all duration-300">
             {/* Header */}
-            <div className="px-6 py-4 flex items-start justify-between border-b border-[var(--border-color)] bg-white/50 backdrop-blur-sm shrink-0">
+            <div className="h-16 px-6 flex items-center justify-between border-b border-[var(--border-color)] bg-white/50 backdrop-blur-sm shrink-0">
                 {spec ? (
                     <div className="flex-1">
                         <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Specification</h2>

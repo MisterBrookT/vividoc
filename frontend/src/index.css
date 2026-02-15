@@ -1,32 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  /* Light Theme Palette - Transformer Explainer inspired */
-  --bg-app: #f8f9fc; /* Very light cool gray */
+  /* Light Theme Palette */
+  --bg-app: #f8f9fc;
   --bg-panel: rgba(255, 255, 255, 0.7);
   --bg-card: rgba(255, 255, 255, 0.9);
-  --accent-primary: #4f46e5; /* Indigo-600 */
-  --accent-secondary: #7c3aed; /* Violet-600 */
-  --text-primary: #1e293b; /* Slate-800 */
-  --text-secondary: #64748b; /* Slate-500 */
-  --border-color: #e2e8f0; /* Slate-200 */
+  --accent-primary: #4f46e5;
+  --accent-secondary: #7c3aed;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
 }
 
-@layer base {
-  body {
-    background-color: var(--bg-app);
-    color: var(--text-primary);
-    font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+/*
+  必须放在 @layer 外面！
+  Tailwind v4 的 preflight 在 @layer base 里，
+  如果我们的样式也在 @layer base 里，会被 preflight 覆盖。
+  放在外面优先级更高，确保 margin/padding/overflow 生效。
+*/
+html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 @layer components {
   .glass-panel {
     @apply bg-[var(--bg-panel)] backdrop-blur-xl border border-slate-200/50 shadow-sm;
   }
-  
+
   .glass-card {
     @apply bg-[var(--bg-card)] backdrop-blur-md border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300;
   }
@@ -40,14 +62,16 @@
   }
 }
 
-/* Custom Scrollbar for Light Theme */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-300 rounded-full hover:bg-slate-400;
 }
