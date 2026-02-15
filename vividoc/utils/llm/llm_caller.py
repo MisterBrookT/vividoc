@@ -1,6 +1,6 @@
 import os
 from PIL.Image import Image as PILImage
-from typing import Any, Type
+from typing import Any, Generator, Type
 from .caller_registry import register_caller
 from google import genai
 from google.genai import types
@@ -10,6 +10,12 @@ from openai import OpenAI
 
 class LLMCaller:
     def generate_text(self, model: str, prompt: str, **kwargs: Any) -> str:
+        raise NotImplementedError
+
+    def generate_text_stream(
+        self, model: str, prompt: str, **kwargs: Any
+    ) -> Generator[str, None, None]:
+        """Stream text generation token by token."""
         raise NotImplementedError
 
     def understand_image(
@@ -81,6 +87,19 @@ class OpenrouterCaller(LLMCaller):
         )
         response = response.choices[0].message.content
         return response
+
+    def generate_text_stream(
+        self, model: str, prompt: str, **kwargs: Any
+    ) -> Generator[str, None, None]:
+        """Stream text generation token by token via OpenRouter."""
+        stream = self._client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            stream=True,
+        )
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
 
     def generate_structured(
         self, model: str, prompt: str, schema: Type[BaseModel], **kwargs: Any

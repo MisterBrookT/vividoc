@@ -1,6 +1,12 @@
 """API route definitions."""
 
+import json
+import re
+from pathlib import Path
+
 from fastapi import APIRouter, HTTPException, Response
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from vividoc.entrypoint.models import (
     SpecGenerateRequest,
     SpecGenerateResponse,
@@ -356,5 +362,196 @@ async def update_config(request: ConfigUpdateRequest):
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Chat Endpoint
+
+
+class ChatRequest(BaseModel):
+    """Request model for chat."""
+
+    spec_id: str
+    message: str
+
+
+def _apply_edit_blocks(html: str, edit_blocks: list[dict]) -> str:
+    """Apply structured edit blocks to HTML using BeautifulSoup.
+
+    Each edit block has: action (replace|insert_after|append), target (CSS selector), content (HTML).
+    """
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    for block in edit_blocks:
+        action = block.get("action", "").lower()
+        target = block.get("target", "")
+        content = block.get("content", "")
+
+        if not target or not content:
+            continue
+
+        element = soup.select_one(target)
+        if not element:
+            continue
+
+        content_soup = BeautifulSoup(content, "html.parser")
+
+        if action == "replace":
+            element.clear()
+            for child in list(content_soup.children):
+                element.append(child)
+        elif action == "insert_after":
+            for child in reversed(list(content_soup.children)):
+                element.insert_after(child)
+        elif action == "append":
+            for child in list(content_soup.children):
+                element.append(child)
+
+    return str(soup)
+
+
+def _parse_edit_blocks(text: str) -> list[dict]:
+    """Parse ```edit ... ``` blocks from LLM response."""
+    blocks = []
+    # Relaxed pattern: allow optional whitespace/newlines around delimiters
+    pattern = re.compile(r"```edit\s*(.*?)```", re.DOTALL)
+    for match in pattern.finditer(text):
+        block_text = match.group(1).strip()
+        block: dict = {}
+        # Parse ACTION, TARGET, CONTENT fields
+        action_match = re.search(r"^ACTION:\s*(.+)$", block_text, re.MULTILINE)
+        target_match = re.search(r"^TARGET:\s*(.+)$", block_text, re.MULTILINE)
+        # CONTENT: everything after the CONTENT: line
+        content_match = re.search(
+            r"^CONTENT:\s*\n?(.*)", block_text, re.DOTALL | re.MULTILINE
+        )
+        if action_match:
+            block["action"] = action_match.group(1).strip()
+        if target_match:
+            block["target"] = target_match.group(1).strip()
+        if content_match:
+            block["content"] = content_match.group(1).strip()
+        if block.get("action") and block.get("target") and block.get("content"):
+            blocks.append(block)
+    return blocks
+
+
+@router.post("/chat")
+async def chat_stream(request: ChatRequest):
+    """Stream LLM chat response via SSE.
+
+    Streams the LLM response token by token. After streaming completes:
+    - If response contains [EDIT_MODE] and ```edit blocks, applies targeted edits
+    - Sends html_updated event with the new HTML
+    """
+    try:
+        # Get current HTML for context
+        html_content = document_service.get_html_for_spec(request.spec_id)
+        if not html_content:
+            html_content = "<p>No document generated yet.</p>"
+
+        # Build prompt
+        from prompts.chat_prompt import get_chat_edit_prompt
+
+        prompt = get_chat_edit_prompt(html_content, request.message)
+
+        # Get LLM client from current config
+        from vividoc.utils.llm.client import LLMClient
+
+        llm_client = LLMClient(spec_service.planner.config.llm_model)
+
+        import os
+
+        dev_mode = os.environ.get("VIVIDOC_DEV", "0") == "1"
+
+        if dev_mode:
+            print(f"\n{'=' * 60}")
+            print(f"[CHAT DEV] spec_id={request.spec_id}")
+            print(f"[CHAT DEV] message={request.message}")
+            print(f"[CHAT DEV] html context length={len(html_content)} chars")
+            print(f"[CHAT DEV] prompt length={len(prompt)} chars")
+            print("[CHAT DEV] Streaming LLM response...")
+            print(f"{'=' * 60}")
+
+        def event_stream():
+            full_response = ""
+            is_edit_mode = False
+            token_count = 0
+            try:
+                for token in llm_client.call_text_generation_stream(prompt):
+                    full_response += token
+                    token_count += 1
+                    if dev_mode:
+                        print(token, end="", flush=True)
+                    # Detect edit mode early
+                    if not is_edit_mode and "[EDIT_MODE]" in full_response:
+                        is_edit_mode = True
+                        if dev_mode:
+                            print("\n>>> [EDIT_MODE detected] <<<")
+                        data = json.dumps({"type": "edit_mode_start"})
+                        yield f"data: {data}\n\n"
+                    # Stream tokens to frontend
+                    data = json.dumps({"type": "token", "content": token})
+                    yield f"data: {data}\n\n"
+
+                if dev_mode:
+                    print(f"\n{'=' * 60}")
+                    print(
+                        f"[CHAT DEV] Done. tokens={token_count}, chars={len(full_response)}"
+                    )
+                    print(f"[CHAT DEV] edit_mode={is_edit_mode}")
+
+                # After streaming, apply edits if in edit mode
+                if is_edit_mode:
+                    edit_blocks = _parse_edit_blocks(full_response)
+                    if dev_mode:
+                        print(f"[CHAT DEV] edit_blocks found={len(edit_blocks)}")
+                        for i, b in enumerate(edit_blocks):
+                            print(
+                                f"[CHAT DEV]   block[{i}]: action={b.get('action')}, target={b.get('target')}, content_len={len(b.get('content', ''))}"
+                            )
+                    if edit_blocks:
+                        new_html = _apply_edit_blocks(html_content, edit_blocks)
+                        # Save updated HTML
+                        project_root = Path(__file__).parent.parent.parent.parent
+                        html_path = (
+                            project_root / "outputs" / request.spec_id / "document.html"
+                        )
+                        html_path.parent.mkdir(parents=True, exist_ok=True)
+                        with open(html_path, "w", encoding="utf-8") as f:
+                            f.write(new_html)
+
+                        if dev_mode:
+                            print(f"[CHAT DEV] HTML saved ({len(new_html)} chars)")
+
+                        data = json.dumps({"type": "html_updated", "html": new_html})
+                        yield f"data: {data}\n\n"
+
+                if dev_mode:
+                    print(f"{'=' * 60}\n")
+
+                data = json.dumps({"type": "done"})
+                yield f"data: {data}\n\n"
+            except Exception as e:
+                if dev_mode:
+                    import traceback
+
+                    print(f"\n[CHAT DEV] ERROR: {e}")
+                    traceback.print_exc()
+                data = json.dumps({"type": "error", "content": str(e)})
+                yield f"data: {data}\n\n"
+
+        return StreamingResponse(
+            event_stream(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

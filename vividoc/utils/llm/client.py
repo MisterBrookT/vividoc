@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Any, Generator, Type
 
 from .caller_registry import CALLER_REGISTRY
 from PIL.Image import Image as PILImage
@@ -58,6 +58,12 @@ class LLMClient:
         text_response = self._caller.generate_text(self.model, prompt, **kwargs)
         style_normalized_text_response = extract_from_markdown(text_response)
         return style_normalized_text_response
+
+    def call_text_generation_stream(
+        self, prompt: str, **kwargs: Any
+    ) -> Generator[str, None, None]:
+        """Stream text generation token by token."""
+        yield from self._caller.generate_text_stream(self.model, prompt, **kwargs)
 
     def call_image_understanding(
         self, prompt: str, image_path: str, **kwargs: Any

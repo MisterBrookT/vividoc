@@ -132,6 +132,7 @@ function App() {
           spec={spec}
           specJustGenerated={specJustGenerated}
           onSpecJustGeneratedConsumed={() => setSpecJustGenerated(false)}
+          onHtmlUpdated={(html) => setLiveHtml(html)}
         />
       </div>
     </>

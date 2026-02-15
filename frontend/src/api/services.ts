@@ -110,3 +110,67 @@ export const updateConfig = async (llmModel: string): Promise<{ llm_model: strin
   });
   return response.data;
 };
+// Chat Streaming API
+
+export interface ChatStreamEvent {
+  type: 'token' | 'html_updated' | 'done' | 'error' | 'edit_mode_start';
+  content?: string;
+  html?: string;
+}
+
+export const streamChat = async (
+  specId: string,
+  message: string,
+  onEvent: (event: ChatStreamEvent) => void
+): Promise<void> => {
+  const baseURL = apiClient.defaults.baseURL || '';
+  const response = await fetch(`${baseURL}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ spec_id: specId, message }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Chat request failed: ${response.status}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('No response body');
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        try {
+          const event: ChatStreamEvent = JSON.parse(line.slice(6));
+          onEvent(event);
+        } catch {
+          // skip malformed lines
+        }
+      }
+    }
+  }
+
+  // Process any remaining data in buffer after stream ends
+  if (buffer.trim()) {
+    for (const line of buffer.split('\n')) {
+      if (line.startsWith('data: ')) {
+        try {
+          const event: ChatStreamEvent = JSON.parse(line.slice(6));
+          onEvent(event);
+        } catch {
+          // skip malformed lines
+        }
+      }
+    }
+  }
+};

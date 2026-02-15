@@ -50,13 +50,18 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
   const [manualStage, setManualStage] = useState<ActiveStage | null>(null);
   const displayStage = manualStage || activeStage;
 
-  // Reset manual stage when active stage changes
+  // Reset manual stage when active stage or spec changes
   useEffect(() => {
     setManualStage(null);
-  }, [activeStage]);
+  }, [activeStage, spec?.id]);
 
   useEffect(() => {
-    if (liveHtml) setHtml(liveHtml);
+    if (liveHtml) {
+      setHtml(liveHtml);
+    } else {
+      // When liveHtml is cleared (e.g. switching to a spec with no doc), clear internal html too
+      setHtml(null);
+    }
   }, [liveHtml]);
 
   useEffect(() => {

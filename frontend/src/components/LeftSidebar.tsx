@@ -75,7 +75,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
                 key={item.id}
                 className={`relative group rounded-xl transition-all border ${
                   currentSpecId === item.id
-                    ? 'bg-[var(--accent-primary)] text-white shadow-lg shadow-indigo-500/20 border-transparent'
+                    ? 'bg-slate-100 border-slate-200 shadow-sm'
                     : 'hover:bg-white/50 hover:border-slate-200 border-transparent'
                 }`}
               >
@@ -84,7 +84,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
                   className="w-full text-left p-2 pr-4"
                 >
                   <div className="font-medium truncate text-[13px] mb-0.5">{item.topic}</div>
-                  <div className={`text-[10px] ${currentSpecId === item.id ? 'text-indigo-100' : 'text-slate-400'}`}>
+                  <div className={`text-[10px] ${currentSpecId === item.id ? 'text-slate-500' : 'text-slate-400'}`}>
                     {new Date(item.timestamp).toLocaleString()}
                   </div>
                 </button>
