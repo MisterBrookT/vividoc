@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Sparkles, AlertCircle, CheckCircle2, Loader2, FileText, ArrowRight } from 'lucide-react';
+import { Send, Sparkles, AlertCircle, CheckCircle2, Loader2, FileText } from 'lucide-react';
 import type { JobStatus, DocumentSpec } from '../types/models';
 
 interface Message {
@@ -17,7 +16,8 @@ interface RightChatPanelProps {
     onSendMessage: (message: string) => void;
     isGeneratingSpec: boolean;
     spec: DocumentSpec | null;
-    onViewSpec: () => void;
+    specJustGenerated: boolean;
+    onSpecJustGeneratedConsumed: () => void;
 }
 
 const RightChatPanel: React.FC<RightChatPanelProps> = ({
@@ -25,7 +25,8 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
     onSendMessage,
     isGeneratingSpec,
     spec,
-    onViewSpec,
+    specJustGenerated,
+    onSpecJustGeneratedConsumed,
 }) => {
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -37,12 +38,10 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
     ]);
     const [input, setInput] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const lastSpecIdRef = useRef<string | null>(null);
 
-    // Sync spec notification
+    // Only show spec notification when spec was freshly generated (not loaded from history)
     useEffect(() => {
-        if (spec && spec.id !== lastSpecIdRef.current) {
-            // New spec generated
+        if (specJustGenerated && spec) {
             const newMessage: Message = {
                 id: `spec-${spec.id}`,
                 role: 'assistant',
@@ -56,29 +55,23 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                 }
             };
             setMessages((prev) => [...prev, newMessage]);
-            lastSpecIdRef.current = spec.id;
-        } else if (!spec) {
-            lastSpecIdRef.current = null;
+            onSpecJustGeneratedConsumed();
         }
-    }, [spec]);
+    }, [specJustGenerated, spec, onSpecJustGeneratedConsumed]);
 
-    // Scroll to bottom when messages change
-    // 注意：不能用默认的 scrollIntoView，它会连带滚动所有祖先容器，
-    // 导致整个页面布局上移。用 block:'nearest' 限制只滚动最近的可滚动容器。
+    // Scroll to bottom — use block:'nearest' to avoid shifting ancestor containers
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, [messages, jobStatus, isGeneratingSpec]);
 
     const handleSend = () => {
         if (!input.trim()) return;
-
         const newMessage: Message = {
             id: Date.now().toString(),
             role: 'user',
             content: input,
             timestamp: Date.now(),
         };
-
         setMessages((prev) => [...prev, newMessage]);
         onSendMessage(input);
         setInput('');
@@ -91,7 +84,6 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
         }
     };
 
-    // Render Status Card
     const renderStatusCard = () => {
         if (!jobStatus) return null;
         const isRunning = jobStatus.status === 'running';
@@ -100,7 +92,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
         const { phase, ku_progress, overall_percent } = jobStatus.progress;
 
         return (
-            <div className="mx-2 my-2 p-3 bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-100 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="mx-2 my-2 p-3 bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-100 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                     {isRunning ? (
                         <div className="relative flex h-2.5 w-2.5">
@@ -117,8 +109,6 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                             jobStatus.status === 'failed' ? 'Generation Failed' : 'Completed'}
                     </span>
                 </div>
-
-                {/* Phase Indicator */}
                 <div className="space-y-2">
                     <div className="flex justify-between text-[10px] text-slate-500 mb-0.5">
                         <span>Progress</span>
@@ -130,19 +120,15 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                             style={{ width: `${(overall_percent || 0) * 100}%` }}
                         />
                     </div>
-
                     <div className="mt-2 space-y-1.5">
                         <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'planning' ? 'text-indigo-600 font-medium' : 'text-slate-400'}`}>
                             <div className={`w-1 h-1 rounded-full ${phase === 'planning' ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300'}`} />
                             Planning Structure
                         </div>
-
                         <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'executing' ? 'text-indigo-600 font-medium' : 'text-slate-400'}`}>
                             <div className={`w-1 h-1 rounded-full ${phase === 'executing' ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300'}`} />
                             Generating Content
                         </div>
-
-                        {/* Active KUs */}
                         {phase === 'executing' && ku_progress && (
                             <div className="ml-2.5 pl-2 border-l border-indigo-100 space-y-1 mt-0.5">
                                 {ku_progress.filter(k => k.status === 'stage1' || k.status === 'stage2').map(k => (
@@ -153,7 +139,6 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                                 ))}
                             </div>
                         )}
-
                         <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'evaluating' ? 'text-indigo-600 font-medium' : 'text-slate-400'}`}>
                             <div className={`w-1 h-1 rounded-full ${phase === 'evaluating' ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300'}`} />
                             Refining & Finalizing
@@ -185,9 +170,9 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                 {messages.map((msg) => {
                     if (msg.type === 'spec-notification') {
                         return (
-                            <div key={msg.id} className="flex flex-col items-start animate-in fade-in zoom-in-95 duration-300">
-                                <div className="max-w-[95%] bg-white border border-slate-200 rounded-xl shadow-sm text-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer group" onClick={onViewSpec}>
-                                    <div className="px-3 py-2 bg-[var(--surface-color)]/50 border-b border-slate-100 flex items-center justify-between">
+                            <div key={msg.id} className="flex flex-col items-start">
+                                <div className="max-w-[95%] bg-white border border-slate-200 rounded-xl shadow-sm text-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer group">
+                                    <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
                                         <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600">
                                             <FileText className="w-3.5 h-3.5" />
                                             <span>Spec Generated</span>
@@ -197,14 +182,10 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                                     <div className="p-3">
                                         <p className="font-medium text-slate-700 text-xs mb-1 line-clamp-1">{msg.metadata.topic}</p>
                                         <p className="text-[10px] text-slate-500 mb-2">{msg.metadata.unitCount} knowledge units ready for review.</p>
-                                        <button className="w-full text-xs flex items-center justify-center gap-1 text-indigo-600 bg-indigo-50 py-1.5 rounded-lg font-medium group-hover:bg-indigo-100 transition-colors">
-                                            View Specification
-                                            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        )
+                        );
                     }
 
                     return (
@@ -213,10 +194,11 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                             className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
                         >
                             <div
-                                className={`max-w-[95%] rounded-2xl px-3 py-2 text-sm shadow-sm whitespace-pre-wrap ${msg.role === 'user'
-                                    ? 'bg-[var(--accent-primary)] text-white rounded-br-none'
-                                    : 'bg-white border border-slate-100 text-slate-700 rounded-bl-none'
-                                    }`}
+                                className={`max-w-[95%] rounded-2xl px-3 py-2 text-sm shadow-sm whitespace-pre-wrap ${
+                                    msg.role === 'user'
+                                        ? 'bg-[var(--accent-primary)] text-white rounded-br-none'
+                                        : 'bg-white border border-slate-100 text-slate-700 rounded-bl-none'
+                                }`}
                             >
                                 {msg.content}
                             </div>
@@ -227,7 +209,6 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                     );
                 })}
 
-                {/* Helper message for Spec Generation */}
                 {isGeneratingSpec && (
                     <div className="flex flex-col items-start animate-pulse">
                         <div className="max-w-[90%] rounded-2xl px-3 py-2 text-sm shadow-sm bg-white border border-slate-100 text-slate-700 rounded-bl-none flex items-center gap-2">
@@ -237,9 +218,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                     </div>
                 )}
 
-                {/* Status Card Injection */}
                 {renderStatusCard()}
-
                 <div ref={messagesEndRef} />
             </div>
 
