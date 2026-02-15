@@ -67,7 +67,7 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
         
         /* Header Styles */
         .vividoc-header {{
-            background: linear-gradient(135deg, #4A90E2 0%, #7CB3E9 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             padding: 20px 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 40px;
@@ -169,7 +169,7 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
         
         .controls button {{
             padding: 8px 16px;
-            background: #4A90E2;
+            background: #4f46e5;
             color: white;
             border: none;
             border-radius: 4px;
@@ -180,7 +180,7 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
         }}
         
         .controls button:hover {{
-            background: #357ABD;
+            background: #4338ca;
         }}
         
         .visualization {{

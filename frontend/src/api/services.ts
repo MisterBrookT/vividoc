@@ -113,21 +113,23 @@ export const updateConfig = async (llmModel: string): Promise<{ llm_model: strin
 // Chat Streaming API
 
 export interface ChatStreamEvent {
-  type: 'token' | 'html_updated' | 'done' | 'error' | 'edit_mode_start';
+  type: 'token' | 'html_updated' | 'done' | 'error' | 'edit_mode_start' | 'spec_updated';
   content?: string;
   html?: string;
+  spec?: any;
 }
 
 export const streamChat = async (
   specId: string,
   message: string,
-  onEvent: (event: ChatStreamEvent) => void
+  onEvent: (event: ChatStreamEvent) => void,
+  stage: 'spec' | 'doc' = 'doc'
 ): Promise<void> => {
   const baseURL = apiClient.defaults.baseURL || '';
   const response = await fetch(`${baseURL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ spec_id: specId, message }),
+    body: JSON.stringify({ spec_id: specId, message, stage }),
   });
 
   if (!response.ok) {

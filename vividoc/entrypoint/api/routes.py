@@ -374,6 +374,7 @@ class ChatRequest(BaseModel):
 
     spec_id: str
     message: str
+    stage: str = "doc"  # "spec" or "doc"
 
 
 def _apply_edit_blocks(html: str, edit_blocks: list[dict]) -> str:
@@ -443,35 +444,55 @@ def _parse_edit_blocks(text: str) -> list[dict]:
 async def chat_stream(request: ChatRequest):
     """Stream LLM chat response via SSE.
 
-    Streams the LLM response token by token. After streaming completes:
-    - If response contains [EDIT_MODE] and ```edit blocks, applies targeted edits
-    - Sends html_updated event with the new HTML
+    Supports two modes based on request.stage:
+    - "doc": Edit HTML document (uses [EDIT_MODE] + ```edit blocks)
+    - "spec": Edit specification (uses [SPEC_EDIT] + ```spec_json block)
     """
+    import os
+
+    dev_mode = os.environ.get("VIVIDOC_DEV", "0") == "1"
+
     try:
-        # Get current HTML for context
-        html_content = document_service.get_html_for_spec(request.spec_id)
-        if not html_content:
-            html_content = "<p>No document generated yet.</p>"
-
-        # Build prompt
-        from prompts.chat_prompt import get_chat_edit_prompt
-
-        prompt = get_chat_edit_prompt(html_content, request.message)
-
-        # Get LLM client from current config
         from vividoc.utils.llm.client import LLMClient
 
         llm_client = LLMClient(spec_service.planner.config.llm_model)
 
-        import os
+        if request.stage == "spec":
+            # Build spec editing prompt
+            from prompts.chat_prompt import get_spec_edit_prompt
 
-        dev_mode = os.environ.get("VIVIDOC_DEV", "0") == "1"
+            try:
+                internal_spec = spec_service.get_spec(request.spec_id)
+            except KeyError:
+                raise HTTPException(
+                    status_code=404, detail=f"Spec not found: {request.spec_id}"
+                )
+
+            ku_lines = []
+            for i, ku in enumerate(internal_spec.knowledge_units, 1):
+                ku_lines.append(
+                    f"  KU{i} (id={ku.id}):\n"
+                    f"    Title: {ku.unit_content}\n"
+                    f"    Description: {ku.text_description}\n"
+                    f"    Interaction: {ku.interaction_description}"
+                )
+            ku_text = "\n".join(ku_lines)
+            prompt = get_spec_edit_prompt(internal_spec.topic, ku_text, request.message)
+            edit_marker = "[SPEC_EDIT]"
+        else:
+            # Build HTML editing prompt
+            from prompts.chat_prompt import get_chat_edit_prompt
+
+            html_content = document_service.get_html_for_spec(request.spec_id)
+            if not html_content:
+                html_content = "<p>No document generated yet.</p>"
+            prompt = get_chat_edit_prompt(html_content, request.message)
+            edit_marker = "[EDIT_MODE]"
 
         if dev_mode:
             print(f"\n{'=' * 60}")
-            print(f"[CHAT DEV] spec_id={request.spec_id}")
+            print(f"[CHAT DEV] stage={request.stage}, spec_id={request.spec_id}")
             print(f"[CHAT DEV] message={request.message}")
-            print(f"[CHAT DEV] html context length={len(html_content)} chars")
             print(f"[CHAT DEV] prompt length={len(prompt)} chars")
             print("[CHAT DEV] Streaming LLM response...")
             print(f"{'=' * 60}")
@@ -486,14 +507,12 @@ async def chat_stream(request: ChatRequest):
                     token_count += 1
                     if dev_mode:
                         print(token, end="", flush=True)
-                    # Detect edit mode early
-                    if not is_edit_mode and "[EDIT_MODE]" in full_response:
+                    if not is_edit_mode and edit_marker in full_response:
                         is_edit_mode = True
                         if dev_mode:
-                            print("\n>>> [EDIT_MODE detected] <<<")
+                            print(f"\n>>> [{edit_marker} detected] <<<")
                         data = json.dumps({"type": "edit_mode_start"})
                         yield f"data: {data}\n\n"
-                    # Stream tokens to frontend
                     data = json.dumps({"type": "token", "content": token})
                     yield f"data: {data}\n\n"
 
@@ -504,31 +523,83 @@ async def chat_stream(request: ChatRequest):
                     )
                     print(f"[CHAT DEV] edit_mode={is_edit_mode}")
 
-                # After streaming, apply edits if in edit mode
                 if is_edit_mode:
-                    edit_blocks = _parse_edit_blocks(full_response)
-                    if dev_mode:
-                        print(f"[CHAT DEV] edit_blocks found={len(edit_blocks)}")
-                        for i, b in enumerate(edit_blocks):
-                            print(
-                                f"[CHAT DEV]   block[{i}]: action={b.get('action')}, target={b.get('target')}, content_len={len(b.get('content', ''))}"
-                            )
-                    if edit_blocks:
-                        new_html = _apply_edit_blocks(html_content, edit_blocks)
-                        # Save updated HTML
-                        project_root = Path(__file__).parent.parent.parent.parent
-                        html_path = (
-                            project_root / "outputs" / request.spec_id / "document.html"
+                    if request.stage == "spec":
+                        # Parse spec JSON
+                        spec_match = re.search(
+                            r"```spec_json\s*(.*?)```", full_response, re.DOTALL
                         )
-                        html_path.parent.mkdir(parents=True, exist_ok=True)
-                        with open(html_path, "w", encoding="utf-8") as f:
-                            f.write(new_html)
+                        if spec_match:
+                            import json as json_mod
 
+                            spec_data = json_mod.loads(spec_match.group(1).strip())
+                            if dev_mode:
+                                print(
+                                    f"[CHAT DEV] spec_json parsed: {len(spec_data.get('knowledge_units', []))} KUs"
+                                )
+                            # Convert to API format and update
+                            from vividoc.core.models import (
+                                DocumentSpec as InternalDocSpec,
+                                KnowledgeUnitSpec,
+                            )
+
+                            new_kus = []
+                            for ku_data in spec_data.get("knowledge_units", []):
+                                new_kus.append(
+                                    KnowledgeUnitSpec(
+                                        id=ku_data.get("id", ""),
+                                        unit_content=ku_data.get("title", ""),
+                                        text_description=ku_data.get("description", ""),
+                                        interaction_description=ku_data.get(
+                                            "interaction_description", ""
+                                        ),
+                                    )
+                                )
+                            new_internal_spec = InternalDocSpec(
+                                topic=spec_data.get("topic", ""),
+                                knowledge_units=new_kus,
+                            )
+                            spec_service.update_spec(request.spec_id, new_internal_spec)
+                            # Return updated spec in API format
+                            api_spec = doc_spec_to_api(
+                                new_internal_spec, request.spec_id
+                            )
+                            data = json.dumps(
+                                {
+                                    "type": "spec_updated",
+                                    "spec": api_spec.model_dump(),
+                                }
+                            )
+                            yield f"data: {data}\n\n"
+                            if dev_mode:
+                                print("[CHAT DEV] spec_updated event sent")
+                    else:
+                        # Parse HTML edit blocks
+                        edit_blocks = _parse_edit_blocks(full_response)
                         if dev_mode:
-                            print(f"[CHAT DEV] HTML saved ({len(new_html)} chars)")
-
-                        data = json.dumps({"type": "html_updated", "html": new_html})
-                        yield f"data: {data}\n\n"
+                            print(f"[CHAT DEV] edit_blocks found={len(edit_blocks)}")
+                            for i, b in enumerate(edit_blocks):
+                                print(
+                                    f"[CHAT DEV]   block[{i}]: action={b.get('action')}, target={b.get('target')}, content_len={len(b.get('content', ''))}"
+                                )
+                        if edit_blocks:
+                            new_html = _apply_edit_blocks(html_content, edit_blocks)
+                            project_root = Path(__file__).parent.parent.parent.parent
+                            html_path = (
+                                project_root
+                                / "outputs"
+                                / request.spec_id
+                                / "document.html"
+                            )
+                            html_path.parent.mkdir(parents=True, exist_ok=True)
+                            with open(html_path, "w", encoding="utf-8") as f:
+                                f.write(new_html)
+                            if dev_mode:
+                                print(f"[CHAT DEV] HTML saved ({len(new_html)} chars)")
+                            data = json.dumps(
+                                {"type": "html_updated", "html": new_html}
+                            )
+                            yield f"data: {data}\n\n"
 
                 if dev_mode:
                     print(f"{'=' * 60}\n")
@@ -553,5 +624,7 @@ async def chat_stream(request: ChatRequest):
                 "X-Accel-Buffering": "no",
             },
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

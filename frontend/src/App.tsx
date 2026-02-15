@@ -79,6 +79,13 @@ function App() {
     console.log("User message:", message);
   };
 
+  // Compute active stage for chat context
+  const getActiveStage = (): 'topic' | 'spec' | 'doc' => {
+    if (documentId || liveHtml || polledHtml || jobStatus?.status === 'running') return 'doc';
+    if (spec) return 'spec';
+    return 'topic';
+  };
+
   return (
     <>
       <Toaster
@@ -133,6 +140,8 @@ function App() {
           specJustGenerated={specJustGenerated}
           onSpecJustGeneratedConsumed={() => setSpecJustGenerated(false)}
           onHtmlUpdated={(html) => setLiveHtml(html)}
+          onSpecUpdated={handleSpecUpdated}
+          activeStage={getActiveStage()}
         />
       </div>
     </>
