@@ -39,6 +39,9 @@ function App() {
     setSpecJustGenerated(true);
   };
 
+  const handleSpecUpdated = (newSpec: DocumentSpec) => {
+    setSpec(newSpec);
+  };
 
   const handleGenerateDocument = (jId: string) => {
     setJobId(jId);
@@ -118,6 +121,7 @@ function App() {
           isSpecGenerating={isSpecGenerating}
           onSpecGenerated={handleSpecGenerated}
           onSpecGenerationStart={handleSpecGenerationStart}
+          onSpecUpdated={handleSpecUpdated}
           onGenerateDocument={handleGenerateDocument}
         />
 

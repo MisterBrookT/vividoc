@@ -5,8 +5,8 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DocumentViewer from './DocumentViewer';
-import { getDocumentHtml, getDocumentDownloadUrl, generateSpec, generateDocument } from '../api/services';
-import type { JobStatus, DocumentSpec } from '../types/models';
+import { getDocumentHtml, getDocumentDownloadUrl, generateSpec, generateDocument, updateSpec } from '../api/services';
+import type { JobStatus, DocumentSpec, KnowledgeUnit } from '../types/models';
 
 interface CenterPanelProps {
   spec: DocumentSpec | null;
@@ -16,6 +16,7 @@ interface CenterPanelProps {
   isSpecGenerating: boolean;
   onSpecGenerated: (id: string, spec: DocumentSpec) => void;
   onSpecGenerationStart: () => void;
+  onSpecUpdated: (spec: DocumentSpec) => void;
   onGenerateDocument: (jobId: string) => void;
 }
 
@@ -29,6 +30,7 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
   isSpecGenerating,
   onSpecGenerated,
   onSpecGenerationStart,
+  onSpecUpdated,
   onGenerateDocument,
 }) => {
   const [html, setHtml] = useState<string | null>(null);
@@ -116,6 +118,17 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
       toast.error(msg);
     } finally {
       setGeneratingDoc(false);
+    }
+  };
+
+  const handleSpecUpdate = async (updatedSpec: DocumentSpec) => {
+    try {
+      if (!spec?.id) return;
+      await updateSpec(spec.id, updatedSpec);
+      onSpecUpdated(updatedSpec);
+    } catch (err: any) {
+      const msg = err.response?.data?.error || err.response?.data?.detail || 'Failed to update spec';
+      toast.error(msg);
     }
   };
 
@@ -225,6 +238,7 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
         {displayStage === 'spec' && spec && (
           <SpecView
             spec={spec}
+            onSpecUpdated={handleSpecUpdate}
             onGenerateDocument={handleGenerateDocument}
             generatingDoc={generatingDoc}
           />
@@ -301,18 +315,31 @@ const TopicView: React.FC<TopicViewProps> = ({ topic, onTopicChange, onGenerate,
 /* ---- Spec View ---- */
 interface SpecViewProps {
   spec: DocumentSpec;
+  onSpecUpdated: (spec: DocumentSpec) => void;
   onGenerateDocument: () => void;
   generatingDoc: boolean;
 }
 
-const SpecView: React.FC<SpecViewProps> = ({ spec, onGenerateDocument, generatingDoc }) => {
+const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocument, generatingDoc }) => {
+  const [editingKuId, setEditingKuId] = useState<string | null>(null);
+
+  const handleKuFieldChange = (kuId: string, field: keyof KnowledgeUnit, value: string) => {
+    const updated = {
+      ...spec,
+      knowledge_units: spec.knowledge_units.map(ku =>
+        ku.id === kuId ? { ...ku, [field]: value } : ku
+      ),
+    };
+    onSpecUpdated(updated);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-8 py-8">
+        <div className="px-10 py-8">
           {/* Topic Header */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">{spec.topic}</h2>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{spec.topic}</h2>
             <p className="text-sm text-[var(--text-secondary)]">
               {spec.knowledge_units.length} knowledge unit{spec.knowledge_units.length !== 1 ? 's' : ''}
             </p>
@@ -320,34 +347,88 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onGenerateDocument, generatin
 
           {/* KU List */}
           <div className="space-y-4">
-            {spec.knowledge_units.map((ku, index) => (
-              <div
-                key={ku.id}
-                className="bg-white rounded-xl border border-[var(--border-color)] p-5 hover:shadow-md transition-all relative overflow-hidden"
-              >
-                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500 opacity-80" />
-                <div className="pl-4">
-                  <span className="text-[10px] font-bold text-[var(--accent-primary)] uppercase tracking-wider">
-                    KU {index + 1}
-                  </span>
-                  <h3 className="text-sm font-semibold text-[var(--text-primary)] mt-1 mb-2">{ku.title}</h3>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-3">{ku.description}</p>
-                  {ku.interaction_description && (
-                    <div className="mt-3 pt-3 border-t border-slate-100">
-                      <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Interaction</span>
-                      <p className="text-sm text-[var(--text-secondary)] mt-1 leading-relaxed">{ku.interaction_description}</p>
+            {spec.knowledge_units.map((ku, index) => {
+              const isEditing = editingKuId === ku.id;
+              return (
+                <div
+                  key={ku.id}
+                  className={`bg-white rounded-xl border p-5 transition-all relative overflow-hidden cursor-pointer ${
+                    isEditing
+                      ? 'border-[var(--accent-primary)] shadow-md ring-2 ring-[var(--accent-primary)]/10'
+                      : 'border-[var(--border-color)] hover:shadow-md'
+                  }`}
+                  onClick={() => !isEditing && setEditingKuId(ku.id)}
+                >
+                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500 opacity-80" />
+                  <div className="pl-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-bold text-[var(--accent-primary)] uppercase tracking-wider">
+                        KU {index + 1}
+                      </span>
+                      {isEditing && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingKuId(null); }}
+                          className="text-xs text-slate-500 hover:text-slate-700 px-2 py-0.5 rounded hover:bg-slate-100 transition-colors"
+                        >
+                          Done
+                        </button>
+                      )}
                     </div>
-                  )}
+
+                    {isEditing ? (
+                      <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Title</label>
+                          <input
+                            type="text"
+                            value={ku.title}
+                            onChange={(e) => handleKuFieldChange(ku.id, 'title', e.target.value)}
+                            className="w-full text-sm font-semibold text-[var(--text-primary)] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/10 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Description</label>
+                          <textarea
+                            value={ku.description}
+                            onChange={(e) => handleKuFieldChange(ku.id, 'description', e.target.value)}
+                            rows={3}
+                            className="w-full text-sm text-[var(--text-secondary)] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/10 transition-all resize-none leading-relaxed"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Interaction</label>
+                          <textarea
+                            value={ku.interaction_description || ''}
+                            onChange={(e) => handleKuFieldChange(ku.id, 'interaction_description', e.target.value)}
+                            rows={3}
+                            placeholder="Describe the interactive elements..."
+                            className="w-full text-sm text-[var(--text-secondary)] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/10 transition-all resize-none leading-relaxed placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">{ku.title}</h3>
+                        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{ku.description}</p>
+                        {ku.interaction_description && (
+                          <div className="mt-3 pt-3 border-t border-slate-100">
+                            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Interaction</span>
+                            <p className="text-sm text-[var(--text-secondary)] mt-1 leading-relaxed">{ku.interaction_description}</p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Generate Document Footer */}
       <div className="flex-shrink-0 p-4 border-t border-[var(--border-color)] bg-white/30 backdrop-blur-sm">
-        <div className="max-w-2xl mx-auto">
+        <div className="px-6">
           <button
             onClick={onGenerateDocument}
             disabled={generatingDoc}
