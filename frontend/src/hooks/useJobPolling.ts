@@ -32,6 +32,14 @@ export const useJobPolling = (
         }
     }, [jobId]);
 
+    const onJobCompletedRef = useRef(onJobCompleted);
+    const onLiveHtmlUpdateRef = useRef(onLiveHtmlUpdate);
+
+    useEffect(() => {
+        onJobCompletedRef.current = onJobCompleted;
+        onLiveHtmlUpdateRef.current = onLiveHtmlUpdate;
+    }, [onJobCompleted, onLiveHtmlUpdate]);
+
     useEffect(() => {
         // Clear existing interval
         if (pollingIntervalRef.current) {
@@ -55,7 +63,7 @@ export const useJobPolling = (
                         const htmlData = await getJobHtml(jobId);
                         if (htmlData.html) {
                             setLiveHtml(htmlData.html);
-                            if (onLiveHtmlUpdate) onLiveHtmlUpdate(htmlData.html);
+                            if (onLiveHtmlUpdateRef.current) onLiveHtmlUpdateRef.current(htmlData.html);
                         }
                     } catch (htmlError) {
                         // Ignore live html errors
@@ -71,7 +79,7 @@ export const useJobPolling = (
 
                     if (!hasCompletedRef.current && status.result?.document_id) {
                         hasCompletedRef.current = true;
-                        if (onJobCompleted) onJobCompleted(status.result.document_id);
+                        if (onJobCompletedRef.current) onJobCompletedRef.current(status.result.document_id);
                     }
                 } else if (status.status === 'failed') {
                     if (pollingIntervalRef.current) {
@@ -97,7 +105,7 @@ export const useJobPolling = (
                 pollingIntervalRef.current = null;
             }
         };
-    }, [jobId, onJobCompleted, onLiveHtmlUpdate]);
+    }, [jobId]);
 
     return { jobStatus, liveHtml, error };
 };
