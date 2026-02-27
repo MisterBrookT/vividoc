@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { FileText, AlertTriangle } from 'lucide-react';
 
 interface DocumentViewerProps {
@@ -13,10 +13,39 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   error = null
 }) => {
   const [iframeError, setIframeError] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const prevHtmlLenRef = useRef<number>(0);
+  const savedScrollRef = useRef<number>(0);
 
+  // Before React re-renders the iframe with new srcDoc, save current scroll
   useEffect(() => {
+    const iframe = iframeRef.current;
+    if (iframe?.contentDocument?.documentElement) {
+      savedScrollRef.current = iframe.contentDocument.documentElement.scrollTop
+        || iframe.contentWindow?.scrollY
+        || 0;
+    }
     setIframeError(null);
   }, [html]);
+
+  const handleIframeLoad = () => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentDocument) return;
+
+    const currentLen = (html || '').length;
+    const prevLen = prevHtmlLenRef.current;
+
+    if (currentLen > prevLen && prevLen > 0) {
+      // New content arrived → scroll to bottom
+      iframe.contentDocument.documentElement.scrollTop =
+        iframe.contentDocument.documentElement.scrollHeight;
+    } else if (prevLen > 0) {
+      // Same or shrunk content → restore previous scroll position
+      iframe.contentDocument.documentElement.scrollTop = savedScrollRef.current;
+    }
+
+    prevHtmlLenRef.current = currentLen;
+  };
 
   const handleIframeError = () => {
     setIframeError('Failed to load document');
@@ -66,10 +95,12 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   return (
     <div className="w-full h-full bg-white">
       <iframe
+        ref={iframeRef}
         srcDoc={html || ''}
         className="w-full h-full border-0"
         sandbox="allow-scripts allow-same-origin"
         title="Generated Document"
+        onLoad={handleIframeLoad}
         onError={handleIframeError}
         style={{
           minHeight: '100%',

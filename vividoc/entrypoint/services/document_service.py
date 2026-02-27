@@ -113,6 +113,9 @@ class DocumentService:
             generated_doc = executor.run(spec)
 
             # Update progress to evaluating phase
+            from vividoc.utils.logger import logger as svc_logger
+
+            svc_logger.info("Phase 3: Evaluating document quality...")
             self.job_manager.update_progress(
                 job_id,
                 {
@@ -133,7 +136,6 @@ class DocumentService:
                     "requires_revision": evaluation_result.requires_revision,
                 }
             except Exception as eval_error:
-                # Log evaluation error but don't fail the entire job
                 import traceback
 
                 traceback.print_exc()
