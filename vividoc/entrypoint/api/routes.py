@@ -470,11 +470,14 @@ async def chat_stream(request: ChatRequest):
 
             ku_lines = []
             for i, ku in enumerate(internal_spec.knowledge_units, 1):
+                import json as json_mod
+
+                spec_str = json_mod.dumps(ku.interaction_spec.model_dump(), indent=2)
                 ku_lines.append(
                     f"  KU{i} (id={ku.id}):\n"
                     f"    Title: {ku.unit_content}\n"
                     f"    Description: {ku.text_description}\n"
-                    f"    Interaction: {ku.interaction_description}"
+                    f"    Interaction Spec: {spec_str}"
                 )
             ku_text = "\n".join(ku_lines)
             prompt = get_spec_edit_prompt(internal_spec.topic, ku_text, request.message)
@@ -541,18 +544,24 @@ async def chat_stream(request: ChatRequest):
                             from vividoc.core.models import (
                                 DocumentSpec as InternalDocSpec,
                                 KnowledgeUnitSpec,
+                                InteractionSpec,
                             )
 
                             new_kus = []
                             for ku_data in spec_data.get("knowledge_units", []):
+                                ispec_data = ku_data.get("interaction_spec", {})
+                                interaction_spec = InteractionSpec(
+                                    state=ispec_data.get("state", {}),
+                                    render=ispec_data.get("render", []),
+                                    transition=ispec_data.get("transition", []),
+                                    constraint=ispec_data.get("constraint", None),
+                                )
                                 new_kus.append(
                                     KnowledgeUnitSpec(
                                         id=ku_data.get("id", ""),
                                         unit_content=ku_data.get("title", ""),
                                         text_description=ku_data.get("description", ""),
-                                        interaction_description=ku_data.get(
-                                            "interaction_description", ""
-                                        ),
+                                        interaction_spec=interaction_spec,
                                     )
                                 )
                             new_internal_spec = InternalDocSpec(

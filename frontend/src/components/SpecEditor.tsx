@@ -209,17 +209,23 @@ interface KUEditModalProps {
 const KUEditModal: React.FC<KUEditModalProps> = ({ ku, onSave, onClose }) => {
   const [title, setTitle] = useState(ku.title);
   const [description, setDescription] = useState(ku.description);
-  const [interactionDescription, setInteractionDescription] = useState(
-    ku.interaction_description || ''
+  const [interactionSpecJson, setInteractionSpecJson] = useState(
+    JSON.stringify(ku.interaction_spec || { state: {}, render: [], transition: [], constraint: null }, null, 2)
   );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    let parsedSpec;
+    try {
+      parsedSpec = JSON.parse(interactionSpecJson);
+    } catch {
+      parsedSpec = { state: {}, render: [], transition: [], constraint: null };
+    }
     const updatedKU: KnowledgeUnit = {
       ...ku,
       title: title.trim(),
       description: description.trim(),
-      interaction_description: interactionDescription.trim(),
+      interaction_spec: parsedSpec,
     };
     onSave(updatedKU);
   };
@@ -267,18 +273,18 @@ const KUEditModal: React.FC<KUEditModalProps> = ({ ku, onSave, onClose }) => {
 
               <div>
                 <label
-                  htmlFor="interactionDescription"
+                  htmlFor="interactionSpec"
                   className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
                 >
-                  Interaction Description
+                  Interaction Spec (JSON)
                 </label>
                 <textarea
-                  id="interactionDescription"
-                  value={interactionDescription}
-                  onChange={(e) => setInteractionDescription(e.target.value)}
-                  rows={6}
-                  className="w-full px-4 py-3 bg-white border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl focus:outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all text-sm resize-none"
-                  placeholder="Describe the interactive elements and how users will engage with this knowledge unit"
+                  id="interactionSpec"
+                  value={interactionSpecJson}
+                  onChange={(e) => setInteractionSpecJson(e.target.value)}
+                  rows={10}
+                  className="w-full px-4 py-3 bg-white border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl focus:outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all text-sm font-mono resize-none"
+                  placeholder='{"state": {}, "render": [], "transition": [], "constraint": null}'
                 />
               </div>
             </div>

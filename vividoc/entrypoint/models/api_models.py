@@ -3,7 +3,16 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
+from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec, InteractionSpec
+
+
+class InteractionSpecAPI(BaseModel):
+    """API model for interaction specification."""
+
+    state: Dict[str, Any] = Field(default_factory=dict)
+    render: List[str] = Field(default_factory=list)
+    transition: List[str] = Field(default_factory=list)
+    constraint: Optional[str] = None
 
 
 class KnowledgeUnit(BaseModel):
@@ -12,14 +21,8 @@ class KnowledgeUnit(BaseModel):
     id: str = Field(description="Unique identifier for the knowledge unit")
     title: str = Field(description="Title of the knowledge unit")
     description: str = Field(description="Description of the knowledge unit")
-    learning_objectives: List[str] = Field(
-        default_factory=list, description="List of learning objectives"
-    )
-    prerequisites: List[str] = Field(
-        default_factory=list, description="List of prerequisites"
-    )
-    interaction_description: Optional[str] = Field(
-        default=None, description="Description of interactive elements"
+    interaction_spec: Optional[InteractionSpecAPI] = Field(
+        default=None, description="Structured interaction specification (S, R, T, C)"
     )
 
 
@@ -40,19 +43,34 @@ def ku_spec_to_api(ku_spec: KnowledgeUnitSpec) -> KnowledgeUnit:
         id=ku_spec.id,
         title=ku_spec.unit_content,
         description=ku_spec.text_description,
-        learning_objectives=[],  # Not available in KnowledgeUnitSpec
-        prerequisites=[],  # Not available in KnowledgeUnitSpec
-        interaction_description=ku_spec.interaction_description,
+        interaction_spec=InteractionSpecAPI(
+            state=ku_spec.interaction_spec.state,
+            render=ku_spec.interaction_spec.render,
+            transition=ku_spec.interaction_spec.transition,
+            constraint=ku_spec.interaction_spec.constraint,
+        ),
     )
 
 
 def api_to_ku_spec(ku_api: KnowledgeUnit) -> KnowledgeUnitSpec:
     """Convert API KnowledgeUnit to internal KnowledgeUnitSpec."""
+    if ku_api.interaction_spec:
+        interaction_spec = InteractionSpec(
+            state=ku_api.interaction_spec.state,
+            render=ku_api.interaction_spec.render,
+            transition=ku_api.interaction_spec.transition,
+            constraint=ku_api.interaction_spec.constraint,
+        )
+    else:
+        interaction_spec = InteractionSpec(
+            state={}, render=[], transition=[], constraint=None
+        )
+
     return KnowledgeUnitSpec(
         id=ku_api.id,
         unit_content=ku_api.title,
         text_description=ku_api.description,
-        interaction_description=ku_api.interaction_description or ku_api.description,
+        interaction_spec=interaction_spec,
     )
 
 

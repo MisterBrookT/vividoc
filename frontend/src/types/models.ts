@@ -1,5 +1,12 @@
 // Data models matching the backend API
 
+export interface InteractionSpec {
+  state: Record<string, any>;
+  render: string[];
+  transition: string[];
+  constraint: string | null;
+}
+
 export interface DocumentSpec {
   id: string;
   topic: string;
@@ -11,11 +18,7 @@ export interface KnowledgeUnit {
   id: string;
   title: string;
   description: string;
-  learning_objectives?: string[];
-  prerequisites?: string[];
-  interaction_description?: string;
-  unit_content?: string;
-  text_description?: string;
+  interaction_spec?: InteractionSpec;
 }
 
 export interface SpecMetadata {

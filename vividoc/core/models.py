@@ -1,7 +1,25 @@
 """Data models for vividoc pipeline."""
 
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Dict, Any, Optional
+
+
+class InteractionSpec(BaseModel):
+    """Structured interaction specification using (S, R, T, C) decomposition."""
+
+    state: Dict[str, Any] = Field(
+        description="State variables: keys are variable names, values describe control type, range, derivation"
+    )
+    render: List[str] = Field(
+        description="List of visual elements describing how state maps to visuals"
+    )
+    transition: List[str] = Field(
+        description="List of interaction rules describing how user actions change state"
+    )
+    constraint: Optional[str] = Field(
+        default=None,
+        description="Pedagogical invariant — what the learner should observe",
+    )
 
 
 class KnowledgeUnitSpec(BaseModel):
@@ -12,8 +30,8 @@ class KnowledgeUnitSpec(BaseModel):
     text_description: str = Field(
         description="Self-contained description for text generation"
     )
-    interaction_description: str = Field(
-        description="Self-contained description for interactive code generation"
+    interaction_spec: InteractionSpec = Field(
+        description="Structured interaction specification (S, R, T, C)"
     )
 
 

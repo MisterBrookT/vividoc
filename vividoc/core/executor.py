@@ -1,5 +1,6 @@
 """Executor - Fragment-based HTML generation with context awareness."""
 
+import json
 from pathlib import Path
 from bs4 import BeautifulSoup
 from vividoc.utils.llm.client import LLMClient
@@ -200,7 +201,9 @@ class Executor:
                 completed_sections=completed_sections,
                 scope_id=scope_id,
                 current_text_content=current_text,
-                interaction_description=ku_spec.interaction_description,
+                interaction_spec_text=json.dumps(
+                    ku_spec.interaction_spec.model_dump(), indent=2
+                ),
             )
 
             # Call LLM to generate fragment

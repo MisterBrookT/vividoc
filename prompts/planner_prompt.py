@@ -8,21 +8,48 @@ Generate a comprehensive document specification with knowledge units. Each knowl
 1. Have a unique ID (e.g., "ku1", "ku2", etc.)
 2. Contain a brief summary (unit_content)
 3. Include a detailed text_description that is self-contained and suitable for generating educational text
-4. Include an interaction_description that is self-contained and suitable for generating interactive Python visualization code
+4. Include a structured interaction_spec that decomposes the interactive visualization into four components:
+
+   - state: An object where keys are variable names and values describe the variable:
+     - For user-controllable variables: {{"control": "<type>", "range": [...], "default": <val>}}
+       Control types: "slider", "dropdown", "click", "drag", "toggle", "none" (for static/constant)
+     - For computed variables: {{"derived": "<formula or description>"}}
+
+   - render: A list of strings, each describing one visual element on screen
+
+   - transition: A list of strings, each describing one cause-and-effect interaction rule
+     (empty list [] if the visualization is static with no user interaction)
+
+   - constraint: A single string describing the pedagogical invariant — the key insight
+     the learner should discover through interaction (null if not applicable)
 
 Guidelines:
 - Break down the topic into 3-5 logical knowledge units
 - Each text_description should explain what the reader should understand after reading that section
-- Each interaction_description should describe what interactive elements the reader can use and what they will observe
-- Make descriptions self-contained so they can be used independently for generation
-- Focus on building intuition and understanding, not just facts
+- Make interaction_spec self-contained so it can be used independently for code generation
+- Focus on building intuition and understanding through interaction
 
-Example knowledge unit structure:
+Example knowledge unit:
 {{
   "id": "ku1",
   "unit_content": "π represents the ratio between a circle's circumference and its diameter.",
-  "text_description": "This section explains that every circle has two essential measurements—its circumference, which is the distance around the circle, and its diameter, which is the distance across the circle through its center—and introduces the idea that the ratio between these two values is always the same regardless of the circle's size. The reader should gain an intuitive understanding of why mathematicians define π as this ratio and how this definition connects the geometry of any circle to a universal mathematical constant.",
-  "interaction_description": "In this part, the reader can adjust the radius of a circle using a slider, and as the radius changes, the visualization updates the circle in real time while recalculating and displaying the circumference, the diameter, and the resulting ratio between them, allowing the reader to see directly that the ratio stays roughly the same even when the size of the circle varies."
+  "text_description": "This section explains that every circle has two essential measurements—its circumference and its diameter—and introduces the idea that the ratio between these two values is always the same regardless of the circle's size.",
+  "interaction_spec": {{
+    "state": {{
+      "r": {{"control": "slider", "range": [0.5, 5], "default": 1}},
+      "C": {{"derived": "2 * π * r"}},
+      "D": {{"derived": "2 * r"}},
+      "ratio": {{"derived": "C / D"}}
+    }},
+    "render": [
+      "A circle whose visual size reflects the current value of r",
+      "Labels displaying the current values of C, D, and ratio"
+    ],
+    "transition": [
+      "Dragging the slider changes r; C, D, and ratio update automatically"
+    ],
+    "constraint": "ratio ≈ 3.14159 regardless of how r changes"
+  }}
 }}
 
 Now generate the complete document specification for the topic: {topic}

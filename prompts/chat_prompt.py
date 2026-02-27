@@ -113,7 +113,12 @@ Analyze the user's request and determine the appropriate action:
       "id": "ku-unique-id",
       "title": "KU title",
       "description": "Detailed description of the content",
-      "interaction_description": "Description of interactive elements"
+      "interaction_spec": {
+        "state": {"var_name": {"control": "slider", "range": [0, 10], "default": 5}},
+        "render": ["Visual element descriptions"],
+        "transition": ["User action → effect descriptions"],
+        "constraint": "Pedagogical invariant or null"
+      }
     }
   ]
 }

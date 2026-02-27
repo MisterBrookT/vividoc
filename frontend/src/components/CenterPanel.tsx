@@ -195,8 +195,8 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
                 }}
                 disabled={!step.active}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${step.active
-                    ? 'text-[var(--text-primary)] hover:bg-white/60 cursor-pointer'
-                    : 'text-slate-300 cursor-not-allowed'
+                  ? 'text-[var(--text-primary)] hover:bg-white/60 cursor-pointer'
+                  : 'text-slate-300 cursor-not-allowed'
                   } ${displayStage === step.id ? 'bg-white shadow-sm ring-1 ring-slate-200/50' : ''}`}
               >
                 <step.icon className={`w-4 h-4 ${step.active ? 'text-[var(--accent-primary)]' : 'text-slate-300'}`} />
@@ -327,12 +327,33 @@ interface SpecViewProps {
 const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocument, generatingDoc }) => {
   const [editingKuId, setEditingKuId] = useState<string | null>(null);
 
-  const handleKuFieldChange = (kuId: string, field: keyof KnowledgeUnit, value: string) => {
+  const handleKuFieldChange = (kuId: string, field: keyof KnowledgeUnit, value: any) => {
     const updated = {
       ...spec,
       knowledge_units: spec.knowledge_units.map(ku =>
         ku.id === kuId ? { ...ku, [field]: value } : ku
       ),
+    };
+    onSpecUpdated(updated);
+  };
+
+  const handleInteractionSpecChange = (kuId: string, specField: string, value: any) => {
+    const updated = {
+      ...spec,
+      knowledge_units: spec.knowledge_units.map(ku => {
+        if (ku.id !== kuId) return ku;
+        const currentSpec = ku.interaction_spec || { state: {}, render: [], transition: [], constraint: null };
+        return {
+          ...ku,
+          interaction_spec: {
+            state: currentSpec.state,
+            render: currentSpec.render,
+            transition: currentSpec.transition,
+            constraint: currentSpec.constraint,
+            [specField]: value,
+          },
+        };
+      }),
     };
     onSpecUpdated(updated);
   };
@@ -352,7 +373,7 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
       id: newId,
       title: 'New Knowledge Unit',
       description: '',
-      interaction_description: '',
+      interaction_spec: { state: {}, render: [], transition: [], constraint: null },
     };
     const units = [...spec.knowledge_units];
     units.splice(afterIndex + 1, 0, newKU);
@@ -381,8 +402,8 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
                 <div
                   key={ku.id}
                   className={`bg-white rounded-xl border p-5 transition-all relative overflow-hidden ${isEditing
-                      ? 'border-[var(--accent-primary)] shadow-md ring-2 ring-[var(--accent-primary)]/10'
-                      : 'border-[var(--border-color)] hover:shadow-md'
+                    ? 'border-[var(--accent-primary)] shadow-md ring-2 ring-[var(--accent-primary)]/10'
+                    : 'border-[var(--border-color)] hover:shadow-md'
                     }`}
                 >
                   <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500 opacity-80" />
@@ -444,25 +465,93 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
                             className="w-full text-sm text-[var(--text-secondary)] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/10 transition-all resize-none leading-relaxed"
                           />
                         </div>
-                        <div>
-                          <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Interaction</label>
-                          <textarea
-                            value={ku.interaction_description || ''}
-                            onChange={(e) => handleKuFieldChange(ku.id, 'interaction_description', e.target.value)}
-                            rows={3}
-                            placeholder="Describe the interactive elements..."
-                            className="w-full text-sm text-[var(--text-secondary)] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/10 transition-all resize-none leading-relaxed placeholder:text-slate-400"
-                          />
+                        <div className="border-t border-slate-100 pt-3">
+                          <label className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider block mb-2">Interaction Spec (S, R, T, C)</label>
+                          <div className="space-y-2">
+                            <div>
+                              <label className="text-[10px] text-slate-400 block mb-0.5">State (JSON)</label>
+                              <textarea
+                                value={JSON.stringify(ku.interaction_spec?.state || {}, null, 2)}
+                                onChange={(e) => { try { handleInteractionSpecChange(ku.id, 'state', JSON.parse(e.target.value)); } catch { } }}
+                                rows={4}
+                                className="w-full text-xs font-mono text-[var(--text-secondary)] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent-primary)] transition-all resize-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-slate-400 block mb-0.5">Render (one per line)</label>
+                              <textarea
+                                value={(ku.interaction_spec?.render || []).join('\n')}
+                                onChange={(e) => handleInteractionSpecChange(ku.id, 'render', e.target.value.split('\n').filter(Boolean))}
+                                rows={2}
+                                className="w-full text-xs text-[var(--text-secondary)] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent-primary)] transition-all resize-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-slate-400 block mb-0.5">Transition (one per line)</label>
+                              <textarea
+                                value={(ku.interaction_spec?.transition || []).join('\n')}
+                                onChange={(e) => handleInteractionSpecChange(ku.id, 'transition', e.target.value.split('\n').filter(Boolean))}
+                                rows={2}
+                                className="w-full text-xs text-[var(--text-secondary)] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent-primary)] transition-all resize-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-slate-400 block mb-0.5">Constraint</label>
+                              <input
+                                type="text"
+                                value={ku.interaction_spec?.constraint || ''}
+                                onChange={(e) => handleInteractionSpecChange(ku.id, 'constraint', e.target.value || null)}
+                                placeholder="Pedagogical invariant..."
+                                className="w-full text-xs text-[var(--text-secondary)] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent-primary)] transition-all placeholder:text-slate-400"
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ) : (
                       <>
                         <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">{ku.title}</h3>
                         <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{ku.description}</p>
-                        {ku.interaction_description && (
-                          <div className="mt-3 pt-3 border-t border-slate-100">
-                            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Interaction</span>
-                            <p className="text-sm text-[var(--text-secondary)] mt-1 leading-relaxed">{ku.interaction_description}</p>
+                        {ku.interaction_spec && (ku.interaction_spec.render?.length > 0 || ku.interaction_spec.transition?.length > 0) && (
+                          <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                            {Object.keys(ku.interaction_spec.state || {}).length > 0 && (
+                              <div>
+                                <span className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider">State</span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {Object.entries(ku.interaction_spec.state).map(([name, def]: [string, any]) => (
+                                    <span key={name} className="text-[10px] px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full font-mono">
+                                      {name}{def.derived ? ` = ${def.derived}` : def.control ? ` (${def.control})` : ''}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {ku.interaction_spec.render?.length > 0 && (
+                              <div>
+                                <span className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider">Render</span>
+                                <ul className="mt-1 space-y-0.5">
+                                  {ku.interaction_spec.render.map((r, i) => (
+                                    <li key={i} className="text-xs text-[var(--text-secondary)] leading-relaxed">• {r}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {ku.interaction_spec.transition?.length > 0 && (
+                              <div>
+                                <span className="text-[10px] font-semibold text-amber-500 uppercase tracking-wider">Transition</span>
+                                <ul className="mt-1 space-y-0.5">
+                                  {ku.interaction_spec.transition.map((t, i) => (
+                                    <li key={i} className="text-xs text-[var(--text-secondary)] leading-relaxed">→ {t}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {ku.interaction_spec.constraint && (
+                              <div>
+                                <span className="text-[10px] font-semibold text-rose-500 uppercase tracking-wider">Constraint</span>
+                                <p className="text-xs text-[var(--text-secondary)] mt-0.5 italic">{ku.interaction_spec.constraint}</p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </>

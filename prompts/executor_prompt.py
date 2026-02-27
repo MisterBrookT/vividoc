@@ -45,20 +45,26 @@ FRAGMENT_STAGE2_PROMPT = """You are an expert at creating interactive educationa
 
 === CURRENT TASK ===
 Section ID: {scope_id}
-Interactive Description: {interaction_description}
+
+Interaction Specification:
+{interaction_spec_text}
 
 === REQUIREMENTS ===
-1. Create an interactive visualization that COMPLEMENTS the text content above
-2. Maintain consistent interaction design style with previous sections
-3. Include three parts in order:
+1. Create an interactive visualization that implements the specification above
+2. The "state" defines what variables exist and how they relate
+3. The "render" defines what visual elements to create
+4. The "transition" defines what user interactions to support and their effects
+5. The "constraint" (if present) is the key insight — make sure the visualization clearly demonstrates it
+6. Maintain consistent interaction design style with previous sections
+7. Include three parts in order:
    a) <style> tag: CSS styles (all selectors prefixed with #{scope_id})
    b) HTML structure: controls, visualization containers
    c) <script> tag: JavaScript logic (wrapped in IIFE)
-4. All DOM IDs must use {scope_id}- prefix (e.g., {scope_id}-slider)
-5. You can use D3.js, Chart.js (already loaded in document)
-6. ONLY return the HTML fragment for the interactive content
-7. DO NOT include <div class="interactive-content"> tags
-8. DO NOT include any other sections
+8. All DOM IDs must use {scope_id}- prefix (e.g., {scope_id}-slider)
+9. You can use D3.js, Chart.js (already loaded in document)
+10. ONLY return the HTML fragment for the interactive content
+11. DO NOT include <div class="interactive-content"> tags
+12. DO NOT include any other sections
 
 === IMPORTANT NOTES ===
 - When using Chart.js with maintainAspectRatio: false, the canvas container MUST have explicit height
@@ -121,7 +127,7 @@ def get_fragment_stage2_prompt(
     completed_sections: str,
     scope_id: str,
     current_text_content: str,
-    interaction_description: str,
+    interaction_spec_text: str,
 ) -> str:
     """Generate Stage 2 prompt for interactive content fragment."""
     return FRAGMENT_STAGE2_PROMPT.format(
@@ -129,5 +135,5 @@ def get_fragment_stage2_prompt(
         completed_sections=completed_sections,
         scope_id=scope_id,
         current_text_content=current_text_content,
-        interaction_description=interaction_description,
+        interaction_spec_text=interaction_spec_text,
     )
