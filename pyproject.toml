@@ -19,7 +19,7 @@ dependencies = [
 
 
 [tool.setuptools]
-packages = ["vividoc", "prompts", "backend"]
+packages = ["vividoc", "prompts"]
 
 
 [build-system]

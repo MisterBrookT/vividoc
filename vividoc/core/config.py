@@ -7,6 +7,9 @@ AVAILABLE_LLM_MODELS: Set[str] = {
     # OpenRouter
     "openrouter/google/gemini-3-flash-preview",
     "openrouter/moonshotai/kimi-k2.5",
+    "openrouter/anthropic/claude-sonnet-4.6",
+    "openrouter/google/gemini-3.1-pro-preview",
+    "openrouter/anthropic/claude-opus-4.6",
 }
 
 
