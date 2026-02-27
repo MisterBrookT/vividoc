@@ -126,19 +126,17 @@ class DocumentService:
 
             # Evaluate document quality
             try:
-                evaluation_result = self.evaluator.evaluate(generated_doc)
-                # Store evaluation result with document metadata
+                evaluation_result = self.evaluator.run(generated_doc)
                 evaluation_data = {
-                    "score": evaluation_result.score
-                    if hasattr(evaluation_result, "score")
-                    else None,
-                    "feedback": evaluation_result.feedback
-                    if hasattr(evaluation_result, "feedback")
-                    else None,
+                    "overall_coherence": evaluation_result.overall_coherence,
+                    "component_issues": evaluation_result.component_issues,
+                    "requires_revision": evaluation_result.requires_revision,
                 }
             except Exception as eval_error:
                 # Log evaluation error but don't fail the entire job
-                # Evaluation is supplementary and shouldn't block document generation
+                import traceback
+
+                traceback.print_exc()
                 evaluation_data = {"error": str(eval_error)}
 
             # Store document

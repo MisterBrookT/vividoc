@@ -194,11 +194,10 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
                   if (step.active) setManualStage(step.id);
                 }}
                 disabled={!step.active}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
-                  step.active
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${step.active
                     ? 'text-[var(--text-primary)] hover:bg-white/60 cursor-pointer'
                     : 'text-slate-300 cursor-not-allowed'
-                } ${displayStage === step.id ? 'bg-white shadow-sm ring-1 ring-slate-200/50' : ''}`}
+                  } ${displayStage === step.id ? 'bg-white shadow-sm ring-1 ring-slate-200/50' : ''}`}
               >
                 <step.icon className={`w-4 h-4 ${step.active ? 'text-[var(--accent-primary)]' : 'text-slate-300'}`} />
                 <span className={`text-sm font-medium ${step.active ? 'text-slate-700' : 'text-slate-400'}`}>{step.label}</span>
@@ -338,6 +337,30 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
     onSpecUpdated(updated);
   };
 
+  const handleDeleteKU = (kuId: string) => {
+    const updated = {
+      ...spec,
+      knowledge_units: spec.knowledge_units.filter(ku => ku.id !== kuId),
+    };
+    onSpecUpdated(updated);
+    if (editingKuId === kuId) setEditingKuId(null);
+  };
+
+  const handleAddKU = (afterIndex: number) => {
+    const newId = `ku_${Date.now()}`;
+    const newKU: KnowledgeUnit = {
+      id: newId,
+      title: 'New Knowledge Unit',
+      description: '',
+      interaction_description: '',
+    };
+    const units = [...spec.knowledge_units];
+    units.splice(afterIndex + 1, 0, newKU);
+    const updated = { ...spec, knowledge_units: units };
+    onSpecUpdated(updated);
+    setEditingKuId(newId);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto">
@@ -357,12 +380,10 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
               return (
                 <div
                   key={ku.id}
-                  className={`bg-white rounded-xl border p-5 transition-all relative overflow-hidden cursor-pointer ${
-                    isEditing
+                  className={`bg-white rounded-xl border p-5 transition-all relative overflow-hidden ${isEditing
                       ? 'border-[var(--accent-primary)] shadow-md ring-2 ring-[var(--accent-primary)]/10'
                       : 'border-[var(--border-color)] hover:shadow-md'
-                  }`}
-                  onClick={() => !isEditing && setEditingKuId(ku.id)}
+                    }`}
                 >
                   <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500 opacity-80" />
                   <div className="pl-4">
@@ -370,18 +391,41 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
                       <span className="text-[10px] font-bold text-[var(--accent-primary)] uppercase tracking-wider">
                         KU {index + 1}
                       </span>
-                      {isEditing && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setEditingKuId(null); }}
-                          className="text-xs text-slate-500 hover:text-slate-700 px-2 py-0.5 rounded hover:bg-slate-100 transition-colors"
-                        >
-                          Done
-                        </button>
-                      )}
+                      <div className="flex items-center gap-1">
+                        {isEditing ? (
+                          <button
+                            onClick={() => setEditingKuId(null)}
+                            className="text-[11px] text-slate-500 hover:text-slate-700 px-2 py-0.5 rounded hover:bg-slate-100 transition-colors font-medium"
+                          >
+                            Done
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => setEditingKuId(ku.id)}
+                              className="text-[11px] text-indigo-500 hover:text-indigo-700 px-1.5 py-0.5 rounded hover:bg-indigo-50 transition-colors font-medium"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteKU(ku.id)}
+                              className="text-[11px] text-red-400 hover:text-red-600 px-1.5 py-0.5 rounded hover:bg-red-50 transition-colors font-medium"
+                            >
+                              Delete
+                            </button>
+                            <button
+                              onClick={() => handleAddKU(index)}
+                              className="text-[11px] text-emerald-500 hover:text-emerald-700 px-1.5 py-0.5 rounded hover:bg-emerald-50 transition-colors font-medium"
+                            >
+                              + Add
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     {isEditing ? (
-                      <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="space-y-3">
                         <div>
                           <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Title</label>
                           <input

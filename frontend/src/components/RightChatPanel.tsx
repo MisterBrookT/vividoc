@@ -7,20 +7,20 @@ import { streamChat } from '../api/services';
 /* Cute Vivi avatar SVG — a small friendly bot face */
 const ViviAvatar: React.FC<{ className?: string }> = ({ className }) => (
     <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="16" cy="16" r="15" fill="url(#vivi-grad)" stroke="#818cf8" strokeWidth="1"/>
-        <ellipse cx="11" cy="14" rx="2.2" ry="2.5" fill="white"/>
-        <ellipse cx="21" cy="14" rx="2.2" ry="2.5" fill="white"/>
-        <circle cx="11" cy="14.5" r="1.2" fill="#312e81"/>
-        <circle cx="21" cy="14.5" r="1.2" fill="#312e81"/>
-        <circle cx="11.6" cy="13.8" r="0.5" fill="white"/>
-        <circle cx="21.6" cy="13.8" r="0.5" fill="white"/>
-        <path d="M12 20.5Q16 23.5 20 20.5" stroke="#312e81" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
-        <ellipse cx="7.5" cy="18" rx="1.8" ry="1" fill="#c7d2fe" opacity="0.6"/>
-        <ellipse cx="24.5" cy="18" rx="1.8" ry="1" fill="#c7d2fe" opacity="0.6"/>
+        <circle cx="16" cy="16" r="15" fill="url(#vivi-grad)" stroke="#818cf8" strokeWidth="1" />
+        <ellipse cx="11" cy="14" rx="2.2" ry="2.5" fill="white" />
+        <ellipse cx="21" cy="14" rx="2.2" ry="2.5" fill="white" />
+        <circle cx="11" cy="14.5" r="1.2" fill="#312e81" />
+        <circle cx="21" cy="14.5" r="1.2" fill="#312e81" />
+        <circle cx="11.6" cy="13.8" r="0.5" fill="white" />
+        <circle cx="21.6" cy="13.8" r="0.5" fill="white" />
+        <path d="M12 20.5Q16 23.5 20 20.5" stroke="#312e81" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+        <ellipse cx="7.5" cy="18" rx="1.8" ry="1" fill="#c7d2fe" opacity="0.6" />
+        <ellipse cx="24.5" cy="18" rx="1.8" ry="1" fill="#c7d2fe" opacity="0.6" />
         <defs>
             <linearGradient id="vivi-grad" x1="0" y1="0" x2="32" y2="32">
-                <stop offset="0%" stopColor="#e0e7ff"/>
-                <stop offset="100%" stopColor="#c7d2fe"/>
+                <stop offset="0%" stopColor="#e0e7ff" />
+                <stop offset="100%" stopColor="#c7d2fe" />
             </linearGradient>
         </defs>
     </svg>
@@ -257,8 +257,14 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                         <div className="h-full bg-indigo-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${cappedPercent}%` }} />
                     </div>
                     <div className="mt-2 space-y-1.5">
-                        <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'executing' ? 'text-indigo-600 font-medium' : 'text-slate-400'}`}>
-                            <div className={`w-1 h-1 rounded-full ${phase === 'executing' ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300'}`} />
+                        <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'executing' && isRunning ? 'text-indigo-600 font-medium' : phase === 'evaluating' || !isRunning ? 'text-emerald-600' : 'text-slate-400'}`}>
+                            {phase === 'executing' && isRunning ? (
+                                <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+                            ) : phase === 'evaluating' || !isRunning ? (
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
+                            ) : (
+                                <div className="w-1 h-1 rounded-full bg-slate-300" />
+                            )}
                             Generating Content
                         </div>
                         {phase === 'executing' && ku_progress && (
@@ -271,10 +277,24 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                                 ))}
                             </div>
                         )}
-                        <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'evaluating' ? 'text-indigo-600 font-medium' : 'text-slate-400'}`}>
-                            <div className={`w-1 h-1 rounded-full ${phase === 'evaluating' ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300'}`} />
+                        <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'evaluating' && isRunning ? 'text-indigo-600 font-medium' : !isRunning && js.status === 'completed' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                            {phase === 'evaluating' && isRunning ? (
+                                <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+                            ) : !isRunning && js.status === 'completed' ? (
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
+                            ) : (
+                                <div className="w-1 h-1 rounded-full bg-slate-300" />
+                            )}
                             Refining & Finalizing
                         </div>
+                        {phase === 'evaluating' && isRunning && (
+                            <div className="ml-2.5 pl-2 border-l border-indigo-100 space-y-1 mt-0.5">
+                                <div className="text-[10px] text-indigo-500 flex items-center gap-1">
+                                    <Loader2 className="w-2 h-2 animate-spin" />
+                                    <span className="leading-tight">Evaluating document quality...</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
