@@ -18,22 +18,11 @@ def create_app() -> FastAPI:
         version="1.0.0",
     )
 
-    # Configure CORS
-    import os
-
-    cors_origins = [
-        "http://localhost:5173",
-        "http://localhost:3000",
-    ]
-    # Allow custom origins via env var (comma-separated)
-    extra_origins = os.getenv("CORS_ORIGINS", "")
-    if extra_origins:
-        cors_origins.extend([o.strip() for o in extra_origins.split(",") if o.strip()])
-
+    # Configure CORS — allow all origins (public demo)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=cors_origins,
-        allow_credentials=True,
+        allow_origins=["*"],
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
