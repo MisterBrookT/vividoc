@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Markov Chains & Probabilistic Transitions</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --accent: #f59e0b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+            border-radius: 0 0 2rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        section {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 0.5rem;
+        }
+
+        .interactive-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            background: #f1f5f9;
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+
+        canvas {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .matrix-display {
+            font-family: 'Courier New', Courier, monospace;
+            background: #272822;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .formula {
+            background: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status-msg {
+            font-weight: bold;
+            color: var(--accent);
+            height: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Markov Chains</h1>
+    <p>Navigating the World of Probabilistic State Transitions</p>
+</header>
+
+<div class="container">
+    
+    <section>
+        <h2>1. What is a Markov Chain?</h2>
+        <p>A <strong>Markov Chain</strong> is a stochastic model describing a sequence of possible events in which the probability of each event depends only on the state attained in the previous event.</p>
+        <p>This is often called the <strong>Markov Property</strong>: <em>The future is independent of the past, given the present.</em> In other words, you don't need to know the history of how you got to "State A" to predict where you will go next; you only need to know that you are currently in "State A".</p>
+    </section>
+
+    <section>
+        <h2>2. Transition Probabilities</h2>
+        <p>Transitions are the movements between states. Each transition has an associated probability. If we have two states, <strong>Sunny (S)</strong> and <strong>Rainy (R)</strong>, we can define a Transition Matrix:</p>
+        <div class="matrix-display">
+            P = [ P(S|S)  P(R|S) ]  <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;[ P(S|R)  P(R|R) ]
+        </div>
+        <p>Key rule: The sum of probabilities for all outgoing edges from any single state must always equal <strong>1.0 (100%)</strong>.</p>
+    </section>
+
+    <section>
+        <h2>3. Live Simulation: The Weather Model</h2>
+        <p>Below is an interactive Markov Chain representing weather. Click "Step" to trigger a probabilistic transition based on the current state.</p>
+        
+        <div class="interactive-container">
+            <div class="status-msg" id="status">Current State: SUNNY</div>
+            <canvas id="markovCanvas" width="400" height="250"></canvas>
+            
+            <div class="controls">
+                <button onclick="step()">Step Transition</button>
+                <button onclick="resetSim()" style="background-color:var(--secondary)">Reset</button>
+            </div>
+
+            <div style="width: 100%;">
+                <h4>Transition Logic:</h4>
+                <ul>
+                    <li>If <strong>SUNNY</strong>: 80% stay Sunny, 20% become Rainy.</li>
+                    <li>If <strong>RAINY</strong>: 60% stay Rainy, 40% become Sunny.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>4. Calculating the Future</h2>
+        <p>If the current state vector is <span class="formula">v</span>, the state after one step is <span class="formula">vP</span>. To find the state after <span class="formula">n</span> steps, you calculate <span class="formula">vP<sup>n</sup></span>.</p>
+        <p>Over a long period, many Markov chains reach a <strong>Stationary Distribution</strong>, where the probability of being in any given state remains constant even as the system continues to transition.</p>
+    </section>
+
+</div>
+
+<script>
+    const canvas = document.getElementById('markovCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusText = document.getElementById('status');
+
+    let currentState = 'SUNNY'; // 0 for Sunny, 1 for Rainy
+    const states = {
+        'SUNNY': { x: 100, y: 125, color: '#f59e0b' },
+        'RAINY': { x: 300, y: 125, color: '#2563eb' }
+    };
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw transitions (Arrows/Loops)
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#94a3b8';
+
+        // Sunny to Rainy
+        ctx.beginPath();
+        ctx.quadraticCurveTo(200, 70, 300, 125);
+        ctx.stroke();
+        ctx.fillText("0.2", 190, 80);
+
+        // Rainy to Sunny
+        ctx.beginPath();
+        ctx.moveTo(300, 125);
+        ctx.quadraticCurveTo(200, 180, 100, 125);
+        ctx.stroke();
+        ctx.fillText("0.4", 190, 180);
+
+        // Self loops
+        ctx.beginPath();
+        ctx.arc(80, 125, 20, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillText("0.8", 45, 125);
+
+        ctx.beginPath();
+        ctx.arc(320, 125, 20, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillText("0.6", 345, 125);
+
+        // Draw States
+        for (let name in states) {
+            const s = states[name];
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, 30, 0, Math.PI * 2);
+            ctx.fillStyle = s.color;
+            ctx.fill();
+            
+            // Highlight current
+            if (currentState === name) {
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText(name, s.x, s.y + 5);
+        }
+    }
+
+    function step() {
+        const rand = Math.random();
+        let nextState = currentState;
+
+        if (currentState === 'SUNNY') {
+            if (rand < 0.2) {
+                nextState = 'RAINY';
+            }
+        } else {
+            if (rand < 0.4) {
+                nextState = 'SUNNY';
+            }
+        }
+
+        currentState = nextState;
+        statusText.innerText = `Current State: ${currentState}`;
+        draw();
+    }
+
+    function resetSim() {
+        currentState = 'SUNNY';
+        statusText.innerText = `Current State: SUNNY`;
+        draw();
+    }
+
+    // Initial Draw
+    draw();
+</script>
+
+</body>
+</html>

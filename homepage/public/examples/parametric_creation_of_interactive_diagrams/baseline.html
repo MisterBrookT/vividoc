@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric Interactive Diagrams</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            border-radius: 12px;
+        }
+
+        section {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .interactive-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .interactive-box { grid-template-columns: 1fr; }
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] {
+            cursor: pointer;
+        }
+
+        .display {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .math {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Parametric Creation of Diagrams</h1>
+        <p>Understanding Dynamic Geometry and Data-Driven Graphics</p>
+    </header>
+
+    <section id="introduction">
+        <h2>1. What is Parametric Design?</h2>
+        <p>Parametric design is a paradigm where elements of a diagram are defined by <strong>parameters</strong> (variables) rather than fixed values. Instead of drawing a circle with a radius of 50px, we define it as a function of variable <span class="math">r</span>.</p>
+        <ul>
+            <li><strong>Consistency:</strong> Changing one parameter updates all related components automatically.</li>
+            <li><strong>Exploration:</strong> Instantly visualize how different inputs affect the final output.</li>
+            <li><strong>Automation:</strong> Generate thousands of variations by programmatically varying the inputs.</li>
+        </ul>
+    </section>
+
+    <section id="geometry">
+        <h2>2. Dynamic Geometry in Action</h2>
+        <p>Adjust the sliders below to see how mathematical parameters transform a simple geometric construction. Here, we track the relationship between <strong>Points</strong> and <strong>Symmetry</strong>.</p>
+        
+        <div class="interactive-box">
+            <div class="controls">
+                <div class="control-group">
+                    <label>Vertices: <span id="v-val">3</span></label>
+                    <input type="range" id="vertices" min="3" max="12" value="3">
+                </div>
+                <div class="control-group">
+                    <label>Radius: <span id="r-val">80</span></label>
+                    <input type="range" id="radius" min="20" max="120" value="80">
+                </div>
+                <div class="control-group">
+                    <label>Rotation: <span id="rot-val">0</span>°</label>
+                    <input type="range" id="rotation" min="0" max="360" value="0">
+                </div>
+                <div class="control-group">
+                    <label>Color Hue</label>
+                    <input type="range" id="hue" min="0" max="360" value="210">
+                </div>
+            </div>
+            <div class="display">
+                <svg id="svg-canvas" width="300" height="300" viewBox="0 0 300 300">
+                    <polygon id="poly" points="" fill="rgba(37, 99, 235, 0.2)" stroke="#2563eb" stroke-width="2" />
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section id="logic">
+        <h2>3. The Logic Flow</h2>
+        <p>Every parametric diagram follows a distinct pipeline:</p>
+        <ol>
+            <li><strong>Input:</strong> User or data provides raw values (the parameters).</li>
+            <li><strong>Transformation:</strong> Mathematical functions calculate coordinates. In the example above:
+                <br><code>x = centerX + radius * cos(angle)</code>
+                <br><code>y = centerY + radius * sin(angle)</code>
+            </li>
+            <li><strong>Redraw:</strong> The software updates the DOM (Document Object Model) or Canvas to reflect the new state.</li>
+        </ol>
+    </section>
+
+    <section id="applications">
+        <h2>4. Real-World Applications</h2>
+        <p>Parametric diagrams are essential in fields requiring high precision and flexibility:</p>
+        <ul>
+            <li><strong>Architecture (BIM):</strong> Modifying the height of a floor automatically adjusts the stairs and elevators.</li>
+            <li><strong>Data Visualization:</strong> D3.js and other libraries map data values to visual attributes like bar height or dot position.</li>
+            <li><strong>Generative Art:</strong> Creating complex patterns from simple recursive rules.</li>
+        </ul>
+    </section>
+</div>
+
+<script>
+    const poly = document.getElementById('poly');
+    const controls = ['vertices', 'radius', 'rotation', 'hue'];
+    
+    function updateDiagram() {
+        const v = parseInt(document.getElementById('vertices').value);
+        const r = parseInt(document.getElementById('radius').value);
+        const rot = parseInt(document.getElementById('rotation').value) * (Math.PI / 180);
+        const hue = document.getElementById('hue').value;
+
+        // Update Labels
+        document.getElementById('v-val').innerText = v;
+        document.getElementById('r-val').innerText = r;
+        document.getElementById('rot-val').innerText = document.getElementById('rotation').value;
+
+        // Calculate Points
+        const centerX = 150;
+        const centerY = 150;
+        let points = [];
+
+        for (let i = 0; i < v; i++) {
+            const angle = rot + (i * 2 * Math.PI / v);
+            const x = centerX + r * Math.cos(angle);
+            const y = centerY + r * Math.sin(angle);
+            points.push(`${x},${y}`);
+        }
+
+        // Apply to SVG
+        poly.setAttribute('points', points.join(' '));
+        poly.setAttribute('fill', `hsla(${hue}, 70%, 50%, 0.2)`);
+        poly.setAttribute('stroke', `hsl(${hue}, 70%, 40%)`);
+    }
+
+    // Attach listeners
+    controls.forEach(id => {
+        document.getElementById(id).addEventListener('input', updateDiagram);
+    });
+
+    // Initialize
+    updateDiagram();
+</script>
+
+</body>
+</html>

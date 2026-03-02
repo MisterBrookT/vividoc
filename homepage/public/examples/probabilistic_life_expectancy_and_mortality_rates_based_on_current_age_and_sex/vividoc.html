@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Probabilistic life expectancy and mortality rates based on current age and sex.</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Probabilistic life expectancy and mortality rates based on current age and sex.</h1>
+<!-- Introduction to Life Tables and Conditioning on Current Age -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>Most of us are familiar with the headline figure of <strong>life expectancy at birth</strong>—a single number often used to gauge the general health and prosperity of a nation. However, if you are currently 40, 60, or 80 years old, that birth-statistic is largely irrelevant to your future. The reality of human longevity is not a fixed destination decided at the moment of birth; rather, it is a <strong>moving target</strong> that evolves as you successfully navigate through time.</p><p>To understand this evolution, actuaries and demographers use a tool called a <strong>Life Table</strong> (or mortality table). A life table follows a hypothetical cohort of individuals and records the probability of dying at each age. The fundamental principle governing these tables is <strong>conditional probability</strong>. Mathematically, if we let $T$ be the random variable representing the age at death, the life expectancy for a person who has already reached age $x$ is the expected value of their remaining life, denoted as $e_x$:</p><p>$$e_x = E[T - x \mid T &gt; x]$$</p><p>This "conditioning" on having survived to age $x$ is crucial. As you age, you essentially "prune" the branches of the probability tree that represent early mortality. You have already avoided the risks of infant mortality, adolescent accidents, and mid-life diseases. Consequently, the <strong>older you are today, the higher your total expected age at death ($x + e_x$) becomes</strong>.</p><p>Consider a simplified example: A newborn might have a life expectancy of 80. However, a man who has already reached the age of 80 does not have a remaining life expectancy of zero. Because he has proven himself to be a "survivor," the life table might indicate he is expected to live another 8 or 9 years, pushing his total expected age to 88 or 89. This phenomenon creates a <strong>longevity paradox</strong>: the closer you get to your "expected" end, the further away that end typically moves.</p><p>In the following sections, we will explore how these probabilities are calculated and how biological sex acts as one of the primary variables in determining the slope of these survival curves.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        color: #333;
+    }
+    #ku1-controls {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    #ku1-controls .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    #ku1-controls label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #555;
+    }
+    #ku1-viz-area {
+        position: relative;
+        height: 180px;
+        margin-top: 40px;
+        padding: 0 20px;
+    }
+    #ku1-timeline {
+        height: 6px;
+        background: #e0e0e0;
+        width: 100%;
+        position: absolute;
+        top: 80px;
+        left: 0;
+        border-radius: 3px;
+    }
+    #ku1-timeline-markers {
+        position: absolute;
+        top: 90px;
+        width: 100%;
+        left: 0;
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: #999;
+    }
+    .ku1-marker {
+        position: absolute;
+        transform: translateX(-50%);
+        text-align: center;
+        transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ku1-marker-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        margin: 0 auto 5px;
+    }
+    .ku1-marker-label {
+        font-size: 11px;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+    #ku1-current-marker { top: 73px; z-index: 3; }
+    #ku1-current-marker .ku1-marker-dot { background: #2563eb; }
+    #ku1-current-marker .ku1-marker-label { color: #2563eb; top: -25px; position: absolute; left: 50%; transform: translateX(-50%); }
+
+    #ku1-birth-marker { top: 73px; opacity: 0.6; }
+    #ku1-birth-marker .ku1-marker-dot { background: #94a3b8; width: 10px; height: 10px; }
+    #ku1-birth-marker .ku1-marker-label { color: #64748b; margin-top: 15px; }
+
+    #ku1-expected-marker { top: 73px; z-index: 2; }
+    #ku1-expected-marker .ku1-marker-dot { background: #059669; }
+    #ku1-expected-marker .ku1-marker-label { color: #059669; margin-top: 15px; }
+
+    #ku1-arrow-svg {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        pointer-events: none;
+    }
+    #ku1-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-top: 10px;
+    }
+    .ku1-stat-box { text-align: center; }
+    .ku1-stat-val { display: block; font-size: 1.5rem; font-weight: 800; color: #1e293b; }
+    .ku1-stat-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .ku1-highlight { color: #059669; }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<div class="control-group">
+<label for="ku1-age-slider">Your Current Age: <span id="ku1-age-val">30</span></label>
+<input id="ku1-age-slider" max="95" min="0" step="1" type="range" value="30"/>
+</div>
+<div class="control-group">
+<label for="ku1-sex-select">Biological Sex</label>
+<select id="ku1-sex-select">
+<option value="Male">Male</option>
+<option selected="" value="Female">Female</option>
+</select>
+</div>
+</div>
+<div id="ku1-summary">
+<div class="ku1-stat-box">
+<span class="ku1-stat-label">Expectancy at Birth</span>
+<span class="ku1-stat-val" id="ku1-birth-expectancy">81.1</span>
+</div>
+<div class="ku1-stat-box">
+<span class="ku1-stat-label">Your New Total Expectancy</span>
+<span class="ku1-stat-val ku1-highlight" id="ku1-total-expectancy">82.5</span>
+</div>
+</div>
+<div id="ku1-viz-area">
+<div id="ku1-timeline"></div>
+<div id="ku1-timeline-markers">
+<span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span>
+</div>
+<svg id="ku1-arrow-svg">
+<defs>
+<marker id="ku1-arrowhead" markerheight="7" markerwidth="10" orient="auto" refx="0" refy="3.5">
+<polygon fill="#059669" points="0 0, 10 3.5, 0 7"></polygon>
+</marker>
+</defs>
+<path d="" fill="none" id="ku1-survival-arrow" marker-end="url(#ku1-arrowhead)" stroke="#059669" stroke-width="3"></path>
+</svg>
+<div class="ku1-marker" id="ku1-birth-marker">
+<div class="ku1-marker-dot"></div>
+<div class="ku1-marker-label">At Birth</div>
+</div>
+<div class="ku1-marker" id="ku1-expected-marker">
+<div class="ku1-marker-dot"></div>
+<div class="ku1-marker-label">Expected Age</div>
+</div>
+<div class="ku1-marker" id="ku1-current-marker">
+<div class="ku1-marker-label">You: Age <span id="ku1-age-label">30</span></div>
+<div class="ku1-marker-dot"></div>
+</div>
+</div>
+</div><script>
+(function() {
+    // Simplified SSA Actuarial Data (approximate Period Life Table)
+    const lifeData = {
+        Male: {
+            0: 76.1, 10: 66.8, 20: 57.1, 30: 47.9, 40: 38.7, 50: 29.8, 60: 21.6, 70: 14.4, 80: 8.4, 90: 4.1, 95: 2.8
+        },
+        Female: {
+            0: 81.1, 10: 71.7, 20: 61.9, 30: 52.3, 40: 42.8, 50: 33.6, 60: 24.9, 70: 17.0, 80: 10.1, 90: 5.0, 95: 3.4
+        }
+    };
+
+    function getLifeExpectancy(sex, age) {
+        const table = lifeData[sex];
+        const keys = Object.keys(table).map(Number).sort((a,b) => a-b);
+        
+        // Linear interpolation
+        for (let i = 0; i < keys.length - 1; i++) {
+            if (age >= keys[i] && age <= keys[i+1]) {
+                const t = (age - keys[i]) / (keys[i+1] - keys[i]);
+                return table[keys[i]] + t * (table[keys[i+1]] - table[keys[i]]);
+            }
+        }
+        return table[95] * (1 - (age-95)/15); // Rough tail
+    }
+
+    const slider = document.getElementById('ku1-age-slider');
+    const sexSelect = document.getElementById('ku1-sex-select');
+    const ageVal = document.getElementById('ku1-age-val');
+    const ageLabel = document.getElementById('ku1-age-label');
+    const birthExpectancySpan = document.getElementById('ku1-birth-expectancy');
+    const totalExpectancySpan = document.getElementById('ku1-total-expectancy');
+    
+    const birthMarker = document.getElementById('ku1-birth-marker');
+    const currentMarker = document.getElementById('ku1-current-marker');
+    const expectedMarker = document.getElementById('ku1-expected-marker');
+    const arrowPath = document.getElementById('ku1-survival-arrow');
+
+    function update() {
+        const age = parseInt(slider.value);
+        const sex = sexSelect.value;
+        const remaining = getLifeExpectancy(sex, age);
+        const birthExp = lifeData[sex][0];
+        const totalExp = age + remaining;
+
+        // Update Text
+        ageVal.textContent = age;
+        ageLabel.textContent = age;
+        birthExpectancySpan.textContent = birthExp.toFixed(1);
+        totalExpectancySpan.textContent = totalExp.toFixed(1);
+
+        // Update Viz positions (0-100 range)
+        const agePct = Math.min(age, 100);
+        const birthPct = Math.min(birthExp, 100);
+        const totalPct = Math.min(totalExp, 100);
+
+        currentMarker.style.left = `${agePct}%`;
+        birthMarker.style.left = `${birthPct}%`;
+        expectedMarker.style.left = `${totalPct}%`;
+
+        // Update Arrow
+        const containerWidth = document.getElementById('ku1-viz-area').offsetWidth;
+        const xStart = (agePct / 100) * containerWidth;
+        const xEnd = (totalPct / 100) * containerWidth - 10; // Offset for arrowhead
+        
+        if (xEnd > xStart) {
+            arrowPath.setAttribute('d', `M ${xStart} 20 Q ${(xStart + xEnd)/2} 0 ${xEnd} 20`);
+            arrowPath.style.display = 'block';
+        } else {
+            arrowPath.style.display = 'none';
+        }
+    }
+
+    slider.addEventListener('input', update);
+    sexSelect.addEventListener('change', update);
+    window.addEventListener('resize', update);
+    
+    // Initial run
+    update();
+})();
+</script></div>
+</section>
+<!-- The Mortality Curve: Annual Risk vs. Cumulative Survival -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>While life expectancy provides a helpful "average," it masks the underlying dynamics of risk that change every year. To see the full picture, we must distinguish between two different ways of measuring life: the <strong>Survival Function</strong> $S(x)$, which represents the probability of surviving from birth to at least age $x$, and the <strong>Hazard Rate</strong> (or force of mortality), denoted as $\mu(x)$. While $S(x)$ is a steadily declining curve, the hazard rate follows a distinct, <strong>J-shaped path</strong>.</p><p>The mathematical relationship between these two is fundamental to actuarial science. The probability of dying at exactly age $x$, conditional on having survived until that point, is defined as:</p><p>$$\mu(x) = \lim_{\Delta x \to 0} \frac{P(x &lt; T \leq x + \Delta x \mid T &gt; x)}{\Delta x}$$</p><p>In practice, this "hazard" is not uniform throughout life. In infancy, the risk is relatively high but drops sharply as the immune system matures. It reaches its absolute minimum during late childhood and early adolescence—statistically the "safest" period of human life. However, starting around age 30, the hazard rate begins to climb. For most of adulthood, mortality risk follows <strong>Gompertz's Law</strong>, which observes that the probability of death increases exponentially with age, typically doubling every 7 to 9 years.</p><p>This exponential climb explains why death can feel like a distant abstraction at 25 but an accelerating reality at 75. While your <em>cumulative</em> probability of death increases every year you are alive, the <em>annual</em> risk remains surprisingly low for decades. For example, a healthy 30-year-old may have a less than 0.1% chance of dying in the next year. By age 80, that same annual risk may have spiked to 5% or 10%. Understanding this "slope of mortality" is essential for grasping why healthcare and insurance costs do not rise linearly, but rather accelerate as we age.</p><p>In the interactive visualization below, you can compare these two perspectives. Notice how the survival curve stays "flat" for a long time—representing our success at delaying death—before the exponentially rising hazard rate finally forces the curve toward zero.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        color: #333;
+    }
+    #ku2-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .ku2-toggle-group {
+        display: flex;
+        background: #e2e8f0;
+        padding: 4px;
+        border-radius: 8px;
+        align-self: flex-start;
+    }
+    .ku2-toggle-btn {
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        background: transparent;
+        color: #64748b;
+    }
+    .ku2-toggle-btn.active {
+        background: #fff;
+        color: #2563eb;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #ku2-chart-wrapper {
+        position: relative;
+        height: 350px;
+        background: white;
+        border-radius: 6px;
+        padding: 10px;
+        cursor: crosshair;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    #ku2-info-panel {
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #eff6ff;
+        padding: 12px;
+        border-radius: 6px;
+        border-left: 4px solid #2563eb;
+    }
+    .ku2-data-point {
+        font-weight: 800;
+        color: #1e293b;
+        font-size: 1.1rem;
+    }
+    .ku2-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    #ku2-hint {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-align: center;
+        margin-top: 8px;
+    }
+</style><div id="ku2-container">
+<div id="ku2-controls">
+<div class="ku2-toggle-group" id="ku2-view-toggle">
+<button class="ku2-toggle-btn active" data-mode="risk">Annual Risk of Death</button>
+<button class="ku2-toggle-btn" data-mode="survival">Survival Probability</button>
+</div>
+</div>
+<div id="ku2-chart-wrapper">
+<canvas id="ku2-canvas"></canvas>
+</div>
+<div id="ku2-info-panel">
+<div>
+<div class="ku2-label">Selected Age</div>
+<div class="ku2-data-point" id="ku2-display-age">40</div>
+</div>
+<div style="text-align: right;">
+<div class="ku2-label" id="ku2-display-label">Annual Mortality Risk</div>
+<div class="ku2-data-point" id="ku2-display-value">0.18%</div>
+</div>
+</div>
+<div id="ku2-hint">Click or tap the graph to explore specific ages</div>
+</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
+(function() {
+    const ctx = document.getElementById('ku2-canvas').getContext('2d');
+    let currentMode = 'risk'; // 'risk' or 'survival'
+    let selectedAge = 40;
+
+    // Generate Synthetic Actuarial Data based on Gompertz-Makeham logic
+    // Risk(x) = alpha + beta * exp(gamma * x)
+    const ages = Array.from({length: 101}, (_, i) => i);
+    
+    function calculateData() {
+        const riskData = [];
+        const survivalData = [];
+        let runningSurvival = 100;
+
+        for (let x = 0; x <= 100; x++) {
+            // Annual risk model: base risk + exponential climb
+            // approx 0.0001 base + small spike for infant + exponential doubling every 8 years
+            const baseRisk = 0.0002;
+            const infantRisk = x < 5 ? 0.005 / (x + 1) : 0;
+            const gompertz = 0.00005 * Math.pow(1.09, x);
+            const annualRisk = Math.min(0.9, baseRisk + infantRisk + gompertz);
+            
+            riskData.push(annualRisk * 100); // as percentage
+            survivalData.push(runningSurvival);
+            
+            runningSurvival *= (1 - annualRisk);
+        }
+        return { riskData, survivalData };
+    }
+
+    const { riskData, survivalData } = calculateData();
+
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ages,
+            datasets: [{
+                label: 'Annual Risk (%)',
+                data: riskData,
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Probability (%)', font: { weight: 'bold' } },
+                    grid: { color: '#f1f5f9' }
+                },
+                x: {
+                    title: { display: true, text: 'Age', font: { weight: 'bold' } },
+                    grid: { display: false }
+                }
+            },
+            onClick: (e) => {
+                const points = chart.getElementsAtEventForMode(e, 'index', { intersect: false }, true);
+                if (points.length) {
+                    selectedAge = points[0].index;
+                    updateUI();
+                }
+            }
+        },
+        plugins: [{
+            id: 'verticalLine',
+            afterDraw: (chart) => {
+                if (selectedAge !== null) {
+                    const xScale = chart.scales.x;
+                    const yScale = chart.scales.y;
+                    const xPos = xScale.getPixelForValue(selectedAge);
+                    
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(xPos, yScale.top);
+                    ctx.lineTo(xPos, yScale.bottom);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#2563eb';
+                    ctx.setLineDash([5, 5]);
+                    ctx.stroke();
+
+                    // Intersection point
+                    const yVal = chart.data.datasets[0].data[selectedAge];
+                    const yPos = yScale.getPixelForValue(yVal);
+                    ctx.beginPath();
+                    ctx.arc(xPos, yPos, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = '#2563eb';
+                    ctx.fill();
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }]
+    });
+
+    function updateUI() {
+        const val = chart.data.datasets[0].data[selectedAge];
+        document.getElementById('ku2-display-age').textContent = selectedAge;
+        document.getElementById('ku2-display-value').textContent = val.toFixed(selectedAge > 90 && currentMode === 'risk' ? 1 : 2) + '%';
+        document.getElementById('ku2-display-label').textContent = currentMode === 'risk' ? 'Annual Mortality Risk' : 'Survival Probability';
+        chart.draw();
+    }
+
+    const buttons = document.querySelectorAll('.ku2-toggle-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentMode = btn.dataset.mode;
+            
+            if (currentMode === 'risk') {
+                chart.data.datasets[0].data = riskData;
+                chart.data.datasets[0].borderColor = '#ef4444';
+                chart.data.datasets[0].backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                chart.options.scales.y.type = 'linear'; // Can toggle to log scale if preferred
+            } else {
+                chart.data.datasets[0].data = survivalData;
+                chart.data.datasets[0].borderColor = '#059669';
+                chart.data.datasets[0].backgroundColor = 'rgba(5, 150, 105, 0.1)';
+            }
+            
+            chart.update();
+            updateUI();
+        });
+    });
+
+    // Initial State
+    updateUI();
+})();
+</script></div>
+</section>
+<!-- Probabilistic Outcomes: The Bell Curve of Death Dates -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>If we tell a 65-year-old woman that her life expectancy is 87, she might mistakenly view that year as a "due date." In reality, very few people die exactly at their life expectancy. To understand the true nature of longevity, we must shift from a single-number mindset to a <strong>probabilistic distribution</strong>. In statistics, while the life expectancy ($e_x$) represents the <strong>mean</strong> (arithmetic average), the actual age of death for a population forms a specific shape known as the <strong>curve of deaths</strong>, or the density function $f(t)$.</p><p>Mathematically, the probability that an individual will die between ages $a$ and $b$ is the area under this density curve between those two points. This is derived from the survival function $S(t)$ we explored previously:</p><p>$$P(a \leq T \leq b) = \int_{a}^{b} f(t) dt = S(a) - S(b)$$</p><p>For adults, this distribution is not a perfectly symmetrical Bell Curve (Normal Distribution). Instead, it is <strong>negatively skewed</strong>—it has a long "left tail" representing those who die prematurely in middle age, and a steep "cliff" on the right side as biological limits are reached. As you age, the "spread" or <strong>variance</strong> of your potential death dates actually narrows. A newborn has a massive range of possible outcomes spanning 100 years, while an 80-year-old’s 95% confidence interval for death might only span 15 to 20 years.</p><p>Understanding this distribution is the key to <strong>longevity risk management</strong>. If you are planning for retirement, targeting the "average" life expectancy is statistically risky; it is essentially a coin flip, as roughly half the population will outlive that average. Actuaries often look at the <strong>mode</strong> (the most frequent age of death) or specific <strong>percentiles</strong> (e.g., the age you have only a 10% chance of reaching) to ensure financial or medical plans are robust against the "tail risks" of extreme old age.</p><p>In the following visualization, you can see how the "bell curve" of mortality shifts and compresses as you change your current age. Observe how the probability "mass" moves further into the future the longer you survive, illustrating that your most likely date of death is constantly being rescheduled.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        padding: 20px;
+        background: #fdfdfd;
+        border-radius: 8px;
+        color: #333;
+        border: 1px solid #eef2f6;
+    }
+    #ku3-controls {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .ku3-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .ku3-control-group label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #475569;
+    }
+    #ku3-chart-container {
+        position: relative;
+        height: 320px;
+        margin-bottom: 15px;
+    }
+    #ku3-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .ku3-stat-card {
+        background: #fff;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        text-align: center;
+    }
+    .ku3-stat-label {
+        font-size: 0.7rem;
+        color: #64748b;
+        text-transform: uppercase;
+        display: block;
+    }
+    .ku3-stat-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    .ku3-legend {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-bottom: 5px;
+    }
+    .ku3-legend-item { display: flex; align-items: center; gap: 5px; }
+    .ku3-box-median { width: 12px; height: 12px; background: #6366f1; }
+    .ku3-box-range { width: 12px; height: 12px; background: rgba(99, 102, 241, 0.2); border: 1px solid #6366f1; }
+</style><div id="ku3-container">
+<div id="ku3-controls">
+<div class="ku3-control-group">
+<label for="ku3-age-input">Current Age: <span id="ku3-age-display">20</span></label>
+<input id="ku3-age-input" max="90" min="0" step="1" type="range" value="20"/>
+</div>
+<div class="ku3-control-group">
+<label for="ku3-sex-input">Biological Sex</label>
+<select id="ku3-sex-input">
+<option selected="" value="Male">Male</option>
+<option value="Female">Female</option>
+</select>
+</div>
+</div>
+<div class="ku3-legend">
+<div class="ku3-legend-item"><div class="ku3-box-range"></div> Likely Range (Middle 50%)</div>
+<div class="ku3-legend-item"><div class="ku3-box-median" style="width:2px; height:12px;"></div> Average (Mean)</div>
+</div>
+<div id="ku3-chart-container">
+<canvas id="ku3-chart"></canvas>
+</div>
+<div id="ku3-stats-grid">
+<div class="ku3-stat-card">
+<span class="ku3-stat-label">25th Percentile</span>
+<span class="ku3-stat-value" id="ku3-p25">-</span>
+</div>
+<div class="ku3-stat-card" style="border-top: 3px solid #6366f1;">
+<span class="ku3-stat-label">Mean Death Age</span>
+<span class="ku3-stat-value" id="ku3-mean">-</span>
+</div>
+<div class="ku3-stat-card">
+<span class="ku3-stat-label">75th Percentile</span>
+<span class="ku3-stat-value" id="ku3-p75">-</span>
+</div>
+</div>
+</div><script>
+(function() {
+    const ctx = document.getElementById('ku3-chart').getContext('2d');
+    const ageInput = document.getElementById('ku3-age-input');
+    const sexInput = document.getElementById('ku3-sex-input');
+    const ageDisplay = document.getElementById('ku3-age-display');
+    
+    // Gompertz Parameters (Approximated for Human Mortality)
+    const params = {
+        Male: { mode: 82, dispersion: 9 },
+        Female: { mode: 86, dispersion: 8 }
+    };
+
+    function getDensity(age, currentAge, sex) {
+        if (age < currentAge) return 0;
+        const p = params[sex];
+        // Skewed Late-Life Mortality Distribution (Gompertz-like PDF)
+        const z = (age - p.mode) / p.dispersion;
+        return Math.exp(z - Math.exp(z)) / p.dispersion;
+    }
+
+    let chart;
+
+    function update() {
+        const currentAge = parseInt(ageInput.value);
+        const sex = sexInput.value;
+        ageDisplay.textContent = currentAge;
+
+        const ages = Array.from({length: 111}, (_, i) => i);
+        let rawData = ages.map(a => getDensity(a, currentAge, sex));
+        
+        // Normalize for survivors (Conditioning on T > currentAge)
+        const totalRemainingArea = rawData.reduce((a, b) => a + b, 0);
+        const normalizedData = rawData.map(v => v / totalRemainingArea);
+
+        // Calculate Stats
+        let cumulative = 0;
+        let p25 = 0, p75 = 0, mean = 0;
+        
+        normalizedData.forEach((v, i) => {
+            cumulative += v;
+            if (!p25 && cumulative >= 0.25) p25 = i;
+            if (!p75 && cumulative >= 0.75) p75 = i;
+            mean += v * i;
+        });
+
+        document.getElementById('ku3-p25').textContent = p25 || '-';
+        document.getElementById('ku3-p75').textContent = p75 || '-';
+        document.getElementById('ku3-mean').textContent = mean.toFixed(1);
+
+        const chartData = {
+            labels: ages,
+            datasets: [{
+                data: normalizedData,
+                borderColor: '#6366f1',
+                backgroundColor: (context) => {
+                    const index = context.dataIndex;
+                    return (index >= p25 && index <= p75) ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.05)';
+                },
+                fill: true,
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.3
+            }]
+        };
+
+        if (chart) {
+            chart.data = chartData;
+            chart.options.plugins.annotation.annotations.meanLine.value = mean;
+            chart.update('none');
+        } else {
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false },
+                        annotation: {
+                            annotations: {
+                                meanLine: {
+                                    type: 'line',
+                                    xMin: mean,
+                                    xMax: mean,
+                                    borderColor: '#4338ca',
+                                    borderWidth: 2,
+                                    borderDash: [4, 4],
+                                    label: {
+                                        display: true,
+                                        content: 'Mean',
+                                        position: 'start',
+                                        backgroundColor: 'rgba(67, 56, 202, 0.8)',
+                                        font: { size: 10 }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            display: false 
+                        },
+                        x: {
+                            title: { display: true, text: 'Age at Death', font: { weight: 'bold', size: 11 } },
+                            grid: { display: false },
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Load annotation plugin dynamically if not present, then init
+    if (typeof Chart.registry.plugins.get('annotation') === 'undefined') {
+        const script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.1";
+        script.onload = update;
+        document.head.appendChild(script);
+    } else {
+        update();
+    }
+
+    ageInput.addEventListener('input', update);
+    sexInput.addEventListener('change', update);
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

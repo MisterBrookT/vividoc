@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Parametric creation of interactive diagrams</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Parametric creation of interactive diagrams</h1>
+<!-- Introduction to Parametric Controls and State Variables -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>In traditional static design, a shape is often defined by "hard-coded" values—for instance, a circle might have a center at $(50, 50)$ and a radius of $20$. However, to create <strong>interactive diagrams</strong>, we must shift our perspective from fixed values to <strong>state variables</strong>. A state variable, often denoted as $u$ or $t$, acts as a single source of truth that dictates the appearance and behavior of one or more objects within a system.</p><p>Consider the concept of <em>parametric mapping</em>. Instead of defining a square's width as 100 pixels, we define it as a function of a parameter $s$, where $Width = f(s)$. By changing the value of $s$ via a slider or input, the diagram responds dynamically. The power of this approach lies in <strong>simultaneous control</strong>: a single parameter $t \in [0, 1]$ can be mapped to multiple properties at once. For example, as $t$ increases, an object could move along the x-axis according to $x = 100 \cdot t$ while its opacity decreases according to $\alpha = 1 - t$.</p><p>Defining diagrams through these mathematical relationships ensures <strong>logical consistency</strong>. When properties are linked through common variables, it becomes impossible for the visual state to "break" or become unsynchronized. If we define the coordinates of a point on a circle using the parametric equations $x = r \cos(\theta)$ and $y = r \sin(\theta)$, the point will <em>always</em> maintain its relationship to the radius $r$ and angle $\theta$, regardless of how we manipulate those underlying variables.</p><p>As we move forward, we will treat the "state" of our diagram as a collection of these independent parameters. By mastering the transition from static coordinates to <strong>variable-driven constants</strong>, you gain the ability to build complex, responsive visualizations that react to user input with mathematical precision.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #ku1-viewport {
+        width: 100%;
+        height: 250px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        position: relative;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    #ku1-square {
+        background: #3b82f6;
+        transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+    }
+
+    #ku1-area-label {
+        position: absolute;
+        bottom: 10px;
+        right: 15px;
+        font-family: monospace;
+        font-size: 14px;
+        color: #666;
+    }
+
+    #ku1-controls {
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #ku1-controls label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #374151;
+    }
+
+    #ku1-scale-slider {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .ku1-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 10px;
+        font-size: 0.85rem;
+    }
+
+    .ku1-stat-box {
+        background: #eee;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .ku1-stat-label { color: #6b7280; margin-right: 5px; }
+    .ku1-stat-value { font-weight: bold; color: #111827; }
+</style><div id="ku1-container">
+<div id="ku1-viewport">
+<div id="ku1-square"></div>
+<div id="ku1-area-label">Area: <span id="ku1-area-val">2500</span> px²</div>
+</div>
+<div id="ku1-controls">
+<label for="ku1-scale-slider">Parameter: <code>Scale (s)</code></label>
+<input id="ku1-scale-slider" max="100" min="10" type="range" value="50"/>
+<div class="ku1-stats">
+<div class="ku1-stat-box">
+<span class="ku1-stat-label">Side:</span>
+<span class="ku1-stat-value" id="ku1-side-val">50</span>px
+            </div>
+<div class="ku1-stat-box">
+<span class="ku1-stat-label">Opacity (α):</span>
+<span class="ku1-stat-value" id="ku1-opacity-val">0.50</span>
+</div>
+</div>
+</div>
+</div><script>
+    (function() {
+        const slider = document.getElementById('ku1-scale-slider');
+        const square = document.getElementById('ku1-square');
+        const areaVal = document.getElementById('ku1-area-val');
+        const sideVal = document.getElementById('ku1-side-val');
+        const opacityVal = document.getElementById('ku1-opacity-val');
+
+        function update() {
+            // State: Single Parameter
+            const scale = parseInt(slider.value, 10);
+            
+            // Derived Variables
+            const area = scale * scale;
+            const opacity = scale / 100;
+
+            // Render logic
+            square.style.width = scale + 'px';
+            square.style.height = scale + 'px';
+            square.style.opacity = opacity;
+            
+            // Update UI Labels
+            areaVal.textContent = area.toLocaleString();
+            sideVal.textContent = scale;
+            opacityVal.textContent = opacity.toFixed(2);
+        }
+
+        slider.addEventListener('input', update);
+        
+        // Initial call
+        update();
+    })();
+</script></div>
+</section>
+<!-- Establishing Functional Relationships and Constraints -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>Once we establish state variables, the next step is defining <strong>functional relationships</strong> between elements. In a well-constructed interactive diagram, individual components rarely move in isolation; instead, they exist within a hierarchy of constraints. By expressing the properties of <em>Object B</em> as a mathematical function of <em>Object A</em>, we create persistent logical links. For instance, if we define the position of a label as $(x_{label}, y_{label}) = (x_{point}, y_{point} - 20)$, the label is <strong>constrained</strong> to follow the point regardless of how the underlying parameters change.</p><p>This functional approach allows for the creation of <strong>dependent geometry</strong>. Consider a triangle where two vertices are fixed, and the third is driven by a parameter $t$. We can define the area of this triangle as a function $A(t) = \frac{1}{2} |x_A(y_B - y_C(t)) + x_B(y_C(t) - y_A) + x_C(t)(y_A - y_B)|$. By binding the visual representation to this formula, the user is not just seeing a shape change; they are observing the <strong>geometric consequences</strong> of shifting a variable. The diagram acts as a live calculator where the visual output is guaranteed to be mathematically accurate.</p><p>Constraints also serve to enforce <strong>boundary logic</strong>. We can use functions like $min()$, $max()$, or $clamp()$ to ensure that interactive elements stay within logical limits. If a point represents a physical object inside a container of width $W$, we define its position through a constraint $x_{bounded} = \max(0, \min(x_{input}, W))$. These relationships transform the diagram from a simple drawing into a <strong>dynamic model</strong>, where the rules of the system are baked into the very functions that render its pixels.</p><p>As you build more complex systems, remember that the goal of parametric design is to minimize "manual" updates. By establishing a robust web of functions—where a change in a single root parameter cascades through dependent variables—you ensure that the <strong>integrity of the information</strong> is preserved across every possible state of the interface.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        background: #fdfdfd;
+        border-radius: 8px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #ku2-svg-viewport {
+        width: 100%;
+        max-width: 500px;
+        height: 300px;
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        touch-action: none; /* Prevents scrolling while dragging */
+    }
+
+    .ku2-beam {
+        stroke: #94a3b8;
+        stroke-width: 2;
+        stroke-dasharray: 4;
+    }
+
+    .ku2-seesaw {
+        stroke: #1e293b;
+        stroke-width: 3;
+        transition: all 0.05s linear;
+    }
+
+    .ku2-point {
+        cursor: grab;
+        transition: r 0.2s;
+    }
+
+    .ku2-point:active {
+        cursor: grabbing;
+    }
+
+    .ku2-point-a { fill: #3b82f6; }
+    .ku2-point-b { fill: #f87171; }
+    
+    .ku2-midpoint {
+        fill: #10b981;
+    }
+
+    .ku2-label {
+        font-size: 12px;
+        font-weight: 600;
+        user-select: none;
+        pointer-events: none;
+    }
+
+    #ku2-formula-display {
+        margin-top: 15px;
+        padding: 10px;
+        background: #f1f5f9;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: #334155;
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    .ku2-hint {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 8px;
+    }
+</style><div id="ku2-container">
+<svg id="ku2-svg-viewport" viewbox="0 0 400 300">
+<!-- Axes/Guides -->
+<line class="ku2-beam" x1="100" x2="100" y1="50" y2="250"></line>
+<line class="ku2-beam" x1="300" x2="300" y1="50" y2="250"></line>
+<!-- The Seesaw Connection -->
+<line class="ku2-seesaw" id="ku2-seesaw-line" x1="100" x2="300" y1="150" y2="150"></line>
+<!-- Midpoint Marker (The Constraint) -->
+<circle class="ku2-midpoint" cx="200" cy="150" id="ku2-midpoint" r="4"></circle>
+<text class="ku2-label" style="fill: #059669;" x="205" y="145">Fixed Center (150)</text>
+<!-- Interactive Points -->
+<circle class="ku2-point ku2-point-a" cx="100" cy="150" id="ku2-handle-a" r="8"></circle>
+<circle class="ku2-point ku2-point-b" cx="300" cy="150" id="ku2-handle-b" r="8"></circle>
+<text class="ku2-label" id="ku2-label-a" x="65" y="150">A: 150</text>
+<text class="ku2-label" id="ku2-label-b" x="315" y="150">B: 150</text>
+</svg>
+<div id="ku2-formula-display">
+        Point B<sub>y</sub> = 300 - Point A<sub>y</sub>
+</div>
+<div class="ku2-hint">Drag the blue point (A) up and down</div>
+</div><script>
+    (function() {
+        const svg = document.getElementById('ku2-svg-viewport');
+        const handleA = document.getElementById('ku2-handle-a');
+        const handleB = document.getElementById('ku2-handle-b');
+        const line = document.getElementById('ku2-seesaw-line');
+        const labelA = document.getElementById('ku2-label-a');
+        const labelB = document.getElementById('ku2-label-b');
+
+        let isDragging = false;
+        const MIN_Y = 50;
+        const MAX_Y = 250;
+        const CENTER_Y = 150; // Constant Midpoint
+
+        function updatePositions(newY) {
+            // Constrain Y within boundaries
+            const clampedA_Y = Math.max(MIN_Y, Math.min(MAX_Y, newY));
+            
+            // Derived state: Seesaw relationship (Functional Mapping)
+            // A_y + B_y = 300, thus B_y = 300 - A_y
+            const derivedB_Y = (CENTER_Y * 2) - clampedA_Y;
+
+            // Update DOM Elements
+            handleA.setAttribute('cy', clampedA_Y);
+            handleB.setAttribute('cy', derivedB_Y);
+            
+            line.setAttribute('y1', clampedA_Y);
+            line.setAttribute('y2', derivedB_Y);
+
+            labelA.setAttribute('y', clampedA_Y + 5);
+            labelA.textContent = `A: ${Math.round(clampedA_Y)}`;
+            
+            labelB.setAttribute('y', derivedB_Y + 5);
+            labelB.textContent = `B: ${Math.round(derivedB_Y)}`;
+        }
+
+        function handleMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const rect = svg.getBoundingClientRect();
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const relativeY = (clientY - rect.top) * (300 / rect.height);
+            
+            updatePositions(relativeY);
+        }
+
+        function startDrag() { isDragging = true; }
+        function stopDrag() { isDragging = false; }
+
+        // Interaction Listeners
+        handleA.addEventListener('mousedown', startDrag);
+        handleA.addEventListener('touchstart', startDrag);
+        
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove, { passive: false });
+        
+        window.addEventListener('mouseup', stopDrag);
+        window.addEventListener('touchend', stopDrag);
+
+        // Initial State
+        updatePositions(100);
+    })();
+</script></div>
+</section>
+<!-- Conditional Logic and Component States -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>While continuous variables allow for smooth transitions, sophisticated interactive diagrams often require <strong>discrete state management</strong>. Beyond simple linear mapping, we can implement <strong>conditional logic</strong>—using "if-then-else" structures—to fundamentally alter the diagram's layout, visibility, or classification. This layer of logic allows a single parametric system to represent different <em>categories</em> of information. For instance, a diagram representing a physical system might change color from cold blue to warning red when a temperature variable $T$ exceeds a critical threshold $T_{max}$.</p><p>In parametric design, we often use <strong>indicator functions</strong> or piecewise relationships to manage these transitions. Consider a dashboard component that displays a performance metric $v$. We can define its visual state $S$ as:
+$$S(v) = \begin{cases} \text{Normal} &amp; \text{if } v &lt; 80 \\ \text{Critical} &amp; \text{if } v \geq 80 \end{cases}$$
+By encoding this logic directly into the render function, the diagram becomes self-aware. It doesn't just show a value; it interprets that value for the user, providing an immediate <strong>semantic layer</strong> to the visualization. This is particularly powerful when switching between entirely different geometric modes, such as toggling between a 2D and 3D projection or changing the complexity of a diagram based on the available screen real estate.</p><p>Furthermore, conditional logic enables <strong>structural reactivity</strong>. A diagram can "branch" its visual hierarchy based on user selection. Instead of merely scaling an object, a parameter can determine the <em>presence</em> of an object. This is effectively the implementation of Boolean logic within geometry. For example, if a "Show Detail" toggle is active ($\text{active} = 1$), the coordinate system might compute positions for five sub-components; if inactive ($\text{active} = 0$), these calculations are bypassed or their opacity is mapped to $0$.</p><p>Mastering these discrete transitions allows you to build <strong>intelligent interfaces</strong>. By combining the fluid parametric mapping learned in previous units with the rigid decision-making of conditional states, you can create diagrams that not only respond to input but also guide the user through complex data structures and decision trees with perfect mathematical and logical consistency.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        background: #fdfdfd;
+        border-radius: 8px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #ku3-viewport {
+        width: 100%;
+        max-width: 500px;
+        height: 300px;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.4s ease;
+    }
+
+    #ku3-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    #ku3-overlay {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        pointer-events: none;
+    }
+
+    #ku3-phase-label {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        margin: 0;
+        text-transform: uppercase;
+        color: rgba(0,0,0,0.7);
+        text-shadow: 0 2px 4px rgba(255,255,255,0.5);
+    }
+
+    #ku3-temp-display {
+        font-family: monospace;
+        font-size: 1.2rem;
+        background: rgba(255,255,255,0.8);
+        padding: 4px 12px;
+        border-radius: 20px;
+        color: #334155;
+    }
+
+    #ku3-controls {
+        width: 100%;
+        max-width: 400px;
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ku3-slider-label {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #475569;
+    }
+
+    #ku3-temp-slider {
+        width: 100%;
+        cursor: pointer;
+        accent-color: #3b82f6;
+    }
+
+    .ku3-logic-box {
+        margin-top: 15px;
+        padding: 12px;
+        background: #f8fafc;
+        border-left: 4px solid #cbd5e1;
+        font-family: monospace;
+        font-size: 0.8rem;
+        line-height: 1.4;
+        color: #1e293b;
+    }
+</style><div id="ku3-container">
+<div id="ku3-viewport">
+<canvas id="ku3-canvas"></canvas>
+<div id="ku3-overlay">
+<h2 id="ku3-phase-label">Liquid</h2>
+<div id="ku3-temp-display">20°C</div>
+</div>
+</div>
+<div id="ku3-controls">
+<div class="ku3-slider-label">
+<span>Temperature Control (T)</span>
+<span>-20°C to 120°C</span>
+</div>
+<input id="ku3-temp-slider" max="120" min="-20" type="range" value="20"/>
+<div class="ku3-logic-box" id="ku3-logic-preview">
+            if (T &lt; 0) state = "SOLID" (Blue)<br/>
+            else if (T &lt; 100) state = "LIQUID" (Green)<br/>
+            else state = "GAS" (Red)
+        </div>
+</div>
+</div><script>
+    (function() {
+        const slider = document.getElementById('ku3-temp-slider');
+        const phaseLabel = document.getElementById('ku3-phase-label');
+        const tempDisplay = document.getElementById('ku3-temp-display');
+        const viewport = document.getElementById('ku3-viewport');
+        const canvas = document.getElementById('ku3-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const numParticles = 40;
+        
+        // Initialize particles
+        for (let i = 0; i < numParticles; i++) {
+            particles.push({
+                x: Math.random() * 400,
+                y: Math.random() * 300,
+                vx: (Math.random() - 0.5),
+                vy: (Math.random() - 0.5),
+                r: 4 + Math.random() * 4
+            });
+        }
+
+        function resize() {
+            canvas.width = viewport.clientWidth;
+            canvas.height = viewport.clientHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function update() {
+            const T = parseInt(slider.value, 10);
+            tempDisplay.textContent = `${T}°C`;
+
+            let phase, bgColor, pColor, speedMult, pAlpha;
+
+            // DISCRETE LOGIC BRANCHING
+            if (T < 0) {
+                phase = "Solid";
+                bgColor = "#eff6ff"; // Blue tint
+                pColor = "#3b82f6";
+                speedMult = 0.05;    // Minimal vibration
+                pAlpha = 0.8;
+            } else if (T < 100) {
+                phase = "Liquid";
+                bgColor = "#f0fdf4"; // Green tint
+                pColor = "#22c55e";
+                speedMult = 1 + (T * 0.05); // Fluid speed
+                pAlpha = 0.6;
+            } else {
+                phase = "Gas";
+                bgColor = "#fef2f2"; // Red tint
+                pColor = "#ef4444";
+                speedMult = 8;       // High kinetic energy
+                pAlpha = 0.3;
+            }
+
+            phaseLabel.textContent = phase;
+            viewport.style.backgroundColor = bgColor;
+            slider.style.accentColor = pColor;
+
+            // Draw particles
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = pColor;
+            ctx.globalAlpha = pAlpha;
+
+            particles.forEach(p => {
+                // Update
+                p.x += p.vx * speedMult;
+                p.y += p.vy * speedMult;
+
+                // Boundary Logic
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                // Render
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(update);
+        }
+
+        slider.addEventListener('input', () => {
+            // Logic handled in animation frame for smoothness
+        });
+
+        update();
+    })();
+</script></div>
+</section>
+<!-- Coordinate Mapping and Responsive Layouts -->
+<section class="knowledge-unit" id="ku4">
+<div class="text-content"><p>The final stage in the parametric workflow is <strong>coordinate mapping</strong>: the process of translating abstract data values or mathematical states into physical pixel coordinates on a screen. Because user devices vary in size, we must move away from "absolute positioning" ($x = 400px$) and toward <strong>normalized coordinates</strong>. By defining our system within a unit interval $[0, 1]$, we create a resolution-independent model. The actual screen position $X_{screen}$ is then derived through a linear transformation: $X_{screen} = X_{min} + u \cdot (X_{max} - X_{min})$, where $u$ is our normalized parameter.</p><p>This approach is the foundation of <strong>responsive layouts</strong>. When a diagram is resized, we do not simply stretch the image; we re-evaluate the mapping functions. Consider an interactive line chart. If the data domain ranges from $[D_{min}, D_{max}]$, any data point $d$ must first be normalized to a value $t = \frac{d - D_{min}}{D_{max} - D_{min}}$. This value $t$ represents the <em>relative</em> position of the data. Only in the final rendering step is $t$ multiplied by the current width of the container. This ensures that the <strong>spatial relationships</strong> and ratios between elements remain constant, whether viewed on a mobile phone or a desktop monitor.</p><p>Beyond simple scaling, coordinate mapping allows for <strong>non-linear projections</strong>. By passing our normalized parameters through transition functions—such as logarithmic scales or easing curves—we can distort the visual space to highlight specific data ranges. For instance, a fisheye distortion effect can be achieved by mapping the linear coordinate $u$ through a power function $u' = u^k$, effectively "pinching" or "expanding" the coordinate system around a focal point. This demonstrates that the "grid" of our diagram is not a static background, but a <strong>malleable field</strong> dictated by parametric logic.</p><p>Ultimately, mastering responsive mapping transforms a diagram from a fixed illustration into a <strong>liquid interface</strong>. By decoupling the logical state (the data) from the visual encoding (the pixels), you ensure that your interactive creations are robust. The diagram becomes a portal where the mathematical truth of the underlying model is preserved across any scale, allowing the user to explore the relationship between variables with perfect visual clarity, regardless of their hardware constraints.</p></div>
+<div class="interactive-content"><style>
+    #ku4-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        background: #fdfdfd;
+        border-radius: 8px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #ku4-canvas-area {
+        width: 100%;
+        height: 200px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        border: 2px dashed #cbd5e1;
+    }
+
+    #ku4-document-frame {
+        background: white;
+        height: 140px;
+        border: 2px solid #1e293b;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        position: relative;
+        transition: width 0.1s ease-out;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #ku4-central-element {
+        width: 60px;
+        height: 40px;
+        background: #8b5cf6;
+        border-radius: 4px;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+    }
+
+    .ku4-measure-line {
+        position: absolute;
+        height: 2px;
+        background: #94a3b8;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ku4-measure-line::before, .ku4-measure-line::after {
+        content: '';
+        position: absolute;
+        width: 1px;
+        height: 10px;
+        background: #94a3b8;
+    }
+    .ku4-measure-line::before { left: 0; }
+    .ku4-measure-line::after { right: 0; }
+
+    .ku4-measure-label {
+        position: absolute;
+        top: -20px;
+        font-size: 11px;
+        font-family: monospace;
+        color: #64748b;
+        background: white;
+        padding: 0 4px;
+    }
+
+    #ku4-controls {
+        width: 100%;
+        max-width: 400px;
+        margin-top: 25px;
+    }
+
+    .ku4-slider-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    #ku4-width-slider {
+        width: 100%;
+        cursor: pointer;
+        accent-color: #8b5cf6;
+    }
+
+    #ku4-formula {
+        margin-top: 15px;
+        padding: 10px;
+        background: #f1f5f9;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #475569;
+        text-align: center;
+    }
+</style><div id="ku4-container">
+<div id="ku4-canvas-area">
+<div id="ku4-document-frame">
+<!-- Left Measurement -->
+<div class="ku4-measure-line" id="ku4-measure-left">
+<span class="ku4-measure-label" id="ku4-label-left">u = 0.5</span>
+</div>
+<!-- Central Node -->
+<div id="ku4-central-element">UI BAR</div>
+<!-- Right Measurement -->
+<div class="ku4-measure-line" id="ku4-measure-right">
+<span class="ku4-measure-label" id="ku4-label-right">u = 0.5</span>
+</div>
+</div>
+</div>
+<div id="ku4-controls">
+<div class="ku4-slider-header">
+<span>Viewport Width (W)</span>
+<span id="ku4-width-val">400px</span>
+</div>
+<input id="ku4-width-slider" max="600" min="200" type="range" value="400"/>
+<div id="ku4-formula">
+            x_pos = W * 0.5 <br/>
+<span style="color: #8b5cf6;">Normalized Coordinate (u) is constant</span>
+</div>
+</div>
+</div><script>
+    (function() {
+        const slider = document.getElementById('ku4-width-slider');
+        const frame = document.getElementById('ku4-document-frame');
+        const widthVal = document.getElementById('ku4-width-val');
+        const leftMeasure = document.getElementById('ku4-measure-left');
+        const rightMeasure = document.getElementById('ku4-measure-right');
+        const leftLabel = document.getElementById('ku4-label-left');
+        const rightLabel = document.getElementById('ku4-label-right');
+
+        function update() {
+            const w = parseInt(slider.value, 10);
+            
+            // Apply state to DOM
+            frame.style.width = w + 'px';
+            widthVal.textContent = w + 'px';
+
+            // Calculate derived visual properties
+            // The bar is 60px wide. Center is w/2.
+            // Distance from edge to bar edge = (w/2) - (60/2)
+            const distance = (w / 2) - 30;
+            
+            leftMeasure.style.width = distance + 'px';
+            leftMeasure.style.left = '0px';
+            
+            rightMeasure.style.width = distance + 'px';
+            rightMeasure.style.right = '0px';
+
+            // Show that the mapping is normalized
+            const normalizedPos = (w / 2) / w;
+            leftLabel.textContent = `d: ${Math.round(distance)}px`;
+            rightLabel.textContent = `u: ${normalizedPos.toFixed(1)}`;
+        }
+
+        slider.addEventListener('input', update);
+        
+        // Initial sync
+        update();
+    })();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

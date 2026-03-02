@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Geometric intersection of multiple circles</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Geometric intersection of multiple circles</h1>
+<!-- The Intersection of Two Circles: Basics of Overlap -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>The study of multiple circle intersections begins with the most fundamental building block: the relationship between a pair of circles. When two circles, $C_1$ and $C_2$, with radii $r_1$ and $r_2$ are placed on a 2D plane, their spatial relationship is entirely governed by the <strong>Euclidean distance</strong> $d$ between their centers $(x_1, y_1)$ and $(x_2, y_2)$.</p><p>For a meaningful intersection to occur, the circles must be close enough to touch but not so far apart that they are disjoint. Formally, a non-trivial intersection (an area overlap) exists if and only if the distance between the centers satisfies the <strong>triangle inequality</strong>: $|r_1 - r_2| &lt; d &lt; r_1 + r_2$. If $d = r_1 + r_2$, the circles are <em>externally tangent</em>, touching at exactly one point; if $d &lt; |r_1 - r_2|$, one circle is contained entirely within the other without touching.</p><p>When the overlap condition is met, the resulting intersection region is a convex, lens-shaped area known as a <strong>circular symmetric lens</strong> (if $r_1 = r_2$) or an <strong>asymmetric lens</strong> (if $r_1 \neq r_2$). This lens is bounded by two circular arcs. The two points where the circumferences of the circles meet define the <strong>common chord</strong> of the intersection. This chord is always perpendicular to the line connecting the two centers.</p><p>The geometry of this lens can be decomposed into two <em>circular segments</em>. A circular segment is the area "cut off" from a circle by a chord. To calculate the total area of intersection $A_{total}$, we sum the areas of these two segments:</p><p>$A = r_1^2 \cos^{-1}\left(\frac{d^2 + r_1^2 - r_2^2}{2dr_1}\right) + r_2^2 \cos^{-1}\left(\frac{d^2 + r_2^2 - r_1^2}{2dr_2}\right) - \frac{1}{2}\sqrt{(-d+r_1+r_2)(d+r_1-r_2)(d-r_1+r_2)(d+r_1+r_2)}$</p><p>This formula highlights that the intersection is not merely a subtraction of parts, but a trigonometric relationship based on the <strong>central angles</strong> subtended by the chord in each circle. Understanding this two-circle foundation is essential before we scale our analysis to the complexity of three or more overlapping circles.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    #ku1-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        background: #fff;
+        border: 1px solid #eee;
+        cursor: crosshair;
+        touch-action: none;
+    }
+    #ku1-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        width: 100%;
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+    .ku1-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .ku1-control-group label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #444;
+    }
+    #ku1-stats {
+        margin-top: 15px;
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #555;
+        text-align: center;
+    }
+    .ku1-hint {
+        font-size: 0.8rem;
+        color: #888;
+        margin-bottom: 10px;
+    }
+</style><div id="ku1-container">
+<div class="ku1-hint">Drag the blue circle to move it. Use sliders to change radii.</div>
+<div id="ku1-canvas-container">
+<canvas id="ku1-canvas"></canvas>
+</div>
+<div id="ku1-controls">
+<div class="ku1-control-group">
+<label>Radius $r_1$ (Fixed Center): <span id="ku1-r1-val">5</span></label>
+<input id="ku1-r1-slider" max="10" min="2" step="0.1" type="range" value="5"/>
+</div>
+<div class="ku1-control-group">
+<label>Radius $r_2$ (Draggable): <span id="ku1-r2-val">5</span></label>
+<input id="ku1-r2-slider" max="10" min="2" step="0.1" type="range" value="5"/>
+</div>
+</div>
+<div id="ku1-stats">
+        Distance ($d$): <span id="ku1-stat-d">0</span> | Status: <span id="ku1-stat-status">-</span>
+</div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku1-canvas');
+    const ctx = canvas.getContext('2d');
+    const r1Slider = document.getElementById('ku1-r1-slider');
+    const r2Slider = document.getElementById('ku1-r2-slider');
+    const r1Val = document.getElementById('ku1-r1-val');
+    const r2Val = document.getElementById('ku1-r2-val');
+    const statD = document.getElementById('ku1-stat-d');
+    const statStatus = document.getElementById('ku1-stat-status');
+
+    let state = {
+        x1: 0, y1: 0, r1: 5,
+        x2: 6, y2: 0, r2: 5,
+        isDragging: false,
+        scale: 20
+    };
+
+    function resize() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        draw();
+    }
+
+    function getIntersectionPoints(x1, y1, r1, x2, y2, r2, d) {
+        if (d > r1 + r2 || d < Math.abs(r1 - r2) || d === 0) return null;
+        
+        const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
+        const h = Math.sqrt(Math.max(0, r1 * r1 - a * a));
+        const x0 = x1 + a * (x2 - x1) / d;
+        const y0 = y1 + a * (y2 - y1) / d;
+        
+        return [
+            {
+                x: x0 + h * (y2 - y1) / d,
+                y: y0 - h * (x2 - x1) / d
+            },
+            {
+                x: x0 - h * (y2 - y1) / d,
+                y: y0 + h * (x2 - x1) / d
+            }
+        ];
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const scale = state.scale;
+
+        const d = Math.sqrt(Math.pow(state.x2 - state.x1, 2) + Math.pow(state.y2 - state.y1, 2));
+        statD.textContent = d.toFixed(2);
+
+        // Determine Status
+        let status = "Disjoint";
+        if (d > state.r1 + state.r2) status = "Separated";
+        else if (d < Math.abs(state.r1 - state.r2)) status = "Contained";
+        else status = "Overlapping";
+        statStatus.textContent = status;
+
+        // Draw distance line
+        ctx.beginPath();
+        ctx.setLineDash([5, 5]);
+        ctx.moveTo(centerX + state.x1 * scale, centerY - state.y1 * scale);
+        ctx.lineTo(centerX + state.x2 * scale, centerY - state.y2 * scale);
+        ctx.strokeStyle = '#aaa';
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Fill intersection lens
+        const pts = getIntersectionPoints(state.x1, state.y1, state.r1, state.x2, state.y2, state.r2, d);
+        if (pts && d < state.r1 + state.r2 && d > Math.abs(state.r1 - state.r2)) {
+            ctx.beginPath();
+            const angle1_start = Math.atan2(centerY - (centerY - pts[1].y * scale), (centerX + pts[1].x * scale) - centerX); // Dummy logic simpler:
+            
+            // Path for lens: arc from circle 1 then arc from circle 2
+            const ang1a = Math.atan2(-(pts[0].y - state.y1), pts[0].x - state.x1);
+            const ang1b = Math.atan2(-(pts[1].y - state.y1), pts[1].x - state.x1);
+            const ang2a = Math.atan2(-(pts[0].y - state.y2), pts[0].x - state.x2);
+            const ang2b = Math.atan2(-(pts[1].y - state.y2), pts[1].x - state.x2);
+
+            ctx.arc(centerX + state.x1 * scale, centerY - state.y1 * scale, state.r1 * scale, -ang1a, -ang1b, false);
+            ctx.arc(centerX + state.x2 * scale, centerY - state.y2 * scale, state.r2 * scale, -ang2b, -ang2a, false);
+            ctx.fillStyle = 'rgba(255, 107, 107, 0.4)';
+            ctx.fill();
+        }
+
+        // Draw Circles
+        ctx.lineWidth = 2;
+        
+        // Circle 1
+        ctx.beginPath();
+        ctx.arc(centerX + state.x1 * scale, centerY - state.y1 * scale, state.r1 * scale, 0, Math.PI * 2);
+        ctx.strokeStyle = '#4dabf7';
+        ctx.stroke();
+        
+        // Circle 2
+        ctx.beginPath();
+        ctx.arc(centerX + state.x2 * scale, centerY - state.y2 * scale, state.r2 * scale, 0, Math.PI * 2);
+        ctx.strokeStyle = '#228be6';
+        ctx.stroke();
+
+        // Draw intersection points
+        if (pts) {
+            ctx.fillStyle = '#fa5252';
+            pts.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(centerX + p.x * scale, centerY - p.y * scale, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        // Draw Centers
+        ctx.fillStyle = '#444';
+        [state.x1, state.x2].forEach((x, i) => {
+            const y = i === 0 ? state.y1 : state.y2;
+            ctx.beginPath();
+            ctx.arc(centerX + x * scale, centerY - y * scale, 3, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    function handleMove(e) {
+        if (!state.isDragging) return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        state.x2 = (clientX - rect.left - canvas.width / 2) / state.scale;
+        state.y2 = -(clientY - rect.top - canvas.height / 2) / state.scale;
+        draw();
+    }
+
+    canvas.addEventListener('mousedown', () => state.isDragging = true);
+    window.addEventListener('mouseup', () => state.isDragging = false);
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('touchstart', (e) => { state.isDragging = true; handleMove(e); e.preventDefault(); });
+    canvas.addEventListener('touchmove', (e) => { handleMove(e); e.preventDefault(); });
+    window.addEventListener('touchend', () => state.isDragging = false);
+
+    r1Slider.addEventListener('input', (e) => {
+        state.r1 = parseFloat(e.target.value);
+        r1Val.textContent = state.r1.toFixed(1);
+        draw();
+    });
+
+    r2Slider.addEventListener('input', (e) => {
+        state.r2 = parseFloat(e.target.value);
+        r2Val.textContent = state.r2.toFixed(1);
+        draw();
+    });
+
+    window.addEventListener('resize', resize);
+    resize();
+})();
+</script></div>
+</section>
+<!-- The Radical Axis and Common Chord -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>While the intersection of two circles results in a curved lens, the analytical path to defining that region passes through a remarkably simple linear construct: the <strong>radical axis</strong>. If we represent two circles by the quadratic equations $x^2 + y^2 + D_1x + E_1y + F_1 = 0$ and $x^2 + y^2 + D_2x + E_2y + F_2 = 0$, the points of intersection must satisfy both equations simultaneously. By subtracting one equation from the other, the quadratic $x^2$ and $y^2$ terms cancel out entirely, leaving a <strong>linear equation</strong> of the form $(D_1 - D_2)x + (E_1 - E_2)y + (F_1 - F_2) = 0$.</p><p>Geometrically, this line is the <strong>common chord</strong> when the circles intersect at two points. However, the radical axis exists even if the circles do not touch; it is the theoretical locus of points from which the tangent line segments drawn to both circles have equal lengths. This property makes the radical axis a powerful tool in coordinate geometry, as it represents the "boundary of influence" between two circular power fields. Regardless of the radii or the distance between the circles, the radical axis is always <strong>perpendicular</strong> to the line segment connecting the two centers.</p><p>The position of the radical axis is sensitive to the relative sizes of the circles. For two circles with radii $r_1$ and $r_2$ whose centers are separated by a distance $d$, the distance $x$ from the center of the first circle to the radical axis along the line of centers is given by:</p><p>$x = \frac{d^2 + r_1^2 - r_2^2}{2d}$</p><p>This formula reveals that if $r_1 &gt; r_2$, the radical axis is shifted further away from the center of the larger circle, "pushing" toward the smaller one. In the context of multiple circle intersections, the radical axis serves as the primary mechanism for partitioning the plane. When a third circle is introduced, the three radical axes formed by the three possible pairs of circles will intersect at a single point known as the <strong>radical center</strong>, which is the unique point possessing equal power with respect to all three circles.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    #ku2-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        background: #fff;
+        border: 1px solid #eee;
+        overflow: hidden;
+    }
+    #ku2-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        width: 100%;
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+    .ku2-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .ku2-control-group label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #444;
+    }
+    #ku2-formula-display {
+        margin-top: 10px;
+        font-family: "Times New Roman", serif;
+        font-style: italic;
+        font-size: 0.95rem;
+        color: #333;
+    }
+    .ku2-legend {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 10px;
+        font-size: 0.8rem;
+    }
+    .ku2-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .ku2-swatch-axis { width: 12px; height: 12px; border-left: 2px solid #e67e22; }
+    .ku2-swatch-chord { width: 12px; height: 12px; background: #fa5252; border-radius: 50%; }
+</style><div id="ku2-container">
+<div class="ku2-legend">
+<div class="ku2-legend-item"><div class="ku2-swatch-axis"></div> Radical Axis</div>
+<div class="ku2-legend-item"><div class="ku2-swatch-chord"></div> Intersection Points</div>
+</div>
+<div id="ku2-canvas-container">
+<canvas id="ku2-canvas"></canvas>
+</div>
+<div id="ku2-controls">
+<div class="ku2-control-group">
+<label>Distance ($d$): <span id="ku2-d-val">4.0</span></label>
+<input id="ku2-d-slider" max="10" min="0.1" step="0.1" type="range" value="4"/>
+</div>
+<div class="ku2-control-group">
+<label>Radius $r_1$: <span id="ku2-r1-val">5.0</span></label>
+<input id="ku2-r1-slider" max="8" min="1" step="0.1" type="range" value="5"/>
+</div>
+<div class="ku2-control-group">
+<label>Radius $r_2$: <span id="ku2-r2-val">4.0</span></label>
+<input id="ku2-r2-slider" max="8" min="1" step="0.1" type="range" value="4"/>
+</div>
+</div>
+<div id="ku2-formula-display">
+        $x = \frac{d^2 + r_1^2 - r_2^2}{2d} = $ <span id="ku2-calc-x">0.00</span>
+</div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku2-canvas');
+    const ctx = canvas.getContext('2d');
+    const dSlider = document.getElementById('ku2-d-slider');
+    const r1Slider = document.getElementById('ku2-r1-slider');
+    const r2Slider = document.getElementById('ku2-r2-slider');
+    
+    const dVal = document.getElementById('ku2-d-val');
+    const r1Val = document.getElementById('ku2-r1-val');
+    const r2Val = document.getElementById('ku2-r2-val');
+    const xVal = document.getElementById('ku2-calc-x');
+
+    let state = {
+        d: 4,
+        r1: 5,
+        r2: 4,
+        scale: 30
+    };
+
+    function resize() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        draw();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const scale = state.scale;
+
+        // Position centers: Circle 1 at (-d/2, 0), Circle 2 at (d/2, 0)
+        // We shift coordinates so center of Circle 1 is the reference for formula x
+        const x1 = cx - (state.d / 2) * scale;
+        const x2 = cx + (state.d / 2) * scale;
+
+        // Calculate Radical Axis position x relative to center 1
+        const xRel = (state.d * state.d + state.r1 * state.r1 - state.r2 * state.r2) / (2 * state.d);
+        const xPhys = x1 + xRel * scale;
+        xVal.textContent = xRel.toFixed(2);
+
+        // 1. Draw connecting dashed line
+        ctx.beginPath();
+        ctx.setLineDash([5, 5]);
+        ctx.moveTo(x1, cy);
+        ctx.lineTo(x2, cy);
+        ctx.strokeStyle = '#cbd5e0';
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 2. Draw Radical Axis (Infinite vertical line)
+        ctx.beginPath();
+        ctx.moveTo(xPhys, 0);
+        ctx.lineTo(xPhys, canvas.height);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#e67e22';
+        ctx.stroke();
+
+        // 3. Draw Circles
+        ctx.lineWidth = 2;
+        // Circle 1
+        ctx.beginPath();
+        ctx.arc(x1, cy, state.r1 * scale, 0, Math.PI * 2);
+        ctx.strokeStyle = '#4dabf7';
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(77, 171, 247, 0.05)';
+        ctx.fill();
+
+        // Circle 2
+        ctx.beginPath();
+        ctx.arc(x2, cy, state.r2 * scale, 0, Math.PI * 2);
+        ctx.strokeStyle = '#228be6';
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(34, 139, 230, 0.05)';
+        ctx.fill();
+
+        // 4. Intersection Points (Common Chord markers)
+        const hSq = state.r1 * state.r1 - xRel * xRel;
+        if (hSq >= 0) {
+            const h = Math.sqrt(hSq);
+            ctx.fillStyle = '#fa5252';
+            [1, -1].forEach(side => {
+                ctx.beginPath();
+                ctx.arc(xPhys, cy + side * h * scale, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Centers
+        ctx.fillStyle = '#444';
+        [x1, x2].forEach(x => {
+            ctx.beginPath();
+            ctx.arc(x, cy, 3, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    function updateState() {
+        state.d = parseFloat(dSlider.value);
+        state.r1 = parseFloat(r1Slider.value);
+        state.r2 = parseFloat(r2Slider.value);
+        
+        dVal.textContent = state.d.toFixed(1);
+        r1Val.textContent = state.r1.toFixed(1);
+        r2Val.textContent = state.r2.toFixed(1);
+        
+        draw();
+    }
+
+    [dSlider, r1Slider, r2Slider].forEach(s => s.addEventListener('input', updateState));
+    window.addEventListener('resize', resize);
+    resize();
+})();
+</script></div>
+</section>
+<!-- Intersection of Three Circles: The Radical Center -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>When the system expands to include three circles, $C_1$, $C_2$, and $C_3$, the pairwise interactions described previously generate three distinct <strong>radical axes</strong>. A remarkable theorem in plane geometry states that these three lines are either parallel or, more commonly, concurrent at a single point known as the <strong>radical center</strong> (or power center). Algebraically, if the equation of circle $i$ is $S_i(x, y) = 0$, the radical center is the unique solution to the linear system $S_1 - S_2 = 0$ and $S_2 - S_3 =0$.</p><p>The existence of the radical center is not merely a geometric curiosity; it represents the point from which the lengths of the tangents to all three circles are equal. If the three circles intersect in a common shared region, this point lies deep within that overlap. If the circles are positioned such that they do not all overlap simultaneously, the radical center may lie outside all of them, yet it remains the "equidistant" point in terms of <strong>power</strong>—a scalar measure of a point's relative distance from a circle's circumference, defined as $P = d^2 - r^2$.</p><p>This principle forms the geometric backbone of <strong>trilateration</strong>, the primary method used in Global Positioning Systems (GPS). By measuring the time it takes for a signal to travel from three different satellites, a receiver determines its distance from each. Every distance defines a sphere (or a circle in 2D simplified models) around a satellite. Your precise location is theoretically the radical center where the boundaries of these spheres meet. While real-world GPS requires a fourth satellite to resolve timing offsets in 3D space, the underlying logic remains the same: the intersection of multiple radical planes converges on a single, uniquely determined coordinate.</p><p>In the common intersection region of three circles, the boundary is no longer a simple lens but a <strong>circular triangle</strong> (or Reuleaux-like polygon) composed of three distinct circular arcs. The radical center serves as a critical reference point for calculating the area of this complex region, as it can be used to decompose the shape into simpler sectors and triangles for analytical integration.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    #ku3-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 450px;
+        background: #fff;
+        border: 1px solid #eee;
+        cursor: crosshair;
+        touch-action: none;
+        overflow: hidden;
+    }
+    #ku3-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        width: 100%;
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+    .ku3-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .ku3-control-group label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #444;
+    }
+    .ku3-hint {
+        font-size: 0.8rem;
+        color: #888;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    .ku3-legend {
+        display: flex;
+        gap: 10px;
+        font-size: 0.75rem;
+        margin-top: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .ku3-swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 4px; }
+</style><div id="ku3-container">
+<div class="ku3-hint">Drag circle centers to reposition. Adjust radii to see the Radical Center move.</div>
+<div id="ku3-canvas-container">
+<canvas id="ku3-canvas"></canvas>
+</div>
+<div id="ku3-controls">
+<div class="ku3-control-group">
+<label>Radius $r_1$: <span id="ku3-r1-val">6.0</span></label>
+<input id="ku3-r1-slider" max="10" min="2" step="0.1" type="range" value="6"/>
+</div>
+<div class="ku3-control-group">
+<label>Radius $r_2$: <span id="ku3-r2-val">6.0</span></label>
+<input id="ku3-r2-slider" max="10" min="2" step="0.1" type="range" value="6"/>
+</div>
+<div class="ku3-control-group">
+<label>Radius $r_3$: <span id="ku3-r3-val">6.0</span></label>
+<input id="ku3-r3-slider" max="10" min="2" step="0.1" type="range" value="6"/>
+</div>
+</div>
+<div class="ku3-legend">
+<span><span class="ku3-swatch" style="background: #e67e22;"></span> Radical Axes</span>
+<span><span class="ku3-swatch" style="background: #e74c3c; border-radius: 50%;"></span> Radical Center</span>
+<span><span class="ku3-swatch" style="background: rgba(0,0,0,0.2);"></span> Common Intersection</span>
+</div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku3-canvas');
+    const ctx = canvas.getContext('2d');
+    const sliders = [
+        document.getElementById('ku3-r1-slider'),
+        document.getElementById('ku3-r2-slider'),
+        document.getElementById('ku3-r3-slider')
+    ];
+    const labels = [
+        document.getElementById('ku3-r1-val'),
+        document.getElementById('ku3-r2-val'),
+        document.getElementById('ku3-r3-val')
+    ];
+
+    let state = {
+        circles: [
+            { x: -4, y: -3, r: 6, color: '#4dabf7' },
+            { x: 4, y: -3, r: 6, color: '#228be6' },
+            { x: 0, y: 4, r: 6, color: '#1864ab' }
+        ],
+        scale: 25,
+        dragIdx: -1
+    };
+
+    function resize() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        draw();
+    }
+
+    function getRadicalAxis(c1, c2) {
+        // Line: 2x(x2-x1) + 2y(y2-y1) = r1^2 - r2^2 - x1^2 + x2^2 - y1^2 + y2^2
+        const A = 2 * (c2.x - c1.x);
+        const B = 2 * (c2.y - c1.y);
+        const C = Math.pow(c1.r, 2) - Math.pow(c2.r, 2) - Math.pow(c1.x, 2) + Math.pow(c2.x, 2) - Math.pow(c1.y, 2) + Math.pow(c2.y, 2);
+        return { a: A, b: B, c: C }; // Ax + By = C
+    }
+
+    function intersectLines(l1, l2) {
+        const det = l1.a * l2.b - l2.a * l1.b;
+        if (Math.abs(det) < 0.001) return null;
+        return {
+            x: (l1.c * l2.b - l2.c * l1.b) / det,
+            y: (l1.a * l2.c - l2.a * l1.c) / det
+        };
+    }
+
+    function drawLine(line, cx, cy) {
+        const s = state.scale;
+        ctx.beginPath();
+        if (Math.abs(line.b) > Math.abs(line.a)) {
+            for(let x = -20; x <= 20; x += 40) {
+                let y = (line.c - line.a * x) / line.b;
+                ctx[x === -20 ? 'moveTo' : 'lineTo'](cx + x * s, cy - y * s);
+            }
+        } else {
+            for(let y = -20; y <= 20; y += 40) {
+                let x = (line.c - line.b * y) / line.a;
+                ctx[y === -20 ? 'moveTo' : 'lineTo'](cx + x * s, cy - y * s);
+            }
+        }
+        ctx.strokeStyle = 'rgba(230, 126, 34, 0.5)';
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const s = state.scale;
+
+        // 1. Highlight Common Intersection (approximate via clipping)
+        ctx.save();
+        state.circles.forEach(c => {
+            ctx.beginPath();
+            ctx.arc(cx + c.x * s, cy - c.y * s, c.r * s, 0, Math.PI * 2);
+            ctx.clip();
+        });
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        // 2. Pairwise Radical Axes
+        const l12 = getRadicalAxis(state.circles[0], state.circles[1]);
+        const l23 = getRadicalAxis(state.circles[1], state.circles[2]);
+        const l31 = getRadicalAxis(state.circles[2], state.circles[0]);
+
+        [l12, l23, l31].forEach(l => drawLine(l, cx, cy));
+
+        // 3. Radical Center
+        const rc = intersectLines(l12, l23);
+        if (rc) {
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(cx + rc.x * s, cy - rc.y * s, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // 4. Draw Circles
+        state.circles.forEach((c, i) => {
+            ctx.beginPath();
+            ctx.arc(cx + c.x * s, cy - c.y * s, c.r * s, 0, Math.PI * 2);
+            ctx.strokeStyle = c.color;
+            ctx.lineWidth = i === state.dragIdx ? 3 : 1.5;
+            ctx.stroke();
+            
+            // Center point
+            ctx.fillStyle = c.color;
+            ctx.beginPath();
+            ctx.arc(cx + c.x * s, cy - c.y * s, 4, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    function handleInput(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = ( (e.touches ? e.touches[0].clientX : e.clientX) - rect.left - canvas.width / 2) / state.scale;
+        const y = -( (e.touches ? e.touches[0].clientY : e.clientY) - rect.top - canvas.height / 2) / state.scale;
+
+        if (e.type === 'mousedown' || e.type === 'touchstart') {
+            state.dragIdx = state.circles.findIndex(c => Math.hypot(c.x - x, c.y - y) < 1.5);
+        } else if (state.dragIdx !== -1) {
+            state.circles[state.dragIdx].x = x;
+            state.circles[state.dragIdx].y = y;
+            draw();
+        }
+    }
+
+    window.addEventListener('mouseup', () => state.dragIdx = -1);
+    window.addEventListener('touchend', () => state.dragIdx = -1);
+    canvas.addEventListener('mousedown', handleInput);
+    canvas.addEventListener('mousemove', handleInput);
+    canvas.addEventListener('touchstart', (e) => { handleInput(e); e.preventDefault(); }, {passive:false});
+    canvas.addEventListener('touchmove', (e) => { handleInput(e); e.preventDefault(); }, {passive:false});
+
+    sliders.forEach((slider, i) => {
+        slider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            state.circles[i].r = val;
+            labels[i].textContent = val.toFixed(1);
+            draw();
+        });
+    });
+
+    window.addEventListener('resize', resize);
+    resize();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

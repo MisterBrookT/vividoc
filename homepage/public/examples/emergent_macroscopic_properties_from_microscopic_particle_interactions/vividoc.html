@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Emergent macroscopic properties from microscopic particle interactions</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Emergent macroscopic properties from microscopic particle interactions</h1>
+<!-- Temperature as the average kinetic energy of microscopic particles. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>When you touch a warm cup of coffee, your senses report a single, steady sensation: <strong>temperature</strong>. For centuries, scientists viewed heat as a continuous fluid, but the microscopic reality is far more chaotic. Temperature is actually an <strong>emergent macroscopic property</strong> arising from the relentless, jittery motion of trillions of tiny particles.</p><p>At the microscopic level, every atom or molecule in a substance is in a state of constant motion—vibrating, rotating, or flying through space. These particles possess <strong>kinetic energy</strong> ($E_k$). However, in any given volume of gas or liquid, not every particle moves at the same speed. Some are momentarily fast, while others are slow due to random collisions. Temperature is defined as a measure of the <strong>average translational kinetic energy</strong> per particle in a system.</p><p>This relationship is mathematically expressed through the kinetic theory of gases. For a monatomic ideal gas, the relationship between the average kinetic energy ($\bar{E}_k$) and the absolute temperature ($T$) is given by:</p><p>$\bar{E}_k = \frac{3}{2} k_B T$</p><p>In this equation, $k_B$ represents the <strong>Boltzmann constant</strong>, a fundamental physical constant that acts as the bridge between the microscopic world of energy and the macroscopic world of temperature. As the particles gain energy and move faster on average, the temperature we measure with a thermometer rises accordingly.</p><p>It is vital to understand that temperature is an <strong>ensemble property</strong>. It describes the collective behavior of a population of particles, not the state of a single individual. It is scientifically meaningless to speak of the "temperature" of a single atom, just as it is meaningless to speak of the "average height" of a single person. Temperature only "emerges" when we have a statistically significant number of interactions, allowing us to define a stable average across the entire system.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #ku1-layout {
+        display: flex;
+        gap: 30px;
+        align-items: flex-end;
+        margin-bottom: 20px;
+        width: 100%;
+        max-width: 600px;
+        height: 350px;
+    }
+
+    #ku1-sim-box {
+        flex-grow: 1;
+        height: 100%;
+        background: #fff;
+        border: 2px solid #333;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #ku1-thermometer-wrap {
+        width: 60px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    #ku1-therm-tube {
+        width: 20px;
+        height: 250px;
+        background: #ddd;
+        border-radius: 10px 10px 0 0;
+        position: relative;
+        border: 2px solid #555;
+        border-bottom: none;
+    }
+
+    #ku1-mercury {
+        width: 100%;
+        background: #ff4757;
+        position: absolute;
+        bottom: 0;
+        transition: height 0.1s ease-out;
+    }
+
+    #ku1-bulb {
+        width: 40px;
+        height: 40px;
+        background: #ff4757;
+        border-radius: 50%;
+        border: 2px solid #555;
+        margin-top: -10px;
+        z-index: 1;
+    }
+
+    #ku1-controls {
+        width: 100%;
+        max-width: 600px;
+        text-align: center;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    #ku1-avg-speed {
+        width: 80%;
+        cursor: pointer;
+    }
+
+    .ku1-label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .ku1-particle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #2f3542;
+        border-radius: 50%;
+    }
+
+    .ku1-vector {
+        position: absolute;
+        height: 2px;
+        background: rgba(255, 71, 87, 0.6);
+        transform-origin: left center;
+        pointer-events: none;
+    }
+</style><div id="ku1-container">
+<div id="ku1-layout">
+<div id="ku1-sim-box"></div>
+<div id="ku1-thermometer-wrap">
+<div style="font-size: 0.8em; margin-bottom: 5px; font-weight: bold; color: #ff4757;">TEMP</div>
+<div id="ku1-therm-tube">
+<div id="ku1-mercury" style="height: 25%;"></div>
+</div>
+<div id="ku1-bulb"></div>
+</div>
+</div>
+<div id="ku1-controls">
+<label class="ku1-label" for="ku1-avg-speed">Average Particle Speed: <span id="ku1-speed-val">5</span></label>
+<input id="ku1-avg-speed" max="20" min="1" step="1" type="range" value="5"/>
+<div style="margin-top: 10px; font-size: 0.85em; color: #666 italic;">
+            Note how macro-scale temperature rises as micro-scale kinetic energy increases.
+        </div>
+</div>
+</div><script>
+(function() {
+    const box = document.getElementById('ku1-sim-box');
+    const slider = document.getElementById('ku1-avg-speed');
+    const speedVal = document.getElementById('ku1-speed-val');
+    const mercury = document.getElementById('ku1-mercury');
+    
+    const count = 50;
+    const particles = [];
+    const width = box.clientWidth;
+    const height = box.clientHeight;
+
+    // Initialize particles
+    for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'ku1-particle';
+        const vector = document.createElement('div');
+        vector.className = 'ku1-vector';
+        
+        box.appendChild(el);
+        box.appendChild(vector);
+
+        // Random initial directions
+        const angle = Math.random() * Math.PI * 2;
+        
+        particles.push({
+            el: el,
+            vec: vector,
+            x: Math.random() * (width - 10),
+            y: Math.random() * (height - 10),
+            vx: Math.cos(angle),
+            vy: Math.sin(angle)
+        });
+    }
+
+    function update() {
+        const speedMultiplier = parseFloat(slider.value);
+        speedVal.textContent = speedMultiplier;
+
+        // Temperature is proportional to avg kinetic energy (v squared)
+        // Scaled to look good on the UI
+        const tempPercent = Math.min(100, (Math.pow(speedMultiplier, 2) / 400) * 100 + 5);
+        mercury.style.height = tempPercent + '%';
+
+        particles.forEach(p => {
+            // Update Position
+            p.x += p.vx * (speedMultiplier * 0.5);
+            p.y += p.vy * (speedMultiplier * 0.5);
+
+            // Bounds Check
+            if (p.x <= 0 || p.x >= width - 8) p.vx *= -1;
+            if (p.y <= 0 || p.y >= height - 8) p.vy *= -1;
+
+            // Apply styles
+            p.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+            
+            // Vector updates
+            p.vec.style.transform = `translate(${p.x + 4}px, ${p.y + 4}px) rotate(${Math.atan2(p.vy, p.vx)}rad)`;
+            p.vec.style.width = (speedMultiplier * 3) + 'px';
+        });
+
+        requestAnimationFrame(update);
+    }
+
+    // Start simulation
+    update();
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+        const newWidth = box.clientWidth;
+        const newHeight = box.clientHeight;
+        particles.forEach(p => {
+            if (p.x > newWidth) p.x = newWidth - 10;
+            if (p.y > newHeight) p.y = newHeight - 10;
+        });
+    });
+})();
+</script></div>
+</section>
+<!-- Pressure as the cumulative result of microscopic collisions. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>While temperature represents the energy level of a system, <strong>pressure</strong> describes the mechanical consequence of that energy. When we inflate a tire or observe a barometer, we perceive pressure as a smooth, constant push. In reality, this "push" is the cumulative result of billions of discrete, microscopic collisions occurring every second.</p><p>According to the <strong>kinetic-molecular theory</strong>, gas particles are in perpetual, random motion. When a particle strikes the wall of its container, it undergoes a momentum change, bouncing back into the interior. This change in momentum generates a tiny, impulsive <strong>micro-force</strong> on the wall. Because an astronomical number of particles—roughly $2.5 \times 10^{19}$ molecules in every cubic centimeter of air—are striking the surface at any given moment, these individual "taps" blend into what we perceive as a steady macroscopic force.</p><p>Mathematically, pressure ($P$) is defined as the force ($F$) exerted perpendicular to a surface area ($A$):</p><p>$P = \frac{F}{A}$</p><p>At the microscopic level, we can relate this to the properties of the particles. For a gas in a container, the pressure is determined by both the <strong>frequency</strong> of collisions and the <strong>average impulse</strong> of each impact. This leads to the fundamental relationship for an ideal gas:</p><p>$P = \frac{n R T}{V}$</p><p>In this expression, we see how the microscopic variables we discussed previously dictate the macroscopic output. Increasing the temperature ($T$) causes particles to move faster, resulting in more frequent and harder collisions. Decreasing the volume ($V$) crowds the particles together, further increasing the collision frequency. Just like temperature, pressure is an <strong>emergent property</strong>; a single molecule does not "have" a pressure. Pressure only gains meaning when we consider the statistical aggregate of interactions over a finite surface area.</p></div>
+<div class="interactive-content"><style>
+    #ku2-main-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #ku2-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        max-width: 650px;
+    }
+
+    #ku2-sim-area {
+        display: flex;
+        gap: 20px;
+        height: 300px;
+        align-items: stretch;
+    }
+
+    #ku2-viewport {
+        flex-grow: 1;
+        background: #1e272e;
+        border: 3px solid #333;
+        position: relative;
+        overflow: hidden;
+        border-radius: 4px;
+    }
+
+    #ku2-movable-wall {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 10px;
+        height: 100%;
+        background: #ced4da;
+        border-left: 2px solid #ff4757;
+        z-index: 5;
+    }
+
+    #ku2-gauge-container {
+        width: 120px;
+        background: white;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+
+    #ku2-gauge-needle {
+        width: 4px;
+        height: 40px;
+        background: #333;
+        transform-origin: bottom center;
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .ku2-particle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #00d2d3;
+        border-radius: 50%;
+    }
+
+    .ku2-flash {
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        background: rgba(255, 71, 87, 0.6);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        animation: ku2-pulse 0.3s ease-out forwards;
+    }
+
+    @keyframes ku2-pulse {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+    }
+
+    #ku2-controls {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    #ku2-volume-slider {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .ku2-label-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .ku2-stats {
+        margin-top: 10px;
+        font-size: 0.85em;
+        color: #666;
+        text-align: center;
+        font-style: italic;
+    }
+</style><div id="ku2-main-container">
+<div id="ku2-layout">
+<div id="ku2-sim-area">
+<div id="ku2-viewport">
+<div id="ku2-movable-wall"></div>
+</div>
+<div id="ku2-gauge-container">
+<div style="font-size: 0.7em; font-weight: bold; margin-bottom: 50px; text-align: center;">PRESSURE GAUGE</div>
+<div style="width: 80px; height: 80px; border: 4px solid #333; border-radius: 50% 50% 0 0; position: relative; overflow: hidden; border-bottom: none;">
+<div id="ku2-gauge-needle" style="position: absolute; bottom: 0; left: 38px; transform: rotate(-90deg);"></div>
+</div>
+<div id="ku2-pressure-val" style="font-family: monospace; font-size: 1.2em; font-weight: bold; margin-top: 10px; color: #ff4757;">0.0</div>
+</div>
+</div>
+<div id="ku2-controls">
+<div class="ku2-label-row">
+<span>Container Volume (Width)</span>
+<span id="ku2-vol-display">100%</span>
+</div>
+<input id="ku2-volume-slider" max="100" min="40" type="range" value="100"/>
+<div class="ku2-stats">
+                As volume decreases, the <b>frequency</b> of microscopic collisions increases, generating higher macroscopic pressure.
+            </div>
+</div>
+</div>
+</div><script>
+(function() {
+    const viewport = document.getElementById('ku2-viewport');
+    const wall = document.getElementById('ku2-movable-wall');
+    const slider = document.getElementById('ku2-volume-slider');
+    const volDisplay = document.getElementById('ku2-vol-display');
+    const pressureVal = document.getElementById('ku2-pressure-val');
+    const needle = document.getElementById('ku2-gauge-needle');
+
+    const particleCount = 25;
+    const particles = [];
+    const speed = 2.5;
+    let collisionsInWindow = 0;
+    let collisionHistory = [];
+    const HISTORY_LENGTH = 60; // frames to average pressure
+
+    function createFlash(x, y) {
+        const flash = document.createElement('div');
+        flash.className = 'ku2-flash';
+        flash.style.left = x + 'px';
+        flash.style.top = y + 'px';
+        viewport.appendChild(flash);
+        setTimeout(() => flash.remove(), 300);
+    }
+
+    // Init particles
+    for (let i = 0; i < particleCount; i++) {
+        const el = document.createElement('div');
+        el.className = 'ku2-particle';
+        viewport.appendChild(el);
+        
+        const angle = Math.random() * Math.PI * 2;
+        particles.push({
+            el: el,
+            x: Math.random() * 200,
+            y: Math.random() * 250,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed
+        });
+    }
+
+    function update() {
+        const viewRect = viewport.getBoundingClientRect();
+        const volPercent = parseInt(slider.value);
+        const currentWidth = (volPercent / 100) * viewRect.width;
+        
+        wall.style.right = (100 - volPercent) + '%';
+        volDisplay.textContent = volPercent + '%';
+
+        let frameCollisions = 0;
+
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // Collision Left
+            if (p.x <= 0) {
+                p.vx *= -1; p.x = 0;
+                frameCollisions++;
+                createFlash(p.x, p.y);
+            }
+            // Collision Right (Movable Wall)
+            if (p.x >= currentWidth - 6) {
+                p.vx *= -1; p.x = currentWidth - 6;
+                frameCollisions++;
+                createFlash(p.x, p.y);
+            }
+            // Collision Top/Bottom
+            if (p.y <= 0) { p.vy *= -1; p.y = 0; frameCollisions++; }
+            if (p.y >= viewRect.height - 6) { p.vy *= -1; p.y = viewRect.height - 6; frameCollisions++; }
+
+            p.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+        });
+
+        // Calculate sliding average pressure
+        collisionHistory.push(frameCollisions);
+        if (collisionHistory.length > HISTORY_LENGTH) collisionHistory.shift();
+        
+        const avgCollisions = collisionHistory.reduce((a, b) => a + b, 0) / collisionHistory.length;
+        // Pressure logic: higher frequency of collisions = higher gauge reading
+        // Scaled for visual impact
+        const displayPressure = (avgCollisions * 15).toFixed(1);
+        pressureVal.textContent = displayPressure;
+        
+        // Rotate needle: range -90deg to 90deg
+        const rotation = Math.min(90, (avgCollisions * 40) - 90);
+        needle.style.transform = `rotate(${rotation}deg)`;
+
+        requestAnimationFrame(update);
+    }
+
+    requestAnimationFrame(update);
+})();
+</script></div>
+</section>
+<!-- Phase transitions and the emergence of order from attraction. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>While temperature and pressure are properties of motion, the existence of different <strong>phases of matter</strong>—solids, liquids, and gases—emerges from a perpetual tug-of-war between two microscopic forces: <strong>thermal agitation</strong> and <strong>intermolecular attraction</strong>. On their own, atoms and molecules often possess a slight "stickiness" known as Van der Waals forces. These attractive forces try to pull particles together into an ordered structure, while kinetic energy works to shake them apart into chaos.</p><p>In the gaseous state, kinetic energy reigns supreme. Particles move so rapidly that when they collide, their individual attractions are too weak to latch onto one another. However, as we remove energy from the system (lowering the temperature), the average velocity of the particles decreases. Eventually, a critical threshold is reached where the kinetic energy is no longer sufficient to overcome the potential energy of attraction. At this "tipping point," a <strong>phase transition</strong> occurs: the particles begin to clump together, and the macroscopic property of a liquid emerges.</p><p>This transition is not a gradual fading of one state into another, but a sudden <strong>symmetry breaking</strong>. In a solid, this order reaches its peak. The particles become locked into a fixed, repeating pattern called a <strong>crystal lattice</strong>. Even in this rigid state, the particles are not still; they continue to vibrate around fixed positions. The stability of this macroscopic shape is governed by the <strong>Lennard-Jones potential</strong>, a mathematical model that describes the balance between long-range attraction and short-range repulsion ($V_{LJ}$):</p><p>$V_{LJ}(r) = 4\epsilon \left[ \left( \frac{\sigma}{r} \right)^{12} - \left( \frac{\sigma}{r} \right)^{6} \right]$</p><p>Here, $r$ represents the distance between particles, while $\epsilon$ and $\sigma$ are constants specific to the substance. This equation shows that at a specific distance, particles find a "sweet spot" of minimum energy. When trillions of particles settle into these energy wells simultaneously, we observe the emergence of <strong>rigidity</strong> and <strong>fixed volume</strong>—properties that do not exist at the level of a single, isolated atom. Thus, a block of ice is not just a collection of H$_2$O molecules; it is a collective, macroscopic manifestation of microscopic forces finally winning the battle against thermal randomness.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #f0f2f5;
+        padding: 20px;
+        border-radius: 8px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #ku3-sim-box {
+        width: 100%;
+        max-width: 600px;
+        height: 350px;
+        background: #000;
+        border: 3px solid #333;
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+        transition: background-color 0.5s ease;
+    }
+
+    #ku3-phase-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 15px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9em;
+        color: #333;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    #ku3-controls {
+        width: 100%;
+        max-width: 600px;
+        margin-top: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .ku3-control-group {
+        margin-bottom: 15px;
+    }
+
+    .ku3-label-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #444;
+    }
+
+    .ku3-slider {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .ku3-particle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 0 5px rgba(255,255,255,0.5);
+    }
+
+    #ku3-explanation {
+        font-size: 0.85em;
+        color: #666;
+        font-style: italic;
+        text-align: center;
+        margin-top: 10px;
+    }
+</style><div id="ku3-container">
+<div id="ku3-sim-box">
+<div id="ku3-phase-overlay">PHASE: <span id="ku3-phase-text">GAS</span></div>
+</div>
+<div id="ku3-controls">
+<div class="ku3-control-group">
+<div class="ku3-label-row">
+<span>Thermal Energy (Kinetic)</span>
+<span id="ku3-energy-val">8</span>
+</div>
+<input class="ku3-slider" id="ku3-energy-slider" max="10" min="0" step="0.1" type="range" value="8"/>
+</div>
+<div class="ku3-control-group">
+<div class="ku3-label-row">
+<span>Intermolecular Attraction</span>
+<span id="ku3-attraction-val">2</span>
+</div>
+<input class="ku3-slider" id="ku3-attraction-slider" max="10" min="0" step="0.1" type="range" value="2"/>
+</div>
+<div id="ku3-explanation">
+            Observe the <b>symmetry breaking</b>: when attraction overcomes energy, particles lock into a lattice.
+        </div>
+</div>
+</div><script>
+(function() {
+    const box = document.getElementById('ku3-sim-box');
+    const energySlider = document.getElementById('ku3-energy-slider');
+    const attractionSlider = document.getElementById('ku3-attraction-slider');
+    const energyVal = document.getElementById('ku3-energy-val');
+    const attractionVal = document.getElementById('ku3-attraction-val');
+    const phaseText = document.getElementById('ku3-phase-text');
+
+    const count = 40;
+    const particles = [];
+    const width = box.clientWidth;
+    const height = box.clientHeight;
+
+    // Initialize particles
+    for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'ku3-particle';
+        box.appendChild(el);
+        particles.push({
+            el: el,
+            x: Math.random() * (width - 10),
+            y: Math.random() * (height - 10),
+            vx: (Math.random() - 0.5),
+            vy: (Math.random() - 0.5)
+        });
+    }
+
+    function update() {
+        const energy = parseFloat(energySlider.value);
+        const attract = parseFloat(attractionSlider.value);
+        
+        energyVal.textContent = energy;
+        attractionVal.textContent = attract;
+
+        // Determine Phase
+        let phase = "GAS";
+        let bgColor = `rgba(${50 + energy * 20}, 50, ${200 - energy * 15}, 0.9)`;
+        
+        const ratio = energy / (attract + 0.1);
+        if (ratio < 0.6) {
+            phase = "SOLID";
+        } else if (ratio < 1.8) {
+            phase = "LIQUID";
+        }
+        
+        phaseText.textContent = phase;
+        box.style.backgroundColor = bgColor;
+
+        // Simulation physics
+        particles.forEach((p, i) => {
+            // 1. Thermal agitation (Random walk / momentum)
+            p.vx += (Math.random() - 0.5) * (energy * 0.1);
+            p.vy += (Math.random() - 0.5) * (energy * 0.1);
+
+            // 2. Intermolecular Forces (Simplified N^2 for demo)
+            particles.forEach((p2, j) => {
+                if (i === j) return;
+                const dx = p2.x - p.x;
+                const dy = p2.y - p.y;
+                const distSq = dx * dx + dy * dy;
+                const dist = Math.sqrt(distSq) || 1;
+
+                if (dist < 60) {
+                    // Attraction force
+                    const force = attract * 0.05;
+                    p.vx += (dx / dist) * force;
+                    p.vy += (dy / dist) * force;
+                    
+                    // Short range repulsion (prevents total collapse)
+                    if (dist < 12) {
+                        p.vx -= (dx / dist) * (attract * 0.5);
+                        p.vy -= (dy / dist) * (attract * 0.5);
+                    }
+                }
+            });
+
+            // 3. Friction/Damping based on phase
+            const damping = phase === "SOLID" ? 0.8 : (phase === "LIQUID" ? 0.95 : 0.99);
+            p.vx *= damping;
+            p.vy *= damping;
+
+            // 4. Update position
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // 5. Bounds
+            if (p.x < 0) { p.x = 0; p.vx *= -1; }
+            if (p.x > width - 10) { p.x = width - 10; p.vx *= -1; }
+            if (p.y < 0) { p.y = 0; p.vy *= -1; }
+            if (p.y > height - 10) { p.y = height - 10; p.vy *= -1; }
+
+            p.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+        });
+
+        requestAnimationFrame(update);
+    }
+
+    update();
+})();
+</script></div>
+</section>
+<!-- Diffusion and the emergence of macroscopic gradients from random walks. -->
+<section class="knowledge-unit" id="ku4">
+<div class="text-content"><p>If you open a bottle of perfume in the corner of a still room, the scent eventually reaches the other side, even without a draft of air. To our eyes, this looks like a deliberate, directional flow from <strong>high concentration</strong> to <strong>low concentration</strong>. However, at the microscopic level, there is no "map" guiding the molecules. This phenomenon, known as <strong>diffusion</strong>, is perhaps the most striking example of how a predictable macroscopic gradient emerges from purely chaotic, directionless microscopic motion.</p><p>Every individual particle in a fluid undergoes a <strong>random walk</strong> (often called Brownian motion). Due to constant collisions with surrounding molecules, a single particle’s path is a jagged, unpredictable zig-zag. Because these collisions are random, a particle is just as likely to move "left" as it is "right." There is no internal force pushing an individual molecule toward a less crowded area. The "drive" behind diffusion is not mechanical, but <strong>statistical</strong>.</p><p>This statistical emergence is described by <strong>Fick’s First Law</strong>. It states that the molar flux ($J$), or the rate at which particles move through a unit area, is proportional to the concentration gradient ($\frac{dc}{dx}$):</p><p>$J = -D \frac{dc}{dx}$</p><p>In this equation, $D$ is the <strong>diffusion coefficient</strong>, which depends on the temperature and the nature of the medium. The negative sign confirms that the net macro-flow always moves "downhill" against the gradient. The reason is simple probability: if you have 1,000 particles on the left and 10 on the right, and all move randomly, it is statistically certain that more particles will wander from left-to-right than from right-to-left, simply because there are more candidates on the left to make the trip.</p><p>Eventually, the system reaches <strong>dynamic equilibrium</strong>. At this macroscopic state, the concentration is uniform and the net flow stops. Yet, microscopically, the chaos never ceases; particles continue to cross back and forth at equal rates. Diffusion demonstrates that <strong>orderly redistribution</strong> is an emergent property of large populations—an inevitable consequence of the laws of probability acting upon trillions of microscopic random walkers.</p></div>
+<div class="interactive-content"><style>
+    #ku4-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #ku4-layout {
+        width: 100%;
+        max-width: 650px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    #ku4-sim-viewport {
+        width: 100%;
+        height: 250px;
+        background: #1e272e;
+        border: 3px solid #333;
+        position: relative;
+        overflow: hidden;
+        border-radius: 4px;
+    }
+
+    #ku4-barrier {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        width: 6px;
+        height: 100%;
+        background: #576574;
+        transform: translateX(-50%);
+        z-index: 10;
+        transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #ku4-barrier.removed {
+        top: -100%;
+    }
+
+    .ku4-particle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    #ku4-charts {
+        height: 120px;
+        background: white;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    #ku4-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .ku4-btn {
+        padding: 8px 16px;
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.2s;
+    }
+
+    .ku4-btn:hover { background: #ff6b81; }
+    .ku4-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    #ku4-stats {
+        display: flex;
+        gap: 20px;
+        font-size: 0.9em;
+        color: #444;
+    }
+
+    .ku4-stat-box b { color: #ff4757; }
+</style><div id="ku4-container">
+<div id="ku4-layout">
+<div id="ku4-sim-viewport">
+<div id="ku4-barrier"></div>
+</div>
+<div id="ku4-charts">
+<canvas id="ku4-histogram"></canvas>
+</div>
+<div id="ku4-controls">
+<div style="display: flex; gap: 10px; align-items: center;">
+<select id="ku4-mode" style="padding: 5px; border-radius: 4px;">
+<option value="Clustered">Initial: Clustered</option>
+<option value="Uniform">Initial: Uniform</option>
+</select>
+<button class="ku4-btn" id="ku4-action-btn">Remove Barrier</button>
+<button class="ku4-btn" id="ku4-reset-btn" style="background: #747d8c;">Reset</button>
+</div>
+<div id="ku4-stats">
+<div class="ku4-stat-box">Time: <b id="ku4-timer">0.0</b>s</div>
+<div class="ku4-stat-box">Mixing: <b id="ku4-entropy">0</b>%</div>
+</div>
+</div>
+<div style="font-size: 0.85em; color: #666; text-align: center; font-style: italic;">
+            Particles move randomly. Net flow appears only because of starting imbalances.
+        </div>
+</div>
+</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
+(function() {
+    const viewport = document.getElementById('ku4-sim-viewport');
+    const barrier = document.getElementById('ku4-barrier');
+    const actionBtn = document.getElementById('ku4-action-btn');
+    const resetBtn = document.getElementById('ku4-reset-btn');
+    const modeSelect = document.getElementById('ku4-mode');
+    const timerText = document.getElementById('ku4-timer');
+    const entropyText = document.getElementById('ku4-entropy');
+    
+    let particles = [];
+    const count = 80;
+    let barrierRemoved = false;
+    let startTime = null;
+    let animationId = null;
+
+    // Chart.js Setup
+    const ctx = document.getElementById('ku4-histogram').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Array.from({length: 10}, (_, i) => i),
+            datasets: [{
+                label: 'Red Particles',
+                data: new Array(10).fill(0),
+                backgroundColor: 'rgba(255, 71, 87, 0.6)'
+            }, {
+                label: 'Blue Particles',
+                data: new Array(10).fill(0),
+                backgroundColor: 'rgba(45, 152, 218, 0.6)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { display: false, stacked: true },
+                y: { display: false, stacked: true, max: count/4 }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    function initParticles() {
+        // Clear existing
+        particles.forEach(p => p.el.remove());
+        particles = [];
+        barrierRemoved = false;
+        barrier.classList.remove('removed');
+        actionBtn.disabled = false;
+        startTime = null;
+        timerText.textContent = "0.0";
+
+        const width = viewport.clientWidth;
+        const height = viewport.clientHeight;
+        const mode = modeSelect.value;
+
+        for (let i = 0; i < count; i++) {
+            const el = document.createElement('div');
+            el.className = 'ku4-particle';
+            const isRed = i < count / 2;
+            el.style.backgroundColor = isRed ? '#ff4757' : '#2d98da';
+            viewport.appendChild(el);
+
+            let x;
+            if (mode === "Clustered") {
+                x = isRed ? Math.random() * (width/2 - 20) : (width/2 + 20) + Math.random() * (width/2 - 30);
+            } else {
+                x = Math.random() * (width - 10);
+            }
+
+            particles.push({
+                el: el,
+                isRed: isRed,
+                x: x,
+                y: Math.random() * (height - 10),
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4
+            });
+        }
+    }
+
+    function update() {
+        const width = viewport.clientWidth;
+        const height = viewport.clientHeight;
+        const binCount = 10;
+        const redData = new Array(binCount).fill(0);
+        const blueData = new Array(binCount).fill(0);
+
+        if (barrierRemoved && !startTime) startTime = Date.now();
+        if (startTime) timerText.textContent = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // Collision logic
+            if (p.y < 0 || p.y > height - 8) p.vy *= -1;
+            
+            if (!barrierRemoved) {
+                if (p.isRed) {
+                    if (p.x < 0 || p.x > width/2 - 12) p.vx *= -1;
+                } else {
+                    if (p.x < width/2 + 4 || p.x > width - 8) p.vx *= -1;
+                }
+            } else {
+                if (p.x < 0 || p.x > width - 8) p.vx *= -1;
+            }
+
+            p.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+
+            // Histogram data
+            const bin = Math.floor(Math.max(0, Math.min(p.x, width-1)) / (width / binCount));
+            if (p.isRed) redData[bin]++; else blueData[bin]++;
+        });
+
+        // Calculate mixing (Entropy-ish measure)
+        let diffSum = 0;
+        for(let i=0; i<binCount; i++) {
+            const total = redData[i] + blueData[i];
+            if (total > 0) diffSum += Math.abs(redData[i] - blueData[i]) / total;
+        }
+        const mixing = Math.max(0, 100 - (diffSum / binCount * 100)).toFixed(0);
+        entropyText.textContent = mixing;
+
+        chart.data.datasets[0].data = redData;
+        chart.data.datasets[1].data = blueData;
+        chart.update('none');
+
+        animationId = requestAnimationFrame(update);
+    }
+
+    actionBtn.onclick = () => {
+        barrierRemoved = true;
+        barrier.classList.add('removed');
+        actionBtn.disabled = true;
+    };
+
+    resetBtn.onclick = () => {
+        cancelAnimationFrame(animationId);
+        initParticles();
+        update();
+    };
+
+    modeSelect.onchange = resetBtn.onclick;
+
+    initParticles();
+    update();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

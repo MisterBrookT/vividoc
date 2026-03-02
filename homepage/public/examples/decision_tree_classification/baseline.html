@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: Decision Tree Classification</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --leaf: #27ae60;
+            --node: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--primary);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+        }
+
+        section {
+            background: var(--white);
+            margin: 20px 0;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--accent);
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 10px;
+        }
+
+        .interactive-box {
+            border: 2px dashed var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            background: #fdfdfd;
+        }
+
+        /* Decision Tree Visualizer Styles */
+        #tree-canvas {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .node {
+            position: absolute;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .internal-node { background-color: var(--node); color: white; }
+        .leaf-node { background-color: var(--leaf); color: white; }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover { background: #2980b9; }
+
+        code {
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .math {
+            font-style: italic;
+            background: #f9f9f9;
+            padding: 10px;
+            display: block;
+            border-left: 4px solid var(--accent);
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Decision Tree Classification</h1>
+    <p>Master the logic behind the "If-Then" machine learning algorithm.</p>
+</header>
+
+<div class="container">
+
+    <!-- Section 1: Introduction -->
+    <section>
+        <h2>1. What is a Decision Tree?</h2>
+        <p>A Decision Tree is a supervised learning algorithm used for classification. It works like a flowchart where each internal node represents a "test" on an attribute, each branch represents the outcome of the test, and each leaf node represents a class label.</p>
+        <p><strong>Analogy:</strong> Imagine deciding whether to play tennis based on the weather. If it's raining, you don't play. If it's sunny, you check the humidity. This hierarchical decision-making is exactly how the algorithm operates.</p>
+    </section>
+
+    <!-- Section 2: How It Learns -->
+    <section>
+        <h2>2. Choosing the Best Split</h2>
+        <p>Decision Trees use specific metrics to decide how to split the data. The goal is to maximize <strong>Information Gain</strong> (finding the split that makes the resulting groups as "pure" as possible).</p>
+        
+        <div class="math">
+            <strong>Gini Impurity Formula:</strong><br>
+            G = 1 - Σ (p<sub>i</sub>)² <br>
+            <em>Where p<sub>i</sub> is the probability of an item belonging to a specific class. Lower is better!</em>
+        </div>
+
+        <ul>
+            <li><strong>Entropy:</strong> Measures randomness. High entropy means mixed labels; zero entropy means all items belong to one class.</li>
+            <li><strong>Pruning:</strong> The process of removing branches that provide little power to classify instances, helping prevent <em>Overfitting</em>.</li>
+        </ul>
+    </section>
+
+    <!-- Section 3: Interactive Visualizer -->
+    <section>
+        <h2>3. Interactive Classifier: "Will it Rain?"</h2>
+        <p>Observe how a Decision Tree classifies data based on two features: <strong>Humidity (%)</strong> and <strong>Temperature (°C)</strong>.</p>
+        
+        <div id="tree-canvas">
+            <!-- Tree dynamically generated by JS -->
+            <div id="tree-content" style="position: relative; width: 100%; height: 100%;"></div>
+        </div>
+
+        <div class="interactive-box">
+            <h4>Test the Model</h4>
+            <div class="controls">
+                <div>
+                    <label>Humidity: <span id="hum-val">70</span>%</label><br>
+                    <input type="range" id="humidity" min="30" max="100" value="70">
+                </div>
+                <div>
+                    <label>Temperature: <span id="temp-val">25</span>°C</label><br>
+                    <input type="range" id="temperature" min="10" max="40" value="25">
+                </div>
+                <button onclick="predict()">Classify Data Point</button>
+            </div>
+            <p id="prediction-result" style="margin-top: 15px; font-weight: bold; color: var(--accent);"></p>
+        </div>
+    </section>
+
+    <!-- Section 4: Pros and Cons -->
+    <section>
+        <h2>4. Strengths & Weaknesses</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="background: #e9f7ef; padding: 15px; border-radius: 8px;">
+                <h4 style="color: #1e8449; margin-top: 0;">Advantages</h4>
+                <ul>
+                    <li>Easy to understand and visualize (White Box).</li>
+                    <li>Requires little data preparation (no scaling needed).</li>
+                    <li>Handles both numerical and categorical data.</li>
+                </ul>
+            </div>
+            <div style="background: #fdf2e9; padding: 15px; border-radius: 8px;">
+                <h4 style="color: #a04000; margin-top: 0;">Disadvantages</h4>
+                <ul>
+                    <li>Prone to <strong>overfitting</strong> (creating over-complex trees).</li>
+                    <li>Unstable: small changes in data can result in a completely different tree.</li>
+                    <li>Biased towards features with many levels.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    const humidityInput = document.getElementById('humidity');
+    const tempInput = document.getElementById('temperature');
+    const humVal = document.getElementById('hum-val');
+    const tempVal = document.getElementById('temp-val');
+    const treeContent = document.getElementById('tree-content');
+    const resultDisplay = document.getElementById('prediction-result');
+
+    // Update labels
+    humidityInput.oninput = () => { humVal.innerText = humidityInput.value; };
+    tempInput.oninput = () => { tempVal.innerText = tempInput.value; };
+
+    // Simple fixed logic for the demo tree
+    // Root: Humidity > 80? 
+    //   YES -> Leaf: Rain
+    //   NO -> Temp > 30?
+    //     YES -> Leaf: No Rain (Too hot/Dry)
+    //     NO -> Leaf: Cloudy/Clear
+
+    function drawTree() {
+        treeContent.innerHTML = '';
+        
+        // Root
+        treeContent.innerHTML += `<div class="node internal-node" style="top: 20px; left: 50%; transform: translateX(-50%);">Root: Humidity > 80%?</div>`;
+        
+        // Level 1
+        treeContent.innerHTML += `<div class="node leaf-node" style="top: 120px; left: 20%; background: #e74c3c;">Rainy (True)</div>`;
+        treeContent.innerHTML += `<div class="node internal-node" style="top: 120px; left: 70%; transform: translateX(-50%);">Temp > 30°C?</div>`;
+
+        // Level 2
+        treeContent.innerHTML += `<div class="node leaf-node" style="top: 220px; left: 55%;">Clear (False)</div>`;
+        treeContent.innerHTML += `<div class="node leaf-node" style="top: 220px; left: 85%;">Clear (True)</div>`;
+
+        // SVG lines for tree structure
+        treeContent.innerHTML += `
+            <svg width="100%" height="100%" style="position:absolute; top:0; left:0; z-index:-1;">
+                <line x1="50%" y1="60" x2="25%" y2="120" stroke="#ccc" stroke-width="2" />
+                <line x1="50%" y1="60" x2="70%" y2="120" stroke="#ccc" stroke-width="2" />
+                <line x1="70%" y1="160" x2="60%" y2="220" stroke="#ccc" stroke-width="2" />
+                <line x1="70%" y1="160" x2="85%" y2="220" stroke="#ccc" stroke-width="2" />
+            </svg>
+        `;
+    }
+
+    function predict() {
+        const h = parseInt(humidityInput.value);
+        const t = parseInt(tempInput.value);
+        let prediction = "";
+
+        if (h > 80) {
+            prediction = "Outcome: 🌧️ RAINY (Humidity is high)";
+        } else {
+            if (t > 30) {
+                prediction = "Outcome: ☀️ CLEAR (Hot and relatively dry)";
+            } else {
+                prediction = "Outcome: ⛅ CLOUDY (Mild conditions)";
+            }
+        }
+        
+        resultDisplay.innerHTML = prediction;
+        
+        // Simple highlight animation
+        resultDisplay.style.transform = "scale(1.1)";
+        setTimeout(() => { resultDisplay.style.transform = "scale(1)"; }, 200);
+    }
+
+    // Initialize
+    drawTree();
+</script>
+
+</body>
+</html>

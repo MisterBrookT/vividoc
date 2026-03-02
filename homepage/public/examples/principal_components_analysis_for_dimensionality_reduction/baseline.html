@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCA: Dimensionality Reduction Interactive Guide</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            margin-bottom: 2rem;
+        }
+        section {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        .controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1d4ed8; }
+        .math {
+            font-family: "Times New Roman", Times, serif;
+            font-style: italic;
+            background: #f8fafc;
+            padding: 2px 4px;
+        }
+        #plot { width: 100%; height: 500px; }
+        .stats-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .stat-card {
+            background: #eff6ff;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #dbeafe;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Principal Component Analysis (PCA)</h1>
+    <p>Mastering Dimensionality Reduction through Variance Maximization</p>
+</header>
+
+<div class="container">
+    
+    <section id="introduction">
+        <h2>1. What is PCA?</h2>
+        <p>
+            Principal Component Analysis (PCA) is a statistical technique used to simplify complex datasets. 
+            In the real world, data often has many variables (dimensions). PCA helps us reduce these dimensions 
+            while retaining as much <strong>information (variance)</strong> as possible.
+        </p>
+        <p>Key concepts:</p>
+        <ul>
+            <li><strong>Dimensionality Reduction:</strong> Transforming data from a high-dimensional space to a lower-dimensional space.</li>
+            <li><strong>Principal Components:</strong> New, uncorrelated variables constructed as linear combinations of the original variables.</li>
+            <li><strong>Eigenvectors:</strong> Determine the direction of the new axes.</li>
+            <li><strong>Eigenvalues:</strong> Determine the magnitude (importance) of each axis.</li>
+        </ul>
+    </section>
+
+    <section id="interactive">
+        <h2>2. Interactive Visualization</h2>
+        <p>Adjust the data distribution and see how PCA finds the Principal Components (PC1 and PC2).</p>
+        
+        <div class="controls">
+            <div>
+                <label>Data Correlation:</label>
+                <input type="range" id="correlation" min="0" max="0.95" step="0.05" value="0.8">
+            </div>
+            <div>
+                <label>Spread (Noise):</label>
+                <input type="range" id="spread" min="0.1" max="1" step="0.1" value="0.3">
+            </div>
+            <button class="btn" onclick="generateData()">Regenerate Data</button>
+        </div>
+
+        <div id="plot"></div>
+
+        <div class="stats-box">
+            <div class="stat-card">
+                <strong>PC1 Variance:</strong> <span id="pc1-var">0%</span>
+            </div>
+            <div class="stat-card">
+                <strong>PC2 Variance:</strong> <span id="pc2-var">0%</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="process">
+        <h2>3. The Step-by-Step Algorithm</h2>
+        <ol>
+            <li><strong>Standardization:</strong> Scale the data so each feature has a mean of 0 and a standard deviation of 1. PCA is sensitive to variances of original variables.</li>
+            <li><strong>Covariance Matrix:</strong> Compute the matrix to identify correlations between variables.
+                <br><span class="math">Σ = 1/(n-1) * (X^T X)</span>
+            </li>
+            <li><strong>Eigendecomposition:</strong> Calculate eigenvectors and eigenvalues from the covariance matrix.</li>
+            <li><strong>Sort & Select:</strong> Sort eigenvalues in descending order. Choose the top <span class="math">k</span> eigenvectors to form a projection matrix.</li>
+            <li><strong>Project:</strong> Transform the original data into the new <span class="math">k</span>-dimensional subspace.</li>
+        </ol>
+    </section>
+
+    <section id="applications">
+        <h2>4. Why use PCA?</h2>
+        <ul>
+            <li><strong>Visualization:</strong> Reducing 100+ variables to 2D or 3D to identify clusters.</li>
+            <li><strong>Noise Filtering:</strong> By dropping components with low eigenvalues, we often remove "noise" from the data.</li>
+            <li><strong>Feature Extraction:</strong> Creating a smaller set of features for machine learning models to prevent overfitting and speed up training.</li>
+        </ul>
+    </section>
+</div>
+
+<script>
+    let rawData = { x: [], y: [] };
+
+    function generateData() {
+        const corr = parseFloat(document.getElementById('correlation').value);
+        const noise = parseFloat(document.getElementById('spread').value);
+        const n = 200;
+        
+        const x = [];
+        const y = [];
+        
+        // Generate correlated 2D data
+        for (let i = 0; i < n; i++) {
+            const val = (Math.random() - 0.5) * 4;
+            const err = (Math.random() - 0.5) * noise * 4;
+            x.push(val);
+            y.push(val * corr + err * (1 - corr));
+        }
+
+        // Center the data
+        const meanX = x.reduce((a, b) => a + b) / n;
+        const meanY = y.reduce((a, b) => a + b) / n;
+        const centeredX = x.map(v => v - meanX);
+        const centeredY = y.map(v => v - meanY);
+
+        rawData = { x: centeredX, y: centeredY };
+        performPCA(centeredX, centeredY);
+    }
+
+    function performPCA(x, y) {
+        const n = x.length;
+        
+        // Covariance Matrix
+        let covXX = 0, covXY = 0, covYY = 0;
+        for (let i = 0; i < n; i++) {
+            covXX += x[i] * x[i];
+            covXY += x[i] * y[i];
+            covYY += y[i] * y[i];
+        }
+        covXX /= (n - 1);
+        covXY /= (n - 1);
+        covYY /= (n - 1);
+
+        const matrix = [[covXX, covXY], [covXY, covYY]];
+        
+        // Use math.js for eigendecomposition
+        const ans = math.eigs(matrix);
+        const values = ans.values.toArray();
+        const vectors = ans.vectors.toArray();
+
+        // Sort eigenvalues descending
+        let indices = [0, 1];
+        if (values[1] > values[0]) indices = [1, 0];
+
+        const totalVar = values[0] + values[1];
+        const pc1Pct = (values[indices[0]] / totalVar * 100).toFixed(1);
+        const pc2Pct = (values[indices[1]] / totalVar * 100).toFixed(1);
+
+        document.getElementById('pc1-var').textContent = pc1Pct + '%';
+        document.getElementById('pc2-var').textContent = pc2Pct + '%';
+
+        updatePlot(x, y, vectors, indices, values);
+    }
+
+    function updatePlot(x, y, vectors, indices, values) {
+        const v1 = vectors[indices[0]];
+        const v2 = vectors[indices[1]];
+        
+        // Length of arrow represents eigenvalue (scaled for vis)
+        const scale = 2;
+        
+        const traceData = {
+            x: x,
+            y: y,
+            mode: 'markers',
+            type: 'scatter',
+            name: 'Data Points',
+            marker: { color: '#94a3b8', opacity: 0.6 }
+        };
+
+        const tracePC1 = {
+            x: [0, v1[0] * scale],
+            y: [0, v1[1] * scale],
+            mode: 'lines+markers',
+            name: 'PC1 (Max Variance)',
+            line: { color: '#2563eb', width: 4 },
+            marker: { size: 10 }
+        };
+
+        const tracePC2 = {
+            x: [0, v2[0] * scale * 0.5],
+            y: [0, v2[1] * scale * 0.5],
+            mode: 'lines+markers',
+            name: 'PC2',
+            line: { color: '#ef4444', width: 3 },
+            marker: { size: 8 }
+        };
+
+        const layout = {
+            margin: { t: 20 },
+            xaxis: { range: [-3, 3], title: 'Variable X' },
+            yaxis: { range: [-3, 3], title: 'Variable Y' },
+            legend: { orientation: 'h', y: -0.2 },
+            hovermode: 'closest'
+        };
+
+        Plotly.newPlot('plot', [traceData, tracePC1, tracePC2], layout);
+    }
+
+    // Initial load
+    window.onload = generateData;
+    document.getElementById('correlation').oninput = generateData;
+    document.getElementById('spread').oninput = generateData;
+</script>
+
+</body>
+</html>

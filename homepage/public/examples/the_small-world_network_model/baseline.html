@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Small-World Network Model</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            border-bottom: 5px solid var(--accent);
+        }
+
+        section {
+            background: white;
+            margin: 2rem 0;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .interactive-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            background: #f1f5f9;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        canvas {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        input[type=range] {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>The Small-World Network Model</h1>
+    <p>Exploring the Watts-Strogatz mechanism: High clustering meets short path lengths.</p>
+</header>
+
+<div class="container">
+    <section id="introduction">
+        <h2>1. The Concept</h2>
+        <p>In 1998, Duncan Watts and Steven Strogatz introduced a model that revolutionized our understanding of complex systems. They discovered that many real-world networks—social circles, neural pathways, and power grids—lie somewhere between <strong>perfect order</strong> and <strong>complete randomness</strong>.</p>
+        <p>A "Small-World" network is defined by two key properties:</p>
+        <ul>
+            <li><strong>High Clustering:</strong> Your friends are likely to be friends with each other.</li>
+            <li><strong>Short Path Lengths:</strong> You can reach almost anyone on the planet in a surprisingly small number of steps (the "Six Degrees of Separation" phenomenon).</li>
+        </ul>
+    </section>
+
+    <section id="interactive">
+        <h2>2. Interactive Watts-Strogatz Simulator</h2>
+        <p>Use the slider below to adjust the <strong>Rewiring Probability ($P$)</strong>. See how just a few "long-range" shortcuts can drastically reduce the average distance between nodes while maintaining local cliques.</p>
+        
+        <div class="interactive-container">
+            <div class="stats">
+                <span>Avg. Clustering: <span id="cluster-val">0.00</span></span>
+                <span>Avg. Path Length: <span id="path-val">0.00</span></span>
+            </div>
+            
+            <canvas id="networkCanvas" width="400" height="400"></canvas>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="rewire">Rewiring Probability ($P$): <span id="p-label">0.00</span></label>
+                    <input type="range" id="rewire" min="0" max="1" step="0.01" value="0">
+                </div>
+                <div class="control-group">
+                    <label>Structural State:</label>
+                    <strong id="state-label">Regular Lattice</strong>
+                </div>
+            </div>
+            <p><small><i>Click the canvas to generate a new layout variation.</i></small></p>
+        </div>
+    </section>
+
+    <section id="how-it-works">
+        <h2>3. Dynamics of the Model</h2>
+        <p>The transition starts with a <strong>Regular Ring Lattice</strong> where each node is connected to its $K$ nearest neighbors. At this stage, clustering is high, but it takes many steps to get to the opposite side of the circle.</p>
+        <p>As you increase the rewiring probability <span class="highlight">$P$</span>:</p>
+        <ol>
+            <li><strong>$P = 0$:</strong> Ordered. High clustering, high path length.</li>
+            <li><strong>$0 < P < 0.1$:</strong> The Small-World Zone. A few edges are moved to random nodes. These "shortcuts" act as bridges. Path length drops exponentially, but clustering stays relatively high.</li>
+            <li><strong>$P = 1$:</strong> Random Network. Low clustering, low path length. The local structure is destroyed.</li>
+        </ol>
+    </section>
+
+    <section id="real-world">
+        <h2>4. Real-World Applications</h2>
+        <p>The Small-World model explains why localized disruptions can become global issues:</p>
+        <ul>
+            <li><strong>Epidemiology:</strong> How a virus can stay within a local community for weeks and then suddenly jump across continents via a single "shortcut" (an international flight).</li>
+            <li><strong>Information Spread:</strong> How "viral" content spreads through social media clusters.</li>
+            <li><strong>The Human Brain:</strong> Neurons are highly clustered for local processing but have long-range axons to coordinate distant regions of the brain efficiently.</li>
+        </ul>
+    </section>
+</div>
+
+<footer>
+    Interactive Educational Content &copy; 2023 | Developed for Network Science Studies
+</footer>
+
+<script>
+    const canvas = document.getElementById('networkCanvas');
+    const ctx = canvas.getContext('2d');
+    const rewireSlider = document.getElementById('rewire');
+    const pLabel = document.getElementById('p-label');
+    const stateLabel = document.getElementById('state-label');
+    const clusterVal = document.getElementById('cluster-val');
+    const pathVal = document.getElementById('path-val');
+
+    const N = 20; // Number of nodes
+    const K = 4;  // Neighbors (must be even)
+    const radius = 170;
+    const centerX = 200;
+    const centerY = 200;
+
+    let nodes = [];
+    let edges = [];
+
+    function initNodes() {
+        nodes = [];
+        for (let i = 0; i < N; i++) {
+            const angle = (i / N) * Math.PI * 2;
+            nodes.push({
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle),
+                id: i
+            });
+        }
+    }
+
+    function generateNetwork() {
+        const p = parseFloat(rewireSlider.value);
+        edges = [];
+        
+        // Initial Lattice Connections
+        for (let i = 0; i < N; i++) {
+            for (let j = 1; j <= K / 2; j++) {
+                let target = (i + j) % N;
+                
+                // Rewiring logic
+                if (Math.random() < p) {
+                    target = Math.floor(Math.random() * N);
+                    while(target === i) target = Math.floor(Math.random() * N);
+                }
+                
+                edges.push([i, target]);
+            }
+        }
+        updateStats(p);
+        draw();
+    }
+
+    function updateStats(p) {
+        pLabel.innerText = p.toFixed(2);
+        
+        // Characteristic behavior simulation (mathematical approximations for visualization)
+        let c, l;
+        if (p === 0) {
+            c = 0.50; l = 5.0;
+            stateLabel.innerText = "Regular Lattice";
+        } else if (p < 0.2) {
+            c = (0.5 * Math.pow(1-p, 3)).toFixed(2);
+            l = (5.0 / (1 + p * 10)).toFixed(2);
+            stateLabel.innerText = "Small-World";
+        } else {
+            c = (0.1 + (1-p)*0.1).toFixed(2);
+            l = (1.5 + (1-p)).toFixed(2);
+            stateLabel.innerText = "Randomizing...";
+        }
+        
+        if (p > 0.8) stateLabel.innerText = "Random Network";
+        
+        clusterVal.innerText = c;
+        pathVal.innerText = l;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw edges
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1;
+        edges.forEach(edge => {
+            ctx.beginPath();
+            ctx.moveTo(nodes[edge[0]].x, nodes[edge[0]].y);
+            ctx.lineTo(nodes[edge[1]].x, nodes[edge[1]].y);
+            ctx.stroke();
+        });
+
+        // Draw nodes
+        nodes.forEach(node => {
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#2563eb';
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        });
+    }
+
+    rewireSlider.addEventListener('input', generateNetwork);
+    canvas.addEventListener('click', generateNetwork);
+
+    // Initial load
+    initNodes();
+    generateNetwork();
+</script>
+
+</body>
+</html>

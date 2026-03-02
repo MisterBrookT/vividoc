@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The small-world network model</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>The small-world network model</h1>
+<!-- Introduction to the Watts-Strogatz model and the tradeoff between clustering and path length. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>In 1998, Duncan Watts and Steven Strogatz published a landmark paper that changed our understanding of complex systems. They observed a paradox in real-world networks—such as the power grid of the United States, the neural network of the nematode <em>C. elegans</em>, and the film actor collaboration graph. These networks were neither completely ordered nor completely random; they exhibited a structural property that became known as the <strong>Small-World effect</strong>.</p><p>To understand this, we must look at two fundamental metrics of a network: 
+    1. The <strong>Average Path Length ($L$)</strong>, which measures the global efficiency of information flow (how many "steps" it takes to get from point A to point B).
+    2. The <strong>Clustering Coefficient ($C$)</strong>, which measures local density (if your friend Alice knows your friend Bob, the network is highly clustered).
+</p><p>Before the Watts-Strogatz model, graph theory mostly focused on two extremes:</p><ul>
+<li><strong>Regular Lattices:</strong> Imagine a ring where every node is connected to exactly its $k$ nearest neighbors. These are highly ordered and have high clustering ($C$), but moving across the network takes a long time, resulting in a large $L$.</li>
+<li><strong>Random Graphs:</strong> In a network where edges are placed entirely by chance, the path length $L$ is very short, but there is almost no local structure, leading to a very low $C$.</li>
+</ul><p>Watts and Strogatz discovered that by taking a regular lattice and "rewiring" just a small fraction of the edges—replacing a local connection with a long-range shortcut—the average path length $L$ drops precipitously, while the clustering coefficient $C$ remains high. This creates a "Small-World" regime: a topological middle ground where the network maintains <strong>local cliques</strong> while providing <strong>global shortcuts</strong>.</p><p>Mathematically, we define this transition by a rewiring probability $p$. When $p = 0$, we have a solid lattice; when $p = 1$, we have a random graph. The "Small-World" occurs at surprisingly low values of $p$ (often $0.01 &lt; p &lt; 0.1$), proving that it only takes a few "weak ties" or long-distance acquaintances to make a massive network feel very small indeed.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    #ku1-vis-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    @media (max-width: 768px) {
+        #ku1-vis-layout { grid-template-columns: 1fr; }
+    }
+    #ku1-network-svg {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        width: 100%;
+        height: 350px;
+    }
+    #ku1-chart-container {
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        height: 350px;
+        position: relative;
+    }
+    #ku1-controls {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    #ku1-p-label {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+    #ku1-p-slider {
+        width: 100%;
+        cursor: pointer;
+    }
+    .ku1-stat-box {
+        display: flex;
+        gap: 20px;
+        margin-top: 10px;
+        font-size: 0.9em;
+    }
+    .ku1-l-val { color: #ff6384; font-weight: bold; }
+    .ku1-c-val { color: #36a2eb; font-weight: bold; }
+    .ku1-node { fill: #4a5568; stroke: #fff; stroke-width: 1.5px; }
+    .ku1-edge { stroke: #cbd5e0; stroke-opacity: 0.6; stroke-width: 1.5px; }
+    .ku1-edge-rewired { stroke: #f56565; stroke-opacity: 0.8; stroke-width: 2px; }
+    #ku1-small-world-indicator {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(72, 187, 120, 0.2);
+        color: #2f855a;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        display: none;
+    }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<div id="ku1-p-label">
+<span>Rewiring Probability (p): <span id="ku1-p-value">0.00</span></span>
+<span id="ku1-regime-text" style="color:#718096">Regular Lattice</span>
+</div>
+<input id="ku1-p-slider" max="1" min="0" step="0.01" type="range" value="0"/>
+<div class="ku1-stat-box">
+<span>Avg Path Length (L): <span class="ku1-l-val" id="ku1-l-disp">-</span></span>
+<span>Clustering (C): <span class="ku1-c-val" id="ku1-c-disp">-</span></span>
+</div>
+</div>
+<div id="ku1-vis-layout">
+<svg id="ku1-network-svg"></svg>
+<div id="ku1-chart-container">
+<div id="ku1-small-world-indicator">Small-World Regime</div>
+<canvas id="ku1-metrics-chart"></canvas>
+</div>
+</div>
+</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://d3js.org/d3.v7.min.js"></script><script>
+(function() {
+    const N = 20;
+    const K = 4;
+    const svg = d3.select("#ku1-network-svg");
+    const width = 350;
+    const height = 350;
+    const radius = 130;
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    const slider = document.getElementById('ku1-p-slider');
+    const pValDisp = document.getElementById('ku1-p-value');
+    const lDisp = document.getElementById('ku1-l-disp');
+    const cDisp = document.getElementById('ku1-c-disp');
+    const regimeText = document.getElementById('ku1-regime-text');
+    const swInd = document.getElementById('ku1-small-world-indicator');
+
+    let nodes = [];
+    for (let i = 0; i < N; i++) {
+        const angle = (i / N) * 2 * Math.PI;
+        nodes.push({
+            id: i,
+            x: centerX + radius * Math.cos(angle),
+            y: centerY + radius * Math.sin(angle)
+        });
+    }
+
+    function getLatticeEdges() {
+        let edges = [];
+        for (let i = 0; i < N; i++) {
+            for (let j = 1; j <= K / 2; j++) {
+                edges.push({ source: i, target: (i + j) % N, originalTarget: (i + j) % N });
+            }
+        }
+        return edges;
+    }
+
+    function calculateMetrics(edges) {
+        // Simple BFS for Path Length
+        const adj = Array.from({ length: N }, () => []);
+        edges.forEach(e => {
+            adj[e.source].push(e.target);
+            adj[e.target].push(e.source);
+        });
+
+        let totalDist = 0;
+        let pairs = 0;
+        for (let i = 0; i < N; i++) {
+            let dists = new Array(N).fill(-1);
+            dists[i] = 0;
+            let q = [i];
+            while (q.length > 0) {
+                let u = q.shift();
+                adj[u].forEach(v => {
+                    if (dists[v] === -1) {
+                        dists[v] = dists[u] + 1;
+                        q.push(v);
+                    }
+                });
+            }
+            dists.forEach(d => { if (d > 0) { totalDist += d; pairs++; } });
+        }
+        const L = pairs > 0 ? totalDist / pairs : 0;
+
+        // Clustering Coefficient
+        let totalC = 0;
+        for (let i = 0; i < N; i++) {
+            let neighbors = adj[i];
+            if (neighbors.length < 2) continue;
+            let possible = (neighbors.length * (neighbors.length - 1)) / 2;
+            let actual = 0;
+            for (let u = 0; u < neighbors.length; u++) {
+                for (let v = u + 1; v < neighbors.length; v++) {
+                    if (adj[neighbors[u]].includes(neighbors[v])) actual++;
+                }
+            }
+            totalC += (actual / possible);
+        }
+        const C = totalC / N;
+        return { L, C };
+    }
+
+    let chartData = { p: [], L: [], C: [] };
+    const ctx = document.getElementById('ku1-metrics-chart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                { label: 'L(p) / L(0)', data: [], borderColor: '#ff6384', tension: 0.3, pointRadius: 0 },
+                { label: 'C(p) / C(0)', data: [], borderColor: '#36a2eb', tension: 0.3, pointRadius: 0 }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: { min: 0, max: 1.1, title: { display: true, text: 'Normalized Value' }},
+                x: { title: { display: true, text: 'Probability p' }}
+            },
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // Baseline metrics
+    const baseEdges = getLatticeEdges();
+    const baseMetrics = calculateMetrics(baseEdges);
+
+    // Precalculate curve
+    for (let i = 0; i <= 100; i += 2) {
+        let p = i / 100;
+        let testEdges = getLatticeEdges().map(e => {
+            if (Math.random() < p) {
+                let newTarget;
+                do { newTarget = Math.floor(Math.random() * N); } 
+                while (newTarget === e.source || baseEdges.some(be => be.source === e.source && be.target === newTarget));
+                return { source: e.source, target: newTarget, rewired: true };
+            }
+            return e;
+        });
+        let m = calculateMetrics(testEdges);
+        chart.data.labels.push(p.toFixed(2));
+        chart.data.datasets[0].data.push(m.L / baseMetrics.L);
+        chart.data.datasets[1].data.push(m.C / baseMetrics.C);
+    }
+    chart.update();
+
+    function update() {
+        const p = parseFloat(slider.value);
+        pValDisp.textContent = p.toFixed(2);
+        
+        let edges = getLatticeEdges().map(e => {
+            // Seeded randomness for consistency during sliding
+            const seed = e.source * 100 + e.originalTarget; 
+            const rand = ((seed * 9301 + 49297) % 233280) / 233280;
+            
+            if (rand < p) {
+                // Determine rewired target based on seed to keep it stable
+                const targetRand = ((seed * 12345 + 6789) % 233280) / 233280;
+                let newTarget = Math.floor(targetRand * N);
+                if (newTarget === e.source) newTarget = (newTarget + 1) % N;
+                return { ...e, target: newTarget, rewired: true };
+            }
+            return { ...e, rewired: false };
+        });
+
+        const metrics = calculateMetrics(edges);
+        lDisp.textContent = metrics.L.toFixed(2);
+        cDisp.textContent = (metrics.C * 100).toFixed(0) + "%";
+
+        // Draw Network
+        svg.selectAll("*").remove();
+        
+        svg.selectAll(".ku1-edge")
+            .data(edges)
+            .enter().append("line")
+            .attr("class", d => d.rewired ? "ku1-edge-rewired" : "ku1-edge")
+            .attr("x1", d => nodes[d.source].x)
+            .attr("y1", d => nodes[d.source].y)
+            .attr("x2", d => nodes[d.target].x)
+            .attr("y2", d => nodes[d.target].y);
+
+        svg.selectAll(".ku1-node")
+            .data(nodes)
+            .enter().append("circle")
+            .attr("class", "ku1-node")
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", 6);
+
+        // Update indicators
+        if (p === 0) regimeText.innerText = "Regular Lattice";
+        else if (p >= 0.8) regimeText.innerText = "Random Graph";
+        else if (p >= 0.01 && p <= 0.2) regimeText.innerText = "Small-World Regime";
+        else regimeText.innerText = "Transitional";
+
+        swInd.style.display = (p >= 0.02 && p <= 0.15) ? 'block' : 'none';
+    }
+
+    slider.addEventListener('input', update);
+    update();
+})();
+</script></div>
+</section>
+<!-- The 'Six Degrees of Separation' and the power of shortcuts. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>The transition from a regular lattice to a small-world network is mathematically defined by how quickly the <strong>Average Path Length ($L$)</strong> collapses compared to the <strong>Clustering Coefficient ($C$)</strong>. In a purely local network, $L$ scales linearly with the number of nodes $N$. However, in a small-world system, $L$ scales logarithmically, such that $L \approx \ln N$. This logarithmic scaling is the engine behind the <strong>"Six Degrees of Separation"</strong> phenomenon.</p><p>Originally suggested by Frigyes Karinthy and later popularized by Stanley Milgram’s 1967 "Small World Problem" experiment, the concept posits that any two people on Earth are connected by a short chain of acquaintances. The Watts-Strogatz model provides the topological proof: by adding just a few <strong>long-range shortcuts</strong>, you connect distant "neighborhoods" that were previously separated by dozens of steps. Because each shortcut can bypass an entire hemisphere of the lattice, the "distance" between any two random points shrinks exponentially.</p><p>Consider the impact of these shortcuts on information propagation. In a regular lattice, a signal must travel through every intermediate node ($L \sim N/2K$). In a small-world network, a single "rewired" edge acts as a wormhole. Mathematically, even if the rewiring probability $p$ is as low as $0.01$, the shortcut removes the topological bottleneck. This efficiency allows for:</p><ul>
+<li><strong>Viral Contagion:</strong> Diseases or information can jump across social clusters instantly rather than "bleeding" slowly through adjacent neighbors.</li>
+<li><strong>Synchronicity:</strong> Biological oscillators, like fireflies flashing in unison or neurons firing in a brain, can achieve global synchronization much faster because of these long-distance connections.</li>
+<li><strong>Robustness:</strong> The network remains highly connected even if several local nodes fail, as the shortcuts provide alternative global routes.</li>
+</ul><p>This reveals a profound truth about complex systems: <strong>local density does not preclude global reach</strong>. You can live in a tight-knit community where everyone knows everyone (high $C$), yet still be only a few handshakes away from a stranger on the other side of the planet, thanks to the power of a few "weak ties" that bridge the gaps between clusters.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    #ku2-controls {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .ku2-control-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    #ku2-shortcut-slider {
+        flex-grow: 1;
+        margin: 0 15px;
+        cursor: pointer;
+    }
+    .ku2-stats {
+        display: flex;
+        gap: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+    .ku2-dist-val { color: #f56565; }
+    #ku2-viz-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+    #ku2-svg {
+        width: 100%;
+        height: 400px;
+        cursor: crosshair;
+    }
+    .ku2-node { fill: #e2e8f0; stroke: #94a3b8; stroke-width: 1px; transition: fill 0.2s; }
+    .ku2-node.ku2-selected { fill: #3182ce; stroke: #2c5282; stroke-width: 2px; }
+    .ku2-edge { stroke: #edf2f7; stroke-width: 1.5px; }
+    .ku2-shortcut { stroke: #f56565; stroke-width: 2px; stroke-dasharray: 4; stroke-opacity: 0.8; }
+    .ku2-path { stroke: #3182ce; stroke-width: 4px; stroke-linecap: round; fill: none; transition: stroke-dashoffset 0.5s; }
+    .ku2-instruction {
+        font-size: 0.8rem;
+        color: #718096;
+        text-align: center;
+        margin-top: 5px;
+    }
+</style><div id="ku2-container">
+<div id="ku2-controls">
+<div class="ku2-control-row">
+<span>Add Random Shortcuts: <b id="ku2-shortcut-count">0</b></span>
+<input id="ku2-shortcut-slider" max="10" min="0" type="range" value="0"/>
+</div>
+<div class="ku2-stats">
+<span>Shortest Path: <span class="ku2-dist-val" id="ku2-path-len">0</span> steps</span>
+<span id="ku2-reduction-pct" style="color: #48bb78; display:none"></span>
+</div>
+</div>
+<div id="ku2-viz-container">
+<svg id="ku2-svg"></svg>
+</div>
+<div class="ku2-instruction">Click any two nodes to set the start (Blue) and end points</div>
+</div><script>
+(function() {
+    const rows = 10;
+    const cols = 10;
+    const nNodes = rows * cols;
+    const svg = d3.select("#ku2-svg");
+    const container = document.getElementById('ku2-viz-container');
+    
+    let width = container.clientWidth || 350;
+    let height = 400;
+    const padding = 30;
+    
+    let sourceNode = 0;
+    let targetNode = 99;
+    let shortcuts = [];
+    let baseEdges = [];
+    
+    const slider = document.getElementById('ku2-shortcut-slider');
+    const shortcutCountDisp = document.getElementById('ku2-shortcut-count');
+    const pathLenDisp = document.getElementById('ku2-path-len');
+    const reductionDisp = document.getElementById('ku2-reduction-pct');
+
+    // Generate grid positions
+    const nodes = [];
+    const cellW = (width - 2 * padding) / (cols - 1);
+    const cellH = (height - 2 * padding) / (rows - 1);
+
+    for (let i = 0; i < nNodes; i++) {
+        const r = Math.floor(i / cols);
+        const c = i % cols;
+        nodes.push({
+            id: i,
+            x: padding + c * cellW,
+            y: padding + r * cellH,
+            r: r,
+            c: c
+        });
+        
+        // Horizontal lattice edges
+        if (c < cols - 1) baseEdges.push({source: i, target: i + 1});
+        // Vertical lattice edges
+        if (r < rows - 1) baseEdges.push({source: i, target: i + cols});
+    }
+
+    // Pre-calculate 10 potential shortcuts to maintain stability
+    const potentialShortcuts = [];
+    const seedRandom = (s) => {
+        let x = Math.sin(s) * 10000;
+        return x - Math.floor(x);
+    };
+    
+    for (let i = 0; i < 10; i++) {
+        let u = Math.floor(seedRandom(i + 0.1) * nNodes);
+        let v = Math.floor(seedRandom(i + 0.2) * nNodes);
+        // Ensure they aren't neighbors or same
+        while(u === v || Math.abs(nodes[u].r - nodes[v].r) + Math.abs(nodes[u].c - nodes[v].c) < 3) {
+            v = (v + 1) % nNodes;
+        }
+        potentialShortcuts.push({source: u, target: v});
+    }
+
+    function findShortestPath(numShortcuts) {
+        const activeShortcuts = potentialShortcuts.slice(0, numShortcuts);
+        const adj = Array.from({ length: nNodes }, () => []);
+        
+        [...baseEdges, ...activeShortcuts].forEach(e => {
+            adj[e.source].push(e.target);
+            adj[e.target].push(e.source);
+        });
+
+        const queue = [sourceNode];
+        const visited = new Set([sourceNode]);
+        const parent = {};
+
+        while (queue.length > 0) {
+            const u = queue.shift();
+            if (u === targetNode) break;
+            for (const v of adj[u]) {
+                if (!visited.has(v)) {
+                    visited.add(v);
+                    parent[v] = u;
+                    queue.push(v);
+                }
+            }
+        }
+
+        const path = [];
+        let curr = targetNode;
+        while (curr !== undefined && curr !== sourceNode) {
+            path.push([parent[curr], curr]);
+            curr = parent[curr];
+        }
+        return path;
+    }
+
+    let initialL = 0;
+
+    function render() {
+        const numShortcuts = parseInt(slider.value);
+        shortcutCountDisp.innerText = numShortcuts;
+        const currentShortcuts = potentialShortcuts.slice(0, numShortcuts);
+        const path = findShortestPath(numShortcuts);
+        
+        pathLenDisp.innerText = path.length;
+        if (numShortcuts === 0) {
+            initialL = path.length;
+            reductionDisp.style.display = 'none';
+        } else {
+            const red = Math.round((1 - path.length / initialL) * 100);
+            reductionDisp.style.display = 'inline';
+            reductionDisp.innerText = `(${red}% shorter!)`;
+        }
+
+        svg.selectAll("*").remove();
+
+        // 1. Draw base edges
+        svg.selectAll(".ku2-edge")
+            .data(baseEdges).enter().append("line")
+            .attr("class", "ku2-edge")
+            .attr("x1", d => nodes[d.source].x).attr("y1", d => nodes[d.source].y)
+            .attr("x2", d => nodes[d.target].x).attr("y2", d => nodes[d.target].y);
+
+        // 2. Draw shortcuts
+        svg.selectAll(".ku2-shortcut")
+            .data(currentShortcuts).enter().append("line")
+            .attr("class", "ku2-shortcut")
+            .attr("x1", d => nodes[d.source].x).attr("y1", d => nodes[d.source].y)
+            .attr("x2", d => nodes[d.target].x).attr("y2", d => nodes[d.target].y);
+
+        // 3. Draw shortest path
+        svg.selectAll(".ku2-path")
+            .data(path).enter().append("line")
+            .attr("class", "ku2-path")
+            .attr("x1", d => nodes[d[0]].x).attr("y1", d => nodes[d[0]].y)
+            .attr("x2", d => nodes[d[1]].x).attr("y2", d => nodes[d[1]].y);
+
+        // 4. Draw nodes
+        svg.selectAll(".ku2-node")
+            .data(nodes).enter().append("circle")
+            .attr("class", d => "ku2-node" + (d.id === sourceNode || d.id === targetNode ? " ku2-selected" : ""))
+            .attr("cx", d => d.x).attr("cy", d => d.y).attr("r", 5)
+            .on("click", (e, d) => {
+                if (sourceNode !== d.id && targetNode !== d.id) {
+                    sourceNode = targetNode;
+                    targetNode = d.id;
+                    render();
+                }
+            });
+    }
+
+    slider.addEventListener('input', render);
+    window.addEventListener('resize', () => {
+        width = container.clientWidth || 350;
+        const cellW_new = (width - 2 * padding) / (cols - 1);
+        nodes.forEach(n => n.x = padding + n.c * cellW_new);
+        render();
+    });
+
+    render();
+})();
+</script></div>
+</section>
+<!-- Comparing Lattice, Small-World, and Random Networks. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>To synthesize our understanding, we must categorize networks by the trade-off between <strong>local robustness</strong> and <strong>global efficiency</strong>. This structural "taxonomy" is defined by how the clustering coefficient $C$ and the average path length $L$ behave relative to a purely random configuration. By comparing the three architectures—Regular, Small-World, and Random—we can see why the Watts-Strogatz model was such a vital discovery for modeling complex biological and social systems.</p><p>Consider a <strong>Regular Lattice</strong> ($p = 0$). Here, the clustering coefficient $C$ is high because neighbors of a node are likely to be neighbors of each other, creating a redundant, resilient local structure. However, because connections are strictly local, the path length $L$ scales linearly with the system size ($L \sim N$). In a global context, this network is "large" and inefficient; moving information from one side to the other requires a slow, step-by-step traversal through every intermediate cluster.</p><p>At the opposite extreme lies the <strong>Random Graph</strong> ($p = 1$). In this regime, edges are distributed without regard for distance. This creates high global efficiency with a very short average path length ($L \sim \ln N$), but it destroys local structure. The clustering coefficient $C$ drops to a negligible value ($C \approx k/N$), meaning the network lacks the "cliques" or functional modules found in real-world systems like the human brain or stable social circles.</p><p>The <strong>Small-World Model</strong> ($0 &lt; p &lt; 0.1$) functions as a topological hybrid. It retains the high clustering of a lattice ($C_{sw} \approx C_{lattice}$) while achieving the low path length of a random graph ($L_{sw} \approx L_{random}$). This "best of both worlds" phenomenon occurs because the first few rewired edges—the <strong>shortcuts</strong>—connect distant parts of the network, causing $L$ to drop exponentially. Crucially, these few shortcuts are too rare to significantly alter the local clustering of the rest of the nodes. Mathematically, this is expressed by the ratio:</p><p>$\sigma = \frac{C/C_{rand}}{L/L_{rand}}$</p><p>When $\sigma &gt; 1$, the network is said to exhibit "Small-Worldness." This explains why real-world networks are so effective: they are organized enough to be <strong>robust locally</strong> through dense clusters, yet random enough to be <strong>efficient globally</strong> through sparse long-range ties.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    #ku3-controls {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    #ku3-selector {
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid #cbd5e0;
+        font-size: 1rem;
+        cursor: pointer;
+        outline: none;
+    }
+    #ku3-selector:focus { border-color: #3182ce; }
+    
+    #ku3-main-viz {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    @media (max-width: 768px) {
+        #ku3-main-viz { grid-template-columns: 1fr; }
+    }
+
+    #ku3-network-view {
+        background: white;
+        border-radius: 8px;
+        height: 350px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .ku3-table-container {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    #ku3-comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+    #ku3-comparison-table th, #ku3-comparison-table td {
+        padding: 12px 8px;
+        text-align: left;
+        border-bottom: 1px solid #edf2f7;
+    }
+    #ku3-comparison-table th { color: #4a5568; font-weight: 600; }
+    
+    .ku3-highlight-row { background-color: #ebf8ff; transition: background 0.3s; }
+    .ku3-val-high { color: #2f855a; font-weight: bold; }
+    .ku3-val-low { color: #c53030; font-weight: bold; }
+    
+    .ku3-node { fill: #4a5568; stroke: #fff; stroke-width: 1px; }
+    .ku3-edge { stroke: #cbd5e0; stroke-opacity: 0.4; stroke-width: 1px; }
+    .ku3-edge-shortcut { stroke: #f56565; stroke-opacity: 0.8; stroke-width: 2px; }
+    .ku3-cluster-highlight { fill: #4299e1; fill-opacity: 0.2; stroke: #3182ce; stroke-dasharray: 2; }
+    
+    #ku3-description {
+        font-size: 0.9rem;
+        color: #4a5568;
+        line-height: 1.4;
+        margin-top: 5px;
+        font-style: italic;
+    }
+</style><div id="ku3-container">
+<div id="ku3-controls">
+<label for="ku3-selector"><strong>Network Type:</strong></label>
+<select id="ku3-selector">
+<option value="regular">Regular Lattice (p = 0)</option>
+<option value="smallworld">Small-World (p = 0.05)</option>
+<option value="random">Random Graph (p = 1.0)</option>
+</select>
+<div id="ku3-description">Structure: Ordered, High Clustering</div>
+</div>
+<div id="ku3-main-viz">
+<svg id="ku3-network-view"></svg>
+<div class="ku3-table-container">
+<table id="ku3-comparison-table">
+<thead>
+<tr>
+<th>Metric</th>
+<th>Regular</th>
+<th>Small-World</th>
+<th>Random</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ku3-row-l">
+<td>Path Length (L)</td>
+<td class="ku3-val-high">High (~N)</td>
+<td class="ku3-val-low">Low (~ln N)</td>
+<td class="ku3-val-low">Low (~ln N)</td>
+</tr>
+<tr id="ku3-row-c">
+<td>Clustering (C)</td>
+<td class="ku3-val-high">High</td>
+<td class="ku3-val-high">High</td>
+<td class="ku3-val-low">Low (~k/N)</td>
+</tr>
+<tr id="ku3-row-robust">
+<td>Local Robustness</td>
+<td>High</td>
+<td style="font-weight: bold; color: #3182ce;">Optimal</td>
+<td>Low</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div><script>
+(function() {
+    const N = 30;
+    const K = 4;
+    const svg = d3.select("#ku3-network-view");
+    const container = document.getElementById('ku3-network-view');
+    const selector = document.getElementById('ku3-selector');
+    const desc = document.getElementById('ku3-description');
+    
+    const width = 400; 
+    const height = 350;
+    const radius = 130;
+    
+    const nodes = Array.from({ length: N }, (_, i) => {
+        const angle = (i / N) * 2 * Math.PI;
+        return {
+            id: i,
+            x: width/2 + radius * Math.cos(angle),
+            y: height/2 + radius * Math.sin(angle)
+        };
+    });
+
+    const descriptions = {
+        regular: "Structure: Static, local clusters only. Inefficient global flow.",
+        smallworld: "Structure: Local cliques + global shortcuts. Efficient & robust.",
+        random: "Structure: Minimal local order. Pure global connectivity."
+    };
+
+    function getEdges(type) {
+        let edges = [];
+        // Base lattice
+        for (let i = 0; i < N; i++) {
+            for (let j = 1; j <= K / 2; j++) {
+                edges.push({ source: i, target: (i + j) % N, type: 'lattice' });
+            }
+        }
+
+        if (type === 'regular') return edges;
+
+        if (type === 'smallworld') {
+            // Rewire ~5%
+            return edges.map(e => {
+                const seed = e.source * 10.1 + e.target;
+                const rand = (Math.sin(seed) + 1) / 2;
+                if (rand < 0.12) { // Visual approximation of p=0.05
+                    const newTarget = Math.floor(((rand * 100) % 1) * N);
+                    return { ...e, target: newTarget, type: 'shortcut' };
+                }
+                return e;
+            });
+        }
+
+        if (type === 'random') {
+            return edges.map((e, idx) => {
+                const seed = idx * 1.5;
+                const t = Math.floor(((Math.sin(seed) + 1) / 2) * N);
+                return { ...e, target: t, type: 'random' };
+            });
+        }
+    }
+
+    function update() {
+        const type = selector.value;
+        const edges = getEdges(type);
+        desc.innerText = descriptions[type];
+
+        // Highlight columns in table
+        const cols = { regular: 1, smallworld: 2, random: 3 };
+        const cells = document.querySelectorAll('#ku3-comparison-table td, #ku3-comparison-table th');
+        cells.forEach(c => c.style.backgroundColor = 'transparent');
+        
+        const columnIndex = cols[type];
+        const rows = document.querySelectorAll('#ku3-comparison-table tr');
+        rows.forEach(row => {
+            const cell = row.children[columnIndex];
+            if(cell) cell.style.backgroundColor = '#ebf8ff';
+        });
+
+        svg.selectAll("*").remove();
+
+        // Highlighting for Small-World "Best of both worlds"
+        if (type === 'smallworld') {
+            svg.append("circle")
+                .attr("class", "ku3-cluster-highlight")
+                .attr("cx", nodes[0].x).attr("cy", nodes[0].y).attr("r", 40);
+            svg.append("text")
+                .attr("x", nodes[0].x - 30).attr("y", nodes[0].y - 45)
+                .style("font-size", "10px").style("fill", "#3182ce")
+                .text("Local Cluster");
+        }
+
+        // Draw Edges
+        svg.selectAll(".ku3-edge")
+            .data(edges).enter().append("line")
+            .attr("class", d => d.type === 'shortcut' ? "ku3-edge-shortcut" : "ku3-edge")
+            .attr("x1", d => nodes[d.source].x).attr("y1", d => nodes[d.source].y)
+            .attr("x2", d => nodes[d.target].x).attr("y2", d => nodes[d.target].y);
+
+        // Draw Nodes
+        svg.selectAll(".ku3-node")
+            .data(nodes).enter().append("circle")
+            .attr("class", "ku3-node")
+            .attr("cx", d => d.x).attr("cy", d => d.y).attr("r", 4);
+    }
+
+    selector.addEventListener('change', update);
+    update();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

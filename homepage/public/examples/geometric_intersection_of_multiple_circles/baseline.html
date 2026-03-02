@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Intersection of Circles</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        section {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 10px; }
+        h2 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+
+        .interactive-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        canvas {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: crosshair;
+            max-width: 100%;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            width: 100%;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .math-block {
+            background: #f1f5f9;
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+        }
+
+        .tooltip {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-top: 5px;
+        }
+
+        .status {
+            font-weight: bold;
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Intersection of Circles</h1>
+        <p>Exploring the planar geometry and mathematics of overlapping circles.</p>
+    </header>
+
+    <section id="introduction">
+        <h2>1. Fundamentals</h2>
+        <p>In Euclidean geometry, the intersection of two circles result in either 0, 1, or 2 points. When we extend this to <strong>multiple circles</strong>, we look for the <em>common intersection area</em> (the Venn diagram approach) or the specific points where all circumferences meet.</p>
+        <p>Three key cases for two circles with radii $r_1, r_2$ and distance between centers $d$:</p>
+        <ul>
+            <li><strong>Separate:</strong> $d > r_1 + r_2$ (No intersection)</li>
+            <li><strong>Tangent:</strong> $d = r_1 + r_2$ (1 intersection point)</li>
+            <li><strong>Overlapping:</strong> $|r_1 - r_2| < d < r_1 + r_2$ (2 intersection points)</li>
+        </ul>
+    </section>
+
+    <section id="interactive">
+        <h2>2. Interactive Laboratory</h2>
+        <div class="interactive-area">
+            <canvas id="canvas" width="600" height="400"></canvas>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>Circle A Radius: <span id="r1-val">80</span></label>
+                    <input type="range" id="r1" min="20" max="150" value="80">
+                </div>
+                <div class="control-group">
+                    <label>Circle B Radius: <span id="r2-val">80</span></label>
+                    <input type="range" id="r2" min="20" max="150" value="80">
+                </div>
+                <div class="control-group">
+                    <label>Circle C Radius: <span id="r3-val">80</span></label>
+                    <input type="range" id="r3" min="20" max="150" value="80">
+                </div>
+            </div>
+            <p class="tooltip">Drag the circle centers to see how the intersection points and the shaded overlap region change.</p>
+            <div id="result-text">Intersection count: <span class="status" id="int-count">0</span></div>
+        </div>
+    </section>
+
+    <section id="mathematics">
+        <h2>3. The Algebra of trilateration</h2>
+        <p>Finding the intersection of circles is the basis for <strong>Trilateration</strong>, the technology used in GPS. Given two circles $(x-x_1)^2 + (y-y_1)^2 = r_1^2$ and $(x-x_2)^2 + (y-y_2)^2 = r_2^2$:</p>
+        <div class="math-block">
+            1. Subtract the equations to find the Radical Line (the line passing through intersection points).<br>
+            2. Solve for 'a' (distance from center 1 to the radical line): a = (r1² - r2² + d²) / (2d)<br>
+            3. Solve for 'h' (height of intersection from radical line): h = sqrt(r1² - a²)<br>
+            4. Coordinate P = C1 + a/d * (C2 - C1) ± h/d * (y2-y1, -(x2-x1))
+        </div>
+    </section>
+
+    <section id="applications">
+        <h2>4. Real-World Applications</h2>
+        <ul>
+            <li><strong>GNSS/GPS:</strong> Determining a 3D position using the intersection of spheres (estimated as circles on a 2D map).</li>
+            <li><strong>Wireless Networking:</strong> Determining the coverage area where multiple Wi-Fi or Cellular signals overlap.</li>
+            <li><strong>Structural Engineering:</strong> Calculating the area of reinforced zones in overlapping support column footprints.</li>
+        </ul>
+    </section>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const r1Input = document.getElementById('r1');
+    const r2Input = document.getElementById('r2');
+    const r3Input = document.getElementById('r3');
+    const r1Val = document.getElementById('r1-val');
+    const r2Val = document.getElementById('r2-val');
+    const r3Val = document.getElementById('r3-val');
+    const intCountDisplay = document.getElementById('int-count');
+
+    let circles = [
+        { x: 200, y: 200, r: 80, color: 'rgba(37, 99, 235, 0.2)', stroke: '#2563eb' },
+        { x: 350, y: 200, r: 80, color: 'rgba(220, 38, 38, 0.2)', stroke: '#dc2626' },
+        { x: 275, y: 300, r: 80, color: 'rgba(5, 150, 105, 0.2)', stroke: '#059669' }
+    ];
+
+    let draggingCircle = null;
+
+    function getDist(p1, p2) {
+        return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
+    }
+
+    function getIntersections(c1, c2) {
+        let d = getDist(c1, c2);
+        if (d > c1.r + c2.r || d < Math.abs(c1.r - c2.r) || d === 0) return [];
+
+        let a = (c1.r**2 - c2.r**2 + d**2) / (2 * d);
+        let h = Math.sqrt(Math.max(0, c1.r**2 - a**2));
+        
+        let x2 = c1.x + a * (c2.x - c1.x) / d;
+        let y2 = c1.y + a * (c2.y - c1.y) / d;
+
+        return [
+            {
+                x: x2 + h * (c2.y - c1.y) / d,
+                y: y2 - h * (c2.x - c1.x) / d
+            },
+            {
+                x: x2 - h * (c2.y - c1.y) / d,
+                y: y2 + h * (c2.x - c1.x) / d
+            }
+        ];
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Update radii from sliders
+        circles[0].r = parseInt(r1Input.value);
+        circles[1].r = parseInt(r2Input.value);
+        circles[2].r = parseInt(r3Input.value);
+        r1Val.textContent = circles[0].r;
+        r2Val.textContent = circles[1].r;
+        r3Val.textContent = circles[2].r;
+
+        // Draw Circles
+        circles.forEach(c => {
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+            ctx.fillStyle = c.color;
+            ctx.fill();
+            ctx.strokeStyle = c.stroke;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw Center
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = c.stroke;
+            ctx.fill();
+        });
+
+        // Find Intersections
+        let points = [];
+        let pairs = [[0,1], [1,2], [2,0]];
+        pairs.forEach(pair => {
+            let hits = getIntersections(circles[pair[0]], circles[pair[1]]);
+            points.push(...hits);
+        });
+
+        // Draw Intersection Points
+        points.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "black";
+            ctx.fill();
+        });
+
+        intCountDisplay.textContent = points.length;
+    }
+
+    // Mouse Interactions
+    canvas.addEventListener('mousedown', e => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        
+        circles.forEach((c, i) => {
+            if (getDist({x: mx, y: my}, c) < 30) {
+                draggingCircle = i;
+            }
+        });
+    });
+
+    window.addEventListener('mousemove', e => {
+        if (draggingCircle !== null) {
+            const rect = canvas.getBoundingClientRect();
+            circles[draggingCircle].x = e.clientX - rect.left;
+            circles[draggingCircle].y = e.clientY - rect.top;
+            draw();
+        }
+    });
+
+    window.addEventListener('mouseup', () => {
+        draggingCircle = null;
+    });
+
+    [r1Input, r2Input, r3Input].forEach(i => i.addEventListener('input', draw));
+
+    draw();
+</script>
+
+</body>
+</html>

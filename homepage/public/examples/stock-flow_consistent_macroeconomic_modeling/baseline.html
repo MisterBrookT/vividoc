@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock-Flow Consistent (SFC) Modeling: An Interactive Guide</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --border: #dee2e6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+
+        .matrix-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--light);
+        }
+
+        .positive { color: #27ae60; font-weight: bold; }
+        .negative { color: #c0392b; font-weight: bold; }
+
+        .interactive-sim {
+            background: #fdfdfd;
+            border: 2px solid var(--secondary);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viz-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            border-left: 5px solid var(--secondary);
+        }
+
+        .formula {
+            background: #eee;
+            padding: 10px;
+            border-radius: 4px;
+            display: inline-block;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .viz-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Stock-Flow Consistent (SFC) Modeling</h1>
+    <p>The Rigorous Accounting Foundation of Macroeconomics</p>
+</header>
+
+<section id="introduction">
+    <h2>1. What is SFC Modeling?</h2>
+    <p>Stock-Flow Consistent (SFC) modeling is an approach to macroeconomics that ensures all financial flows are accounted for and linked to changes in stocks (wealth). Created largely by <strong>Wynne Godley</strong>, it follows the principle of <strong>double-entry bookkeeping</strong>: every inflow to one sector must be an outflow from another, and every financial asset is someone else's liability.</p>
+    
+    <div style="background: #fff3cd; padding: 15px; border-left: 5px solid #ffc107;">
+        <strong>The Golden Rule:</strong> "There are no black holes." Total financial savings across all sectors (Households, Firms, Government, Foreign) must sum to exactly zero.
+    </div>
+</section>
+
+<section id="matrices">
+    <h2>2. The Transaction Flow Matrix</h2>
+    <p>This matrix tracks the flows between sectors. Rows represent transactions, and columns represent institutional sectors. By convention, <strong>(+)</strong> represents an inflow/receipt and <strong>(-)</strong> represents an outflow/payment.</p>
+    
+    <div class="matrix-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction</th>
+                    <th>Households</th>
+                    <th>Firms</th>
+                    <th>Government</th>
+                    <th>Sum</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Consumption</td>
+                    <td class="negative">-C</td>
+                    <td class="positive">+C</td>
+                    <td></td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Govt. Spending</td>
+                    <td></td>
+                    <td class="positive">+G</td>
+                    <td class="negative">-G</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Wages</td>
+                    <td class="positive">+WB</td>
+                    <td class="negative">-WB</td>
+                    <td></td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Taxes</td>
+                    <td class="negative">-T</td>
+                    <td></td>
+                    <td class="positive">+T</td>
+                    <td>0</td>
+                </tr>
+                <tr style="border-top: 2px solid black;">
+                    <td><strong>Change in Cash (ΔH)</strong></td>
+                    <td class="negative">-ΔH<sub>h</sub></td>
+                    <td></td>
+                    <td class="positive">+ΔH<sub>s</sub></td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section id="simulator">
+    <h2>3. Interactive SIM Model</h2>
+    <p>Adjust the parameters below to see how the economy reaches an equilibrium where <strong>Government Deficit = Private Savings</strong>. This is a basic "Model SIM" where there are no private banks and the government issues currency.</p>
+    
+    <div class="interactive-sim">
+        <div class="controls">
+            <div class="slider-group">
+                <label for="govSpend">Govt. Spending (G): <span id="v-g">20</span></label>
+                <input type="range" id="govSpend" min="10" max="100" value="20">
+            </div>
+            <div class="slider-group">
+                <label for="taxRate">Tax Rate (θ): <span id="v-t">0.2</span></label>
+                <input type="range" id="taxRate" min="0.05" max="0.5" step="0.01" value="0.2">
+            </div>
+            <div class="slider-group">
+                <label for="propensity">Propensity to Consume (α): <span id="v-a">0.6</span></label>
+                <input type="range" id="propensity" min="0.1" max="0.9" step="0.1" value="0.6">
+            </div>
+        </div>
+
+        <div class="viz-grid">
+            <div class="stat-card">
+                <h3>Equilibrium GDP (Y)</h3>
+                <div id="res-y" style="font-size: 2em; color: var(--secondary);">0</div>
+                <p><small>Formula: Y = G / θ</small></p>
+            </div>
+            <div class="stat-card">
+                <h3>Steady State Wealth (H)</h3>
+                <div id="res-h" style="font-size: 2em; color: var(--secondary);">0</div>
+                <p><small>Wealth accumulated over time</small></p>
+            </div>
+        </div>
+
+        <div style="margin-top:20px;">
+            <h4>Analysis:</h4>
+            <p id="analysis-text">In this model, the government deficit eventually becomes zero as the economy adjusts to a level where taxes collected equal government spending. However, the private sector accumulates a "stock" of money until they reach their desired wealth-to-income ratio.</p>
+        </div>
+    </div>
+</section>
+
+<section id="mechanics">
+    <h2>4. Key Behavioral Equations</h2>
+    <p>Behind the simulation are specific equations that govern how sectors behave:</p>
+    <ul>
+        <li><strong>Income:</strong> <span class="formula">Y = C + G</span> (GDP is the sum of consumption and government spending)</li>
+        <li><strong>Disposable Income:</strong> <span class="formula">YD = Y - T</span> (What's left after taxes)</li>
+        <li><strong>Consumption Function:</strong> <span class="formula">C = α₁·YD + α₂·H₀</span> (Consumption depends on current income and past wealth)</li>
+        <li><strong>Wealth Accumulation:</strong> <span class="formula">ΔH = YD - C</span> (Savings increase the stock of wealth)</li>
+    </ul>
+</section>
+
+<script>
+    const govInput = document.getElementById('govSpend');
+    const taxInput = document.getElementById('taxRate');
+    const alphInput = document.getElementById('propensity');
+
+    const vG = document.getElementById('v-g');
+    const vT = document.getElementById('v-t');
+    const vA = document.getElementById('v-a');
+
+    const resY = document.getElementById('res-y');
+    const resH = document.getElementById('res-h');
+
+    function updateSimulation() {
+        const G = parseFloat(govInput.value);
+        const theta = parseFloat(taxInput.value);
+        const alpha1 = parseFloat(alphInput.value);
+        const alpha2 = 0.1; // Fixed propensity to consume out of wealth
+
+        vG.innerText = G;
+        vT.innerText = theta;
+        vA.innerText = alpha1;
+
+        // In the SIM model, steady state Y = G / theta
+        // This is because in steady state (ΔH = 0), then T = G. 
+        // Since T = theta * Y, then theta * Y = G => Y = G/theta.
+        const Y_steady = G / theta;
+        
+        // Steady state wealth: H = (YD - C_income) / alpha2
+        // H = ( (1-alpha1)*YD_steady ) / alpha2
+        const YD_steady = Y_steady * (1 - theta);
+        const H_steady = (YD_steady * (1 - alpha1)) / alpha2;
+
+        resY.innerText = Y_steady.toFixed(2);
+        resH.innerText = H_steady.toFixed(2);
+    }
+
+    [govInput, taxInput, alphInput].forEach(input => {
+        input.addEventListener('input', updateSimulation);
+    });
+
+    // Initial run
+    updateSimulation();
+</script>
+
+</body>
+</html>

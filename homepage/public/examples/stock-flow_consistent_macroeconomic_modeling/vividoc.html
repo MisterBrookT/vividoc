@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stock-flow consistent macroeconomic modeling</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Stock-flow consistent macroeconomic modeling</h1>
+<!-- Introduction to the accounting identity of stocks and flows. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>At the heart of <strong>Stock-Flow Consistent (SFC)</strong> modeling lies a rigorous commitment to corporate and national accounting: the principle that every monetary flow must have an origin and a destination. In traditional macroeconomics, models often "leak" or have "black holes" where money disappears or appears from nowhere. SFC modeling eliminates these inconsistencies by ensuring that the financial world is treated as a closed system where everything must be accounted for.</p><p>To understand this framework, we must first distinguish between <strong>Stocks</strong> and <strong>Flows</strong>. A <em>flow</em> is a magnitude measured over a specific interval of time—think of your monthly salary or your annual spending. In contrast, a <em>stock</em> is a quantity measured at a specific point in time, representing an accumulation of past flows. Common examples of stocks include your total bank balance, the outstanding national debt, or the physical capital in a factory.</p><p>The most intuitive way to visualize this relationship is through the <strong>Water Tank Analogy</strong>. Imagine a water tank representing a <em>Stock</em> (such as Wealth, $W$). The water pouring in from the faucet represents an <em>Inflow</em> (such as Income, $Y$), and the water exiting through the drain represents an <em>Outflow</em> (such as Consumption, $C$):</p><p>$$\frac{\Delta W}{\Delta t} = Y - C$$</p><p>This fundamental accounting identity dictates that the change in a stock over a period is <strong>exactly equal</strong> to the net flow during that period. If you earn $\$5,000$ this month and spend $\$4,000$, your stock of wealth <em>must</em> increase by exactly $\$1,000$. There is no "third option."</p><p>In an SFC model, this logic is extended to the entire economy. If one sector (e.g., Households) is accumulating a stock of assets, another sector (e.g., Government or Firms) <strong>must</strong> be accumulating a corresponding stock of liabilities. By tracking these relationships through interconnected balance sheets, SFC models ensure that the model behaves according to the laws of "double-entry bookkeeping," providing a much more realistic simulation of how money actually moves through a modern economy.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        border: 1px solid #e0e0e0;
+    }
+
+    #ku1-visual-area {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        height: 350px;
+        background: white;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    #ku1-tank-wrapper {
+        position: relative;
+        width: 140px;
+        height: 220px;
+        border: 4px solid #444;
+        border-top: none;
+        background: #eee;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    #ku1-water {
+        width: 100%;
+        background: linear-gradient(to bottom, #4da3ff, #2b6cb0);
+        transition: height 0.3s ease-out;
+    }
+
+    .ku1-pipe {
+        position: absolute;
+        background: #999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+    }
+
+    #ku1-inflow-pipe {
+        top: 20px;
+        left: 0;
+        height: 30px;
+        transform: translateX(-100%);
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    #ku1-outflow-pipe {
+        bottom: 40px;
+        right: 0;
+        height: 30px;
+        transform: translateX(100%);
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+
+    #ku1-equation-box {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: serif;
+        font-size: 14px;
+    }
+
+    #ku1-controls {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .ku1-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ku1-control-group label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .ku1-value-display {
+        font-mono: monospace;
+        color: #2b6cb0;
+        font-weight: bold;
+    }
+
+    #ku1-summary {
+        text-align: center;
+        font-size: 0.95rem;
+        color: #555;
+        border-top: 1px solid #ddd;
+        padding-top: 15px;
+        width: 100%;
+    }
+</style><div id="ku1-container">
+<div id="ku1-visual-area">
+<div id="ku1-equation-box">
+            $\Delta Stock = Inflow - Outflow$<br/>
+<span id="ku1-calc" style="color: #2b6cb0; font-weight: bold;"></span>
+</div>
+<div class="ku1-pipe" id="ku1-inflow-pipe">INFLOW</div>
+<div id="ku1-tank-wrapper">
+<div id="ku1-water"></div>
+<div style="position: absolute; width: 100%; text-align: center; top: 40%; font-weight: bold; color: #333; z-index: 10;">
+                STOCK: <span id="ku1-stock-label">200</span>
+</div>
+</div>
+<div class="ku1-pipe" id="ku1-outflow-pipe">OUTFLOW</div>
+</div>
+<div id="ku1-controls">
+<div class="ku1-control-group">
+<label>Inflow ($Y$): <span class="ku1-value-display" id="ku1-val-in">50</span></label>
+<input id="ku1-slider-in" max="100" min="0" type="range" value="50"/>
+</div>
+<div class="ku1-control-group">
+<label>Outflow ($C$): <span class="ku1-value-display" id="ku1-val-out">30</span></label>
+<input id="ku1-slider-out" max="100" min="0" type="range" value="30"/>
+</div>
+</div>
+<div id="ku1-summary">
+        Initial Stock: 200 | Net Flow: <span id="ku1-net-flow">20</span> | End Stock: <span id="ku1-end-stock">220</span>
+</div>
+</div><script>
+    (function() {
+        const sliderIn = document.getElementById('ku1-slider-in');
+        const sliderOut = document.getElementById('ku1-slider-out');
+        const valIn = document.getElementById('ku1-val-in');
+        const valOut = document.getElementById('ku1-val-out');
+        const pipeIn = document.getElementById('ku1-inflow-pipe');
+        const pipeOut = document.getElementById('ku1-outflow-pipe');
+        const water = document.getElementById('ku1-water');
+        const stockLabel = document.getElementById('ku1-stock-label');
+        const calcDisp = document.getElementById('ku1-calc');
+        const netDisp = document.getElementById('ku1-net-flow');
+        const endDisp = document.getElementById('ku1-end-stock');
+
+        const INITIAL_STOCK = 200;
+        const TANK_MAX = 400; // For visualization scaling
+
+        function update() {
+            const inflow = parseInt(sliderIn.value);
+            const outflow = parseInt(sliderOut.value);
+            const netFlow = inflow - outflow;
+            const endStock = INITIAL_STOCK + netFlow;
+
+            // Update text
+            valIn.textContent = inflow;
+            valOut.textContent = outflow;
+            stockLabel.textContent = endStock;
+            netDisp.textContent = (netFlow > 0 ? "+" : "") + netFlow;
+            endDisp.textContent = endStock;
+            calcDisp.textContent = `${endStock} = 200 + (${inflow} - ${outflow})`;
+
+            // Update Tank (visual height proportional to stock)
+            const heightPercent = (endStock / TANK_MAX) * 100;
+            water.style.height = `${heightPercent}%`;
+
+            // Update Pipe thickness (min 4px, max 40px)
+            const getThickness = (val) => Math.max(4, (val / 100) * 40);
+            
+            const thickIn = getThickness(inflow);
+            pipeIn.style.width = '80px';
+            pipeIn.style.height = `${thickIn}px`;
+            pipeIn.style.marginTop = `-${thickIn/2}px`;
+            
+            const thickOut = getThickness(outflow);
+            pipeOut.style.width = '80px';
+            pipeOut.style.height = `${thickOut}px`;
+            pipeOut.style.marginBottom = `-${thickOut/2}px`;
+        }
+
+        sliderIn.addEventListener('input', update);
+        sliderOut.addEventListener('input', update);
+        
+        // Initial run
+        update();
+    })();
+</script></div>
+</section>
+<!-- The Sectoral Balance Matrix. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>If the water tank analogy illustrates the relationship between stocks and flows for a single entity, the <strong>Transaction Flow Matrix (TFM)</strong> scales this logic to the entire macroeconomy. In an SFC framework, we organize the economy into distinct <strong>Sectors</strong>—typically Households, Firms, Government, and the Rest of the World. The TFM is a rigorous accounting grid where every row represents a type of transaction (like consumption, taxes, or bond purchases) and every column represents a sector. Because every payment made by one sector is <em>simultaneously</em> a receipt for another, the sum of every row must be <strong>zero</strong>.</p><p>This "zero-sum" constraint is the mathematical expression of the law that money cannot be created or destroyed within the payment system—it can only be transferred. For instance, if the Government sector makes a payment for social services (an outflow, $-G$), that exact amount must appear as an inflow ($+G$) in the Household or Firm columns. When we sum the net flows for any single sector, we arrive at that sector's <strong>Net Lending</strong> or <strong>Financial Balance</strong>. If a sector’s total inflows exceed its total outflows, it is running a surplus and accumulating financial assets.</p><p>The most profound implication of this matrix is the <strong>Sectoral Balance Identity</strong>. By summing the balances of all sectors, we find that they must aggregate to zero. In a simplified closed economy (ignoring the foreign sector for a moment), the relationship between the Private Sector Balance ($S - I$) and the Public Sector Balance ($G - T$) is defined as:</p><p>$$(S - I) + (G - T) = 0$$</p><p>Rearranging this identity reveals a fundamental truth often overlooked in political discourse: <strong>$(S - I) = (T - G)$</strong>. This means that for the private sector to net save (run a surplus), the government <strong>must</strong> run an equivalent deficit. To use the water tank imagery, if the government "tank" is draining water out into the system, that water must necessarily be filling up the tanks of the private households and firms. One sector's red ink is, by accounting necessity, another sector's black ink.</p><p>In an open economy, we simply add the Foreign Sector (the <strong>Current Account</strong>). If a nation runs a trade deficit, it is essentially "importing" demand while "exporting" financial claims. An SFC model tracks these movements across the matrix, ensuring that no sector's financial position is analyzed in isolation. You cannot change the trajectory of the government's debt without simultaneously causing a mathematical shift in the wealth of the private or foreign sectors.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        border-radius: 8px;
+        padding: 24px;
+        border: 1px solid #e0e0e0;
+        color: #333;
+    }
+
+    #ku2-dashboard {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .ku2-card {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .ku2-card h4 {
+        margin: 0 0 12px 0;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #666;
+        text-align: center;
+    }
+
+    .ku2-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+
+    .ku2-table td {
+        padding: 8px 4px;
+        border-bottom: 1px hide #eee;
+    }
+
+    .ku2-table tr:last-child {
+        border-top: 2px solid #444;
+        font-weight: bold;
+    }
+
+    .ku2-val {
+        text-align: right;
+        font-family: monospace;
+    }
+
+    .ku2-pos { color: #2f855a; }
+    .ku2-neg { color: #c53030; }
+
+    #ku2-viz-box {
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin: 20px 0;
+        overflow: hidden;
+    }
+
+    #ku2-scale-beam {
+        width: 300px;
+        height: 6px;
+        background: #444;
+        border-radius: 3px;
+        position: relative;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .ku2-pan {
+        width: 80px;
+        height: 10px;
+        background: #888;
+        margin-top: 60px;
+        position: relative;
+    }
+
+    .ku2-pan::before {
+        content: '';
+        position: absolute;
+        top: -60px;
+        left: 50%;
+        width: 2px;
+        height: 60px;
+        background: #aaa;
+    }
+
+    .ku2-weight-label {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        top: 15px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+
+    .ku2-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        padding: 15px;
+        background: #f1f3f5;
+        border-radius: 6px;
+    }
+
+    .ku2-ctrl-grp label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .ku2-slider {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    #ku2-identity-check {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        padding: 10px;
+        background: #e6fffa;
+        color: #234e52;
+        border-radius: 4px;
+    }
+</style><div id="ku2-container">
+<div id="ku2-dashboard">
+<!-- Government Sector -->
+<div class="ku2-card">
+<h4>Public Sector (Gov)</h4>
+<table class="ku2-table">
+<tr><td>Tax Revenue ($T$)</td><td class="ku2-val ku2-pos" id="ku2-tax-rev">0</td></tr>
+<tr><td>Spending ($G$)</td><td class="ku2-val ku2-neg" id="ku2-gov-spend">0</td></tr>
+<tr><td>Net Balance</td><td class="ku2-val" id="ku2-gov-bal">0</td></tr>
+</table>
+</div>
+<!-- Private Sector -->
+<div class="ku2-card">
+<h4>Private Sector (H+F)</h4>
+<table class="ku2-table">
+<tr><td>Income ($Y$)</td><td class="ku2-val ku2-pos">500</td></tr>
+<tr><td>Taxes &amp; Spend</td><td class="ku2-val" id="ku2-pvt-flow">0</td></tr>
+<tr><td>Net Balance</td><td class="ku2-val" id="ku2-pvt-bal">0</td></tr>
+</table>
+</div>
+</div>
+<div id="ku2-viz-box">
+<div style="position:absolute; top: 10px; font-size: 0.8rem; color: #777;">Sectoral Balance Scale</div>
+<div id="ku2-scale-beam">
+<div class="ku2-pan" style="margin-left: -40px;">
+<div class="ku2-weight-label">GOV</div>
+</div>
+<div class="ku2-pan" style="margin-right: -40px;">
+<div class="ku2-weight-label">PRIVATE</div>
+</div>
+</div>
+<div style="width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 25px solid #444;"></div>
+</div>
+<div class="ku2-controls">
+<div class="ku2-ctrl-grp">
+<label>Gov Spending ($G$): <span id="ku2-label-g">100</span></label>
+<input class="ku2-slider" id="ku2-slide-g" max="200" min="0" type="range" value="100"/>
+</div>
+<div class="ku2-ctrl-grp">
+<label>Tax Rate: <span id="ku2-label-t">20%</span></label>
+<input class="ku2-slider" id="ku2-slide-t" max="0.5" min="0.1" step="0.01" type="range" value="0.2"/>
+</div>
+</div>
+<div id="ku2-identity-check">
+        Identity: (Gov Balance) <span id="ku2-id-g"></span> + (Pvt Balance) <span id="ku2-id-p"></span> = 0
+    </div>
+</div><script>
+(function() {
+    const slideG = document.getElementById('ku2-slide-g');
+    const slideT = document.getElementById('ku2-slide-t');
+    
+    const displayG = document.getElementById('ku2-gov-spend');
+    const displayT = document.getElementById('ku2-tax-rev');
+    const displayGBal = document.getElementById('ku2-gov-bal');
+    const displayPBal = document.getElementById('ku2-pvt-bal');
+    const displayPFlow = document.getElementById('ku2-pvt-flow');
+    
+    const labelG = document.getElementById('ku2-label-g');
+    const labelT = document.getElementById('ku2-label-t');
+    
+    const idG = document.getElementById('ku2-id-g');
+    const idP = document.getElementById('ku2-id-p');
+    const beam = document.getElementById('ku2-scale-beam');
+
+    const INCOME = 500;
+
+    function update() {
+        const G = parseInt(slideG.value);
+        const rate = parseFloat(slideT.value);
+        const T = INCOME * rate;
+        
+        const govBal = T - G;
+        const pvtBal = -govBal; // Accounting identity: sum = 0
+
+        // Update Text
+        labelG.textContent = G;
+        labelT.textContent = Math.round(rate * 100) + "%";
+        
+        displayG.textContent = `-${G}`;
+        displayT.textContent = `+${T.toFixed(0)}`;
+        
+        displayGBal.textContent = (govBal > 0 ? "+" : "") + govBal.toFixed(0);
+        displayGBal.className = "ku2-val " + (govBal >= 0 ? "ku2-pos" : "ku2-neg");
+        
+        displayPBal.textContent = (pvtBal > 0 ? "+" : "") + pvtBal.toFixed(0);
+        displayPBal.className = "ku2-val " + (pvtBal >= 0 ? "ku2-pos" : "ku2-neg");
+        
+        // Private flow is effectively domestic demand net of taxes
+        displayPFlow.textContent = (G - T >= 0 ? "+" : "") + (G - T).toFixed(0);
+
+        // Identity Footer
+        idG.textContent = govBal.toFixed(0);
+        idP.textContent = (pvtBal >= 0 ? "+" : "") + pvtBal.toFixed(0);
+
+        // Visual Scale
+        // Max tilt is ~15 degrees. Max imbalance is 200.
+        const tilt = (govBal / 200) * -15; 
+        beam.style.transform = `rotate(${tilt}deg)`;
+    }
+
+    slideG.addEventListener('input', update);
+    slideT.addEventListener('input', update);
+    
+    update();
+})();
+</script></div>
+</section>
+<!-- Dynamic Feedback Loops and the Consumption Function. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>While the previous sections established the accounting "skeleton" of an SFC model, we must now add the "muscles"—the behavioral equations that determine how sectors react to changes in their financial environment. In a standard SFC model, the most critical behavioral link is the <strong>Consumption Function</strong>. Unlike simpler models where spending depends solely on current income, an SFC household looks at both its current <em>flow</em> of after-tax income ($YD$) and its accumulated <em>stock</em> of net wealth ($W$):</p><p>$$C = \alpha_1 \cdot YD + \alpha_2 \cdot W_{-1}$$</p><p>In this equation, $\alpha_1$ represents the <strong>marginal propensity to consume out of income</strong>, while $\alpha_2$ represents the <strong>marginal propensity to consume out of wealth</strong>. The term $W_{-1}$ denotes the stock of wealth at the end of the <em>previous</em> period. This creates a <strong>Dynamic Feedback Loop</strong>: as households save a portion of their income, their wealth grows; this higher wealth then stimulates more consumption in the next period, which in turn increases the income of firms and other households.</p><p>This relationship is what allows SFC models to reach a <strong>Steady State</strong>. If a shock occurs—such as a permanent increase in government spending—the economy does not simply jump to a new equilibrium. Instead, it undergoes a series of "stock-flow adjustments." Initially, the extra income leads to higher savings, causing private wealth to rise. As wealth accumulates, the "wealth effect" ($\alpha_2 \cdot W_{-1}$) pushes consumption higher and higher until the stock of wealth reaches a level where the outflows (spending) exactly offset the inflows (income). Only when the <strong>change</strong> in the stock ($\Delta W$) returns to zero has the system stabilized.</p><p>Tracking these dynamics is essential for understanding financial shocks. Consider a sudden change in <strong>interest rates</strong>. An increase in rates provides more interest income to bond-holding households (increasing $YD$), but it may simultaneously decrease the market value of existing assets (decreasing $W$). An SFC model captures both sides of this coin: the positive flow effect and the negative stock effect. By simulating these transitions over multiple periods, we can visualize the "path" the economy takes, ensuring that we never lose track of the debt or assets being created during the journey toward a new equilibrium.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        border-radius: 8px;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        color: #333;
+    }
+
+    #ku3-charts-grid {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .ku3-chart-wrap {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        padding: 10px;
+        height: 250px;
+        position: relative;
+    }
+
+    .ku3-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+    }
+
+    .ku3-ctrl-grp {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ku3-ctrl-grp label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .ku3-val-badge {
+        color: #2b6cb0;
+        font-family: monospace;
+    }
+
+    #ku3-formula-display {
+        text-align: center;
+        margin-top: 15px;
+        padding: 10px;
+        background: #ebf8ff;
+        border: 1px solid #bee3f8;
+        border-radius: 4px;
+        font-family: serif;
+        font-size: 1.1rem;
+    }
+
+    .ku3-legend {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+
+    @media (max-width: 600px) {
+        #ku3-charts-grid { grid-template-columns: 1fr; }
+        .ku3-controls { grid-template-columns: 1fr; }
+    }
+</style><div id="ku3-container">
+<div id="ku3-charts-grid">
+<div class="ku3-chart-wrap">
+<canvas id="ku3-history-chart"></canvas>
+</div>
+<div class="ku3-chart-wrap">
+<canvas id="ku3-composition-chart"></canvas>
+</div>
+</div>
+<div class="ku3-controls">
+<div class="ku3-ctrl-grp">
+<label>Income ($YD$): <span class="ku3-val-badge" id="ku3-label-y">200</span></label>
+<input id="ku3-slide-y" max="500" min="0" type="range" value="200"/>
+<label>Wealth ($W_{-1}$): <span class="ku3-val-badge" id="ku3-label-w">500</span></label>
+<input id="ku3-slide-w" max="1000" min="0" type="range" value="500"/>
+</div>
+<div class="ku3-ctrl-grp">
+<label>MPC Income ($\alpha_1$): <span class="ku3-val-badge" id="ku3-label-a1">0.80</span></label>
+<input id="ku3-slide-a1" max="1" min="0" step="0.01" type="range" value="0.8"/>
+<label>MPC Wealth ($\alpha_2$): <span class="ku3-val-badge" id="ku3-label-a2">0.05</span></label>
+<input id="ku3-slide-a2" max="0.2" min="0" step="0.005" type="range" value="0.05"/>
+</div>
+</div>
+<div id="ku3-formula-display">
+        $C = (<span id="ku3-f-a1">0.8</span> \times \text{Income}) + (<span id="ku3-f-a2">0.05</span> \times \text{Wealth}) = \mathbf{<span id="ku3-f-total">185</span>}$
+    </div>
+</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
+(function() {
+    const ctxHistory = document.getElementById('ku3-history-chart').getContext('2d');
+    const ctxComp = document.getElementById('ku3-composition-chart').getContext('2d');
+
+    const inputs = {
+        y: document.getElementById('ku3-slide-y'),
+        w: document.getElementById('ku3-slide-w'),
+        a1: document.getElementById('ku3-slide-a1'),
+        a2: document.getElementById('ku3-slide-a2')
+    };
+
+    const labels = {
+        y: document.getElementById('ku3-label-y'),
+        w: document.getElementById('ku3-label-w'),
+        a1: document.getElementById('ku3-label-a1'),
+        a2: document.getElementById('ku3-label-a2'),
+        fA1: document.getElementById('ku3-f-a1'),
+        fA2: document.getElementById('ku3-f-a2'),
+        fTotal: document.getElementById('ku3-f-total')
+    };
+
+    let historyData = Array(30).fill(185);
+    
+    const historyChart = new Chart(ctxHistory, {
+        type: 'line',
+        data: {
+            labels: Array(30).fill(''),
+            datasets: [{
+                label: 'Total Consumption (C)',
+                data: historyData,
+                borderColor: '#2b6cb0',
+                backgroundColor: 'rgba(43, 108, 176, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            animation: { duration: 0 },
+            scales: {
+                y: { min: 0, max: 600, title: { display: true, text: 'Consumption' } },
+                x: { display: false }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    const compChart = new Chart(ctxComp, {
+        type: 'bar',
+        data: {
+            labels: ['Current Consumption'],
+            datasets: [
+                { label: 'From Income', data: [160], backgroundColor: '#4299e1' },
+                { label: 'From Wealth', data: [25], backgroundColor: '#ed8936' }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            indexAxis: 'x',
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, max: 600 }
+            },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+            }
+        }
+    });
+
+    function update() {
+        const Y = parseFloat(inputs.y.value);
+        const W = parseFloat(inputs.w.value);
+        const a1 = parseFloat(inputs.a1.value);
+        const a2 = parseFloat(inputs.a2.value);
+
+        const cInc = Y * a1;
+        const cWlt = W * a2;
+        const totalC = cInc + cWlt;
+
+        // Update Labels
+        labels.y.textContent = Y;
+        labels.w.textContent = W;
+        labels.a1.textContent = a1.toFixed(2);
+        labels.a2.textContent = a2.toFixed(3);
+        labels.fA1.textContent = a1.toFixed(2);
+        labels.fA2.textContent = a2.toFixed(3);
+        labels.fTotal.textContent = Math.round(totalC);
+
+        // Update Charts
+        historyData.push(totalC);
+        historyData.shift();
+        historyChart.update();
+
+        compChart.data.datasets[0].data = [cInc];
+        compChart.data.datasets[1].data = [cWlt];
+        compChart.update();
+    }
+
+    Object.values(inputs).forEach(input => {
+        input.addEventListener('input', update);
+    });
+
+    // Run initial update
+    update();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Individual bias and collective segregation</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Individual bias and collective segregation</h1>
+<!-- Introduction to Schelling's Model of Segregation. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>In the 1970s, economist Thomas Schelling developed a groundbreaking social experiment to understand why cities remain deeply segregated even when residents express a desire for diversity. He discovered that large-scale patterns of segregation are not always fueled by <strong>overt bigotry</strong> or a coordinated effort to exclude others. Instead, they can emerge from the cumulative effect of individuals acting on <strong>minor preferences</strong>.</p><p>The core of Schelling’s model is the concept of a <strong>threshold</strong> (or tolerance level). A threshold represents the minimum percentage of "neighbors like me" an individual needs to feel comfortable in their current location. For example, if a person has a threshold of $T = 33\%$, they are content as long as at least one-third of their immediate neighbors share their characteristics (such as race, religion, or language). If the ratio falls below this point, the individual becomes "unhappy" and will move to the nearest available space that satisfies their requirement.</p><p>The counter-intuitive power of this model lies in the <strong>nonlinear relationship</strong> between individual desire and collective outcome. You might assume that a society where people are happy being in the minority would result in an integrated neighborhood. However, Schelling’s simulations showed that even when every individual has a mild preference—for instance, wanting only $30\%$ of neighbors to be like them—the system eventually tips into <strong>extreme segregation</strong>.</p><p>Mathematically, we can think of this as a local optimization problem that creates a global imbalance. If an agent's neighborhood state is defined by the ratio $\frac{n_{similar}}{n_{total}}$, the agent moves if:
+$$\frac{n_{similar}}{n_{total}} &lt; T$$
+As agents move to satisfy their own $T$, they inadvertently change the ratios for their old and new neighbors, triggering a <strong>chain reaction</strong> of relocations. The final equilibrium state often results in clusters where similarity is near $80-100\%$, even though nobody in the system actually demanded it.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: #f9f9f9;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    #ku1-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        align-items: center;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    #ku1-slider-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    #ku1-slider-group label {
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    #ku1-vis-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    @media (max-width: 600px) {
+        #ku1-vis-layout { grid-template-columns: 1fr; }
+    }
+
+    #ku1-grid-wrapper {
+        position: relative;
+        aspect-ratio: 1;
+        background: #eee;
+        border: 1px solid #ddd;
+    }
+
+    #ku1-grid-canvas {
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+    }
+
+    #ku1-chart-container {
+        height: 300px;
+        background: white;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+    }
+
+    #ku1-stats {
+        display: flex;
+        justify-content: space-around;
+        background: #333;
+        color: white;
+        padding: 10px;
+        border-radius: 6px;
+        font-family: monospace;
+    }
+
+    #ku1-stats span { color: #4ade80; font-weight: bold; }
+
+    #ku1-btn-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .ku1-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: opacity 0.2s;
+    }
+
+    #ku1-run-btn { background: #2563eb; color: white; }
+    #ku1-reset-btn { background: #64748b; color: white; }
+    .ku1-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<div id="ku1-slider-group">
+<label>
+                Threshold (T): <span id="ku1-threshold-val">33%</span>
+</label>
+<input id="ku1-threshold-slider" max="100" min="0" type="range" value="33"/>
+</div>
+<div id="ku1-btn-group">
+<button class="ku1-btn" id="ku1-run-btn">Run Simulation</button>
+<button class="ku1-btn" id="ku1-reset-btn">Reset</button>
+</div>
+</div>
+<div id="ku1-stats">
+<div>Unhappy: <span id="ku1-unhappy-count">0</span></div>
+<div>Segregation Index: <span id="ku1-seg-index">0%</span></div>
+</div>
+<div id="ku1-vis-layout">
+<div id="ku1-grid-wrapper">
+<canvas id="ku1-grid-canvas"></canvas>
+</div>
+<div id="ku1-chart-container">
+<canvas id="ku1-chart-canvas"></canvas>
+</div>
+</div>
+</div><script>
+(function() {
+    const GRID_SIZE = 40;
+    const OCCUPANCY = 0.8;
+    const canvas = document.getElementById('ku1-grid-canvas');
+    const ctx = canvas.getContext('2d');
+    const thresholdSlider = document.getElementById('ku1-threshold-slider');
+    const thresholdLabel = document.getElementById('ku1-threshold-val');
+    const runBtn = document.getElementById('ku1-run-btn');
+    const resetBtn = document.getElementById('ku1-reset-btn');
+    const unhappyLabel = document.getElementById('ku1-unhappy-count');
+    const segLabel = document.getElementById('ku1-seg-index');
+
+    let grid = [];
+    let isRunning = false;
+    let chart = null;
+    let stepCount = 0;
+
+    // Types: 0 = empty, 1 = red, 2 = blue
+    function initGrid() {
+        grid = Array(GRID_SIZE * GRID_SIZE).fill(0);
+        const agents = Math.floor(GRID_SIZE * GRID_SIZE * OCCUPANCY);
+        for (let i = 0; i < agents; i++) {
+            let pos;
+            do { pos = Math.floor(Math.random() * grid.length); } while (grid[pos] !== 0);
+            grid[pos] = Math.random() > 0.5 ? 1 : 2;
+        }
+        updateStats();
+        draw();
+        resetChart();
+    }
+
+    function getNeighbors(idx) {
+        const x = idx % GRID_SIZE;
+        const y = Math.floor(idx / GRID_SIZE);
+        let neighbors = [];
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = x + dx;
+                const ny = y + dy;
+                if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+                    neighbors.push(grid[ny * GRID_SIZE + nx]);
+                }
+            }
+        }
+        return neighbors;
+    }
+
+    function checkHappiness(idx, threshold) {
+        if (grid[idx] === 0) return true;
+        const neighbors = getNeighbors(idx).filter(n => n !== 0);
+        if (neighbors.length === 0) return true;
+        const similar = neighbors.filter(n => n === grid[idx]).length;
+        return (similar / neighbors.length) >= (threshold / 100);
+    }
+
+    function calculateSegregation() {
+        let totalSim = 0;
+        let counted = 0;
+        grid.forEach((type, i) => {
+            if (type !== 0) {
+                const neighbors = getNeighbors(i).filter(n => n !== 0);
+                if (neighbors.length > 0) {
+                    const similar = neighbors.filter(n => n === type).length;
+                    totalSim += (similar / neighbors.length);
+                    counted++;
+                }
+            }
+        });
+        return counted === 0 ? 0 : (totalSim / counted) * 100;
+    }
+
+    function step() {
+        let unhappy = [];
+        let empty = [];
+        const threshold = parseInt(thresholdSlider.value);
+
+        grid.forEach((type, i) => {
+            if (type === 0) empty.push(i);
+            else if (!checkHappiness(i, threshold)) unhappy.push(i);
+        });
+
+        if (unhappy.length === 0 || !isRunning) {
+            isRunning = false;
+            runBtn.textContent = "Run Simulation";
+            return;
+        }
+
+        // Move a batch of unhappy agents
+        const batchSize = Math.max(1, Math.floor(unhappy.length * 0.2));
+        for (let i = 0; i < batchSize; i++) {
+            if (unhappy.length === 0 || empty.length === 0) break;
+            const uIdx = Math.floor(Math.random() * unhappy.length);
+            const eIdx = Math.floor(Math.random() * empty.length);
+            
+            const oldPos = unhappy.splice(uIdx, 1)[0];
+            const newPos = empty.splice(eIdx, 1)[0];
+            
+            grid[newPos] = grid[oldPos];
+            grid[oldPos] = 0;
+            empty.push(oldPos);
+        }
+
+        updateStats();
+        draw();
+        
+        stepCount++;
+        if (stepCount % 2 === 0) {
+            chart.data.labels.push(stepCount);
+            chart.data.datasets[0].data.push(calculateSegregation());
+            chart.update('none');
+        }
+
+        requestAnimationFrame(step);
+    }
+
+    function draw() {
+        const cellSize = 10;
+        canvas.width = GRID_SIZE * cellSize;
+        canvas.height = GRID_SIZE * cellSize;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        grid.forEach((type, i) => {
+            if (type === 0) return;
+            const x = (i % GRID_SIZE) * cellSize;
+            const y = Math.floor(i / GRID_SIZE) * cellSize;
+            const threshold = parseInt(thresholdSlider.value);
+            
+            ctx.fillStyle = type === 1 ? '#ef4444' : '#3b82f6';
+            ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+            
+            if (!checkHappiness(i, threshold)) {
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
+            }
+        });
+    }
+
+    function updateStats() {
+        const threshold = parseInt(thresholdSlider.value);
+        let unhappy = 0;
+        grid.forEach((_, i) => { 
+            if (grid[i] !== 0 && !checkHappiness(i, threshold)) unhappy++;
+        });
+        unhappyLabel.textContent = unhappy;
+        segLabel.textContent = Math.round(calculateSegregation()) + '%';
+    }
+
+    function resetChart() {
+        if (chart) chart.destroy();
+        const ctxChart = document.getElementById('ku1-chart-canvas').getContext('2d');
+        chart = new Chart(ctxChart, {
+            type: 'line',
+            data: {
+                labels: [0],
+                datasets: [{
+                    label: 'Segregation Index (%)',
+                    data: [calculateSegregation()],
+                    borderColor: '#2563eb',
+                    tension: 0.1,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: { min: 0, max: 100 },
+                    x: { display: false }
+                },
+                animation: false
+            }
+        });
+    }
+
+    thresholdSlider.addEventListener('input', () => {
+        thresholdLabel.textContent = thresholdSlider.value + '%';
+        updateStats();
+        draw();
+    });
+
+    runBtn.addEventListener('click', () => {
+        isRunning = !isRunning;
+        runBtn.textContent = isRunning ? "Pause" : "Run Simulation";
+        if (isRunning) step();
+    });
+
+    resetBtn.addEventListener('click', () => {
+        isRunning = false;
+        runBtn.textContent = "Run Simulation";
+        stepCount = 0;
+        initGrid();
+    });
+
+    initGrid();
+})();
+</script></div>
+</section>
+<!-- The Tipping Point: Linear preferences and non-linear outcomes. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>The transition from a Diverse neighborhood to a segregated one is rarely a slow, linear crawl; instead, it often mirrors a <strong>phase transition</strong> in physics. This phenomenon is known as the <strong>tipping point</strong>. A neighborhood can appear perfectly stable for years until a single resident moves out, triggering a cascading failure of the local social equilibrium. This happens because every individual's decision to stay or leave is coupled with the state of their neighbors.</p><p>Consider a "balanced" cluster where every agent is just barely above their satisfaction threshold $T$. If one agent leaves and is replaced by someone of a different group, the ratio $\frac{n_{similar}}{n_{total}}$ drops for every remaining neighbor. For those who were already on the margin, this marginal change pushes them below their threshold:
+$$\frac{n_{similar} - 1}{n_{total}} &lt; T$$
+As these now-unhappy individuals relocate, they create a <strong>positive feedback loop</strong>. Their departure further lowers the similarity ratio for those they left behind, while their arrival in a new area potentially displaces residents there, exporting the instability across the grid.</p><p>This reveals a profound gap between <strong>individual intent</strong> and <strong>collective outcome</strong>. In many cases, the residents may actually value diversity and have no desire to live in an enclave. However, because they possess a "defensive" preference—a desire not to be in the extreme minority—the system is pulled toward an unintended "sink" state of total segregation. Even if an individual's preference is $T = 40\%$, meaning they are perfectly happy being the minority, the aggregate result of everyone seeking that $40\%$ buffer is a global segregation index typically exceeding $75\%$.</p><p>Mathematically, the system possesses <strong>multiple equilibria</strong>. An integrated state exists, but it is "unstable"—any small perturbation (one person moving) can push the system toward a "stable" segregated equilibrium. Once the system "tips," it becomes incredibly difficult to reverse, as moving back toward integration would require individuals to voluntarily move into neighborhoods where they are currently below their happiness threshold $T$, effectively acting against their own immediate perceived utility.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 800px;
+        margin: 20px auto;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    #ku2-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    #ku2-header h4 { margin: 0 0 8px 0; color: #1e293b; }
+    #ku2-header p { margin: 0; font-size: 0.9rem; color: #64748b; }
+
+    #ku2-main-view {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    #ku2-grid-container {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(5, 60px);
+        grid-template-rows: repeat(5, 60px);
+        gap: 8px;
+        background: #f1f5f9;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .ku2-cell {
+        width: 60px;
+        height: 60px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+        position: relative;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+    }
+
+    .ku2-cell.agent-red { background-color: #ef4444; }
+    .ku2-cell.agent-blue { background-color: #3b82f6; }
+    .ku2-cell.empty { background-color: #cbd5e1; border: 2px dashed #94a3b8; }
+
+    .ku2-cell.unhappy {
+        animation: ku2-pulse 1s infinite;
+        border: 3px solid #000;
+    }
+
+    .ku2-cell.trigger {
+        transform: scale(1.1);
+        z-index: 10;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    @keyframes ku2-pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+
+    #ku2-controls {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8fafc;
+        padding: 12px 20px;
+        border-radius: 8px;
+    }
+
+    .ku2-status {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    #ku2-log {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #ef4444;
+        height: 1.2em;
+    }
+
+    .ku2-instruction {
+        font-style: italic;
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+</style><div id="ku2-container">
+<div id="ku2-header">
+<h4>The Tipping Point Cascade</h4>
+<p>Threshold (T) = 40%. Click any agent to remove them and trigger a cascade.</p>
+</div>
+<div id="ku2-main-view">
+<div id="ku2-grid-container"></div>
+<div id="ku2-controls">
+<div class="ku2-status">Unhappy Agents: <span id="ku2-unhappy-val">0</span></div>
+<div id="ku2-log"></div>
+<button id="ku2-reset-btn" style="padding: 6px 12px; cursor:pointer;">Reset Pattern</button>
+</div>
+<div class="ku2-instruction">Each move changes the ratio for neighbors, potentially pushing them below 40% similarity.</div>
+</div>
+</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
+(function() {
+    const GRID_SIZE = 5;
+    const THRESHOLD = 0.4;
+    const container = document.getElementById('ku2-grid-container');
+    const resetBtn = document.getElementById('ku2-reset-btn');
+    const logEl = document.getElementById('ku2-log');
+    const countEl = document.getElementById('ku2-unhappy-val');
+    
+    let grid = []; // 1 for Red, 2 for Blue, 0 for Empty
+
+    // Creating a "Fragile Equilibrium" state
+    // Most agents are just at or near the 40% threshold (2/8 or 3/8 neighbors)
+    function init() {
+        grid = [
+            1, 1, 2, 2, 2,
+            1, 1, 2, 2, 2,
+            1, 2, 1, 2, 2,
+            1, 1, 1, 1, 1,
+            2, 2, 1, 1, 1
+        ];
+        render();
+        updateStats();
+    }
+
+    function getNeighbors(idx) {
+        const x = idx % GRID_SIZE;
+        const y = Math.floor(idx / GRID_SIZE);
+        let n = [];
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = x + dx, ny = y + dy;
+                if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+                    n.push(grid[ny * GRID_SIZE + nx]);
+                }
+            }
+        }
+        return n;
+    }
+
+    function isUnhappy(idx) {
+        if (grid[idx] === 0) return false;
+        const neighbors = getNeighbors(idx).filter(v => v !== 0);
+        if (neighbors.length === 0) return false;
+        const similar = neighbors.filter(v => v === grid[idx]).length;
+        return (similar / neighbors.length) < THRESHOLD;
+    }
+
+    async function triggerCascade(startIdx) {
+        if (grid[startIdx] === 0) return;
+        
+        logEl.textContent = "Agent left neighborhod...";
+        grid[startIdx] = 0;
+        render();
+
+        let reacting = true;
+        while (reacting) {
+            await new Promise(r => setTimeout(r, 600));
+            const unhappyIndices = [];
+            grid.forEach((type, i) => {
+                if (type !== 0 && isUnhappy(i)) unhappyIndices.push(i);
+            });
+
+            if (unhappyIndices.length === 0) {
+                reacting = false;
+                logEl.textContent = "New equilibrium reached.";
+                updateStats();
+                break;
+            }
+
+            // Move the first unhappy agent to the first empty spot
+            const moverIdx = unhappyIndices[0];
+            const emptyIdx = grid.indexOf(0);
+            
+            logEl.textContent = "Cascade: Neighbor forced to move!";
+            grid[emptyIdx] = grid[moverIdx];
+            grid[moverIdx] = 0;
+            
+            render(unhappyIndices);
+            updateStats();
+        }
+    }
+
+    function updateStats() {
+        let unhappyCount = 0;
+        grid.forEach((_, i) => { if (isUnhappy(i)) unhappyCount++; });
+        countEl.textContent = unhappyCount;
+    }
+
+    function render(highlightIndices = []) {
+        container.innerHTML = '';
+        grid.forEach((type, i) => {
+            const cell = document.createElement('div');
+            cell.className = `ku2-cell ${type === 1 ? 'agent-red' : type === 2 ? 'agent-blue' : 'empty'}`;
+            if (highlightIndices.includes(i)) cell.classList.add('unhappy');
+            
+            cell.onclick = () => {
+                if (type !== 0) triggerCascade(i);
+            };
+            container.appendChild(cell);
+        });
+    }
+
+    resetBtn.onclick = () => {
+        logEl.textContent = "";
+        init();
+    };
+
+    init();
+})();
+</script></div>
+</section>
+<!-- Diversity as a fragile equilibrium. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>The previous sections demonstrate a sobering reality: even a society of <strong>tolerant individuals</strong> can spontaneously organize into a segregated map. This suggests that diversity is not a "natural" default state that persists as long as people aren't hostile; rather, it is a <strong>fragile equilibrium</strong> that requires active maintenance. In the language of systems theory, integrated neighborhoods exist on a "knife-edge." To keep a system from collapsing into clusters, the collective tolerance for "otherness" must be significantly higher than the thresholds typically found in modern urban settings.</p><p>Consider the mathematical relationship between the individual threshold $T$ and the resulting <strong>global segregation index</strong> $S$. If we define $S$ as the average proportion of similar neighbors across the entire population, we find that $S$ does not scale linearly with $T$. Instead, there is a <strong>critical value</strong> $T_c$. When $T &lt; T_c$, the system can absorb small movements without losing its integrated character. However, once $T$ crosses this boundary—even by a fraction of a percentage—the system undergoes a rapid structural change, with $S$ jumping from near-random distribution ($\approx 50\%$) to extreme isolation ($\approx 80-90\%$).</p><p>To counteract this "gravity" toward segregation, the model suggests we must redefine what it means to be "tolerant." If an agent's rule is merely a <strong>negative preference</strong> (i.e., "I will move if my group falls below $30\%$"), they act as a passive participant in the cascade. For a neighborhood to remain truly diverse, individuals must possess an <strong>active preference</strong> for integration. This can be modeled by adding a "ceiling" to the threshold: an agent might become unhappy not only if they have too few similar neighbors, but also if they have <em>too many</em>. If an agent's happiness $H$ is defined by a range:
+$$T_{min} \leq \frac{n_{similar}}{n_{total}} \leq T_{max}$$
+the system can be nudged toward a stable, integrated state. This represents a shift from merely "tolerating" a minority presence to actively seeking a <strong>heterogeneous environment</strong>.</p><p>Ultimately, Schelling’s work teaches us that <strong>structural outcomes</strong> are often divorced from <strong>personal morality</strong>. A person can be entirely free of prejudice, yet if they simply prefer not to be the "only one" of their kind in a room, they contribute to a mathematical process that ensures someone else <em>will</em> be the only one of their kind, eventually forcing that person to move. Breaking the cycle of segregation requires more than the absence of bias; it requires a collective, conscious effort to value and maintain the "instability" of a mixed environment.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: #fdfdfd;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 900px;
+        margin: 20px auto;
+        color: #1e293b;
+    }
+
+    #ku3-dashboard {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+        #ku3-dashboard { grid-template-columns: 1fr; }
+    }
+
+    .ku3-panel {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #edf2f7;
+    }
+
+    .ku3-control-group {
+        margin-bottom: 20px;
+    }
+
+    .ku3-control-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #475569;
+    }
+
+    .ku3-slider {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .ku3-toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        padding: 10px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .ku3-toggle-container.active {
+        border-color: #10b981;
+        background: #ecfdf5;
+    }
+
+    #ku3-grid-canvas {
+        width: 100%;
+        aspect-ratio: 1;
+        background: #f1f5f9;
+        border-radius: 4px;
+        image-rendering: pixelated;
+        cursor: crosshair;
+    }
+
+    .ku3-meter-box {
+        margin-top: 15px;
+        padding: 10px;
+        background: #1e293b;
+        color: #f8fafc;
+        border-radius: 6px;
+    }
+
+    .ku3-meter-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.8;
+    }
+
+    .ku3-meter-bar-bg {
+        height: 8px;
+        background: #334155;
+        border-radius: 4px;
+        margin-top: 5px;
+        overflow: hidden;
+    }
+
+    #ku3-entropy-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+        transition: width 0.3s ease;
+    }
+
+    #ku3-status-text {
+        font-size: 0.8rem;
+        margin-top: 10px;
+        font-style: italic;
+    }
+
+    .ku3-btn-main {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        background: #2563eb;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+
+    .ku3-btn-main:hover { background: #1d4ed8; }
+</style><div id="ku3-container">
+<div id="ku3-dashboard">
+<div class="ku3-panel">
+<div class="ku3-control-group">
+<label>Individual Bias ($T_{min}$)</label>
+<input class="ku3-slider" id="ku3-bias-slider" max="80" min="0" type="range" value="30"/>
+<div style="display:flex; justify-content: space-between; font-size: 0.75rem;">
+<span>Tolerant</span>
+<span id="ku3-bias-val">30%</span>
+</div>
+</div>
+<div class="ku3-control-group">
+<label>Social Strategy</label>
+<div class="ku3-toggle-container" id="ku3-strategy-toggle">
+<input id="ku3-active-integration" style="cursor:pointer" type="checkbox"/>
+<span style="font-size: 0.85rem; font-weight: 600;">Active Integration</span>
+</div>
+<p style="font-size: 0.7rem; color: #64748b; margin-top: 8px;">
+                    If ON: Agents also move if neighborhood is <i>too</i> uniform ($T_{max} = 70\%$).
+                </p>
+</div>
+<button class="ku3-btn-main" id="ku3-reset-btn">Reset Board</button>
+<div class="ku3-meter-box">
+<div class="ku3-meter-label">System Entropy (Diversity)</div>
+<div class="ku3-meter-bar-bg">
+<div id="ku3-entropy-fill"></div>
+</div>
+<div id="ku3-entropy-val" style="font-family: monospace; font-size: 1.1rem; margin-top: 5px;">0%</div>
+</div>
+<div id="ku3-status-text">System is stable.</div>
+</div>
+<div style="position: relative;">
+<canvas id="ku3-grid-canvas"></canvas>
+<div style="margin-top: 10px; font-size: 0.75rem; color: #94a3b8; text-align: center;">
+                Faded squares = Contented | Saturated squares = Stressed/Unhappy
+            </div>
+</div>
+</div>
+</div><script>
+(function() {
+    const GRID_SIZE = 40;
+    const canvas = document.getElementById('ku3-grid-canvas');
+    const ctx = canvas.getContext('2d');
+    const biasSlider = document.getElementById('ku3-bias-slider');
+    const biasVal = document.getElementById('ku3-bias-val');
+    const toggleContainer = document.getElementById('ku3-strategy-toggle');
+    const activeCheck = document.getElementById('ku3-active-integration');
+    const entropyFill = document.getElementById('ku3-entropy-fill');
+    const entropyVal = document.getElementById('ku3-entropy-val');
+    const statusText = document.getElementById('ku3-status-text');
+    const resetBtn = document.getElementById('ku3-reset-btn');
+
+    let grid = [];
+    let isRunning = true;
+
+    function init() {
+        grid = Array(GRID_SIZE * GRID_SIZE).fill(0).map(() => {
+            const r = Math.random();
+            if (r < 0.1) return 0; // Empty
+            return r < 0.55 ? 1 : 2; // Red or Blue
+        });
+        isRunning = true;
+        loop();
+    }
+
+    function getHappiness(idx) {
+        const type = grid[idx];
+        if (type === 0) return { happy: true, score: 1 };
+        
+        const x = idx % GRID_SIZE;
+        const y = Math.floor(idx / GRID_SIZE);
+        let neighbors = [];
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = x + dx, ny = y + dy;
+                if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+                    const nType = grid[ny * GRID_SIZE + nx];
+                    if (nType !== 0) neighbors.push(nType);
+                }
+            }
+        }
+
+        if (neighbors.length === 0) return { happy: true, score: 1 };
+        
+        const similarCount = neighbors.filter(n => n === type).length;
+        const ratio = similarCount / neighbors.length;
+        const T_min = parseInt(biasSlider.value) / 100;
+        
+        let happy = ratio >= T_min;
+        
+        if (activeCheck.checked) {
+            // Active Integration: Unhappy if too similar (Ceiling T_max)
+            if (ratio > 0.75) happy = false;
+        }
+
+        return { happy, score: ratio };
+    }
+
+    function calculateEntropy() {
+        // Simple entropy: how many agents have neighbors of the opposite type
+        let mixedNeighbors = 0;
+        let totalAgents = 0;
+        grid.forEach((type, i) => {
+            if (type !== 0) {
+                totalAgents++;
+                const happiness = getHappiness(i);
+                // We value diverse neighborhoods (lower 'similar' ratio)
+                mixedNeighbors += (1 - happiness.score);
+            }
+        });
+        const score = (mixedNeighbors / totalAgents) * 200; // Normalized scale
+        return Math.min(100, Math.max(0, score));
+    }
+
+    function loop() {
+        if (!isRunning) return;
+
+        const unhappy = [];
+        const empty = [];
+        grid.forEach((type, i) => {
+            if (type === 0) empty.push(i);
+            else if (!getHappiness(i).happy) unhappy.push(i);
+        });
+
+        if (unhappy.length > 0) {
+            statusText.textContent = `System evolving... ${unhappy.length} seeking move.`;
+            statusText.style.color = "#ef4444";
+            
+            // Move a batch
+            for (let k = 0; k < 15; k++) {
+                if (unhappy.length === 0 || empty.length === 0) break;
+                const uIdxArr = Math.floor(Math.random() * unhappy.length);
+                const eIdxArr = Math.floor(Math.random() * empty.length);
+                
+                const uIdx = unhappy.splice(uIdxArr, 1)[0];
+                const eIdx = empty.splice(eIdxArr, 1)[0];
+                
+                grid[eIdx] = grid[uIdx];
+                grid[uIdx] = 0;
+                empty.push(uIdx);
+            }
+        } else {
+            statusText.textContent = "Stable equilibrium reached.";
+            statusText.style.color = "#10b981";
+        }
+
+        draw();
+        const entropy = calculateEntropy();
+        entropyFill.style.width = entropy + "%";
+        entropyVal.textContent = Math.round(entropy) + "%";
+        
+        requestAnimationFrame(loop);
+    }
+
+    function draw() {
+        const cellSize = canvas.clientWidth / GRID_SIZE;
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientWidth;
+        
+        ctx.fillStyle = "#f1f5f9";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        grid.forEach((type, i) => {
+            if (type === 0) return;
+            const x = (i % GRID_SIZE) * cellSize;
+            const y = Math.floor(i / GRID_SIZE) * cellSize;
+            
+            const { happy } = getHappiness(i);
+            
+            if (type === 1) { // Red
+                ctx.fillStyle = happy ? "rgba(239, 68, 68, 0.4)" : "rgba(239, 68, 68, 1)";
+            } else { // Blue
+                ctx.fillStyle = happy ? "rgba(59, 130, 246, 0.4)" : "rgba(59, 130, 246, 1)";
+            }
+            
+            ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+        });
+    }
+
+    biasSlider.addEventListener('input', () => {
+        biasVal.textContent = biasSlider.value + "%";
+    });
+
+    toggleContainer.addEventListener('click', (e) => {
+        if (e.target !== activeCheck) activeCheck.checked = !activeCheck.checked;
+        toggleContainer.classList.toggle('active', activeCheck.checked);
+    });
+
+    resetBtn.addEventListener('click', init);
+
+    window.addEventListener('resize', draw);
+    init();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Feature Extraction Guide</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --panel: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #334155;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        section {
+            background: var(--panel);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .interactive-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        canvas {
+            border: 3px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-clear { background: #ef4444; color: white; }
+        .btn-clear:hover { background: #dc2626; }
+        
+        .data-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+
+        .feature-card h4 { margin: 0 0 10px 0; color: #475569; }
+
+        .viz-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .math {
+            background: #f8fafc;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Feature Extraction for Characters</h1>
+        <p>Mastering the fundamentals of Single-Stroke Recognition</p>
+    </header>
+
+    <section id="introduction">
+        <h2>1. The Challenge of Raw Data</h2>
+        <p>In single-stroke recognition (like the old Palm OS Graffit), a computer doesn't see a "letter." It sees a sequence of 2D coordinates: <span class="math">[(x₁, y₁), (x₂, y₂), ... (xₙ, yₙ)]</span>. </p>
+        <p>Raw points are problematic because they vary by <strong>scale</strong> (writing big vs small), <strong>translation</strong> (writing in a corner vs center), and <strong>sampling rate</strong> (fast vs slow movement). <strong>Feature Extraction</strong> transforms this messy raw data into a compact set of values that represent the <em>essence</em> of the shape.</p>
+    </section>
+
+    <section id="preprocessing">
+        <h2>2. Preprocessing & Normalization</h2>
+        <p>Before extracting features, we must make the stroke comparable to others. Draw a character below to see normalization in action.</p>
+        
+        <div class="interactive-area">
+            <canvas id="drawCanvas" width="400" height="400"></canvas>
+            <div class="controls">
+                <button class="btn-clear" onclick="clearCanvas()">Clear Canvas</button>
+            </div>
+            
+            <div class="data-display">
+                <div class="feature-card">
+                    <h4>Bounding Box</h4>
+                    <div id="feat-bb">Width: 0, Height: 0</div>
+                </div>
+                <div id="feat-centroid" class="feature-card">
+                    <h4>Centroid (X,Y)</h4>
+                    <div>Wait for input...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="extraction">
+        <h2>3. Global vs. Local Features</h2>
+        <p>We typically look for two types of features:</p>
+        <ul>
+            <li><strong>Global Features:</strong> Aspect ratio, Total length, Cosine of total angle.</li>
+            <li><strong>Local Features:</strong> Directional change between points, Curvature, and Relative position to the center.</li>
+        </ul>
+        <div class="feature-card" style="background-color: #e0f2fe;">
+            <h4>Analysis Result (Live)</h4>
+            <div id="analysis-output">Draw on the canvas above to extract features...</div>
+        </div>
+    </section>
+
+    <section id="conclusion">
+        <h2>4. Mapping to Meaning</h2>
+        <p>Once we have a <strong>Feature Vector</strong> (e.g., [1.2, 45.5, 0.8]), we compare it to a template database or feed it into a machine learning classifier. For single-stroke gestures, the most powerful feature is often the <strong>Resampled Direction Vector</strong>—breaking the stroke into a fixed number of segments (e.g., 16) and calculating the angle of each segment.</p>
+    </section>
+</div>
+
+<script>
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let points = [];
+
+    // Setup Canvas
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#2563eb';
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e.touches[0]); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); });
+    canvas.addEventListener('touchend', stopDrawing);
+
+    function startDrawing(e) {
+        isDrawing = true;
+        points = [];
+        const pos = getPos(e);
+        points.push(pos);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        clearDisplays();
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        points.push(pos);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    }
+
+    function stopDrawing() {
+        if (!isDrawing) return;
+        isDrawing = false;
+        processPoints();
+    }
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        points = [];
+        clearDisplays();
+    }
+
+    function clearDisplays() {
+        document.getElementById('feat-bb').innerText = "Width: 0, Height: 0";
+        document.getElementById('feat-centroid').innerText = "Wait for input...";
+        document.getElementById('analysis-output').innerText = "Draw on the canvas above...";
+    }
+
+    function processPoints() {
+        if (points.length < 2) return;
+
+        // 1. Calculate Bounding Box
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        let sumX = 0, sumY = 0;
+
+        points.forEach(p => {
+            if (p.x < minX) minX = p.x;
+            if (p.x > maxX) maxX = p.x;
+            if (p.y < minY) minY = p.y;
+            if (p.y > maxY) maxY = p.y;
+            sumX += p.x;
+            sumY += p.y;
+        });
+
+        const width = maxX - minX;
+        const height = maxY - minY;
+        const centerX = sumX / points.length;
+        const centerY = sumY / points.length;
+
+        // 2. Calculate Total Path Length
+        let pathLength = 0;
+        for (let i = 1; i < points.length; i++) {
+            pathLength += Math.sqrt(Math.pow(points[i].x - points[i-1].x, 2) + Math.pow(points[i].y - points[i-1].y, 2));
+        }
+
+        // 3. Update UI
+        document.getElementById('feat-bb').innerText = `Width: ${width.toFixed(1)}px\nHeight: ${height.toFixed(1)}px\nAspect Ratio: ${(width/height).toFixed(2)}`;
+        document.getElementById('feat-centroid').innerText = `X: ${centerX.toFixed(1)}\nY: ${centerY.toFixed(1)}`;
+
+        // Simple Classification Logic
+        let shapeGuess = "Complex Stroke";
+        if (width/height > 3 && pathLength < width * 1.5) shapeGuess = "Horizontal Line (Dash)";
+        else if (height/width > 3 && pathLength < height * 1.5) shapeGuess = "Vertical Line (1/I)";
+        else if (width/height > 0.8 && width/height < 1.2 && pathLength > (width + height) * 1.5) shapeGuess = "Circle or Loop (O)";
+
+        document.getElementById('analysis-output').innerHTML = `
+            <strong>Path Length:</strong> ${pathLength.toFixed(1)} units<br>
+            <strong>Point Count:</strong> ${points.length}<br>
+            <strong>Classification Hint:</strong> Looks like a <strong>${shapeGuess}</strong>
+        `;
+
+        // Draw bounding box visual
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.strokeRect(minX, minY, width, height);
+        ctx.setLineDash([]);
+        
+        // Draw Centroid
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+</script>
+
+</body>
+</html>

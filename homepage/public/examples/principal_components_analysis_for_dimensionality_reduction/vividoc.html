@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Principal Components Analysis for Dimensionality Reduction</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Principal Components Analysis for Dimensionality Reduction</h1>
+<!-- Understanding variance as information in datasets. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>At its core, Principal Components Analysis (PCA) operates on a fundamental assumption: <strong>variance is a proxy for information</strong>. In the context of data, "information" refers to the patterns, structures, and differences that allow us to distinguish between individual data points. If a feature has zero variance, every single observation is identical, and that feature tells us nothing about the underlying diversity of the dataset.</p><p>Imagine a 2D scatter plot representing two highly correlated features, such as <em>height</em> and <em>weight</em>. If we plot these points, we see an elongated "cloud." While we have two variables ($x$ and $y$), the data primarily stretches along a single diagonal path. Most of the "spread" or variance in this dataset is not strictly horizontal or strictly vertical; it is oriented in the direction where the points are most dispersed.</p><p>In PCA, we seek the <strong>Principal Components</strong>, which are new axes that better represent this dispersion. The first principal component is essentially a "best-fit" line that passes through the multidimensional mean of the data. However, unlike standard linear regression which minimizes the vertical distance to the line, PCA finds a line that <strong>maximizes the variance</strong> of the projected points. Mathematically, for a set of points $X$, we look for a direction vector $w$ such that the variance of the projected data $Xw$ is maximized:</p><p>$\max_{w: \|w\|=1} \{ \text{Var}(Xw) \}$</p><p>By finding this direction, we capture the maximum amount of "signal" from the data while treating smaller, perpendicular variations as less significant "noise." This shift in perspective—from viewing data as a collection of fixed features to viewing it as a <strong>continuous field of variance</strong>—is the critical first step in reducing dimensions without losing the essence of the original information.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    #ku1-layout {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .ku1-plot-container {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .ku1-chart-container {
+        width: 200px;
+        height: 400px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    #ku1-controls {
+        width: 100%;
+        max-width: 600px;
+        text-align: center;
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px border-box;
+    }
+
+    #ku1-slider {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .ku1-label {
+        font-size: 14px;
+        font-weight: bold;
+        color: #333;
+    }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<div class="ku1-label">Rotate Projection Axis: <span id="ku1-angle-display">0</span>°</div>
+<input id="ku1-slider" max="180" min="0" type="range" value="0"/>
+<div style="font-size: 12px; color: #666; margin-top: 5px;">
+            Find the angle where variance is maximized (The First Principal Component)
+        </div>
+</div>
+<div id="ku1-layout">
+<div class="ku1-plot-container">
+<canvas id="ku1-scatter-canvas"></canvas>
+</div>
+<div class="ku1-chart-container">
+<canvas id="ku1-variance-canvas"></canvas>
+</div>
+</div>
+</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
+    (function() {
+        // Data generation: Fixed elliptical cluster
+        const N = 60;
+        const meanX = 0, meanY = 0;
+        const points = [];
+        const seed = 42; // For reproducibility
+        
+        function randomNormal() {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+
+        // Generate points along a 30-degree diagonal (Major axis)
+        const angleRad = 30 * Math.PI / 180;
+        for (let i = 0; i < N; i++) {
+            let x_orig = randomNormal() * 2.5;
+            let y_orig = randomNormal() * 0.8;
+            // Rotate the cluster
+            let x = x_orig * Math.cos(angleRad) - y_orig * Math.sin(angleRad);
+            let y = x_orig * Math.sin(angleRad) + y_orig * Math.cos(angleRad);
+            points.push({x, y});
+        }
+
+        const scatterCanvas = document.getElementById('ku1-scatter-canvas');
+        const varCanvas = document.getElementById('ku1-variance-canvas');
+        const slider = document.getElementById('ku1-slider');
+        const angleDisplay = document.getElementById('ku1-angle-display');
+
+        const scatterCtx = scatterCanvas.getContext('2d');
+        const varChart = new Chart(varCanvas, {
+            type: 'bar',
+            data: {
+                labels: ['Projected Variance'],
+                datasets: [{
+                    label: 'Variance',
+                    data: [0],
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 7, title: { display: true, text: 'Variance Magnitude' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        function resize() {
+            scatterCanvas.width = scatterCanvas.parentElement.clientWidth;
+            scatterCanvas.height = scatterCanvas.parentElement.clientHeight;
+            update();
+        }
+
+        function update() {
+            const angleDeg = parseFloat(slider.value);
+            angleDisplay.textContent = angleDeg;
+            const rad = angleDeg * Math.PI / 180;
+
+            const w = { x: Math.cos(rad), y: Math.sin(rad) };
+            
+            // Clear and setup coordinate system
+            scatterCtx.clearRect(0, 0, scatterCanvas.width, scatterCanvas.height);
+            const centerX = scatterCanvas.width / 2;
+            const centerY = scatterCanvas.height / 2;
+            const scale = 40;
+
+            // Draw Axes
+            scatterCtx.strokeStyle = '#eee';
+            scatterCtx.beginPath();
+            scatterCtx.moveTo(0, centerY); scatterCtx.lineTo(scatterCanvas.width, centerY);
+            scatterCtx.moveTo(centerX, 0); scatterCtx.lineTo(centerX, scatterCanvas.height);
+            scatterCtx.stroke();
+
+            // Draw Rotating Line
+            scatterCtx.strokeStyle = '#ff4757';
+            scatterCtx.lineWidth = 2;
+            scatterCtx.setLineDash([5, 5]);
+            scatterCtx.beginPath();
+            scatterCtx.moveTo(centerX - w.x * 300, centerY + w.y * 300);
+            scatterCtx.lineTo(centerX + w.x * 300, centerY - w.y * 300);
+            scatterCtx.stroke();
+            scatterCtx.setLineDash([]);
+
+            // Projections and Points
+            let sumSqDist = 0;
+            points.forEach(p => {
+                // Dot product for projection length
+                const projectionLen = (p.x * w.x + p.y * (-w.y)); 
+                const projX = projectionLen * w.x;
+                const projY = projectionLen * (-w.y);
+
+                sumSqDist += projectionLen * projectionLen;
+
+                // Projection line
+                scatterCtx.strokeStyle = 'rgba(0,0,0,0.1)';
+                scatterCtx.beginPath();
+                scatterCtx.moveTo(centerX + p.x * scale, centerY - p.y * scale);
+                scatterCtx.lineTo(centerX + projX * scale, centerY + projY * scale);
+                scatterCtx.stroke();
+
+                // Projected marker
+                scatterCtx.fillStyle = '#ff4757';
+                scatterCtx.beginPath();
+                scatterCtx.arc(centerX + projX * scale, centerY + projY * scale, 3, 0, Math.PI * 2);
+                scatterCtx.fill();
+
+                // Original point
+                scatterCtx.fillStyle = 'rgba(44, 62, 80, 0.6)';
+                scatterCtx.beginPath();
+                scatterCtx.arc(centerX + p.x * scale, centerY - p.y * scale, 4, 0, Math.PI * 2);
+                scatterCtx.fill();
+            });
+
+            // Update Variance Bar
+            const variance = sumSqDist / N;
+            varChart.data.datasets[0].data[0] = variance;
+            varChart.update('none');
+        }
+
+        window.addEventListener('resize', resize);
+        slider.addEventListener('input', update);
+        
+        // Initial call
+        setTimeout(resize, 100);
+    })();
+</script></div>
+</section>
+<!-- Finding the Principal Components: Eigenvectors and Eigenvalues. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>To mathematically define these optimal axes, we transition from the raw data points to a summary of their relationships: the <strong>Covariance Matrix</strong>. If our data is centered (mean subtracted), the covariance matrix $\Sigma$ captures how every pair of variables changes together. The pursuit of the "direction of maximum variance" is equivalent to solving an <strong>eigenstructure problem</strong> for this matrix. Specifically, we seek the vectors $v$ that satisfy the equation:</p><p>$\Sigma v = \lambda v$</p><p>In this expression, $v$ represents an <strong>eigenvector</strong>—a direction that remains unchanged in orientation when the linear transformation $\Sigma$ is applied. The scalar $\lambda$ is the corresponding <strong>eigenvalue</strong>, which quantifies the amount of variance spread along that specific eigenvector. When we sort these eigenvalues from largest to smallest, the eigenvector associated with the largest eigenvalue becomes our <strong>First Principal Component (PC1)</strong>.</p><p>A defining constraint of PCA is that each subsequent component must be <strong>orthogonal</strong> (perpendicular) to the ones before it. This ensures that each principal component captures a unique, non-redundant portion of the data's total variance. If PC1 follows the longest "stretch" of a data cloud, the <strong>Second Principal Component (PC2)</strong> will align with the next widest direction that is exactly $90^\circ$ to PC1. In a 2D space, once PC1 is fixed, PC2 is automatically determined.</p><p>The total "information" in the dataset is the sum of all eigenvalues. By calculating the ratio $\frac{\lambda_i}{\sum \lambda}$, we determine the <strong>Proportion of Variance Explained</strong> by the $i^{th}$ component. This allows us to make an informed decision: if the first two components capture 95% of the total variance, we can discard all other dimensions while retaining nearly all the critical structure of the original data.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 20px;
+        background: #fdfdfd;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    #ku2-controls {
+        width: 100%;
+        max-width: 500px;
+        padding: 15px;
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    #ku2-slider {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .ku2-viz-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .ku2-plot-area {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .ku2-stats-panel {
+        width: 240px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .ku2-stat-row {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .ku2-bar-outer {
+        height: 12px;
+        background: #eee;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .ku2-bar-inner {
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .ku2-color-pc1 { background-color: #4834d4; }
+    .ku2-color-pc2 { background-color: #686de0; opacity: 0.6; }
+
+    .ku2-label { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+    .ku2-val-text { font-family: monospace; font-size: 13px; color: #444; }
+</style><div id="ku2-container">
+<div id="ku2-controls">
+<div class="ku2-label" style="display: flex; justify-content: space-between;">
+            Data Correlation: <span id="ku2-corr-value">0.80</span>
+</div>
+<input id="ku2-slider" max="0.99" min="-0.99" step="0.01" type="range" value="0.8"/>
+</div>
+<div class="ku2-viz-wrapper">
+<div class="ku2-plot-area">
+<canvas id="ku2-pca-canvas"></canvas>
+</div>
+<div class="ku2-stats-panel">
+<div class="ku2-stat-row">
+<div class="ku2-label" style="color: #4834d4;">PC1 (Variance)</div>
+<div class="ku2-val-text" id="ku2-pc1-text">0%</div>
+<div class="ku2-bar-outer"><div class="ku2-bar-inner ku2-color-pc1" id="ku2-pc1-bar" style="width: 0%"></div></div>
+</div>
+<div class="ku2-stat-row">
+<div class="ku2-label" style="color: #686de0;">PC2 (Variance)</div>
+<div class="ku2-val-text" id="ku2-pc2-text">0%</div>
+<div class="ku2-bar-outer"><div class="ku2-bar-inner ku2-color-pc2" id="ku2-pc2-bar" style="width: 0%"></div></div>
+</div>
+<hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;"/>
+<div style="font-size: 12px; color: #666; font-style: italic;">
+                The eigenvectors (arrows) scale with their corresponding eigenvalues. As correlation increases, PC1 dominates.
+            </div>
+</div>
+</div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku2-pca-canvas');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('ku2-slider');
+    const corrDisplay = document.getElementById('ku2-corr-value');
+    
+    // Stats elements
+    const pc1Text = document.getElementById('ku2-pc1-text');
+    const pc2Text = document.getElementById('ku2-pc2-text');
+    const pc1Bar = document.getElementById('ku2-pc1-bar');
+    const pc2Bar = document.getElementById('ku2-pc2-bar');
+
+    // Generate fixed base points (Standard Normal)
+    const N = 80;
+    const basePoints = [];
+    for (let i = 0; i < N; i++) {
+        let u = 0, v = 0;
+        while(u === 0) u = Math.random();
+        while(v === 0) v = Math.random();
+        basePoints.push({
+            x: Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v),
+            y: Math.sqrt(-2.0 * Math.log(u)) * Math.sin(2.0 * Math.PI * v)
+        });
+    }
+
+    function solveEigen(rho) {
+        // Covariance matrix for standardized data: [[1, rho], [rho, 1]]
+        // Eigenvalues: det(A - λI) = 0 => (1-λ)^2 - rho^2 = 0
+        // (1-λ) = ±rho => λ = 1 ± rho
+        const L1 = 1 + Math.abs(rho);
+        const L2 = 1 - Math.abs(rho);
+        
+        // Eigenvectors
+        // For λ = 1 + rho: (1-(1+rho))x + rho*y = 0 => -rho*x + rho*y = 0 => x = y
+        // Adjust for sign of rho
+        const angle = rho >= 0 ? Math.PI / 4 : -Math.PI / 4;
+        const v1 = { x: Math.cos(angle), y: Math.sin(angle) };
+        const v2 = { x: -Math.sin(angle), y: Math.cos(angle) };
+        
+        return { L1, L2, v1, v2 };
+    }
+
+    function update() {
+        const rho = parseFloat(slider.value);
+        corrDisplay.textContent = rho.toFixed(2);
+        
+        const { L1, L2, v1, v2 } = solveEigen(rho);
+        
+        // Canvas setup
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const scale = 50;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw grid
+        ctx.strokeStyle = '#f0f0f0';
+        ctx.beginPath();
+        for(let i=-5; i<=5; i++) {
+            ctx.moveTo(0, cy + i*scale); ctx.lineTo(canvas.width, cy + i*scale);
+            ctx.moveTo(cx + i*scale, 0); ctx.lineTo(cx + i*scale, canvas.height);
+        }
+        ctx.stroke();
+
+        // Transform and draw points
+        // Matrix to correlate data: Cholesky decomposition of [[1, rho], [rho, 1]]
+        // L = [[1, 0], [rho, sqrt(1-rho^2)]]
+        const factor = Math.sqrt(1 - rho * rho);
+        
+        ctx.fillStyle = 'rgba(44, 62, 80, 0.4)';
+        basePoints.forEach(p => {
+            const tx = p.x;
+            const ty = rho * p.x + factor * p.y;
+            ctx.beginPath();
+            ctx.arc(cx + tx * scale, cy - ty * scale, 3, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Draw Eigenvectors (Scaled by Eigenvalue)
+        const drawArrow = (vx, vy, length, color, width) => {
+            const ex = cx + vx * length * scale;
+            const ey = cy - vy * length * scale;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+            
+            // Arrow head
+            const headlen = 10;
+            const angle = Math.atan2(-vy, vx);
+            ctx.beginPath();
+            ctx.moveTo(ex, ey);
+            ctx.lineTo(ex - headlen * Math.cos(angle - Math.PI / 6), ey + headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(ex - headlen * Math.cos(angle + Math.PI / 6), ey + headlen * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        };
+
+        drawArrow(v1.x, v1.y, L1, '#4834d4', 3);
+        drawArrow(v2.x, v2.y, L2, '#686de0', 2);
+
+        // Update Stats
+        const totalVar = L1 + L2;
+        const p1 = (L1 / totalVar * 100).toFixed(1);
+        const p2 = (L2 / totalVar * 100).toFixed(1);
+        
+        pc1Text.textContent = `${p1}% of variance`;
+        pc2Text.textContent = `${p2}% of variance`;
+        pc1Bar.style.width = p1 + '%';
+        pc2Bar.style.width = p2 + '%';
+    }
+
+    slider.addEventListener('input', update);
+    window.addEventListener('resize', update);
+    
+    // Initial render
+    setTimeout(update, 50);
+})();
+</script></div>
+</section>
+<!-- Dimensionality reduction by projecting onto a lower-dimensional subspace. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>Once we have identified the principal components and their relative importance, we arrive at the definitive step of PCA: <strong>dimensionality reduction</strong>. This is achieved by projecting the high-dimensional data points onto a lower-dimensional subspace formed by the top $k$ eigenvectors. In a 2D-to-1D reduction, this means we "collapse" every data point onto the line defined by the first principal component (PC1), effectively discarding the information contained along the PC2 axis.</p><p>Mathematically, if $W_k$ is a matrix containing the first $k$ eigenvectors as columns, the reduced representation $Z$ of our data $X$ is calculated as $Z = XW_k$. This transformation redefines each observation not by its original $x$ and $y$ coordinates, but by its <strong>score</strong>—its position along the new PC1 axis. While we have halved the number of variables, the "distance" between points along this axis captures the maximum possible differentiation present in the original dataset.</p><p>This process inevitably incurs a <strong>reconstruction error</strong>, often referred to as the "residual variance." Because we ignore the components with smaller eigenvalues, we lose the fine-grained fluctuations that occurred perpendicular to our chosen subspace. However, in many real-world datasets, these smaller components represent <em>stochastic noise</em> or measurement error rather than meaningful signal. By deliberately "dropping" these dimensions, we produce a simplified, compressed version of the data that is easier to visualize, less computationally expensive to process, and often more robust for machine learning tasks.</p><p>The trade-off of PCA is thus a balance between <strong>compression and fidelity</strong>. We aim to choose a value for $k$ such that we minimize the number of dimensions while maximizing the cumulative explained variance:
+$\sum_{i=1}^{k} \lambda_i / \sum_{j=1}^{d} \lambda_j \approx 1$
+By retaining enough components to explain 90% or 95% of the total variance, we ensure that the "shadow" cast by our data onto the lower-dimensional surface still retains the essential shape of the original high-dimensional object.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 20px;
+        background: #f4f7f6;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    #ku3-controls {
+        width: 100%;
+        max-width: 600px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .ku3-viz-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        align-items: center;
+    }
+
+    .ku3-canvas-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        height: 350px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: crosshair;
+    }
+
+    #ku3-projection-line-container {
+        width: 100%;
+        max-width: 600px;
+        height: 80px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        position: relative;
+    }
+
+    .ku3-toggle-label {
+        font-weight: bold;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+
+    /* Toggle Switch Style */
+    .ku3-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+
+    .ku3-switch input { opacity: 0; width: 0; height: 0; }
+
+    .ku3-slider-round {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .ku3-slider-round:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .ku3-slider-round { background-color: #4834d4; }
+    input:checked + .ku3-slider-round:before { transform: translateX(30px); }
+
+    .ku3-hint {
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+    }
+</style><div id="ku3-container">
+<div id="ku3-controls">
+<span class="ku3-toggle-label">Reduce to 1D (PC1 Only)</span>
+<label class="ku3-switch">
+<input id="ku3-reduce-toggle" type="checkbox"/>
+<span class="ku3-slider-round"></span>
+</label>
+</div>
+<div class="ku3-viz-layout">
+<div class="ku3-canvas-wrapper">
+<canvas id="ku3-main-canvas"></canvas>
+<div style="position: absolute; top: 10px; left: 10px; font-size: 12px; font-weight: bold; color: #999;">ORIGINAL 2D SPACE</div>
+</div>
+<div id="ku3-projection-line-container">
+<canvas id="ku3-1d-canvas"></canvas>
+<div style="position: absolute; top: 5px; left: 10px; font-size: 12px; font-weight: bold; color: #999;">REDUCED 1D SUBSPACE (PC1 SCORE)</div>
+</div>
+</div>
+<p class="ku3-hint">Toggle to see points projected onto the first principal component. Hover over points to see their relationship.</p>
+</div><script>
+(function() {
+    const mainCanvas = document.getElementById('ku3-main-canvas');
+    const lineCanvas = document.getElementById('ku3-1d-canvas');
+    const toggle = document.getElementById('ku3-reduce-toggle');
+    const ctxMain = mainCanvas.getContext('2d');
+    const ctxLine = lineCanvas.getContext('2d');
+
+    let animationFrame;
+    let transitionFactor = 0; // 0 is 2D, 1 is projected
+    let hoveredIndex = -1;
+
+    // Fixed PC1 angle (dataset specific)
+    const pcAngle = 25 * Math.PI / 180;
+    const v1 = { x: Math.cos(pcAngle), y: Math.sin(pcAngle) };
+    const v2 = { x: -Math.sin(pcAngle), y: Math.cos(pcAngle) };
+
+    const N = 40;
+    const points = [];
+    for (let i = 0; i < N; i++) {
+        const u1 = (Math.random() - 0.5) * 6;
+        const u2 = (Math.random() - 0.5) * 1.5;
+        // Transform back from PC space to original space
+        points.push({
+            x: u1 * v1.x + u2 * v2.x,
+            y: u1 * v1.y + u2 * v2.y,
+            score: u1 // Distance along PC1
+        });
+    }
+
+    function draw() {
+        const w = mainCanvas.width = mainCanvas.parentElement.clientWidth;
+        const h = mainCanvas.height = mainCanvas.parentElement.clientHeight;
+        const lw = lineCanvas.width = lineCanvas.parentElement.clientWidth;
+        const lh = lineCanvas.height = lineCanvas.parentElement.clientHeight;
+
+        const cx = w / 2;
+        const cy = h / 2;
+        const lcx = lw / 2;
+        const lcy = lh / 2;
+        const scale = 45;
+
+        ctxMain.clearRect(0, 0, w, h);
+        ctxLine.clearRect(0, 0, lw, lh);
+
+        // Draw PC Axes in Main
+        ctxMain.setLineDash([5, 5]);
+        ctxMain.strokeStyle = '#eee';
+        ctxMain.beginPath();
+        ctxMain.moveTo(cx - v1.x * 500, cy + v1.y * 500); ctxMain.lineTo(cx + v1.x * 500, cy - v1.y * 500);
+        ctxMain.stroke();
+
+        // 1D Axis line
+        ctxLine.strokeStyle = '#4834d4';
+        ctxLine.lineWidth = 2;
+        ctxLine.beginPath();
+        ctxLine.moveTo(50, lcy); ctxLine.lineTo(lw - 50, lcy);
+        ctxLine.stroke();
+
+        points.forEach((p, i) => {
+            const isHovered = (i === hoveredIndex);
+            
+            // Calculate Current Visual Position in 2D
+            // Progresses from (x, y) to (score*v1.x, score*v1.y)
+            const projX = p.score * v1.x;
+            const projY = p.score * v1.y;
+            
+            const curX = p.x + (projX - p.x) * transitionFactor;
+            const curY = p.y + (projY - p.y) * transitionFactor;
+
+            const screenX = cx + curX * scale;
+            const screenY = cy - curY * scale;
+
+            // Draw link to 1D line if reducer is active or hovered
+            if (transitionFactor > 0.1 || isHovered) {
+                ctxMain.strokeStyle = isHovered ? '#4834d4' : `rgba(72, 52, 212, ${0.1 * transitionFactor})`;
+                ctxMain.beginPath();
+                ctxMain.moveTo(screenX, screenY);
+                ctxMain.lineTo(lcx + p.score * scale, h + 50); // Conceptual link
+                // ctxMain.stroke();
+            }
+
+            // Draw Main Point
+            ctxMain.fillStyle = isHovered ? '#ff4757' : `rgba(72, 52, 212, ${0.8 - transitionFactor * 0.4})`;
+            ctxMain.beginPath();
+            ctxMain.arc(screenX, screenY, isHovered ? 6 : 4, 0, Math.PI * 2);
+            ctxMain.fill();
+            
+            // Draw projection paths
+            if (transitionFactor > 0 && transitionFactor < 1) {
+                ctxMain.strokeStyle = 'rgba(0,0,0,0.05)';
+                ctxMain.beginPath();
+                ctxMain.moveTo(cx + p.x * scale, cy - p.y * scale);
+                ctxMain.lineTo(cx + projX * scale, cy - projY * scale);
+                ctxMain.stroke();
+            }
+
+            // Draw 1D projection point
+            const lineX = lcx + p.score * scale;
+            ctxLine.fillStyle = isHovered ? '#ff4757' : `rgba(72, 52, 212, ${0.3 + transitionFactor * 0.7})`;
+            ctxLine.beginPath();
+            ctxLine.arc(lineX, lcy, isHovered ? 6 : 4, 0, Math.PI * 2);
+            ctxLine.fill();
+        });
+
+        // Loop animation
+        const target = toggle.checked ? 1 : 0;
+        if (Math.abs(transitionFactor - target) > 0.01) {
+            transitionFactor += (target - transitionFactor) * 0.1;
+            requestAnimationFrame(draw);
+        }
+    }
+
+    function handleMove(e) {
+        const rect = mainCanvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const scale = 45;
+        const cx = mainCanvas.width / 2;
+        const cy = mainCanvas.height / 2;
+
+        let found = -1;
+        points.forEach((p, i) => {
+            const projX = p.score * v1.x;
+            const projY = p.score * v1.y;
+            const curX = p.x + (projX - p.x) * transitionFactor;
+            const curY = p.y + (projY - p.y) * transitionFactor;
+            const dx = mx - (cx + curX * scale);
+            const dy = my - (cy - curY * scale);
+            if (Math.sqrt(dx*dx + dy*dy) < 10) found = i;
+        });
+        
+        if (found !== hoveredIndex) {
+            hoveredIndex = found;
+            draw();
+        }
+    }
+
+    toggle.addEventListener('change', () => requestAnimationFrame(draw));
+    mainCanvas.addEventListener('mousemove', handleMove);
+    window.addEventListener('resize', draw);
+    
+    // Start
+    setTimeout(draw, 100);
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

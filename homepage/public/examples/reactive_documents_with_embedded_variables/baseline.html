@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Learning: Reactive Documents</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --accent: #f0f9ff;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            background: var(--card);
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        h1 { color: var(--primary); margin-top: 0; }
+        h2 { color: var(--primary); margin-top: 2rem; border-left: 4px solid var(--primary); padding-left: 1rem; }
+
+        section { margin-bottom: 3rem; }
+
+        .interactive-box {
+            background: var(--accent);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label { font-weight: bold; font-size: 0.9rem; margin-bottom: 0.5rem; }
+
+        input[type="range"] { width: 100%; cursor: pointer; }
+        input[type="text"] { padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; }
+
+        .reactive-text {
+            font-size: 1.1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #10b981;
+        }
+
+        .var-highlight {
+            font-weight: bold;
+            color: var(--primary);
+            transition: all 0.2s ease;
+        }
+
+        .math-block {
+            font-family: 'Courier New', Courier, monospace;
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        code { background: #e2e8f0; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Reactive Documents</h1>
+        <p>Explore the power of documents where the narrative changes as the data does.</p>
+    </header>
+
+    <section>
+        <h2>1. What is Reactivity?</h2>
+        <p>A <strong>reactive document</strong> is one where the text and elements update automatically when the underlying data changes. Instead of static text, we use <em>embedded variables</em> that act as placeholders for dynamic values.</p>
+        <p>Try changing your name below to see how it propagates through the sentence:</p>
+        
+        <div class="interactive-box">
+            <div class="input-group">
+                <label>Enter your name:</label>
+                <input type="text" id="userName" placeholder="Type here..." oninput="updateAll()">
+            </div>
+            <p class="reactive-text">
+                Hello, <span id="outName" class="var-highlight">Explorer</span>! By typing in that box, you are updating a variable that is bound to this paragraph.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. Dynamic Logic & Narrative</h2>
+        <p>Reactive documents allow the "story" to change based on thresholds. We can use conditional logic to swap out entire phrases or sentences based on slider values.</p>
+        
+        <div class="interactive-box">
+            <div class="controls">
+                <div class="input-group">
+                    <label>Temperature (<span id="tempVal">20</span>°C)</label>
+                    <input type="range" id="tempInput" min="-10" max="40" value="20" oninput="updateAll()">
+                </div>
+            </div>
+            <p class="reactive-text">
+                Today the weather is <span id="tempStatus" class="var-highlight">mild</span>. 
+                You should probably <span id="tempAdvice" class="var-highlight">wear a light sweater</span>.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. Mathematical Dependency</h2>
+        <p>Reactivity is most powerful when variables depend on other variables. In this example, <em>Total Cost</em> is a calculated variable based on <em>Quantity</em> and <em>Price</em>.</p>
+
+        <div class="interactive-box">
+            <div class="controls">
+                <div class="input-group">
+                    <label>Quantity (<span id="qtyVal">5</span>)</label>
+                    <input type="range" id="qtyInput" min="1" max="100" value="5" oninput="updateAll()">
+                </div>
+                <div class="input-group">
+                    <label>Unit Price ($<span id="priceVal">10</span>)</label>
+                    <input type="range" id="priceInput" min="1" max="500" value="10" oninput="updateAll()">
+                </div>
+            </div>
+            <div class="math-block">
+                Total = <span id="calcTrace">5 * 10</span> = $<span id="totalVal">50</span>
+            </div>
+            <p>If you increase the order to more than 50 units, a 10% discount is applied automatically.</p>
+            <p class="reactive-text">
+                Final Bill: <span id="discountStatus" class="var-highlight">No discount applied</span>. 
+                Amount Due: <span id="finalPrice" class="var-highlight">$50.00</span>.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <h2>4. Why use Reactive Documents?</h2>
+        <ul>
+            <li><strong>Explainable Models:</strong> Users can "play" with variables to see how outcomes change.</li>
+            <li><strong>Personalization:</strong> Content adapts to the specific user's inputs.</li>
+            <li><strong>Reduced Friction:</strong> No need to recalculate or rewrite sections after a data tweak.</li>
+        </ul>
+        <p>This page uses simple JavaScript <code>oninput</code> events to bridge the gap between UI controls and the text, a pattern popularized by notebooks like <em>Observable</em> and <em>Tangle</em>.</p>
+    </section>
+
+    <script>
+        function updateAll() {
+            // Section 1: Name
+            const nameInput = document.getElementById('userName').value;
+            document.getElementById('outName').innerText = nameInput || "Explorer";
+
+            // Section 2: Temperature Logic
+            const temp = parseInt(document.getElementById('tempInput').value);
+            document.getElementById('tempVal').innerText = temp;
+            
+            let status, advice;
+            if (temp < 10) {
+                status = "freezing";
+                advice = "wear a heavy winter coat";
+            } else if (temp < 25) {
+                status = "mild";
+                advice = "wear a light sweater";
+            } else {
+                status = "sweltering";
+                advice = "stay hydrated and wear shorts";
+            }
+            document.getElementById('tempStatus').innerText = status;
+            document.getElementById('tempAdvice').innerText = advice;
+
+            // Section 3: Math and Calculations
+            const qty = parseInt(document.getElementById('qtyInput').value);
+            const price = parseInt(document.getElementById('priceInput').value);
+            document.getElementById('qtyVal').innerText = qty;
+            document.getElementById('priceVal').innerText = price;
+            
+            let total = qty * price;
+            document.getElementById('calcTrace').innerText = `${qty} * ${price}`;
+            document.getElementById('totalVal').innerText = total;
+
+            let finalPrice = total;
+            if (qty > 50) {
+                finalPrice = total * 0.9;
+                document.getElementById('discountStatus').innerText = "10% volume discount applied!";
+            } else {
+                document.getElementById('discountStatus').innerText = "No discount applied";
+            }
+            document.getElementById('finalPrice').innerText = "$" + finalPrice.toLocaleString(undefined, {minimumFractionDigits: 2});
+        }
+
+        // Initialize on load
+        updateAll();
+    </script>
+</div>
+
+</body>
+</html>

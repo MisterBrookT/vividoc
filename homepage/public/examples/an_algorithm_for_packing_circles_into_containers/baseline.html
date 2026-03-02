@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Packing Algorithms: An Interactive Guide</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        section {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        h1, h2 {
+            color: var(--primary);
+        }
+        .interactive-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        canvas {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: crosshair;
+            max-width: 100%;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        button.secondary {
+            background: #64748b;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .stats {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Circle Packing Algorithms</h1>
+        <p>Exploring the geometry and logic of filling spaces with non-overlapping circles.</p>
+    </header>
+
+    <section id="introduction">
+        <h2>1. The Challenge</h2>
+        <p>Circle packing is the study of how to arrange circles on a given surface such that no two circles overlap. This is a classic problem in <strong>computational geometry</strong> and has practical applications in:</p>
+        <ul>
+            <li><strong>Material Science:</strong> Arranging fibers or particles.</li>
+            <li><strong>Logistics:</strong> Efficiently loading cylindrical goods into containers.</li>
+            <li><strong>Data Visualization:</strong> Representing hierarchical data (Circle Treemaps).</li>
+        </ul>
+    </section>
+
+    <section id="interactive">
+        <h2>2. The "Greedy" Growth Algorithm</h2>
+        <p>Below is an implementation of a <strong>Stochastic Greedy Algorithm</strong>. It attempts to place circles at random coordinates. If a circle doesn't overlap with any existing circles or the container walls, it is "born" and begins to grow until it hits another circle.</p>
+        
+        <div class="interactive-area">
+            <div class="controls">
+                <button onclick="startSimulation()">Start / Resume</button>
+                <button class="secondary" onclick="resetSimulation()">Reset</button>
+                <button class="secondary" onclick="addOne()">Add +1 Circle</button>
+            </div>
+            <canvas id="packingCanvas" width="600" height="400"></canvas>
+            <div class="stats" id="stats">Circles: 0 | Remaining space: 100%</div>
+        </div>
+    </section>
+
+    <section id="logic">
+        <h2>3. How the Algorithm Works</h2>
+        <p>The logic used in the simulation above follows these steps:</p>
+        <ol>
+            <li><strong>Selection:</strong> Pick a random point <code>(x, y)</code> within the canvas.</li>
+            <li><strong>Validation:</strong> Check if <code>(x, y)</code> is inside any existing circle. If it is, discard this attempt.</li>
+            <li><strong>Creation:</strong> If the point is valid, create a new circle with radius <code>r = 1</code>.</li>
+            <li><strong>Expansion:</strong> In every frame of the animation:
+                <ul>
+                    <li>Increment the radius of all "active" circles.</li>
+                    <li>Check if the circle has hit the canvas edge.</li>
+                    <li>Check if the circle has hit any other circle using the distance formula: <br>
+                        <code>dist = sqrt((x2-x1)² + (y2-y1)²)</code>.
+                    </li>
+                    <li>If a collision is detected, stop the growth of that circle.</li>
+                </ul>
+            </li>
+        </ol>
+    </section>
+
+    <section id="efficiency">
+        <h2>4. Optimization Strategies</h2>
+        <p>As the number of circles increases, checking every circle against every other circle becomes computationally expensive (<code>O(n²)</code>). Experts use these techniques to optimize:</p>
+        <ul>
+            <li><strong>Spatial Partitioning:</strong> Diving the container into a grid. Only check collisions with circles in the same or adjacent grid cells.</li>
+            <li><strong>Apollonian Gasket:</strong> A mathematical fractal approach that fills the gaps between larger circles with smaller ones.</li>
+            <li><strong>Force-Directed Layouts:</strong> Using physics (repulsion) to push circles apart until they settle into an equilibrium.</li>
+        </ul>
+    </section>
+</div>
+
+<script>
+    const canvas = document.getElementById('packingCanvas');
+    const ctx = canvas.getContext('2d');
+    const statsDisplay = document.getElementById('stats');
+    
+    let circles = [];
+    let isRunning = false;
+    let animationId;
+
+    class Circle {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.r = 1;
+            this.growing = true;
+            this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        grow() {
+            if (this.growing) {
+                this.r += 0.5;
+            }
+        }
+
+        checkEdges() {
+            return (
+                this.x + this.r >= canvas.width ||
+                this.x - this.r <= 0 ||
+                this.y + this.r >= canvas.height ||
+                this.y - this.r <= 0
+            );
+        }
+    }
+
+    function addOne() {
+        let x = Math.random() * canvas.width;
+        let y = Math.random() * canvas.height;
+        
+        let valid = true;
+        for (let c of circles) {
+            let d = Math.hypot(x - c.x, y - c.y);
+            if (d < c.r + 2) {
+                valid = false;
+                break;
+            }
+        }
+
+        if (valid) {
+            circles.push(new Circle(x, y));
+            return true;
+        }
+        return false;
+    }
+
+    function update() {
+        if (!isRunning) return;
+
+        // Try to add multiple circles per frame for speed
+        for(let i=0; i<5; i++) {
+            addOne();
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        let totalArea = 0;
+        circles.forEach(c => {
+            if (c.growing) {
+                if (c.checkEdges()) {
+                    c.growing = false;
+                } else {
+                    for (let other of circles) {
+                        if (c !== other) {
+                            let d = Math.hypot(c.x - other.x, c.y - other.y);
+                            if (d < c.r + other.r + 2) {
+                                c.growing = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            c.grow();
+            c.draw();
+            totalArea += Math.PI * Math.pow(c.r, 2);
+        });
+
+        const coverage = ((totalArea / (canvas.width * canvas.height)) * 100).toFixed(1);
+        statsDisplay.innerText = `Circles: ${circles.length} | Coverage: ${coverage}%`;
+
+        animationId = requestAnimationFrame(update);
+    }
+
+    function startSimulation() {
+        if (isRunning) {
+            isRunning = false;
+            cancelAnimationFrame(animationId);
+        } else {
+            isRunning = true;
+            update();
+        }
+    }
+
+    function resetSimulation() {
+        isRunning = false;
+        cancelAnimationFrame(animationId);
+        circles = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        statsDisplay.innerText = `Circles: 0 | Coverage: 0%`;
+    }
+
+    // Initialize display
+    resetSimulation();
+</script>
+
+</body>
+</html>

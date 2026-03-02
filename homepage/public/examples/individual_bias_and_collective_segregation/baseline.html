@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schelling's Model: Individual Bias & Collective Segregation</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --primary-text: #1a1a1a;
+            --accent-blue: #3498db;
+            --accent-red: #e74c3c;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-text);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+        }
+
+        section {
+            background: var(--card-bg);
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        /* Simulator Styles */
+        #simulation-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            max-width: 100%;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-start { background-color: #27ae60; color: white; }
+        .btn-reset { background-color: #95a5a6; color: white; }
+
+        .highlight {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>The Segregation Paradox</h1>
+        <p>Exploring how small individual preferences lead to large-scale social divides.</p>
+    </header>
+
+    <section>
+        <h2>1. The Core Concept</h2>
+        <p>In 1971, economist <strong>Thomas Schelling</strong> developed a simple model to explain a disturbing social phenomenon: why neighborhoods remain highly segregated even when individuals express a desire for diversity.</p>
+        <p>The "Schelling Model" demonstrates that collective segregation does not necessarily require extreme individual prejudice. It shows that even if every person is comfortable being in a minority (e.g., they only want 30% or 40% of their neighbors to be like them), the <em>aggregation</em> of these mild preferences leads to almost total residential segregation.</p>
+    </section>
+
+    <section>
+        <h2>2. Interactive Simulator</h2>
+        <p>Adjust the "Preference" slider below. This represents the minimum percentage of neighbors an agent wants to have of their own "kind" (Blue or Red) to stay in their current spot. If they have fewer, they move to a random empty lot.</p>
+        
+        <div id="simulation-container">
+            <div class="controls">
+                <div class="control-group">
+                    <label>Threshold (Preference): <span id="threshold-val">30</span>%</label>
+                    <input type="range" id="threshold" min="0" max="100" value="30">
+                </div>
+                <div class="control-group">
+                    <label>Empty Space: <span id="empty-val">10</span>%</label>
+                    <input type="range" id="empty-pct" min="5" max="50" value="10">
+                </div>
+                <div class="control-group" style="justify-content: flex-end;">
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-start" id="start-btn">Start Simulation</button>
+                        <button class="btn-reset" id="reset-btn">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <canvas id="schellingCanvas" width="400" height="400"></canvas>
+
+            <div class="stats">
+                <span>Unhappy Agents: <span id="unhappy-count" class="highlight">0</span></span>
+                <span>Avg. Similarity: <span id="sim-pct">0</span>%</span>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. Observations & Implications</h2>
+        <ul>
+            <li><strong>The "Tipping Point":</strong> When the preference threshold is set at 30%, you might expect a diverse mix. However, the system usually settles into blocks of color where the average similarity is over 70%.</li>
+            <li><strong>Micro-motives vs. Macro-behavior:</strong> The final state of the system is often far more extreme than any single individual intended. This is known as an <em>emergent property</em>.</li>
+            <li><strong>The Difficulty of Reversing Segregation:</strong> Once these clusters form, they are remarkably stable. Even if individuals become more tolerant, the spatial patterns persist until a major disruption occurs.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>4. Educational Summary</h2>
+        <p>The lesson of individual bias and collective segregation is one of <strong>complexity</strong>. It teaches us that to solve systemic social issues like segregation, it is often not enough to change individual hearts and minds alone; we must also look at the structural dynamics and the "rules of the game" that drive self-reinforcing patterns.</p>
+    </section>
+</div>
+
+<script>
+    const canvas = document.getElementById('schellingCanvas');
+    const ctx = canvas.getContext('2d');
+    const thresholdSlider = document.getElementById('threshold');
+    const emptySlider = document.getElementById('empty-pct');
+    const startBtn = document.getElementById('start-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    
+    let gridSize = 40;
+    let cellSize = canvas.width / gridSize;
+    let grid = [];
+    let isRunning = false;
+    let animationId = null;
+
+    function initGrid() {
+        const threshold = thresholdSlider.value / 100;
+        const emptyPct = emptySlider.value / 100;
+        grid = [];
+        
+        for (let x = 0; x < gridSize; x++) {
+            grid[x] = [];
+            for (let y = 0; y < gridSize; y++) {
+                let rand = Math.random();
+                if (rand < emptyPct) {
+                    grid[x][y] = 0; // Empty
+                } else if (rand < (1 - emptyPct) / 2 + emptyPct) {
+                    grid[x][y] = 1; // Red
+                } else {
+                    grid[x][y] = 2; // Blue
+                }
+            }
+        }
+        draw();
+        updateStats();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let x = 0; x < gridSize; x++) {
+            for (let y = 0; y < gridSize; y++) {
+                if (grid[x][y] === 1) ctx.fillStyle = '#e74c3c';
+                else if (grid[x][y] === 2) ctx.fillStyle = '#3498db';
+                else ctx.fillStyle = '#fff';
+                
+                if (grid[x][y] !== 0) {
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
+                }
+            }
+        }
+    }
+
+    function getNeighbors(x, y) {
+        let agents = [];
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                if (i === 0 && j === 0) continue;
+                let nx = (x + i + gridSize) % gridSize;
+                let ny = (y + j + gridSize) % gridSize;
+                if (grid[nx][ny] !== 0) {
+                    agents.push(grid[nx][ny]);
+                }
+            }
+        }
+        return agents;
+    }
+
+    function step() {
+        let unhappy = [];
+        let emptySpots = [];
+        let threshold = thresholdSlider.value / 100;
+        let totalSimilarity = 0;
+        let agentCount = 0;
+
+        // Find unhappy agents and empty spots
+        for (let x = 0; x < gridSize; x++) {
+            for (let y = 0; y < gridSize; y++) {
+                if (grid[x][y] === 0) {
+                    emptySpots.push({x, y});
+                    continue;
+                }
+
+                let neighbors = getNeighbors(x, y);
+                let same = neighbors.filter(n => n === grid[x][y]).length;
+                let similarity = neighbors.length === 0 ? 1 : same / neighbors.length;
+                
+                totalSimilarity += similarity;
+                agentCount++;
+
+                if (similarity < threshold) {
+                    unhappy.push({x, y, type: grid[x][y]});
+                }
+            }
+        }
+
+        if (unhappy.length === 0) {
+            stopSim();
+            return;
+        }
+
+        // Move unhappy agents
+        unhappy.forEach(agent => {
+            if (emptySpots.length > 0) {
+                let spotIdx = Math.floor(Math.random() * emptySpots.length);
+                let spot = emptySpots.splice(spotIdx, 1)[0];
+                grid[spot.x][spot.y] = agent.type;
+                grid[agent.x][agent.y] = 0;
+                emptySpots.push({x: agent.x, y: agent.y});
+            }
+        });
+
+        draw();
+        updateStats(unhappy.length, (totalSimilarity / agentCount * 100).toFixed(1));
+
+        if (isRunning) {
+            animationId = setTimeout(() => requestAnimationFrame(step), 100);
+        }
+    }
+
+    function updateStats(unhappyCount = '?', sim = '?') {
+        document.getElementById('unhappy-count').innerText = unhappyCount;
+        document.getElementById('sim-pct').innerText = sim;
+    }
+
+    function stopSim() {
+        isRunning = false;
+        startBtn.innerText = "Start Simulation";
+        startBtn.className = "btn-start";
+        clearTimeout(animationId);
+    }
+
+    startBtn.addEventListener('click', () => {
+        if (isRunning) {
+            stopSim();
+        } else {
+            isRunning = true;
+            startBtn.innerText = "Pause Simulation";
+            startBtn.className = "btn-reset";
+            step();
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        stopSim();
+        initGrid();
+    });
+
+    thresholdSlider.oninput = function() {
+        document.getElementById('threshold-val').innerText = this.value;
+    };
+
+    emptySlider.oninput = function() {
+        document.getElementById('empty-val').innerText = this.value;
+        initGrid();
+    };
+
+    // Initialize
+    initGrid();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Waveform properties and additive synthesis</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Waveform properties and additive synthesis</h1>
+<!-- Anatomy of a Sine Wave: Amplitude and Frequency -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>If we want to understand complexity, we must first master the simple. In the world of acoustics, the <strong>sine wave</strong> is the purest possible sound—a single, smooth oscillation containing no additional harmonics or overtones. To understand how this wave functions, we must look at its two defining characteristics: <strong>amplitude</strong> and <strong>frequency</strong>.</p><p><strong>Amplitude</strong> refers to the maximum displacement of the wave from its equilibrium (the center line). Visually, this is the "height" of the wave's peaks and the "depth" of its troughs. In auditory terms, amplitude is the primary determinant of <strong>volume</strong> or intensity. The greater the energy driving the oscillation, the higher the amplitude, and the louder the sound we perceive. Mathematically, if we describe a simple wave as a function of time ($t$), the amplitude is the coefficient $A$ in the expression:</p><p>$y(t) = A \sin(2\pi f t)$</p><p>While amplitude dictates volume, <strong>frequency</strong> dictates <strong>pitch</strong>. Frequency is defined as the number of complete cycles the wave performs in one second, measured in <strong>Hertz (Hz)</strong>. There is an inverse relationship between frequency and <strong>wavelength</strong> ($\lambda$): as the frequency increases, the cycles become more compressed, resulting in a shorter wavelength. A wave vibrating at $440 \text{ Hz}$ (the standard musical note A4) completes 440 cycles every second. If we double that frequency to $880 \text{ Hz}$, the wavelength is halved, and we perceive a pitch exactly one octave higher.</p><p>When you observe these properties on an oscilloscope, the relationship is intuitive. Increasing the <em>amplitude</em> stretches the wave vertically, making it taller and louder. Increasing the <em>frequency</em> squeezes the wave horizontally, making it denser and higher in pitch. These two parameters are the fundamental "coordinates" used to map any sound in the additive synthesis process.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e1e4e8;
+        color: #24292e;
+    }
+    #ku1-canvas-container {
+        width: 100%;
+        height: 250px;
+        background: #000;
+        border-radius: 4px;
+        position: relative;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    #ku1-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+    .ku1-control-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .ku1-control-group label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .ku1-control-group label span {
+        color: #0366d6;
+    }
+    #ku1-container input[type=range] {
+        width: 100%;
+        cursor: pointer;
+    }
+    #ku1-audio-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    #ku1-play-btn {
+        background: #2ea44f;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    #ku1-play-btn:hover { background: #2c974b; }
+    #ku1-play-btn.playing { background: #cb2431; }
+    .ku1-hint {
+        font-size: 0.8rem;
+        color: #586069;
+        font-style: italic;
+    }
+</style><div id="ku1-container">
+<div id="ku1-canvas-container">
+<canvas id="ku1-osc-canvas"></canvas>
+</div>
+<div id="ku1-controls">
+<div class="ku1-control-group">
+<label>Title: Volume (Amplitude) <span id="ku1-amp-val">0.50</span></label>
+<input id="ku1-amp-slider" max="1" min="0" step="0.01" type="range" value="0.5"/>
+</div>
+<div class="ku1-control-group">
+<label>Pitch: Frequency (Hz) <span id="ku1-freq-val">440</span></label>
+<input id="ku1-freq-slider" max="880" min="220" step="1" type="range" value="440"/>
+</div>
+</div>
+<div id="ku1-audio-controls">
+<button id="ku1-play-btn">
+<span id="ku1-icon">▶</span> <span id="ku1-btn-text">Listen Tone</span>
+</button>
+<span class="ku1-hint">Warning: Pure tones can be sharp; start with low volume.</span>
+</div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku1-osc-canvas');
+    const ctx = canvas.getContext('2d');
+    const ampSlider = document.getElementById('ku1-amp-slider');
+    const freqSlider = document.getElementById('ku1-freq-slider');
+    const ampDisp = document.getElementById('ku1-amp-val');
+    const freqDisp = document.getElementById('ku1-freq-val');
+    const playBtn = document.getElementById('ku1-play-btn');
+    
+    let audioCtx = null;
+    let oscillator = null;
+    let gainNode = null;
+    let animationId = null;
+    let isPlaying = false;
+    let time = 0;
+
+    function resize() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Grid lines
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+
+        // Waveform
+        const amp = parseFloat(ampSlider.value);
+        const freq = parseFloat(freqSlider.value);
+        
+        // Display updates
+        ampDisp.innerText = amp.toFixed(2);
+        freqDisp.innerText = freq + " Hz";
+
+        ctx.strokeStyle = '#00ff00';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00ff00';
+        ctx.beginPath();
+
+        // Mapping: 440Hz shows about 3 cycles across the screen
+        const pixelsPerCycle = (canvas.width / 3) * (440 / freq);
+        
+        for (let x = 0; x < canvas.width; x++) {
+            const angle = (x / pixelsPerCycle) * Math.PI * 2;
+            const y = (canvas.height / 2) - (Math.sin(angle + time) * (amp * (canvas.height * 0.4)));
+            
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+        time -= 0.1; // Speed of animation
+        animationId = requestAnimationFrame(draw);
+    }
+
+    function toggleAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        if (isPlaying) {
+            oscillator.stop();
+            playBtn.classList.remove('playing');
+            document.getElementById('ku1-btn-text').innerText = "Listen Tone";
+            document.getElementById('ku1-icon').innerText = "▶";
+            isPlaying = false;
+        } else {
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(parseFloat(freqSlider.value), audioCtx.currentTime);
+            
+            gainNode.gain.setValueAtTime(parseFloat(ampSlider.value) * 0.2, audioCtx.currentTime); // Attenuate for safety
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start();
+            playBtn.classList.add('playing');
+            document.getElementById('ku1-btn-text').innerText = "Stop Tone";
+            document.getElementById('ku1-icon').innerText = "■";
+            isPlaying = true;
+        }
+    }
+
+    // Input listeners
+    freqSlider.addEventListener('input', () => {
+        if (oscillator && isPlaying) {
+            oscillator.frequency.setTargetAtTime(parseFloat(freqSlider.value), audioCtx.currentTime, 0.05);
+        }
+    });
+
+    ampSlider.addEventListener('input', () => {
+        if (gainNode && isPlaying) {
+            gainNode.gain.setTargetAtTime(parseFloat(ampSlider.value) * 0.2, audioCtx.currentTime, 0.05);
+        }
+    });
+
+    playBtn.addEventListener('click', toggleAudio);
+    window.addEventListener('resize', resize);
+    
+    resize();
+    draw();
+})();
+</script></div>
+</section>
+<!-- The Harmonic Series and Pure Tones -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>In nature, a perfectly isolated sine wave is a rarity. Most sounds we encounter—from the vibrating string of a cello to the human voice—are <strong>composite signals</strong>. While the sine wave represents a single, pure frequency, musical timbre is born from the interplay of multiple frequencies vibrating simultaneously. This brings us to the core principle of <strong>additive synthesis</strong>: the ability to construct any complex periodic waveform by summing together a series of simple sine waves.</p><p>The foundation of this architecture is the <strong>fundamental frequency</strong> ($f$), also known as the first harmonic. This is the lowest frequency in the stack and typically determines the perceived pitch of the sound. When we add additional sine waves at integer multiples of this frequency—such as $2f$, $3f$, $4f$, and so on—we are building a <strong>harmonic series</strong>. These additional layers are called <strong>harmonics</strong> or <strong>overtones</strong>. For example, if our fundamental is $100 \text{ Hz}$, the second harmonic vibrates at $200 \text{ Hz}$, the third at $300 \text{ Hz}$, and the nth harmonic follows the simple linear relationship:</p><p>$f_n = n \times f_1$</p><p>When these waves combine, they undergo <strong>constructive and destructive interference</strong>. This means that at any given moment in time ($t$), the resulting displacement of the air (or the voltage in a wire) is simply the sum of all individual waves. If we denote the amplitude of each harmonic as $A_n$, the total complex wave $y(t)$ can be expressed as:</p><p>$y(t) = \sum_{n=1}^{N} A_n \sin(2\pi \cdot n f t)$</p><p>Visually, the smooth, circular symmetry of the sine wave begins to distort as harmonics are introduced. Adding a second harmonic ($2f$) might sharpen the peaks or create a "double-hump" pattern within a single period. This transformation explains why a trumpet and a flute can play the exact same pitch ($f$) yet sound entirely different; they possess different recipes of harmonic amplitudes ($A_n$), creating unique <strong>spectral fingerprints</strong> that our brains interpret as distinct textures or timbres.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e1e4e8;
+        color: #24292e;
+    }
+    .ku2-vis-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .ku2-canvas-wrapper {
+        background: #000;
+        border-radius: 4px;
+        position: relative;
+        height: 120px;
+    }
+    .ku2-canvas-wrapper.large {
+        grid-column: span 2;
+        height: 180px;
+    }
+    .ku2-label-overlay {
+        position: absolute;
+        top: 5px;
+        left: 10px;
+        color: #aaa;
+        font-size: 0.75rem;
+        pointer-events: none;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    #ku2-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+    }
+    .ku2-control-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .ku2-control-group label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .ku2-control-group span {
+        color: #0366d6;
+        float: right;
+    }
+    #ku2-container select {
+        padding: 4px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+    canvas { width: 100%; height: 100%; }
+</style><div id="ku2-container">
+<div class="ku2-vis-grid">
+<div class="ku2-canvas-wrapper">
+<div class="ku2-label-overlay">Fundamental (f1)</div>
+<canvas id="ku2-canv-f1"></canvas>
+</div>
+<div class="ku2-canvas-wrapper">
+<div class="ku2-label-overlay">Harmonic (fn)</div>
+<canvas id="ku2-canv-f2"></canvas>
+</div>
+<div class="ku2-canvas-wrapper large">
+<div class="ku2-label-overlay" style="color: #00ff00;">Summed Waveform (Composite)</div>
+<canvas id="ku2-canv-sum"></canvas>
+</div>
+</div>
+<div id="ku2-controls">
+<div class="ku2-control-group">
+<label>F1 Amplitude <span id="ku2-f1-val">1.0</span></label>
+<input id="ku2-f1-mag" max="1" min="0" step="0.01" type="range" value="1"/>
+</div>
+<div class="ku2-control-group">
+<label>Harmonic Amp <span id="ku2-f2-val">0.0</span></label>
+<input id="ku2-f2-mag" max="1" min="0" step="0.01" type="range" value="0.3"/>
+</div>
+<div class="ku2-control-group">
+<label>Harmonic Ratio</label>
+<select id="ku2-f2-ratio">
+<option value="2">2nd Harmonic (2f)</option>
+<option value="3">3rd Harmonic (3f)</option>
+<option value="4">4th Harmonic (4f)</option>
+</select>
+</div>
+</div>
+</div><script>
+(function() {
+    const canvases = {
+        f1: document.getElementById('ku2-canv-f1'),
+        f2: document.getElementById('ku2-canv-f2'),
+        sum: document.getElementById('ku2-canv-sum')
+    };
+    const ctxs = {
+        f1: canvases.f1.getContext('2d'),
+        f2: canvases.f2.getContext('2d'),
+        sum: canvases.sum.getContext('2d')
+    };
+
+    const ui = {
+        f1_mag: document.getElementById('ku2-f1-mag'),
+        f2_mag: document.getElementById('ku2-f2-mag'),
+        f2_ratio: document.getElementById('ku2-f2-ratio'),
+        f1_disp: document.getElementById('ku2-f1-val'),
+        f2_disp: document.getElementById('ku2-f2-val')
+    };
+
+    let offset = 0;
+
+    function resize() {
+        Object.values(canvases).forEach(canvas => {
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+        });
+    }
+
+    function drawWave(ctx, color, width, getY) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        // Horizontal Axis
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, ctx.canvas.height / 2);
+        ctx.lineTo(ctx.canvas.width, ctx.canvas.height / 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+
+        // One standard view width = 2 cycles of fundamental
+        const viewFactor = (Math.PI * 4) / ctx.canvas.width;
+
+        for (let x = 0; x < ctx.canvas.width; x++) {
+            const t = (x * viewFactor) + offset;
+            const y = (ctx.canvas.height / 2) - getY(t) * (ctx.canvas.height * 0.35);
+            
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    function update() {
+        const a1 = parseFloat(ui.f1_mag.value);
+        const a2 = parseFloat(ui.f2_mag.value);
+        const r2 = parseInt(ui.f2_ratio.value);
+
+        ui.f1_disp.innerText = a1.toFixed(2);
+        ui.f2_disp.innerText = a2.toFixed(2);
+
+        // Render F1
+        drawWave(ctxs.f1, '#0366d6', 2, (t) => a1 * Math.sin(t));
+        
+        // Render F2
+        drawWave(ctxs.f2, '#d73a49', 2, (t) => a2 * Math.sin(t * r2));
+        
+        // Render Sum
+        drawWave(ctxs.sum, '#00ff00', 3, (t) => (a1 * Math.sin(t)) + (a2 * Math.sin(t * r2)));
+
+        offset -= 0.05;
+        requestAnimationFrame(update);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    update();
+})();
+</script></div>
+</section>
+<!-- Building Complex Timbres: Square and Sawtooth Waves -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>If we continue the process of stacking harmonics indefinitely, we encounter a remarkable mathematical phenomenon: the emergence of geometric shapes. While the previous section demonstrated how a single harmonic can distort a sine wave, additive synthesis allows us to "sculpt" sound into specific, iconic waveforms—the <strong>square</strong> and <strong>sawtooth</strong> waves—which serve as the raw materials for electronic music. These shapes are not merely visual curiosities; they represent specific harmonic "recipes" that the human ear perceives as distinct textures.</p><p>The <strong>square wave</strong> is characterized by a "hollow," woody timbre. It is constructed by summing only the <strong>odd harmonics</strong> ($f_1, 3f_1, 5f_1, \dots$) with amplitudes that decrease in proportion to the harmonic number. To create a perfect square wave, the amplitude of the $n$th harmonic must be $\frac{1}{n}$. As we add more odd partials, the rounded peaks of the sine waves begin to flatten and the slopes become vertical. Mathematically, the series for a square wave is expressed as:</p><p>$y_{\text{square}}(t) = \sum_{k=1}^{N} \frac{1}{2k-1} \sin(2\pi(2k-1)ft)$</p><p>In contrast, the <strong>sawtooth wave</strong> possesses a bright, buzzy, and "brassy" quality because it contains <strong>every harmonic</strong> in the series—both even and odd. Like the square wave, the amplitudes of these harmonics decrease at a rate of $\frac{1}{n}$, but the inclusion of the even-numbered partials ($2f, 4f, 6f, \dots$) prevents the waveform from becoming symmetrical across the horizontal axis. Instead, the cumulative interference creates a sharp "ramp" followed by a sudden vertical drop. The formula for this dense spectral stack is:</p><p>$y_{\text{sawtooth}}(t) = \sum_{n=1}^{N} \frac{1}{n} \sin(2\pi nft)$</p><p>This process highlights the <strong>Fourier Theorem</strong>: the principle that any periodic waveform can be broken down into a specific set of sine waves. When you listen to a sawtooth wave, your brain isn't just hearing one sound; it is processing a vast, shimmering ladder of frequencies vibrating in perfect mathematical alignment. By controlling the number of harmonics ($N$) in our synthesis, we can transition from the warm simplicity of a pure tone to the aggressive, harmonically rich complexity of a full-spectrum electronic lead.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e1e4e8;
+        color: #24292e;
+    }
+    .ku3-vis-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    @media (max-width: 600px) {
+        .ku3-vis-grid { grid-template-columns: 1fr; }
+    }
+    .ku3-canvas-wrapper {
+        background: #000;
+        border-radius: 4px;
+        position: relative;
+        height: 220px;
+    }
+    .ku3-label-overlay {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        color: #888;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        pointer-events: none;
+    }
+    #ku3-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+    }
+    .ku3-control-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .ku3-control-group label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .ku3-control-group span {
+        color: #0366d6;
+        float: right;
+    }
+    #ku3-container select, #ku3-container input {
+        cursor: pointer;
+    }
+    .ku3-legend {
+        display: flex;
+        gap: 15px;
+        font-size: 0.75rem;
+        margin-top: 5px;
+        justify-content: center;
+    }
+    .ku3-legend-item { display: flex; align-items: center; gap: 5px; color: #586069; }
+    .ku3-dot { width: 10px; height: 10px; border-radius: 2px; }
+</style><div id="ku3-container">
+<div class="ku3-vis-grid">
+<div class="ku3-canvas-wrapper">
+<div class="ku3-label-overlay">Waveform Construction</div>
+<canvas id="ku3-main-canvas"></canvas>
+</div>
+<div class="ku3-canvas-wrapper">
+<div class="ku3-label-overlay">Harmonic Spectrum (Amplitudes)</div>
+<canvas id="ku3-spec-canvas"></canvas>
+</div>
+</div>
+<div class="ku3-legend">
+<div class="ku3-legend-item"><div class="ku3-dot" style="background: #00ff00;"></div> Composite Wave</div>
+<div class="ku3-legend-item"><div class="ku3-dot" style="border: 1px dashed #555;"></div> Target Ideal</div>
+</div>
+<div id="ku3-controls" style="margin-top:15px;">
+<div class="ku3-control-group">
+<label>Waveform Type</label>
+<select id="ku3-wave-type">
+<option value="square">Square (Odd Harmonics)</option>
+<option value="sawtooth">Sawtooth (All Harmonics)</option>
+</select>
+</div>
+<div class="ku3-control-group">
+<label>Number of Harmonics: <span id="ku3-harm-val">1</span></label>
+<input id="ku3-harm-slider" max="25" min="1" step="1" type="range" value="1"/>
+</div>
+</div>
+</div><script>
+(function() {
+    const mainCanvas = document.getElementById('ku3-main-canvas');
+    const specCanvas = document.getElementById('ku3-spec-canvas');
+    const mCtx = mainCanvas.getContext('2d');
+    const sCtx = specCanvas.getContext('2d');
+    
+    const uiType = document.getElementById('ku3-wave-type');
+    const uiHarm = document.getElementById('ku3-harm-slider');
+    const uiHarmVal = document.getElementById('ku3-harm-val');
+
+    let time = 0;
+
+    function resize() {
+        mainCanvas.width = mainCanvas.parentElement.clientWidth;
+        mainCanvas.height = mainCanvas.parentElement.clientHeight;
+        specCanvas.width = specCanvas.parentElement.clientWidth;
+        specCanvas.height = specCanvas.parentElement.clientHeight;
+    }
+
+    function getHarmonicWeight(n, type) {
+        if (type === 'square') {
+            return (n % 2 !== 0) ? (1 / n) : 0;
+        } else {
+            return (1 / n);
+        }
+    }
+
+    function draw() {
+        const type = uiType.value;
+        const N = parseInt(uiHarm.value);
+        uiHarmVal.innerText = N;
+
+        // 1. Clear and Draw Grid
+        mCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+        sCtx.clearRect(0, 0, specCanvas.width, specCanvas.height);
+        
+        const midY = mainCanvas.height / 2;
+        mCtx.strokeStyle = '#222';
+        mCtx.beginPath();
+        mCtx.moveTo(0, midY); mCtx.lineTo(mainCanvas.width, midY);
+        mCtx.stroke();
+
+        // 2. Draw Target Ideal (Dashed)
+        mCtx.setLineDash([5, 5]);
+        mCtx.strokeStyle = '#444';
+        mCtx.lineWidth = 1;
+        mCtx.beginPath();
+        const cycles = 2;
+        for (let x = 0; x < mainCanvas.width; x++) {
+            const phase = (x / mainCanvas.width) * Math.PI * 2 * cycles;
+            let targetY = 0;
+            if (type === 'square') {
+                targetY = Math.sin(phase) >= 0 ? 0.7 : -0.7;
+            } else {
+                targetY = 0.7 - (1.4 * ((phase / (Math.PI * 2)) % 1));
+            }
+            const py = midY - (targetY * mainCanvas.height * 0.4);
+            if (x === 0) mCtx.moveTo(x, py); else mCtx.lineTo(x, py);
+        }
+        mCtx.stroke();
+        mCtx.setLineDash([]);
+
+        // 3. Draw Composite Result
+        mCtx.strokeStyle = '#00ff00';
+        mCtx.lineWidth = 2;
+        mCtx.shadowBlur = 8;
+        mCtx.shadowColor = '#00ff00';
+        mCtx.beginPath();
+
+        for (let x = 0; x < mainCanvas.width; x++) {
+            const t = (x / mainCanvas.width) * Math.PI * 2 * cycles;
+            let sum = 0;
+            for (let n = 1; n <= N; n++) {
+                const weight = getHarmonicWeight(n, type);
+                sum += weight * Math.sin(n * (t + time));
+            }
+            // Scale normalizing roughly for visualization visibility
+            const py = midY - (sum * mainCanvas.height * 0.45);
+            if (x === 0) mCtx.moveTo(x, py); else mCtx.lineTo(x, py);
+        }
+        mCtx.stroke();
+        mCtx.shadowBlur = 0;
+
+        // 4. Draw Spectrum Bars
+        const barWidth = (specCanvas.width - 40) / 25;
+        for (let n = 1; n <= 25; n++) {
+            const weight = getHarmonicWeight(n, type);
+            const isActive = n <= N;
+            sCtx.fillStyle = isActive ? (weight > 0 ? '#0366d6' : '#333') : '#111';
+            
+            const h = weight * (specCanvas.height - 40);
+            const x = 20 + (n - 1) * barWidth;
+            sCtx.fillRect(x + 1, specCanvas.height - 20 - h, barWidth - 2, h);
+            
+            if (n % 5 === 0 || n === 1) {
+                sCtx.fillStyle = '#666';
+                sCtx.font = '9px Arial';
+                sCtx.fillText(n, x, specCanvas.height - 5);
+            }
+        }
+
+        time -= 0.03;
+        requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

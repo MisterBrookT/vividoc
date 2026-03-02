@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring the Mandelbrot Set</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --text: #f1f5f9;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+        section {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        h1, h2 { color: var(--accent); }
+        .math {
+            background: #000;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 1rem 0;
+        }
+        .interactive-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        #mandelbrotCanvas {
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            cursor: crosshair;
+            background: black;
+            max-width: 100%;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.8; }
+        .stats { font-size: 0.9rem; color: #94a3b8; margin-top: 5px; }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) { .grid-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>The Mandelbrot Set</h1>
+        <p>A journey from a simple equation to infinite complexity.</p>
+    </header>
+
+    <section>
+        <h2>1. The Iterative Seed</h2>
+        <p>The Mandelbrot set is defined by a surprisingly simple rule applied to complex numbers. We take a starting point <b>c</b> on the complex plane and repeatedly apply the following function:</p>
+        <div class="math">z<sub>n+1</sub> = z<sub>n</sub><sup>2</sup> + c</div>
+        <p>We always start with <b>z<sub>0</sub> = 0</b>. The "set" consists of all points <b>c</b> for which this sequence does not escape to infinity, no matter how many times we iterate.</p>
+    </section>
+
+    <section>
+        <h2>2. Boundaries of Chaos</h2>
+        <div class="grid-layout">
+            <div>
+                <p>How do we know if a number "escapes"? If the absolute value (the distance from zero) of <b>z</b> ever exceeds 2, it is proven that the orbit will eventually head to infinity.</p>
+                <p>Points that stay "trapped" forever are colored <b>black</b>. Points that escape are colored based on <b>how fast</b> they escaped—this creates the beautiful gradients and psychedelic patterns we associate with fractals.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                <strong>Key Concepts:</strong>
+                <ul>
+                    <li><strong>Orbit:</strong> The path of points z<sub>0</sub>, z<sub>1</sub>, z<sub>2</sub>...</li>
+                    <li><strong>Divergence:</strong> When a point flies off to infinity.</li>
+                    <li><strong>Self-Similarity:</strong> Zooming in reveals smaller versions of the whole.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. Visualizing Infinity</h2>
+        <div class="interactive-area">
+            <canvas id="mandelbrotCanvas" width="600" height="400"></canvas>
+            <div class="controls">
+                <button onclick="resetView()">Reset View</button>
+                <button onclick="increaseIterations()">Higher Detail</button>
+                <span>Click/Drag to explore or scroll to zoom.</span>
+            </div>
+            <div class="stats" id="stats">Zoom: 1x | Iterations: 100</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>4. Why It Matters</h2>
+        <p>Discovered by Benoit Mandelbrot in 1980, this set became the faces of <strong>Fractal Geometry</strong>. It demonstrates how deterministic, simple rules can generate "organized chaos." It has applications in computer graphics, fluid dynamics, and even understanding the structure of the universe.</p>
+    </section>
+</div>
+
+<script>
+    const canvas = document.getElementById('mandelbrotCanvas');
+    const ctx = canvas.getContext('2d');
+    const stats = document.getElementById('stats');
+
+    let width = canvas.width;
+    let height = canvas.height;
+    let maxIter = 100;
+    
+    // View state
+    let zoom = 1.0;
+    let centerX = -0.5;
+    let centerY = 0;
+
+    function draw() {
+        const imageData = ctx.createImageData(width, height);
+        const data = imageData.data;
+
+        for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+                // Map pixel to complex plane
+                let cx = (x - width / 2) * (4 / (width * zoom)) + centerX;
+                let cy = (y - height / 2) * (4 / (width * zoom)) + centerY;
+
+                let zx = 0;
+                let zy = 0;
+                let i = 0;
+
+                while (zx*zx + zy*zy <= 4 && i < maxIter) {
+                    let nextZx = zx*zx - zy*zy + cx;
+                    zy = 2*zx*zy + cy;
+                    zx = nextZx;
+                    i++;
+                }
+
+                let pix = (x + y * width) * 4;
+                if (i === maxIter) {
+                    data[pix] = 0;
+                    data[pix+1] = 0;
+                    data[pix+2] = 0;
+                } else {
+                    let hue = i / maxIter * 360;
+                    let rgb = hslToRgb(hue / 360, 0.8, 0.5);
+                    data[pix] = rgb[0];
+                    data[pix+1] = rgb[1];
+                    data[pix+2] = rgb[2];
+                }
+                data[pix+3] = 255;
+            }
+        }
+        ctx.putImageData(imageData, 0, 0);
+        stats.innerText = `Zoom: ${zoom.toFixed(2)}x | Iterations: ${maxIter} | Center: ${centerX.toFixed(3)}, ${centerY.toFixed(3)}i`;
+    }
+
+    function hslToRgb(h, s, l) {
+        let r, g, b;
+        if (s == 0) { r = g = b = l; } 
+        else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    // Controls
+    function resetView() {
+        zoom = 1.0; centerX = -0.5; centerY = 0; maxIter = 100;
+        draw();
+    }
+
+    function increaseIterations() {
+        maxIter += 100;
+        draw();
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Move center to clicked point
+        centerX += (mouseX - width / 2) * (4 / (width * zoom));
+        centerY += (mouseY - height / 2) * (4 / (width * zoom));
+        
+        zoom *= 2;
+        draw();
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (e.deltaY < 0) zoom *= 1.1;
+        else zoom /= 1.1;
+        draw();
+    });
+
+    // Initial Draw
+    draw();
+</script>
+
+</body>
+</html>

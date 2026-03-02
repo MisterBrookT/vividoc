@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>An algorithm for packing circles into containers</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>An algorithm for packing circles into containers</h1>
+<!-- The core constraints and challenges of circle packing. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>The <strong>two-dimensional circle packing problem</strong> is a classic puzzle in computational geometry and optimization. At its simplest, the goal is to arrange a set of $n$ circles of radii $r_i$ into a target container—such as a square, rectangle, or a larger circle—without any two circles crossing paths. This task is governed by two fundamental constraints that any algorithm must satisfy:</p><p>1. <strong>Non-overlap Constraint:</strong> For any two circles $i$ and $j$ with centers $(x_i, y_i)$ and $(x_j, y_j)$, the Euclidean distance between their centers must be at least the sum of their radii: $\sqrt{(x_i - x_j)^2 + (y_i - y_j)^2} \ge r_i + r_j$.</p><p>2. <strong>Boundary Constraint:</strong> Every point $(x, y)$ within a circle must lie within the geometric bounds of the container. For a circular container of radius $R$ centered at the origin, this is expressed as: $\sqrt{x_i^2 + y_i^2} \le R - r_i$.</p><p>The primary objective in these problems is typically to maximize the <strong>packing fraction</strong> ($\eta$), which represents the density of the arrangement. This is defined as the ratio of the total area of the packed circles to the total area of the container:</p><p>$$\eta = \frac{\sum_{i=1}^n \pi r_i^2}{Area_{container}}$$</p><p>Unlike tiles or squares, which can "tessellate" or fit together perfectly with zero wasted space, the geometry of circles introduces a persistent challenge: <strong>interstitial gaps</strong>. Because of their curved edges, even the most efficient arrangements—such as the hexagonal lattice—will always leave empty pockets. In an infinite plane, the maximum possible packing density for identical circles is $\eta \approx 0.9069$, meaning at least $9\%$ of the space will <em>always</em> remain empty. In constrained containers, this efficiency is often much lower, as the "hard" edges of the container force further compromises in the arrangement.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+    #ku1-controls {
+        width: 100%;
+        max-width: 400px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    #ku1-viz-area {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        background: #fff;
+        border: 3px solid #333;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        cursor: crosshair;
+        overflow: hidden;
+    }
+    #ku1-stats {
+        margin-top: 15px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #444;
+    }
+    .ku1-slider-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .ku1-slider-row input {
+        flex-grow: 1;
+    }
+    .ku1-circle {
+        cursor: grab;
+        stroke-width: 3px;
+    }
+    .ku1-circle:active {
+        cursor: grabbing;
+    }
+    .ku1-invalid {
+        fill: rgba(231, 76, 60, 0.4) !important;
+        stroke: #e74c3c !important;
+    }
+    #ku1-hint {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 5px;
+        font-style: italic;
+    }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<div class="ku1-slider-row">
+<label for="ku1-numCircles">Number of Circles:</label>
+<input id="ku1-numCircles" max="10" min="1" type="range" value="3"/>
+<span id="ku1-num-val">3</span>
+</div>
+<div id="ku1-hint">Drag circles to pack them. Red indicates overlap or boundary violation.</div>
+</div>
+<div id="ku1-viz-area">
+<svg height="400" id="ku1-svg" width="400"></svg>
+</div>
+<div id="ku1-stats">
+        Packing Efficiency ($\eta$): <span id="ku1-density">0.00</span>%
+    </div>
+</div><script>
+(function() {
+    const DIM = 400;
+    const RADIUS = 40; // Fixed radius for this exploration
+    const svg = d3.select("#ku1-svg");
+    const numSlider = document.getElementById('ku1-numCircles');
+    const numVal = document.getElementById('ku1-num-val');
+    const densityVal = document.getElementById('ku1-density');
+    
+    let circles = [];
+
+    function initCircles(n) {
+        const oldCircles = [...circles];
+        circles = [];
+        for (let i = 0; i < n; i++) {
+            if (oldCircles[i]) {
+                circles.push(oldCircles[i]);
+            } else {
+                // Default staggered layout
+                circles.push({
+                    id: i,
+                    x: RADIUS + (i * (RADIUS * 2.2)) % (DIM - RADIUS * 2),
+                    y: RADIUS + Math.floor(i / 3) * (RADIUS * 2.2),
+                    r: RADIUS,
+                    invalid: false
+                });
+            }
+        }
+        update();
+    }
+
+    function checkConstraints() {
+        circles.forEach(c => c.invalid = false);
+
+        for (let i = 0; i < circles.length; i++) {
+            const c1 = circles[i];
+            
+            // Boundary Constraint
+            if (c1.x - c1.r < 0 || c1.x + c1.r > DIM || c1.y - c1.r < 0 || c1.y + c1.r > DIM) {
+                c1.invalid = true;
+            }
+
+            // Non-overlap Constraint
+            for (let j = i + 1; j < circles.length; j++) {
+                const c2 = circles[j];
+                const dx = c1.x - c2.x;
+                const dy = c1.y - c2.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < (c1.r + c2.r)) {
+                    c1.invalid = true;
+                    c2.invalid = true;
+                }
+            }
+        }
+    }
+
+    function calculateDensity() {
+        const circleArea = circles.length * Math.PI * Math.pow(RADIUS, 2);
+        const containerArea = DIM * DIM;
+        const eta = (circleArea / containerArea) * 100;
+        densityVal.textContent = eta.toFixed(2);
+    }
+
+    function update() {
+        checkConstraints();
+        calculateDensity();
+
+        const dots = svg.selectAll(".ku1-circle")
+            .data(circles, d => d.id);
+
+        dots.enter()
+            .append("circle")
+            .attr("class", "ku1-circle")
+            .attr("r", d => d.r)
+            .attr("fill", "rgba(52, 152, 219, 0.4)")
+            .attr("stroke", "#2980b9")
+            .call(d3.drag()
+                .on("drag", (event, d) => {
+                    d.x = Math.max(0, Math.min(DIM, event.x));
+                    d.y = Math.max(0, Math.min(DIM, event.y));
+                    update();
+                }))
+            .merge(dots)
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .classed("ku1-invalid", d => d.invalid);
+
+        dots.exit().remove();
+        
+        // Typeset LaTeX if present
+        if (window.MathJax && window.MathJax.typeset) {
+            window.MathJax.typeset();
+        }
+    }
+
+    numSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        numVal.textContent = val;
+        initCircles(val);
+    });
+
+    // Initial load
+    initCircles(3);
+})();
+</script></div>
+</section>
+<!-- The Greedy Iterative Placement Algorithm. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>When the number of circles increases, finding a globally optimal arrangement becomes computationally expensive. To manage this complexity, we often employ a <strong>Greedy Iterative Placement</strong> heuristic. This algorithm simplifies the problem by making a series of locally optimal choices: it places one circle at a time into the container, fixing its position before moving on to the next. The "greedy" nature of the approach stems from the fact that it never reconsider decisions once a circle is placed, even if moving a previously placed circle would allow for a better overall fit later.</p><p>The efficiency of this heuristic is highly sensitive to the <strong>sorting order</strong> of the input set. If circles are of varying sizes, the most effective strategy is typically the <strong>Largest-First (LF)</strong> rule. By placing the largest circles first, the algorithm establishes the "anchor" points of the packing. The subsequent smaller circles then act as fillers, migrating into the irregular <em>interstitial gaps</em> left behind. If one were to reverse this—placing small circles first—the resulting "clutter" often prevents larger circles from finding a valid coordinate within the container later in the process.</p><p>To determine the specific coordinates $(x_i, y_i)$ for each new circle, the algorithm typically performs a search to find a position that minimizes a specific <strong>cost function</strong>. Common strategies include:</p><ul>
+<li><strong>Distance Minimization:</strong> Placing the circle as close as possible to the container's center or a specific corner.</li>
+<li><strong>Touching Constraints:</strong> Identifying a position where the new circle $i$ is tangent to at least two existing boundaries (either two already-placed circles, or one circle and the container wall). This minimizes the local wasted area.</li>
+</ul><p>Mathematically, for each new circle $i$, we seek to minimize the distance to the origin $d_i = \sqrt{x_i^2 + y_i^2}$ subject to the non-overlap constraint $\sqrt{(x_i - x_j)^2 + (y_i - y_j)^2} \ge r_i + r_j$ for all $j &lt; i$. While this greedy approach does not guarantee the maximum possible density $\eta$, it provides a remarkably fast and intuitive approximation that serves as the foundation for more advanced iterative refinement techniques.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    #ku2-controls {
+        width: 100%;
+        max-width: 500px;
+        margin-bottom: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .ku2-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .ku2-control-group label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #555;
+    }
+    #ku2-viz-area {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        background: #fff;
+        border: 2px solid #444;
+        border-radius: 4px;
+    }
+    .ku2-circle {
+        stroke: #2c3e50;
+        stroke-width: 1px;
+        transition: all 0.3s ease;
+    }
+    .ku2-ghost {
+        stroke-dasharray: 4;
+        fill: none;
+        stroke: #95a5a6;
+    }
+    .ku2-label {
+        font-size: 10px;
+        fill: #333;
+        pointer-events: none;
+        text-anchor: middle;
+        alignment-baseline: middle;
+    }
+    #ku2-stats-panel {
+        margin-top: 15px;
+        text-align: center;
+        font-size: 0.95rem;
+        color: #333;
+    }
+    .ku2-highlight {
+        color: #2980b9;
+        font-weight: bold;
+    }
+</style><div id="ku2-container">
+<div id="ku2-controls">
+<div class="ku2-control-group">
+<label for="ku2-sort">Sorting Strategy</label>
+<select id="ku2-sort">
+<option value="LF">Largest-First (LF)</option>
+<option value="SF">Smallest-First (SF)</option>
+<option value="RND">Random</option>
+</select>
+</div>
+<div class="ku2-control-group">
+<label for="ku2-step">Step: <span id="ku2-step-val">0</span> / 20</label>
+<input id="ku2-step" max="20" min="0" type="range" value="0"/>
+</div>
+</div>
+<div id="ku2-viz-area">
+<svg height="400" id="ku2-svg" width="400"></svg>
+</div>
+<div id="ku2-stats-panel">
+        Current Density: <span class="ku2-highlight" id="ku2-density">0.00</span>% 
+        <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 4px;">
+            Note: Larger circles act as anchors; smaller circles fill the gaps.
+        </div>
+</div>
+</div><script>
+(function() {
+    const DIM = 400;
+    const NUM_CIRCLES = 20;
+    const svg = d3.select("#ku2-svg");
+    const sortSelect = document.getElementById('ku2-sort');
+    const stepSlider = document.getElementById('ku2-step');
+    const stepVal = document.getElementById('ku2-step-val');
+    const densityVal = document.getElementById('ku2-density');
+
+    // Generate a fixed set of radii to start with
+    const baseRadii = Array.from({length: NUM_CIRCLES}, (_, i) => 15 + Math.random() * 35);
+    let masterList = [];
+    let placedCircles = [];
+
+    function generateSequence() {
+        const mode = sortSelect.value;
+        let sorted = baseRadii.map((r, i) => ({ r, id: i }));
+        
+        if (mode === 'LF') sorted.sort((a, b) => b.r - a.r);
+        else if (mode === 'SF') sorted.sort((a, b) => a.r - b.r);
+        else sorted.sort(() => Math.random() - 0.5);
+
+        masterList = sorted;
+        calculatePlacements();
+    }
+
+    // Greedy placement logic: Find position minimizing distance to center (200, 200)
+    function calculatePlacements() {
+        placedCircles = [];
+        const centerX = DIM / 2;
+        const centerY = DIM / 2;
+
+        masterList.forEach((item) => {
+            let bestX = -100, bestY = -100;
+            let minScore = Infinity;
+
+            // Simple spiral search for a valid spot
+            for (let angle = 0; angle < Math.PI * 8; angle += 0.4) {
+                for (let dist = 0; dist < DIM/1.5; dist += 8) {
+                    const tx = centerX + Math.cos(angle) * dist;
+                    const ty = centerY + Math.sin(angle) * dist;
+                    
+                    if (isValid(tx, ty, item.r, placedCircles)) {
+                        const score = Math.sqrt((tx-centerX)**2 + (ty-centerY)**2);
+                        if (score < minScore) {
+                            minScore = score;
+                            bestX = tx;
+                            bestY = ty;
+                        }
+                        break; // Found closest for this angle
+                    }
+                }
+            }
+            
+            placedCircles.push({
+                x: bestX,
+                y: bestY,
+                r: item.r,
+                id: item.id
+            });
+        });
+    }
+
+    function isValid(x, y, r, existing) {
+        if (x - r < 0 || x + r > DIM || y - r < 0 || y + r > DIM) return false;
+        for (let other of existing) {
+            const dx = x - other.x;
+            const dy = y - other.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < (r + other.r)) return false;
+        }
+        return true;
+    }
+
+    function render() {
+        const step = parseInt(stepSlider.value);
+        stepVal.textContent = step;
+        
+        const visible = placedCircles.slice(0, step);
+        const next = step < NUM_CIRCLES ? placedCircles[step] : null;
+
+        // Draw placed circles
+        const circles = svg.selectAll(".ku2-circle").data(visible, d => d.id);
+        
+        circles.enter()
+            .append("circle")
+            .attr("class", "ku2-circle")
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", 0)
+            .attr("fill", "#3498db66")
+            .transition().duration(300)
+            .attr("r", d => d.r);
+
+        circles.exit().remove();
+
+        // Radii labels
+        const labels = svg.selectAll(".ku2-label").data(visible, d => d.id);
+        labels.enter()
+            .append("text")
+            .attr("class", "ku2-label")
+            .attr("x", d => d.x)
+            .attr("y", d => d.y)
+            .text(d => Math.round(d.r))
+            .style("opacity", 0)
+            .transition().duration(300)
+            .style("opacity", 1);
+        
+        labels.exit().remove();
+
+        // Ghost circle for next placement
+        svg.selectAll(".ku2-ghost").remove();
+        if (next && next.x > 0) {
+            svg.append("circle")
+                .attr("class", "ku2-ghost")
+                .attr("cx", next.x)
+                .attr("cy", next.y)
+                .attr("r", next.r);
+        }
+
+        // Density Calc
+        const area = visible.reduce((acc, c) => acc + Math.PI * c.r * c.r, 0);
+        const totalArea = DIM * DIM;
+        densityVal.textContent = ((area / totalArea) * 100).toFixed(2);
+    }
+
+    sortSelect.addEventListener('change', () => {
+        stepSlider.value = 0;
+        generateSequence();
+        render();
+    });
+
+    stepSlider.addEventListener('input', render);
+
+    // Init
+    generateSequence();
+    render();
+})();
+</script></div>
+</section>
+<!-- Improving density using the Front-Chain algorithm (Areal Relaxation). -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>While greedy placement provides a functional baseline, maximizing density requires a more structured geometric approach known as the <strong>Front-Chain</strong> or <strong>Advancing Front</strong> algorithm. Instead of searching the entire container for a valid coordinate, this method treats the existing packing as a growing "cluster." Each new circle is placed in a <strong>tight-coupling</strong> position—specifically, at a coordinate where it is simultaneously tangent to two already-placed circles. This ensures that the new circle occupies the deepest possible "pocket" in the current arrangement, effectively minimizing the area of the <em>interstitial gaps</em>.</p><p>The algorithm maintains a dynamic data structure called the <strong>Front</strong>: a chain of externally accessible circles that form the outer boundary of the cluster. When a new circle $C_n$ is added, the algorithm identifies an edge $(C_i, C_j)$ on the front and calculates a potential position $(x_n, y_n)$ representing the vertex of an <strong>apollonian gasket</strong>. Mathematically, the center of the new circle must satisfy a system of two quadratic equations based on the distance to the centers of its neighbors:</p><p>$$(x_n - x_i)^2 + (y_n - y_i)^2 = (r_n + r_i)^2$$
+$$(x_n - x_j)^2 + (y_n - y_j)^2 = (r_n + r_j)^2$$</p><p>By solving this system, the algorithm finds the precise point where the three circles meet in mutual tangency. Once a circle is placed, the "front" is updated: the edge between $C_i$ and $C_j$ is removed, and two new edges, $(C_i, C_n)$ and $(C_n, C_j)$, are added to the chain. This creates a continuous, expanding frontier of potential placement slots.</p><p>This <strong>local optimization</strong> strategy significantly improves the packing fraction $\eta$ because it enforces the "highest-density" local configuration—the triangle—as the building block of the entire structure. However, the order of placement remains critical. If the front becomes too jagged or "pinched," it can create narrow valleys that larger circles cannot enter. Therefore, the Front-Chain algorithm is often paired with <strong>Areal Relaxation</strong>, where circles are allowed to slightly shift or "settle" into place, ensuring the chain remains as compact and concave as possible throughout the growth process.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f4f7f6;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    #ku3-controls {
+        width: 100%;
+        max-width: 500px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+    #ku3-viz-area {
+        position: relative;
+        width: 500px;
+        height: 400px;
+        background: #fff;
+        border: 2px solid #2c3e50;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .ku3-btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        background: #27ae60;
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .ku3-btn:hover { background: #219150; }
+    .ku3-btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+    #ku3-reset { background: #e67e22; }
+    
+    .ku3-front-line {
+        stroke: #e74c3c;
+        stroke-width: 2px;
+        stroke-dasharray: 4;
+        fill: none;
+        transition: d 0.3s ease;
+    }
+    .ku3-candidate {
+        fill: #f1c40f;
+        fill-opacity: 0.3;
+        stroke: #f1c40f;
+        stroke-width: 2px;
+        stroke-dasharray: 2;
+        animation: ku3-pulse 1.5s infinite;
+    }
+    @keyframes ku3-pulse {
+        0% { transform: scale(1); opacity: 0.6; }
+        50% { transform: scale(1.05); opacity: 0.2; }
+        100% { transform: scale(1); opacity: 0.6; }
+    }
+    .ku3-circle-placed {
+        stroke: #fff;
+        stroke-width: 1px;
+    }
+    #ku3-status {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #34495e;
+    }
+</style><div id="ku3-container">
+<div id="ku3-controls">
+<button class="ku3-btn" id="ku3-place">Place Next Circle</button>
+<button class="ku3-btn" id="ku3-reset">Reset Cluster</button>
+</div>
+<div id="ku3-viz-area">
+<svg height="400" id="ku3-svg" width="500">
+<g id="ku3-lines-group"></g>
+<g id="ku3-circles-group"></g>
+<g id="ku3-candidates-group"></g>
+</svg>
+</div>
+<div id="ku3-status">
+        Frontier Edges: <span id="ku3-front-count">0</span> | 
+        Efficiency Improvement: <span id="ku3-gain" style="color:#27ae60; font-weight:bold;">High</span>
+</div>
+</div><script>
+(function() {
+    const width = 500, height = 400;
+    const svg = d3.select("#ku3-svg");
+    const circlesGroup = svg.select("#ku3-circles-group");
+    const linesGroup = svg.select("#ku3-lines-group");
+    const candidatesGroup = svg.select("#ku3-candidates-group");
+    
+    let circles = [];
+    let front = []; // Array of pairs [index1, index2] representing active edges
+    
+    const colorScale = d3.scaleSequential(d3.interpolateViridis).domain([0, 25]);
+
+    function init() {
+        circles = [];
+        front = [];
+        circlesGroup.selectAll("*").remove();
+        linesGroup.selectAll("*").remove();
+        candidatesGroup.selectAll("*").remove();
+
+        // Start with two tangent circles in the center
+        const r1 = 30 + Math.random() * 20;
+        const r2 = 30 + Math.random() * 20;
+        const c1 = { x: width/2 - r1, y: height/2, r: r1, id: 0 };
+        const c2 = { x: width/2 + r2, y: height/2, r: r2, id: 1 };
+        
+        circles.push(c1, c2);
+        front.push([0, 1]); // The initial seed edge
+        
+        render();
+    }
+
+    function solveApollonian(c1, c2, r3) {
+        const x1 = c1.x, y1 = c1.y, r1 = c1.r;
+        const x2 = c2.x, y2 = c2.y, r2 = c2.r;
+        
+        const d2 = (x2 - x1)**2 + (y2 - y1)**2;
+        const d = Math.sqrt(d2);
+        
+        const a = ( (r1 + r3)**2 - (r2 + r3)**2 + d2 ) / (2 * d);
+        const h = Math.sqrt(Math.max(0, (r1 + r3)**2 - a**2));
+        
+        const x0 = x1 + a * (x2 - x1) / d;
+        const y0 = y1 + a * (y2 - y1) / d;
+        
+        // Two solutions: "above" and "below" the edge
+        const rx = -(y2 - y1) * (h / d);
+        const ry = (x2 - x1) * (h / d);
+        
+        return [
+            { x: x0 + rx, y: y0 + ry, r: r3 },
+            { x: x0 - rx, y: y0 - ry, r: r3 }
+        ];
+    }
+
+    function isOverlap(x, y, r) {
+        for (let c of circles) {
+            const dist = Math.sqrt((x-c.x)**2 + (y-c.y)**2);
+            if (dist < (r + c.r) - 1.0) return true; 
+        }
+        // Container bounds
+        if (x-r < 5 || x+r > width-5 || y-r < 5 || y+r > height-5) return true;
+        return false;
+    }
+
+    function placeNext() {
+        if (circles.length > 30) return;
+        
+        const nextR = 15 + Math.random() * 25;
+        let bestCandidate = null;
+        let edgeIndex = -1;
+
+        // Try to place on any available front edge
+        for (let i = 0; i < front.length; i++) {
+            const [idx1, idx2] = front[i];
+            const solutions = solveApollonian(circles[idx1], circles[idx2], nextR);
+            
+            for (let sol of solutions) {
+                if (!isOverlap(sol.x, sol.y, sol.r)) {
+                    bestCandidate = sol;
+                    edgeIndex = i;
+                    break;
+                }
+            }
+            if (bestCandidate) break;
+        }
+
+        if (bestCandidate) {
+            const newIdx = circles.length;
+            const [i1, i2] = front[edgeIndex];
+            circles.push({ ...bestCandidate, id: newIdx });
+            
+            // Update Front: remove old edge, add two new ones
+            front.splice(edgeIndex, 1, [i1, newIdx], [newIdx, i2]);
+            render();
+        }
+    }
+
+    function render() {
+        // Circles
+        const circs = circlesGroup.selectAll("circle").data(circles, d => d.id);
+        circs.enter()
+            .append("circle")
+            .attr("class", "ku3-circle-placed")
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", 0)
+            .attr("fill", d => colorScale(d.id))
+            .transition().duration(400)
+            .attr("r", d => d.r);
+
+        // Frontier Lines
+        const lineData = front.map(edge => {
+            const c1 = circles[edge[0]];
+            const c2 = circles[edge[1]];
+            return `M ${c1.x} ${c1.y} L ${c2.x} ${c2.y}`;
+        }).join(" ");
+        
+        linesGroup.selectAll("path").remove();
+        linesGroup.append("path")
+            .attr("class", "ku3-front-line")
+            .attr("d", lineData);
+
+        // Candidate Pockets
+        candidatesGroup.selectAll("*").remove();
+        const nextR = 20; // Preview size
+        front.forEach(edge => {
+            const sols = solveApollonian(circles[edge[0]], circles[edge[1]], nextR);
+            sols.forEach(sol => {
+                if (!isOverlap(sol.x, sol.y, sol.r)) {
+                    candidatesGroup.append("circle")
+                        .attr("class", "ku3-candidate")
+                        .attr("cx", sol.x)
+                        .attr("cy", sol.y)
+                        .attr("r", sol.r)
+                        .style("transform-origin", `${sol.x}px ${sol.y}px`);
+                }
+            });
+        });
+
+        document.getElementById('ku3-front-count').textContent = front.length;
+    }
+
+    document.getElementById('ku3-place').addEventListener('click', placeNext);
+    document.getElementById('ku3-reset').addEventListener('click', init);
+
+    init();
+})();
+</script></div>
+</section>
+<!-- Global optimization via Force-Directed physics. -->
+<section class="knowledge-unit" id="ku4">
+<div class="text-content"><p>While geometric heuristics like the <strong>Front-Chain</strong> algorithm are excellent for building dense clusters from the ground up, they often struggle with fixed boundaries or predefined sets of circles that do not fit perfectly into a growing chain. To overcome these rigidities, we can transition from static geometry to <strong>Force-Directed Physics</strong>. In this paradigm, we treat the circles as soft-body particles in a dynamic system governed by simulated physical laws. By assigning "forces" to the circles, we allow the entire arrangement to fluidly <em>relax</em> into a lower-energy state that naturally corresponds to a high-density packing.</p><p>The simulation usually relies on three primary forces operating simultaneously on each circle $i$:</p><ul>
+<li><strong>Repulsive Overlap Force:</strong> When two circles $i$ and $j$ overlap, a repulsive force $\vec{F}_{rep}$ is applied along the vector connecting their centers. The magnitude is often proportional to the depth of the intrusion: $F_{rep} \propto \max(0, (r_i + r_j) - d_{ij})$. This pushes circles apart until the non-overlap constraint is satisfied.</li>
+<li><strong>Centripetal Attraction:</strong> To ensure the circles don't simply fly off into infinity, a global attractive force $\vec{F}_{attr}$ pulls every circle toward the center of the container or the origin: $\vec{F}_{attr} = -k \cdot \vec{p}_i$, where $\vec{p}_i$ is the position vector and $k$ is a stiffness constant.</li>
+<li><strong>Boundary Constraint Force:</strong> If a circle crosses the container wall, a restorative force $\vec{F}_{wall}$ pushes it back into the valid play area.</li>
+</ul><p>Mathematically, the algorithm updates the velocity $\vec{v}_i$ and position $\vec{x}_i$ of each circle over small time steps $\Delta t$ using a simplified version of Newton's Second Law ($\vec{F} = m\vec{a}$). The total force $\vec{F}_{total} = \sum \vec{F}_{rep} + \vec{F}_{attr} + \vec{F}_{wall}$ is used to calculate the shift in position:</p><p>$$\vec{x}_i(t + \Delta t) = \vec{x}_i(t) + \vec{v}_i(t)\Delta t + \frac{1}{2}\vec{a}_i(t)\Delta t^2$$</p><p>Through hundreds of iterations, the system undergoes <strong>stochastic cooling</strong> or damping, where the kinetic energy is gradually removed. As the velocities drop to zero, the circles settle into the "cracks" of the arrangement, often discovering unique configurations—such as the five-fold symmetry of <em>quasicrystals</em> or hexagonal lattices—that purely greedy algorithms might miss. This global optimization effectively "shakes" the container, allowing the circles to explore the phase space until they find the most compact collective equilibrium.</p></div>
+<div class="interactive-content"><style>
+    #ku4-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    #ku4-controls {
+        width: 100%;
+        max-width: 500px;
+        margin-bottom: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .ku4-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .ku4-control-group label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #444;
+    }
+    #ku4-viz-area {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        height: 400px;
+        background: #fff;
+        border: 2px solid #333;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .ku4-btn {
+        padding: 10px;
+        border-radius: 4px;
+        border: none;
+        background: #3498db;
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .ku4-btn.active { background: #e74c3c; }
+    
+    #ku4-energy-container {
+        width: 100%;
+        height: 10px;
+        background: #eee;
+        border-radius: 5px;
+        margin-top: 10px;
+        overflow: hidden;
+    }
+    #ku4-energy-bar {
+        height: 100%;
+        width: 0%;
+        background: #27ae60;
+        transition: width 0.1s;
+    }
+    .ku4-force-arrow {
+        stroke: #e67e22;
+        stroke-width: 1.5px;
+        fill: none;
+    }
+    #ku4-status-text {
+        font-size: 0.85rem;
+        margin-top: 5px;
+        color: #666;
+    }
+</style><div id="ku4-container">
+<div id="ku4-controls">
+<div class="ku4-control-group">
+<label>Physics Engine</label>
+<button class="ku4-btn" id="ku4-toggle-sim">Start Simulation</button>
+</div>
+<div class="ku4-control-group">
+<label for="ku4-repulsion">Repulsion Strength: <span id="ku4-rep-val">1.0</span></label>
+<input id="ku4-repulsion" max="2" min="0.1" step="0.1" type="range" value="1"/>
+</div>
+</div>
+<div id="ku4-viz-area">
+<svg height="400" id="ku4-svg" width="500">
+<defs>
+<marker id="ku4-arrowhead" markerheight="7" markerwidth="10" orient="auto" refx="0" refy="3.5">
+<polygon fill="#e67e22" points="0 0, 10 3.5, 0 7"></polygon>
+</marker>
+</defs>
+<g id="ku4-links"></g>
+<g id="ku4-nodes"></g>
+<g id="ku4-arrows"></g>
+</svg>
+</div>
+<div style="width: 100%; max-width: 500px; margin-top: 15px;">
+<div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold;">
+<span>System Kinetic Energy</span>
+<span id="ku4-energy-pct">0%</span>
+</div>
+<div id="ku4-energy-container">
+<div id="ku4-energy-bar"></div>
+</div>
+<div id="ku4-status-text">Circles move to resolve overlaps and minimize potential energy.</div>
+</div>
+</div><script>
+(function() {
+    const width = 500;
+    const height = 400;
+    let isSimulating = false;
+    let repulsionMult = 1.0;
+
+    const svg = d3.select("#ku4-svg");
+    const nodeGroup = svg.select("#ku4-nodes");
+    const arrowGroup = svg.select("#ku4-arrows");
+    
+    // Create random circles
+    const numCircles = 18;
+    const circles = Array.from({length: numCircles}, (_, i) => ({
+        id: i,
+        x: 50 + Math.random() * (width - 100),
+        y: 50 + Math.random() * (height - 100),
+        r: 20 + Math.random() * 25,
+        vx: 0,
+        vy: 0,
+        fx: 0,
+        fy: 0
+    }));
+
+    const toggleBtn = document.getElementById('ku4-toggle-sim');
+    const repSlider = document.getElementById('ku4-repulsion');
+    const repVal = document.getElementById('ku4-rep-val');
+    const energyBar = document.getElementById('ku4-energy-bar');
+    const energyPct = document.getElementById('ku4-energy-pct');
+
+    function updatePhysics() {
+        if (!isSimulating) return;
+
+        let totalEnergy = 0;
+        const dt = 0.2;
+        const damping = 0.92;
+        const centerAttraction = 0.005;
+
+        // Reset forces
+        circles.forEach(c => {
+            // Centripetal attraction to center of container
+            c.fx = (width / 2 - c.x) * centerAttraction;
+            c.fy = (height / 2 - c.y) * centerAttraction;
+        });
+
+        // Calculate pairwise repulsion
+        for (let i = 0; i < circles.length; i++) {
+            for (let j = i + 1; j < circles.length; j++) {
+                const c1 = circles[i];
+                const c2 = circles[j];
+                const dx = c2.x - c1.x;
+                const dy = c2.y - c1.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const minDist = c1.r + c2.r;
+
+                if (dist < minDist) {
+                    const overlap = minDist - dist;
+                    const force = overlap * 0.5 * repulsionMult;
+                    const nx = dx / dist;
+                    const ny = dy / dist;
+                    
+                    c1.fx -= nx * force;
+                    c1.fy -= ny * force;
+                    c2.fx += nx * force;
+                    c2.fy += ny * force;
+                    totalEnergy += force;
+                }
+            }
+        }
+
+        // Boundary forces
+        circles.forEach(c => {
+            if (c.x - c.r < 0) c.fx += (c.r - c.x) * 1.5;
+            if (c.x + c.r > width) c.fx -= (c.x + c.r - width) * 1.5;
+            if (c.y - c.r < 0) c.fy += (c.r - c.y) * 1.5;
+            if (c.y + c.r > height) c.fy -= (c.y + c.r - height) * 1.5;
+
+            // Integration
+            c.vx = (c.vx + c.fx) * damping;
+            c.vy = (c.vy + c.fy) * damping;
+            c.x += c.vx * dt;
+            c.y += c.vy * dt;
+            
+            totalEnergy += (c.vx**2 + c.vy**2);
+        });
+
+        render(totalEnergy);
+        requestAnimationFrame(updatePhysics);
+    }
+
+    function render(energy = 0) {
+        // Update Circles
+        const nodes = nodeGroup.selectAll("circle").data(circles, d => d.id);
+        nodes.enter()
+            .append("circle")
+            .attr("r", d => d.r)
+            .attr("fill", "rgba(52, 152, 219, 0.4)")
+            .attr("stroke", "#2980b9")
+            .attr("stroke-width", 2)
+            .merge(nodes)
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+
+        // Update Force Arrows
+        const arrows = arrowGroup.selectAll("line").data(circles, d => d.id);
+        
+        if (isSimulating && energy > 1) {
+            arrows.enter()
+                .append("line")
+                .attr("class", "ku4-force-arrow")
+                .attr("marker-end", "url(#ku4-arrowhead)")
+                .merge(arrows)
+                .attr("x1", d => d.x)
+                .attr("y1", d => d.y)
+                .attr("x2", d => d.x + d.fx * 10)
+                .attr("y2", d => d.y + d.fy * 10)
+                .style("opacity", 1);
+        } else {
+            arrows.style("opacity", 0);
+        }
+
+        // Update Energy UI
+        const normalizedEnergy = Math.min(100, energy * 2);
+        energyBar.style.width = normalizedEnergy + "%";
+        energyPct.textContent = Math.round(normalizedEnergy) + "%";
+        
+        if (isSimulating && normalizedEnergy < 0.5) {
+            document.getElementById('ku4-status-text').textContent = "Equilibrium reached: Minimum energy state.";
+        } else if (isSimulating) {
+            document.getElementById('ku4-status-text').textContent = "Simulating... resolving geometric constraints.";
+        }
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        isSimulating = !isSimulating;
+        toggleBtn.textContent = isSimulating ? "Stop Simulation" : "Start Simulation";
+        toggleBtn.classList.toggle('active', isSimulating);
+        if (isSimulating) updatePhysics();
+    });
+
+    repSlider.addEventListener('input', (e) => {
+        repulsionMult = parseFloat(e.target.value);
+        repVal.textContent = repulsionMult.toFixed(1);
+    });
+
+    // Initial draw
+    render();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

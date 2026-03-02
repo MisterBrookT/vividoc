@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waveforms & Additive Synthesis</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --accent: #22d3ee;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 { margin: 0; font-size: 2.5rem; color: var(--accent); }
+        h2 { color: var(--accent); border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+
+        section {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label { margin-bottom: 5px; font-size: 0.9rem; font-weight: bold;}
+
+        input[type="range"] {
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        button:active { transform: scale(0.98); }
+        button:hover { background: #4f46e5; }
+
+        .additive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+        }
+
+        .harmonic-control {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .info-box {
+            background: rgba(34, 211, 238, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Oscillators & Harmonics</h1>
+        <p>An Interactive Guide to Additive Synthesis</p>
+    </header>
+
+    <section id="introduction">
+        <h2>1. Properties of a Wave</h2>
+        <p>Sound is a vibration traveling through a medium. In digital synthesis, we represent these as periodic waveforms. The three fundamental properties of any periodic wave are:</p>
+        <ul>
+            <li><strong>Frequency:</strong> How fast the wave oscillates (measured in Hertz), perceived as <strong>Pitch</strong>.</li>
+            <li><strong>Amplitude:</strong> The "height" of the wave, perceived as <strong>Loudness</strong>.</li>
+            <li><strong>Timbre:</strong> The "flavor" or character of the sound, determined by its <strong>Waveform Shape</strong>.</li>
+        </ul>
+        
+        <div class="controls">
+            <div class="slider-group">
+                <label>Frequency: <span id="freqVal">440</span> Hz</label>
+                <input type="range" id="freq" min="100" max="1000" value="440">
+            </div>
+            <div class="slider-group">
+                <label>Amplitude: <span id="ampVal">0.5</span></label>
+                <input type="range" id="amp" min="0" max="1" step="0.01" value="0.5">
+            </div>
+            <button id="playBtn">Start Audio</button>
+        </div>
+        <canvas id="oscCanvas"></canvas>
+    </section>
+
+    <section id="waveforms">
+        <h2>2. Standard Waveforms</h2>
+        <p>Most synthesizers start with basic geometric shapes. Each shape has a unique harmonic profile:</p>
+        <div class="controls">
+            <button onclick="setWave('sine')">Sine (Pure)</button>
+            <button onclick="setWave('square')">Square (Hollow)</button>
+            <button onclick="setWave('sawtooth')">Sawtooth (Bright)</button>
+            <button onclick="setWave('triangle')">Triangle (Soft)</button>
+        </div>
+        <div class="info-box" id="waveInfo">
+            <strong>Sine Wave:</strong> The fundamental building block. It contains no overtones, only a single frequency.
+        </div>
+    </section>
+
+    <section id="additive">
+        <h2>3. Additive Synthesis</h2>
+        <p>According to <strong>Fourier's Theorem</strong>, any complex periodic waveform can be created by adding together multiple sine waves of different frequencies and amplitudes. These additional waves are called <strong>Harmonics</strong>.</p>
+        <p>Adjust the harmonics below to build your own complex sound from scratch:</p>
+        
+        <div class="additive-grid" id="harmonicGrid">
+            <!-- Dynamically generated sliders -->
+        </div>
+
+        <div style="margin-top:20px;">
+            <button onclick="resetHarmonics()">Reset to Fundamental</button>
+            <button onclick="presetSquare()">Preset: Square</button>
+            <button onclick="presetSaw()">Preset: Sawtooth</button>
+        </div>
+    </section>
+</div>
+
+<script>
+    let audioCtx;
+    let mainGain;
+    let oscillators = [];
+    let harmonicGains = [];
+    let isPlaying = false;
+    let currentWaveType = 'sine';
+
+    const canvas = document.getElementById('oscCanvas');
+    const ctx = canvas.getContext('2d');
+    const playBtn = document.getElementById('playBtn');
+    const freqSlider = document.getElementById('freq');
+    const ampSlider = document.getElementById('amp');
+    const harmonicGrid = document.getElementById('harmonicGrid');
+
+    const waveDescriptions = {
+        sine: "<strong>Sine Wave:</strong> The fundamental building block. Modern electronics and tuning forks produce this pure tone.",
+        square: "<strong>Square Wave:</strong> Contains only odd harmonics (1, 3, 5...). It sounds 'hollow' or 'woody', like a clarinet.",
+        sawtooth: "<strong>Sawtooth Wave:</strong> Contains all harmonics. It is very rich and 'buzzy', ideal for synth leads and basses.",
+        triangle: "<strong>Triangle Wave:</strong> Contains only odd harmonics, but they drop off very quickly. It sounds like a 'dark' square wave."
+    };
+
+    // Initialize Additive Sliders
+    const NUM_HARMONICS = 8;
+    for (let i = 1; i <= NUM_HARMONICS; i++) {
+        const div = document.createElement('div');
+        div.className = 'harmonic-control';
+        div.innerHTML = `
+            <label>h${i}</label>
+            <input type="range" id="h${i}" min="0" max="1" step="0.01" value="${i === 1 ? 1 : 0}" oninput="updateHarmonics()">
+        `;
+        harmonicGrid.appendChild(div);
+    }
+
+    function initAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        mainGain = audioCtx.createGain();
+        mainGain.connect(audioCtx.destination);
+        mainGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+        for (let i = 1; i <= NUM_HARMONICS; i++) {
+            let osc = audioCtx.createOscillator();
+            let g = audioCtx.createGain();
+            
+            osc.frequency.value = freqSlider.value * i;
+            g.gain.value = (i === 1) ? ampSlider.value : 0;
+            
+            osc.connect(g);
+            g.connect(mainGain);
+            osc.start();
+            
+            oscillators.push(osc);
+            harmonicGains.push(g);
+        }
+    }
+
+    function toggleAudio() {
+        if (!audioCtx) initAudio();
+        
+        if (isPlaying) {
+            mainGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+            playBtn.innerText = "Start Audio";
+        } else {
+            audioCtx.resume();
+            mainGain.gain.setTargetAtTime(ampSlider.value, audioCtx.currentTime, 0.05);
+            playBtn.innerText = "Stop Audio";
+        }
+        isPlaying = !isPlaying;
+    }
+
+    function updateHarmonics() {
+        if (!audioCtx) return;
+        const baseFreq = parseFloat(freqSlider.value);
+        const baseAmp = parseFloat(ampSlider.value);
+
+        for (let i = 0; i < NUM_HARMONICS; i++) {
+            const hVal = document.getElementById(`h${i+1}`).value;
+            oscillators[i].frequency.setTargetAtTime(baseFreq * (i + 1), audioCtx.currentTime, 0.05);
+            harmonicGains[i].gain.setTargetAtTime(hVal * baseAmp, audioCtx.currentTime, 0.05);
+        }
+    }
+
+    function setWave(type) {
+        currentWaveType = type;
+        document.getElementById('waveInfo').innerHTML = waveDescriptions[type];
+        
+        if (type === 'sine') resetHarmonics();
+        else if (type === 'square') presetSquare();
+        else if (type === 'sawtooth') presetSaw();
+        else if (type === 'triangle') presetTriangle();
+    }
+
+    function resetHarmonics() {
+        for (let i = 1; i <= NUM_HARMONICS; i++) {
+            document.getElementById(`h${i}`).value = (i === 1 ? 1 : 0);
+        }
+        updateHarmonics();
+    }
+
+    function presetSquare() {
+        for (let i = 1; i <= NUM_HARMONICS; i++) {
+            const val = (i % 2 !== 0) ? (1 / i) : 0;
+            document.getElementById(`h${i}`).value = val;
+        }
+        updateHarmonics();
+    }
+
+    function presetSaw() {
+        for (let i = 1; i <= NUM_HARMONICS; i++) {
+            document.getElementById(`h${i}`).value = 1 / i;
+        }
+        updateHarmonics();
+    }
+
+    function presetTriangle() {
+        for (let i = 1; i <= NUM_HARMONICS; i++) {
+            let val = 0;
+            if (i % 2 !== 0) {
+                val = 1 / (i * i);
+            }
+            document.getElementById(`h${i}`).value = val;
+        }
+        updateHarmonics();
+    }
+
+    function draw() {
+        requestAnimationFrame(draw);
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#22d3ee';
+        ctx.beginPath();
+
+        const freq = parseFloat(freqSlider.value);
+        const time = Date.now() * 0.005;
+
+        for (let x = 0; x < canvas.width; x++) {
+            let y = 0;
+            // Simulate Additive Calculation for Visualizer
+            for (let i = 1; i <= NUM_HARMONICS; i++) {
+                const hAmp = document.getElementById(`h${i}`).value;
+                y += Math.sin((x / canvas.width * Math.PI * 2 * (freq/50) * i) + time) * (hAmp * 60);
+            }
+            
+            const plotY = canvas.height / 2 - y;
+            if (x === 0) ctx.moveTo(x, plotY);
+            else ctx.lineTo(x, plotY);
+        }
+        ctx.stroke();
+    }
+
+    playBtn.addEventListener('click', toggleAudio);
+    freqSlider.addEventListener('input', (e) => {
+        document.getElementById('freqVal').innerText = e.target.value;
+        updateHarmonics();
+    });
+    ampSlider.addEventListener('input', (e) => {
+        document.getElementById('ampVal').innerText = e.target.value;
+        if (isPlaying) mainGain.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
+        updateHarmonics();
+    });
+
+    draw();
+</script>
+
+</body>
+</html>

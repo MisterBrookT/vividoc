@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Decision Tree Classification</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Decision Tree Classification</h1>
+<!-- Introduction to Recursive Partitioning -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>At its core, a decision tree builds a classification model by performing <strong>recursive partitioning</strong>. This process involves taking the entire dataset and systematically breaking it down into smaller, more homogeneous subsets. Imagine your data points scattered across a two-dimensional grid where the axes represent your features, such as <em>Income</em> and <em>Age</em>. The algorithm’s goal is to draw lines that separate these points into distinct groups based on their class labels.</p><p>Geometrically, each "split" in a decision tree corresponds to an <strong>axis-aligned decision boundary</strong>. If the algorithm decides to split based on feature $x_i$ at a threshold value $t$, it creates a horizontal or vertical line defined by the equation $x_i = t$. This line divides the feature space into two regions:
+    <ul>
+<li>$R_1 = \{X | x_i \le t\}$</li>
+<li>$R_2 = \{X | x_i &gt; t\}$</li>
+</ul>
+</p><p>The term "recursive" refers to the fact that once the first split is made, the algorithm looks at the resulting subsets and repeats the process. It searches for the next best feature and threshold to further refine the boundaries. This continues until a stopping criterion is met, such as reaching a maximum tree depth or achieving a <strong>pure node</strong>—a subset where every data point belongs to the same class.</p><p>As these splits accumulate, the feature space is carved into a series of <strong>hyper-rectangles</strong>. In each of these rectangular regions, the model makes a prediction based on the majority class present. The power of this approach lies in its simplicity: even complex, non-linear relationships between variables can be approximated by a series of simple, nested "if-then" rules that define these geometric boundaries.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    #ku1-controls {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    #ku1-controls label {
+        font-weight: bold;
+        font-size: 0.9em;
+    }
+    #ku1-viz-wrapper {
+        position: relative;
+        height: 400px;
+        background: white;
+        border: 1px solid #ddd;
+    }
+    #ku1-feedback {
+        margin-top: 15px;
+        font-size: 0.9em;
+        color: #555;
+        font-style: italic;
+    }
+    #ku1-slider {
+        flex-grow: 1;
+        cursor: pointer;
+    }
+    #ku1-axis-select {
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<div>
+<label for="ku1-axis-select">Split Axis:</label>
+<select id="ku1-axis-select">
+<option value="X">X (Vertical Line)</option>
+<option value="Y">Y (Horizontal Line)</option>
+</select>
+</div>
+<div style="flex-grow: 1; display: flex; align-items: center; gap: 10px;">
+<label for="ku1-slider">Threshold:</label>
+<input id="ku1-slider" max="100" min="0" type="range" value="50"/>
+<span id="ku1-slider-val" style="min-width: 30px;">50</span>
+</div>
+</div>
+<div id="ku1-viz-wrapper">
+<canvas id="ku1-chart"></canvas>
+</div>
+<div id="ku1-feedback">
+<strong>Insight:</strong> Even at the best threshold, notice how some points are always "misclassified." One-dimensional splits can't perfectly separate overlapping classes in a single step.
+    </div>
+</div><script>
+(function() {
+    const ctx = document.getElementById('ku1-chart').getContext('2d');
+    const axisSelect = document.getElementById('ku1-axis-select');
+    const slider = document.getElementById('ku1-slider');
+    const sliderVal = document.getElementById('ku1-slider-val');
+
+    // Static dataset designed to be difficult to separate with one split
+    const dataPoints = [
+        {x: 15, y: 25, label: 'Red'}, {x: 25, y: 15, label: 'Red'}, {x: 20, y: 45, label: 'Red'},
+        {x: 35, y: 30, label: 'Red'}, {x: 45, y: 65, label: 'Red'}, {x: 10, y: 80, label: 'Red'},
+        {x: 85, y: 85, label: 'Blue'}, {x: 75, y: 75, label: 'Blue'}, {x: 80, y: 60, label: 'Blue'},
+        {x: 65, y: 90, label: 'Blue'}, {x: 55, y: 40, label: 'Blue'}, {x: 90, y: 20, label: 'Blue'},
+        // Overlap points to demonstrate the constraint
+        {x: 40, y: 20, label: 'Blue'}, {x: 60, y: 80, label: 'Red'}
+    ];
+
+    const chart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [
+                {
+                    label: 'Class Red',
+                    data: dataPoints.filter(p => p.label === 'Red'),
+                    backgroundColor: '#e74c3c',
+                    pointRadius: 6,
+                    zIndex: 10
+                },
+                {
+                    label: 'Class Blue',
+                    data: dataPoints.filter(p => p.label === 'Blue'),
+                    backgroundColor: '#3498db',
+                    pointRadius: 6,
+                    zIndex: 10
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+                x: { min: 0, max: 100, title: { display: true, text: 'Feature X' } },
+                y: { min: 0, max: 100, title: { display: true, text: 'Feature Y' } }
+            },
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: { enabled: false }
+            },
+            animation: false
+        },
+        plugins: [{
+            id: 'decisionBoundary',
+            beforeDraw: (chart) => {
+                const {ctx, chartArea: {top, bottom, left, right, width, height}, scales: {x, y}} = chart;
+                const mode = axisSelect.value;
+                const val = parseInt(slider.value);
+                
+                ctx.save();
+                
+                if (mode === 'X') {
+                    const xPos = x.getPixelForValue(val);
+                    // Draw Region A (Left)
+                    ctx.fillStyle = 'rgba(231, 76, 60, 0.1)';
+                    ctx.fillRect(left, top, xPos - left, height);
+                    // Draw Region B (Right)
+                    ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
+                    ctx.fillRect(xPos, top, right - xPos, height);
+                    // Draw Split Line
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(xPos, top);
+                    ctx.lineTo(xPos, bottom);
+                    ctx.stroke();
+                } else {
+                    const yPos = y.getPixelForValue(val);
+                    // Draw Region A (Top - higher values usually Blue in our set)
+                    ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
+                    ctx.fillRect(left, top, width, yPos - top);
+                    // Draw Region B (Bottom)
+                    ctx.fillStyle = 'rgba(231, 76, 60, 0.1)';
+                    ctx.fillRect(left, yPos, width, bottom - yPos);
+                    // Draw Split Line
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(left, yPos);
+                    ctx.lineTo(right, yPos);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        }]
+    });
+
+    function update() {
+        sliderVal.textContent = slider.value;
+        chart.update();
+    }
+
+    slider.addEventListener('input', update);
+    axisSelect.addEventListener('change', update);
+    update();
+})();
+</script></div>
+</section>
+<!-- Measuring Information Gain using Entropy -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>If the goal of recursive partitioning is to create "pure" subsets, we need a mathematical thermometer to measure the "fever" of impurity within a dataset. In information theory, this thermometer is called <strong>Entropy</strong>. Entropy quantifies the level of disorder or uncertainty in a given set of data points. If a node contains an equal mix of disparate classes, it is in a state of maximum disorder (high entropy); if every point in a node belongs to the same class, the node is perfectly ordered (zero entropy).</p><p>For a binary classification problem with classes $C_1$ and $C_2$, the Entropy $H(S)$ of a set $S$ is calculated using the proportion of items belonging to each class, denoted as $p_1$ and $p_2$. The formula is defined as:</p><p>$H(S) = -p_1 \log_2(p_1) - p_2 \log_2(p_2)$</p><p>When the distribution is a perfect $50/50$ split, the entropy reaches its peak at $1.0$. Conversely, as one class begins to dominate the set, the entropy drops. This mathematical property allows the decision tree algorithm to evaluate the "quality" of a potential split. We look for the split that results in the greatest reduction in entropy, a metric known as <strong>Information Gain</strong>.</p><p>Information Gain $(IG)$ measures how much "information" we learned about the class labels by partitioning the data based on a specific feature $A$. It is calculated by taking the entropy of the parent node and subtracting the weighted average of the entropy of the child nodes:</p><p>$IG(S, A) = H(S) - \sum_{v \in Values(A)} \frac{|S_v|}{|S|} H(S_v)$</p><p>The algorithm's strategy is simple yet powerful: at every node, it scans every available feature and every possible threshold, calculates the resulting Information Gain, and selects the path that <strong>maximizes</strong> this value. By repeatedly choosing the splits that provide the most significant drop in disorder, the tree effectively "squeezes" the uncertainty out of the data until it arrives at a clear, logical classification path.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    #ku2-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    #ku2-controls {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .ku2-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .ku2-slider-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    #ku2-viz-area {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 6px;
+        min-height: 320px;
+    }
+    #ku2-bucket {
+        border: 4px solid #444;
+        border-top: none;
+        border-radius: 0 0 15px 15px;
+        height: 250px;
+        position: relative;
+        background: #fdfdfd;
+        overflow: hidden;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-end;
+        padding: 10px;
+        gap: 8px;
+    }
+    .ku2-ball {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .ku2-ball-red { background-color: #e74c3c; border: 2px solid #c0392b; }
+    .ku2-ball-blue { background-color: #3498db; border: 2px solid #2980b9; }
+    
+    #ku2-gauge-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .ku2-metric-label {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 5px;
+    }
+    .ku2-entropy-val {
+        font-size: 2.5em;
+        font-weight: 800;
+        color: #2c3e50;
+    }
+    #ku2-chart-wrapper {
+        width: 100%;
+        height: 150px;
+    }
+</style><div id="ku2-container">
+<div id="ku2-layout">
+<div id="ku2-controls">
+<div class="ku2-control-group">
+<label style="color:#e74c3c; font-weight:bold;">Red Circles ($C_1$):</label>
+<div class="ku2-slider-row">
+<input id="ku2-red-slider" max="10" min="0" type="range" value="5"/>
+<span id="ku2-red-val" style="min-width: 20px;">5</span>
+</div>
+</div>
+<div class="ku2-control-group">
+<label style="color:#3498db; font-weight:bold;">Blue Circles ($C_2$):</label>
+<div class="ku2-slider-row">
+<input id="ku2-blue-slider" max="10" min="0" type="range" value="2"/>
+<span id="ku2-blue-val" style="min-width: 20px;">2</span>
+</div>
+</div>
+</div>
+<div id="ku2-viz-area">
+<div id="ku2-bucket-container">
+<div style="text-align:center; font-weight:bold; margin-bottom:10px;">Node Content (Set $S$)</div>
+<div id="ku2-bucket"></div>
+</div>
+<div id="ku2-gauge-container">
+<div class="ku2-metric-label">Entropy $H(S)$</div>
+<div class="ku2-entropy-val" id="ku2-entropy-display">0.863</div>
+<div id="ku2-chart-wrapper">
+<canvas id="ku2-gauge-canvas"></canvas>
+</div>
+<div id="ku2-status" style="font-size: 0.85em; text-align: center; margin-top: 10px; color: #666;"></div>
+</div>
+</div>
+</div>
+</div><script>
+(function() {
+    const redSlider = document.getElementById('ku2-red-slider');
+    const blueSlider = document.getElementById('ku2-blue-slider');
+    const redValText = document.getElementById('ku2-red-val');
+    const blueValText = document.getElementById('ku2-blue-val');
+    const bucket = document.getElementById('ku2-bucket');
+    const entropyDisplay = document.getElementById('ku2-entropy-display');
+    const statusText = document.getElementById('ku2-status');
+    const ctx = document.getElementById('ku2-gauge-canvas').getContext('2d');
+
+    let gaugeChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [0.863, 1 - 0.863],
+                backgroundColor: ['#2c3e50', '#eee'],
+                borderWidth: 0,
+                circumference: 180,
+                rotation: 270
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            cutout: '80%',
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            animation: { duration: 400 }
+        }
+    });
+
+    function calculateEntropy(red, blue) {
+        const total = red + blue;
+        if (total === 0) return 0;
+        const p1 = red / total;
+        const p2 = blue / total;
+        
+        let entropy = 0;
+        if (p1 > 0) entropy -= p1 * Math.log2(p1);
+        if (p2 > 0) entropy -= p2 * Math.log2(p2);
+        return entropy;
+    }
+
+    function update() {
+        const r = parseInt(redSlider.value);
+        const b = parseInt(blueSlider.value);
+        
+        redValText.textContent = r;
+        blueValText.textContent = b;
+
+        // Update Bucket
+        bucket.innerHTML = '';
+        for(let i=0; i<r; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'ku2-ball ku2-ball-red';
+            bucket.appendChild(ball);
+        }
+        for(let i=0; i<b; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'ku2-ball ku2-ball-blue';
+            bucket.appendChild(ball);
+        }
+
+        // Update Entropy
+        const entropy = calculateEntropy(r, b);
+        entropyDisplay.textContent = entropy.toFixed(3);
+        
+        // Update Chart
+        gaugeChart.data.datasets[0].data = [Math.max(0.01, entropy), Math.max(0.01, 1 - entropy)];
+        gaugeChart.update();
+
+        // Update Description
+        if (r === 0 || b === 0) {
+            statusText.textContent = "Zero Entropy: Pure Node";
+        } else if (Math.abs(r - b) <= 0.1 * (r+b)) {
+            statusText.textContent = "High Entropy: Maximum Disorder";
+        } else {
+            statusText.textContent = "Partial Disorder";
+        }
+    }
+
+    redSlider.addEventListener('input', update);
+    blueSlider.addEventListener('input', update);
+    
+    // Initial call
+    update();
+})();
+</script></div>
+</section>
+<!-- The Tree Structure and Depth -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>The structural transformation from a single dataset into a classification model is represented by a <strong>hierarchical tree</strong>. This architecture begins at the <strong>root node</strong>, which contains the entire training set. Each subsequent split creates <strong>child nodes</strong>, further partitioning the data until the process terminates at a <strong>leaf node</strong>. In these final leaves, no further splits occur, and a class label is assigned based on the plurality of the remaining data points. The complexity of this structure is primarily measured by its <strong>tree depth</strong>—the length of the longest path from the root to any leaf.</p><p>The depth of a tree acts as a double-edged sword in machine learning. A shallow tree, perhaps with a depth of only $1$ or $2$, is easy to interpret but may suffer from <strong>underfitting</strong>. Because it only makes a few broad generalizations, it might fail to capture the nuanced, non-linear relationships within the features, essentially "oversimplifying" the reality of the data. As we increase the depth $D$, the model gains the capacity to create more $2^D$ potential regions in the feature space, allowing it to wrap around complex data clusters with high precision.</p><p>However, an unrestricted tree depth leads to the primary pitfall of decision tree classification: <strong>overfitting</strong>. If a tree is allowed to grow until every leaf is perfectly pure, it often begins to "memorize" the <strong>stochastic noise</strong>—random fluctuations or outliers peculiar to that specific training set—rather than identifying generalizable patterns. Such a model will show near-perfect accuracy on its training data but will fail significantly when presented with <strong>unseen data</strong>.</p><p>To balance this trade-off between bias and variance, practitioners often employ <strong>hyperparameter tuning</strong>. By setting a <code>max_depth</code> or a <code>min_samples_leaf</code>, we can prune the growth of the tree. Mathematically, we seek an optimal complexity where the error on the validation set is minimized, ensuring that our "if-then" logic remains robust enough to handle the inherent uncertainty of real-world predictions.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    #ku3-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .ku3-control-item { display: flex; flex-direction: column; gap: 5px; }
+    .ku3-control-item label { font-weight: bold; font-size: 0.9em; color: #333; }
+    
+    #ku3-main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    .ku3-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px;
+        position: relative;
+    }
+    .ku3-card-title {
+        font-size: 0.8em;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #777;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    .ku3-viz-box { height: 250px; width: 100%; }
+    
+    #ku3-tree-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        overflow: hidden;
+    }
+    .ku3-node {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+        background: #333;
+        position: absolute;
+    }
+    .ku3-edge {
+        position: absolute;
+        background: #ccc;
+        height: 2px;
+        transform-origin: 0 50%;
+    }
+    #ku3-metrics {
+        grid-column: span 2;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+    .ku3-metric { text-align: center; }
+    .ku3-metric-val { font-size: 1.2em; font-weight: bold; display: block; }
+    .ku3-metric-label { font-size: 0.75em; color: #666; }
+</style><div id="ku3-container">
+<div id="ku3-controls">
+<div class="ku3-control-item">
+<label for="ku3-depth-slider">Max Tree Depth ($D$): <span id="ku3-depth-val">1</span></label>
+<input id="ku3-depth-slider" max="5" min="1" type="range" value="1"/>
+</div>
+<div class="ku3-control-item">
+<label for="ku3-data-select">Data Complexity:</label>
+<select id="ku3-data-select">
+<option value="Linear">Linear (Simple)</option>
+<option value="Non-linear">Non-linear (Complex)</option>
+<option value="Noisy">Noisy (Overfit Risk)</option>
+</select>
+</div>
+</div>
+<div id="ku3-main-grid">
+<div class="ku3-card">
+<div class="ku3-card-title">Decision Boundaries</div>
+<div class="ku3-viz-box">
+<canvas id="ku3-boundary-chart"></canvas>
+</div>
+</div>
+<div class="ku3-card">
+<div class="ku3-card-title">Hierarchical Structure</div>
+<div class="ku3-viz-box" id="ku3-tree-container" style="position:relative;"></div>
+</div>
+<div id="ku3-metrics">
+<div class="ku3-metric">
+<span class="ku3-metric-val" id="ku3-train-acc" style="color: #27ae60;">0%</span>
+<span class="ku3-metric-label">Training Accuracy</span>
+</div>
+<div class="ku3-metric">
+<span class="ku3-metric-val" id="ku3-test-acc" style="color: #2980b9;">0%</span>
+<span class="ku3-metric-label">Testing Accuracy</span>
+</div>
+</div>
+</div>
+</div><script>
+(function() {
+    const depthSlider = document.getElementById('ku3-depth-slider');
+    const dataSelect = document.getElementById('ku3-data-select');
+    const depthValDisplay = document.getElementById('ku3-depth-val');
+    const treeContainer = document.getElementById('ku3-tree-container');
+    const trainAccDisplay = document.getElementById('ku3-train-acc');
+    const testAccDisplay = document.getElementById('ku3-test-acc');
+    const ctx = document.getElementById('ku3-boundary-chart').getContext('2d');
+
+    const chart = new Chart(ctx, {
+        type: 'scatter',
+        data: { datasets: [{ label: 'A', data: [], backgroundColor: '#e74c3c' }, { label: 'B', data: [], backgroundColor: '#3498db' }] },
+        options: {
+            maintainAspectRatio: false,
+            scales: { x: { min: 0, max: 100 }, y: { min: 0, max: 100 } },
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            animation: false
+        },
+        plugins: [{
+            id: 'bgSquares',
+            beforeDraw: (chart) => {
+                const {ctx, chartArea: {top, bottom, left, right, width, height}} = chart;
+                const depth = parseInt(depthSlider.value);
+                const complexity = dataSelect.value;
+                
+                // Simplified simulation of recursive cutting
+                ctx.save();
+                const drawRect = (x1, y1, w, h, d) => {
+                    if (d >= depth) {
+                        const midX = x1 + w/2;
+                        const midY = y1 + h/2;
+                        // Predict based on complexity pattern
+                        let isBlue = false;
+                        if(complexity === 'Linear') isBlue = midX > 50;
+                        else if(complexity === 'Non-linear') isBlue = (midX > 30 && midX < 70 && midY > 30 && midY < 70);
+                        else isBlue = (Math.sin(midX/10) + Math.cos(midY/10) > 0);
+                        
+                        ctx.fillStyle = isBlue ? 'rgba(52, 152, 219, 0.15)' : 'rgba(231, 76, 60, 0.15)';
+                        ctx.fillRect(x1, y1, w, h);
+                        return;
+                    }
+                    if (d % 2 === 0) { // vertical split
+                        drawRect(x1, y1, w/2, h, d+1);
+                        drawRect(x1 + w/2, y1, w/2, h, d+1);
+                        ctx.strokeStyle = '#ddd'; ctx.beginPath(); ctx.moveTo(x1 + w/2, y1); ctx.lineTo(x1 + w/2, y1+h); ctx.stroke();
+                    } else { // horizontal
+                        drawRect(x1, y1, w, h/2, d+1);
+                        drawRect(x1, y1 + h/2, w, h/2, d+1);
+                        ctx.strokeStyle = '#ddd'; ctx.beginPath(); ctx.moveTo(x1, y1 + h/2); ctx.lineTo(x1+w, y1 + h/2); ctx.stroke();
+                    }
+                };
+                drawRect(left, top, width, height, 0);
+                ctx.restore();
+            }
+        }]
+    });
+
+    function generateData() {
+        const type = dataSelect.value;
+        const train = [];
+        for(let i=0; i<40; i++) {
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            let label = 0;
+            if(type === 'Linear') label = x > 50 ? 1 : 0;
+            else if(type === 'Non-linear') label = (x > 30 && x < 70 && y > 30 && y < 70) ? 1 : 0;
+            else label = (Math.sin(x/10) + Math.cos(y/10) > 0) ? 1 : 0;
+            if(type === 'Noisy' && Math.random() < 0.15) label = 1 - label;
+            train.push({x, y, label});
+        }
+        return train;
+    }
+
+    function drawTree(depth) {
+        treeContainer.innerHTML = '';
+        const drawNode = (x, y, d, parentX, parentY) => {
+            if (d > depth) return;
+            const node = document.createElement('div');
+            node.className = 'ku3-node';
+            node.style.left = `calc(${x}% - 6px)`;
+            node.style.top = `${y}px`;
+            treeContainer.appendChild(node);
+
+            if (parentX !== null) {
+                const edge = document.createElement('div');
+                edge.className = 'ku3-edge';
+                const dx = (x - parentX) * treeContainer.offsetWidth / 100;
+                const dy = y - parentY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const angle = Math.atan2(dy, dx);
+                edge.style.width = dist + 'px';
+                edge.style.left = parentX + '%';
+                edge.style.top = (parentY + 6) + 'px';
+                edge.style.transform = `rotate(${angle}rad)`;
+                treeContainer.appendChild(edge);
+            }
+            if(d < depth) {
+                const offset = 40 / (Math.pow(2, d));
+                drawNode(x - offset, y + 45, d + 1, x, y);
+                drawNode(x + offset, y + 45, d + 1, x, y);
+            }
+        };
+        drawNode(50, 20, 0, null, null);
+    }
+
+    function update() {
+        const d = parseInt(depthSlider.value);
+        depthValDisplay.textContent = d;
+        const data = generateData();
+        chart.data.datasets[0].data = data.filter(p => p.label === 0);
+        chart.data.datasets[1].data = data.filter(p => p.label === 1);
+        chart.update();
+        drawTree(d);
+
+        // Simulation of Overfitting logic
+        let trainAcc = 70 + (d * 6);
+        let testAcc = 65 + (d * 4);
+        if (dataSelect.value === 'Noisy' && d > 3) {
+            trainAcc += 10;
+            testAcc -= (d - 3) * 12;
+        }
+        trainAccDisplay.textContent = Math.min(100, trainAcc).toFixed(0) + '%';
+        testAccDisplay.textContent = Math.max(40, Math.min(95, testAcc)).toFixed(0) + '%';
+    }
+
+    depthSlider.addEventListener('input', update);
+    dataSelect.addEventListener('change', update);
+    window.addEventListener('resize', () => drawTree(parseInt(depthSlider.value)));
+    update();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

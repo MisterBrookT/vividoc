@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergence: From Micro to Macro</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e40af, #2563eb);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        main {
+            max-width: 900px;
+            margin: -2rem auto 4rem;
+            padding: 0 1rem;
+        }
+
+        section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .simulation-container {
+            background: #111827;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+            cursor: crosshair;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #334155;
+            color: white;
+            padding: 0.5rem;
+            font-family: monospace;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .concept-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>The Physics of Emergence</h1>
+    <p>How simple rules at the microscopic level create complex macroscopic worlds.</p>
+</header>
+
+<main>
+    <section id="introduction">
+        <h2>1. What is Emergence?</h2>
+        <p>In physics and systems biology, <strong>emergence</strong> occurs when an entity is observed to have properties its parts do not have on their own. These properties emerge only when the parts interact as a wider whole.</p>
+        <div class="concept-grid">
+            <div>
+                <h4>The Microscopic</h4>
+                <p>Individual particles (atoms, molecules, or boids) following simple laws like Newton's equations or local attraction/repulsion forces.</p>
+            </div>
+            <div>
+                <h4>The Macroscopic</h4>
+                <p>Large-scale phenomena such as <strong>Temperature</strong>, <strong>Pressure</strong>, <strong>Viscosity</strong>, or <strong>Collective Motion</strong>.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="interactive-sim">
+        <h2>2. Interactive Demo: Kinetic Theory</h2>
+        <p>This simulation shows particles in a box. Notice how individual collisions (micro) create steady pressure and temperature (macro). Use the sliders to change the system state.</p>
+        
+        <div class="simulation-container">
+            <div class="stats">
+                <span>Temp (Avg Energy): <span id="temp-val">0</span></span>
+                <span>Pressure (Wall Hits): <span id="press-val">0</span></span>
+            </div>
+            <canvas id="simCanvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="heatRange">Add/Remove Heat (Micro-velocity)</label>
+                <input type="range" id="heatRange" min="0.5" max="3" step="0.1" value="1">
+            </div>
+            <div class="control-group">
+                <label for="particleCount">Particle Density</label>
+                <input type="range" id="particleCount" min="10" max="150" value="50">
+            </div>
+            <button onclick="resetSim()" style="padding: 0.5rem; cursor: pointer; border-radius: 4px; border: none; background: #2563eb; color: white;">Reset System</button>
+        </div>
+    </section>
+
+    <section id="phase-transitions">
+        <h2>3. Phase Transitions</h2>
+        <p>One of the most profound examples of emergence is the change of state. A single water molecule is neither a solid, liquid, nor gas. These states are <strong>macroscopic descriptors</strong> of the organization of many molecules.</p>
+        <ul>
+            <li><strong>Solid:</strong> Strong interactions overcome kinetic energy, creating long-range order.</li>
+            <li><strong>Liquid:</strong> Interactions are strong enough to keep particles close, but not enough to fix their positions.</li>
+            <li><strong>Gas:</strong> Kinetic energy dominates; interactions are negligible except during collisions.</li>
+        </ul>
+    </section>
+
+    <section id="entropy">
+        <h2>4. Thermodynamics & Information</h2>
+        <p>The Second Law of Thermodynamics states that the <strong>Entropy</strong> of an isolated system always increases. While individual particle movements are theoretically reversible, the collective behavior of billions of particles leads to the <strong>Arrow of Time</strong>—a macroscopic property that suggests a fixed direction from past to future.</p>
+    </section>
+</main>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const tempDisplay = document.getElementById('temp-val');
+    const pressDisplay = document.getElementById('press-val');
+    const heatSlider = document.getElementById('heatRange');
+    const densitySlider = document.getElementById('particleCount');
+
+    let particles = [];
+    let wallHits = 0;
+    let frameCount = 0;
+
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            const angle = Math.random() * Math.PI * 2;
+            const speed = (Math.random() * 2 + 1) * parseFloat(heatSlider.value);
+            this.vx = Math.cos(angle) * speed;
+            this.vy = Math.sin(angle) * speed;
+            this.radius = 4;
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Wall collisions (Macroscopic Pressure calculation)
+            if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) {
+                this.vx *= -1;
+                wallHits++;
+            }
+            if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) {
+                this.vy *= -1;
+                wallHits++;
+            }
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `hsl(${200 + (this.vx**2 + this.vy**2) * 10}, 70%, 60%)`;
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+
+    function init() {
+        resize();
+        resetSim();
+        animate();
+    }
+
+    function resize() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+
+    function resetSim() {
+        particles = [];
+        const count = parseInt(densitySlider.value);
+        for (let i = 0; i < count; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function animate() {
+        ctx.fillStyle = 'rgba(17, 24, 39, 0.3)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        let totalEnergy = 0;
+        particles.forEach(p => {
+            // Apply current heat factor to velocity slightly
+            const currentSpeed = Math.sqrt(p.vx**2 + p.vy**2);
+            const targetSpeed = currentSpeed * (parseFloat(heatSlider.value) / (currentSpeed || 1));
+            // Slow adjustment toward target speed to simulate heat transfer
+            p.vx *= 1.01 * (parseFloat(heatSlider.value) / currentSpeed);
+            p.vy *= 1.01 * (parseFloat(heatSlider.value) / currentSpeed);
+            
+            p.update();
+            p.draw();
+            totalEnergy += (p.vx**2 + p.vy**2);
+        });
+
+        frameCount++;
+        if (frameCount % 20 === 0) {
+            tempDisplay.innerText = (totalEnergy / particles.length).toFixed(1) + " K";
+            pressDisplay.innerText = (wallHits * 5).toFixed(0) + " Pa";
+            wallHits = 0;
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    densitySlider.addEventListener('input', resetSim);
+    window.addEventListener('resize', resize);
+    
+    init();
+</script>
+
+</body>
+</html>

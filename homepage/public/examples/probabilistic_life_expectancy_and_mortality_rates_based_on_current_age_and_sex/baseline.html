@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demographics & Destiny: Understanding Life Expectancy</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        section {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .result-box {
+            background: #eff6ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        .info-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .fact-box {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .calculator-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>The Science of Longevity</h1>
+    <p>Exploring mortality rates and probabilistic life expectancy</p>
+</header>
+
+<div class="container">
+    
+    <!-- Section 1: Interactive Mortality Logic -->
+    <section id="interactive-calc">
+        <h2>1. Individual Projection</h2>
+        <p>Life expectancy is not a fixed date of expiration, but a statistical probability that shifts as you age. Use the tool below to see your projected outcomes based on standard actuarial models.</p>
+        
+        <div class="calculator-grid">
+            <div class="inputs">
+                <div class="input-group">
+                    <label for="age">Current Age</label>
+                    <input type="number" id="age" value="30" min="0" max="100">
+                </div>
+                <div class="input-group">
+                    <label for="sex">Biological Sex</label>
+                    <select id="sex">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <div class="result-box">
+                    <p>Estimated Additional Years:</p>
+                    <div class="stat-value" id="years-left">--</div>
+                    <p>Total Projected Age: <span id="total-age">--</span></p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="survivalChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: The Gompertz-Makeham Law -->
+    <section>
+        <h2>2. Why Risk Increases</h2>
+        <p>Human mortality generally follows the <strong>Gompertz-Makeham Law</strong>. It states that a person's risk of death has two components:</p>
+        <div class="info-card">
+            <div class="fact-box">
+                <strong style="color:var(--primary)">Age-Independent Mortality:</strong>
+                <p>Risks like accidents, disasters, or random infections that can occur at any age.</p>
+            </div>
+            <div class="fact-box">
+                <strong style="color:var(--accent)">Age-Dependent Mortality:</strong>
+                <p>The exponential increase in mortality risk due to biological aging, typically doubling every 8 years.</p>
+            </div>
+        </div>
+        <p>Interestingly, if you survive to an older age, your "Total Life Expectancy" actually increases. This is because you have successfully navigated the probabilistic risks of your younger years.</p>
+    </section>
+
+    <!-- Section 3: Data Visualization & Trends -->
+    <section>
+        <h2>3. Mortality vs. Survival Probabilities</h2>
+        <div class="chart-container">
+            <canvas id="mortalityRateChart"></canvas>
+        </div>
+        <p><small>Note: This data represents generalized patterns from Social Security Administration (SSA) actuarial tables. Actual outcomes are influenced by lifestyle, genetics, and environment.</small></p>
+    </section>
+
+    <!-- Section 4: Deep Dive: The Gender Paradox -->
+    <section>
+        <h2>4. Understanding the Sex Gap</h2>
+        <p>Across nearly all cohorts, females tend to outlive males. Biological factors include:</p>
+        <ul>
+            <li><strong>The "Jogging Heart" Effect:</strong> Estrogen helps clear "bad" cholesterol and provides cardiovascular protection until menopause.</li>
+            <li><strong>The Double X Advantage:</strong> Having two X chromosomes allows for a backup of vital genes if one carries a mutation.</li>
+            <li><strong>Behavioral Risk:</strong> Statistically, males are more likely to engage in high-risk behaviors and occupational hazards.</li>
+        </ul>
+    </section>
+
+</div>
+
+<script>
+    // Simplified Actuarial Data Modeling (Rough approximation of SSA data)
+    function calculateLifeExpectancy(age, sex) {
+        // Base expectancy for a newborn
+        let baseExp = (sex === 'female') ? 81 : 76;
+        
+        // Age adjustment: The older you are, the higher your total expected age
+        // because you've survived early-life hazards.
+        let adjustment = age * 0.15;
+        let expectedRemaining = Math.max(1, (baseExp - age) + adjustment);
+        
+        return {
+            remaining: expectedRemaining.toFixed(1),
+            total: (parseFloat(age) + expectedRemaining).toFixed(1)
+        };
+    }
+
+    const ageInput = document.getElementById('age');
+    const sexInput = document.getElementById('sex');
+    const yearsLeftEl = document.getElementById('years-left');
+    const totalAgeEl = document.getElementById('total-age');
+    
+    let survivalChart;
+    let mortalityChart;
+
+    function updateCharts() {
+        const age = parseInt(ageInput.value);
+        const sex = sexInput.value;
+        const res = calculateLifeExpectancy(age, sex);
+
+        yearsLeftEl.innerText = res.remaining;
+        totalAgeEl.innerText = res.total;
+
+        // Update Survival Curve Data
+        const labels = [];
+        const data = [];
+        for (let i = age; i <= 100; i += 5) {
+            labels.push("Age " + i);
+            // Probability of reaching age i
+            let prob = Math.pow(0.985, (i - age) * (1 + (i/150)));
+            data.push(prob * 100);
+        }
+
+        survivalChart.data.labels = labels;
+        survivalChart.data.datasets[0].data = data;
+        survivalChart.data.datasets[0].label = `Survival Probability (${sex})`;
+        survivalChart.update();
+    }
+
+    function initCharts() {
+        // Survival Probability Chart
+        const ctx1 = document.getElementById('survivalChart').getContext('2d');
+        survivalChart = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Probability of Reaching Age',
+                    data: [],
+                    borderColor: '#2563eb',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100, title: { display: true, text: 'Chance of Survival (%)' } }
+                }
+            }
+        });
+
+        // Background Mortality Rate Chart (Static comparison)
+        const ctx2 = document.getElementById('mortalityRateChart').getContext('2d');
+        mortalityChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Age 20', 'Age 40', 'Age 60', 'Age 80', 'Age 90'],
+                datasets: [
+                    {
+                        label: 'Male Prob. of Death in 1 Year (%)',
+                        data: [0.13, 0.25, 1.1, 5.2, 14.5],
+                        backgroundColor: '#1e3a8a'
+                    },
+                    {
+                        label: 'Female Prob. of Death in 1 Year (%)',
+                        data: [0.05, 0.15, 0.65, 3.4, 10.2],
+                        backgroundColor: '#db2777'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { title: { display: true, text: 'Annual Probability (%)' } }
+                }
+            }
+        });
+
+        updateCharts();
+    }
+
+    ageInput.addEventListener('input', updateCharts);
+    sexInput.addEventListener('change', updateCharts);
+
+    window.onload = initCharts;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Euclidean Geometric Constructions</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--primary);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: var(--primary);
+            color: white;
+            margin-bottom: 30px;
+            border-radius: 0 0 20px 20px;
+        }
+
+        section {
+            background: var(--card);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            color: var(--accent);
+        }
+
+        .interactive-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: #fdfdfd;
+            padding: 20px;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+        }
+
+        canvas {
+            background: white;
+            border: 1px solid #ddd;
+            cursor: crosshair;
+            touch-action: none;
+            max-width: 100%;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        button.tool-active {
+            background: #e67e22;
+        }
+
+        .rules-list {
+            padding-left: 20px;
+        }
+
+        .step-box {
+            background: #eef7fd;
+            padding: 15px;
+            border-left: 5px solid var(--accent);
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>The Art of Compass & Straightedge</h1>
+    <p>Exploring the Foundations of Euclidean Geometry</p>
+</header>
+
+<div class="container">
+    <section id="introduction">
+        <h2>1. The Rules of the Game</h2>
+        <p>In Classical Geometry, we limit ourselves to just two tools. These restrictions were established by ancient Greek mathematicians like Euclid around 300 BCE. The challenge lies in creating complex shapes using only these simple devices:</p>
+        <ul class="rules-list">
+            <li><strong>The Straightedge:</strong> Used only to draw a straight line through two points. It has no markings (no ruler).</li>
+            <li><strong>The Compass:</strong> Used to draw a circle with a given center passing through a given point. Once lifted, "collapsible" compasses (in the strict Euclidean sense) cannot keep their radius, though Euclid proved we can transfer distances effectively anyway.</li>
+        </ul>
+    </section>
+
+    <section id="interactive">
+        <h2>2. Interactive Sandbox</h2>
+        <p>Try it yourself. Select a tool and click on the canvas. 
+            <br><em>Tip: Click points to snap to them. Drag to define lines or circles.</em>
+        </p>
+        
+        <div class="interactive-zone">
+            <div class="controls">
+                <button onclick="setTool('point')" id="btn-point">Place Point</button>
+                <button onclick="setTool('line')" id="btn-line">Straightedge (Line)</button>
+                <button onclick="setTool('circle')" id="btn-circle">Compass (Circle)</button>
+                <button onclick="resetCanvas()" style="background:#95a5a6">Clear Canvas</button>
+            </div>
+            <canvas id="geoCanvas" width="700" height="400"></canvas>
+            <div id="status">Current Tool: <b>None</b></div>
+        </div>
+    </section>
+
+    <section id="constructions">
+        <h2>3. Essential Constructions</h2>
+        <p>Mastering geometry requires learning "recipes." Here are the most fundamental ones:</p>
+        
+        <div class="step-box">
+            <h3>Perpendicular Bisector</h3>
+            <ol>
+                <li>Draw a line segment between points A and B.</li>
+                <li>Set the compass to a width greater than half the segment.</li>
+                <li>Draw two circles of equal radius, one centered at A and one at B.</li>
+                <li>The two points where the circles intersect define a new line.</li>
+                <li>This line is perpendicular to the original and cuts it exactly in half.</li>
+            </ol>
+        </div>
+
+        <div class="step-box">
+            <h3>Angle Bisector</h3>
+            <ol>
+                <li>With the vertex as the center, draw an arc that crosses both rays of the angle.</li>
+                <li>From the two new intersection points, draw two circles of equal radius.</li>
+                <li>Connect the vertex to the point where these two circles intersect.</li>
+            </ol>
+        </div>
+    </section>
+
+    <section id="impossible">
+        <h2>4. The Impossible Challenges</h2>
+        <p>For over 2,000 years, mathematicians tried to solve three specific puzzles using only these tools. In the 19th century, it was finally proven that they are <strong>mathematically impossible</strong>:</p>
+        <ul>
+            <li><strong>Squaring the Circle:</strong> Constructing a square with the exact same area as a given circle. (Requires &pi;, which is transcendental).</li>
+            <li><strong>Doubling the Cube:</strong> Constructing a cube with twice the volume of a given cube. (Requires the cube root of 2).</li>
+            <li><strong>Trisecting the Angle:</strong> Dividing an arbitrary angle into three equal parts.</li>
+        </ul>
+    </section>
+</div>
+
+<script>
+    const canvas = document.getElementById('geoCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusText = document.getElementById('status');
+    
+    let points = [];
+    let shapes = [];
+    let currentTool = null;
+    let startPoint = null;
+    let tempShape = null;
+
+    function setTool(tool) {
+        currentTool = tool;
+        document.querySelectorAll('.controls button').forEach(b => b.classList.remove('tool-active'));
+        if(tool) document.getElementById('btn-' + tool).classList.add('tool-active');
+        statusText.innerHTML = `Current Tool: <b>${tool.charAt(0).toUpperCase() + tool.slice(1)}</b>`;
+        startPoint = null;
+    }
+
+    function resetCanvas() {
+        points = [];
+        shapes = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    function findSnapPoint(pos) {
+        return points.find(p => Math.hypot(p.x - pos.x, p.y - pos.y) < 15) || null;
+    }
+
+    canvas.addEventListener('mousedown', e => {
+        const pos = getMousePos(e);
+        const snapped = findSnapPoint(pos);
+
+        if (currentTool === 'point') {
+            points.push(pos);
+        } else if (currentTool === 'line' || currentTool === 'circle') {
+            if (snapped) {
+                startPoint = snapped;
+            } else {
+                startPoint = pos;
+                points.push(pos);
+            }
+        }
+        draw();
+    });
+
+    canvas.addEventListener('mousemove', e => {
+        if (!startPoint) return;
+        const pos = getMousePos(e);
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        draw();
+        
+        ctx.beginPath();
+        ctx.strokeStyle = '#999';
+        ctx.setLineDash([5, 5]);
+        
+        if (currentTool === 'line') {
+            const dx = pos.x - startPoint.x;
+            const dy = pos.y - startPoint.y;
+            ctx.moveTo(startPoint.x - dx*10, startPoint.y - dy*10);
+            ctx.lineTo(startPoint.x + dx*10, startPoint.y + dy*10);
+        } else if (currentTool === 'circle') {
+            const radius = Math.hypot(pos.x - startPoint.x, pos.y - startPoint.y);
+            ctx.arc(startPoint.x, startPoint.y, radius, 0, Math.PI * 2);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+    });
+
+    canvas.addEventListener('mouseup', e => {
+        if (!startPoint) return;
+        const pos = getMousePos(e);
+        let endPoint = findSnapPoint(pos);
+        
+        if (!endPoint) {
+            endPoint = pos;
+            points.push(endPoint);
+        }
+
+        if (currentTool === 'line') {
+            shapes.push({ type: 'line', p1: startPoint, p2: endPoint });
+        } else if (currentTool === 'circle') {
+            const radius = Math.hypot(endPoint.x - startPoint.x, endPoint.y - startPoint.y);
+            shapes.push({ type: 'circle', center: startPoint, radius: radius });
+        }
+        
+        startPoint = null;
+        draw();
+    });
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw Shapes
+        shapes.forEach(s => {
+            ctx.beginPath();
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 1.5;
+            if (s.type === 'line') {
+                const dx = s.p2.x - s.p1.x;
+                const dy = s.p2.y - s.p1.y;
+                ctx.moveTo(s.p1.x - dx*10, s.p1.y - dy*10);
+                ctx.lineTo(s.p1.x + dx*10, s.p1.y + dy*10);
+            } else {
+                ctx.arc(s.center.x, s.center.y, s.radius, 0, Math.PI * 2);
+            }
+            ctx.stroke();
+        });
+
+        // Draw Points
+        points.forEach(p => {
+            ctx.beginPath();
+            ctx.fillStyle = '#e74c3c';
+            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+</script>
+
+</body>
+</html>

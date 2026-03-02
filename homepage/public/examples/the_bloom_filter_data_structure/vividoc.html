@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Bloom Filter Data Structure</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>The Bloom Filter Data Structure</h1>
+<!-- Introduction to the Bloom filter as a space-efficient probabilistic data structure. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>Imagine you are managing a massive database of billions of URLs and need a way to quickly check if a specific link has already been indexed. Storing every single URL in a standard hash set would consume gigabytes of memory. This is where the <strong>Bloom filter</strong> becomes invaluable: a highly space-efficient, probabilistic data structure designed to tell us if an element belongs to a set.</p><p>At its core, a Bloom filter is represented as a <strong>bit array</strong> of length $m$, where every position is initially set to $0$. Unlike a traditional hash table that stores the actual data, a Bloom filter only stores "footprints" of the data using bits. This leads to a unique trade-off: the structure is incredibly compact, but it is <strong>probabilistic</strong>. When you query a Bloom filter, it can return two possible answers:</p><ul>
+<li><strong>"Possibly in the set"</strong>: The item might be there, but there is a chance of a <em>false positive</em>.</li>
+<li><strong>"Definitely not in the set"</strong>: The item is guaranteed to be absent; there are <em>never false negatives</em>.</li>
+</ul><p>To add an item to the filter, we use $k$ different <strong>hash functions</strong>. Each function $h_i(x)$ maps the input item to one of the $m$ indices in the bit array. For an input $x$, we calculate $k$ positions: $\{h_1(x), h_2(x), ..., h_k(x)\}$ and set the bits at those indices to $1$. If a bit was already $1$ from a previous insertion, it remains $1$.</p><p>To verify if an item $y$ is in the set, we hash it using the same $k$ functions. If <strong>all</strong> bits at positions $h_i(y)$ are $1$, the filter reports that the item is likely present. However, if even a single bit at any of those indices is $0$, we know with absolute certainty that $y$ was never added to the structure. The risk of a false positive arises because the bits for $y$ might have been set to $1$ by a combination of other, different elements previously inserted into the filter.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        margin: 20px 0;
+    }
+
+    #ku1-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+    #ku1-bit-array {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 40px 0;
+        position: relative;
+    }
+
+    .ku1-bit-box {
+        flex: 1;
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #d1d5db;
+        border-radius: 4px;
+        background: white;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+    }
+
+    .ku1-bit-box.active {
+        background: #3b82f6;
+        border-color: #2563eb;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .ku1-index-label {
+        position: absolute;
+        bottom: -25px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    #ku1-svg-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+        overflow: visible;
+    }
+
+    .ku1-hash-path {
+        fill: none;
+        stroke: #93c5fd;
+        stroke-width: 2;
+        stroke-dasharray: 4;
+        animation: ku1-dash 1s linear infinite;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    @keyframes ku1-dash {
+        to { stroke-dashoffset: -8; }
+    }
+
+    #ku1-input-item {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        background: white;
+    }
+
+    #ku1-insert-btn {
+        padding: 8px 20px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+
+    #ku1-insert-btn:hover {
+        background: #1d4ed8;
+    }
+
+    .ku1-status {
+        font-size: 14px;
+        color: #4b5563;
+        margin-top: 10px;
+        min-height: 1.5em;
+    }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<label for="ku1-input-item">Select Item:</label>
+<select id="ku1-input-item">
+<option value="Apple">Apple</option>
+<option value="Banana">Banana</option>
+<option value="Cherry">Cherry</option>
+</select>
+<button id="ku1-insert-btn">Insert into Filter</button>
+<button id="ku1-reset-btn" style="background:none; border:none; color:#6b7280; cursor:pointer; text-decoration:underline; font-size:12px;">Reset</button>
+</div>
+<div style="position: relative;">
+<div id="ku1-bit-array">
+<!-- Generated by JS -->
+</div>
+<svg id="ku1-svg-overlay"></svg>
+</div>
+<div class="ku1-status" id="ku1-status-msg">
+        Select an item and click Insert to see how k=2 hash functions map to the bit array.
+    </div>
+</div><script>
+(function() {
+    const bitArraySize = 10;
+    const bits = new Array(bitArraySize).fill(0);
+    
+    // Deterministic pseudo-hashes for the demo strings
+    const hashMaps = {
+        "Apple": [2, 7],
+        "Banana": [0, 5],
+        "Cherry": [5, 9]
+    };
+
+    const container = document.getElementById('ku1-bit-array');
+    const statusMsg = document.getElementById('ku1-status-msg');
+    const insertBtn = document.getElementById('ku1-insert-btn');
+    const resetBtn = document.getElementById('ku1-reset-btn');
+    const itemSelect = document.getElementById('ku1-input-item');
+    const svgOverlay = document.getElementById('ku1-svg-overlay');
+
+    // Initialize boxes
+    function init() {
+        container.innerHTML = '';
+        for (let i = 0; i < bitArraySize; i++) {
+            const box = document.createElement('div');
+            box.className = 'ku1-bit-box';
+            box.id = `ku1-bit-${i}`;
+            box.innerHTML = `<span>0</span><div class="ku1-index-label">${i}</div>`;
+            container.appendChild(box);
+            bits[i] = 0;
+        }
+    }
+
+    function drawHashLines(indices) {
+        svgOverlay.innerHTML = '';
+        const rect = container.getBoundingClientRect();
+        const selectRect = itemSelect.getBoundingClientRect();
+        
+        // Start point relative to container (near the select box)
+        const startX = selectRect.left - rect.left + (selectRect.width / 2);
+        const startY = -20;
+
+        indices.forEach(idx => {
+            const targetBox = document.getElementById(`ku1-bit-${idx}`);
+            const targetRect = targetBox.getBoundingClientRect();
+            const endX = targetRect.left - rect.left + (targetRect.width / 2);
+            const endY = 0;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const d = `M ${startX} ${startY} C ${startX} ${startY + 30}, ${endX} ${endY - 30}, ${endX} ${endY}`;
+            
+            path.setAttribute("d", d);
+            path.setAttribute("class", "ku1-hash-path");
+            path.style.opacity = "1";
+            svgOverlay.appendChild(path);
+        });
+    }
+
+    insertBtn.addEventListener('click', () => {
+        const item = itemSelect.value;
+        const indices = hashMaps[item];
+        
+        drawHashLines(indices);
+
+        indices.forEach(idx => {
+            bits[idx] = 1;
+            const box = document.getElementById(`ku1-bit-${idx}`);
+            box.querySelector('span').textContent = '1';
+            box.classList.add('active');
+        });
+
+        statusMsg.innerHTML = `Inserted <strong>${item}</strong>. Bits at indices ${indices.join(' and ')} are now set to 1.`;
+        
+        // Clear lines after animation
+        setTimeout(() => {
+            Array.from(document.querySelectorAll('.ku1-hash-path')).forEach(p => p.style.opacity = '0');
+        }, 1200);
+    });
+
+    resetBtn.addEventListener('click', () => {
+        init();
+        statusMsg.textContent = "Filter cleared. All bits reset to 0.";
+        svgOverlay.innerHTML = '';
+    });
+
+    init();
+})();
+</script></div>
+</section>
+<!-- Understanding the Lookup Process and False Positives. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>The lookup process in a Bloom filter is similar to the insertion process, but with one critical distinction: it is a purely <strong>read-only</strong> operation. To query whether an element $x$ exists in the filter, we pass it through the same $k$ hash functions used during insertion to generate the indices $\{h_1(x), h_2(x), ..., h_k(x)\}$. We then inspect the bit array at those specific positions. If <strong>any</strong> of those bits are $0$, we have a definitive answer: the element has never been added. This "no-false-negatives" guarantee is a cornerstone of the structure's utility in systems where missing a piece of data would be catastrophic.</p><p>Conversely, if <strong>all</strong> of the bits at the calculated indices are $1$, the filter returns a "positive" result. However, we cannot say with $100\%$ certainty that the element is present. This is because of <strong>hash collisions</strong> and <strong>bit density</strong>. As more items are added to a fixed-size bit array of length $m$, more bits are flipped from $0$ to $1$. Eventually, it becomes possible for an element $y$—which was never inserted—to have all its corresponding indices $\{h_1(y), ..., h_k(y)\}$ already set to $1$ by a combination of other, different elements. This phenomenon is known as a <strong>false positive</strong>.</p><p>The probability of a false positive, denoted as $p$, is a function of the number of elements inserted ($n$), the size of the bit array ($m$), and the number of hash functions ($k$). It can be approximated by the formula:</p><p>$$p \approx \left( 1 - e^{-kn/m} \right)^k$$</p><p>To minimize this error rate, developers must carefully balance these three variables. If $m$ is too small relative to $n$, the filter becomes "saturated" with $1$s, and the false positive rate climbs toward $1.0$. If $k$ is too large, the bits fill up too quickly; if $k$ is too small, the "signature" of each item isn't unique enough to prevent frequent overlapping. This mathematical trade-off allows Bloom filters to remain incredibly compact—often requiring fewer than $10$ bits per element—while maintaining a negligible error rate for high-performance applications like web caching and blockchain synchronization.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 20px;
+        background: #fdfdfd;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        margin: 20px 0;
+    }
+
+    .ku2-chip-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+
+    .ku2-chip {
+        padding: 8px 16px;
+        border: 2px solid #d1d5db;
+        border-radius: 20px;
+        cursor: pointer;
+        background: white;
+        transition: all 0.2s;
+        font-weight: 500;
+        color: #4b5563;
+    }
+
+    .ku2-chip.active {
+        border-color: #2563eb;
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    #ku2-bit-array {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 30px 0;
+    }
+
+    .ku2-bit-box {
+        flex: 1;
+        aspect-ratio: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #d1d5db;
+        border-radius: 4px;
+        background: white;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .ku2-bit-box.filled {
+        background: #94a3b8;
+        color: white;
+        border-color: #64748b;
+    }
+
+    .ku2-bit-box.checking {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+        transform: translateY(-5px);
+    }
+
+    .ku2-bit-box.hit {
+        background: #10b981;
+        border-color: #059669;
+        color: white;
+    }
+
+    .ku2-bit-box.miss {
+        background: #ef4444;
+        border-color: #dc2626;
+        color: white;
+    }
+
+    .ku2-indicator {
+        position: absolute;
+        top: -25px;
+        font-size: 18px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .ku2-bit-box.checking .ku2-indicator {
+        opacity: 1;
+    }
+
+    #ku2-result-card {
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+        font-weight: 600;
+        margin-top: 10px;
+        transition: all 0.3s;
+    }
+
+    .ku2-res-negative { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .ku2-res-positive { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+
+    .ku2-math-note {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 15px;
+        font-style: italic;
+    }
+</style><div id="ku2-container">
+<div class="ku2-chip-group">
+<span>Query Item:</span>
+<button class="ku2-chip" data-item="existing">"Existing Item"</button>
+<button class="ku2-chip active" data-item="new">"New Item" (Simulation)</button>
+</div>
+<div id="ku2-bit-array">
+<!-- Bit boxes generated by JS -->
+</div>
+<div id="ku2-result-card">
+        Select an item to query the filter.
+    </div>
+<div class="ku2-math-note" id="ku2-explanation">
+        The filter is pre-populated with some data. Let's see how querying works.
+    </div>
+</div><script>
+(function() {
+    // Initial state: 1 0 1 1 0 1 0 0 1 0
+    const bitState = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0];
+    const queries = {
+        "existing": {
+            indices: [2, 5],
+            label: "This item was previously inserted.",
+            note: "All checked bits are 1. Result: <strong>Probably in Set</strong>."
+        },
+        "new": {
+            indices: [2, 4],
+            label: "This item was NEVER inserted, but index 2 happens to be 1 from another item.",
+            note: "Index 4 is 0. Result: <strong>Definitely Not in Set</strong>."
+        }
+    };
+
+    const arrayContainer = document.getElementById('ku2-bit-array');
+    const resultCard = document.getElementById('ku2-result-card');
+    const explanation = document.getElementById('ku2-explanation');
+    const chips = document.querySelectorAll('.ku2-chip');
+
+    function initArray() {
+        arrayContainer.innerHTML = '';
+        bitState.forEach((bit, i) => {
+            const box = document.createElement('div');
+            box.className = `ku2-bit-box ${bit ? 'filled' : ''}`;
+            box.id = `ku2-check-bit-${i}`;
+            box.innerHTML = `
+                <span class="ku2-indicator">🔍</span>
+                <span>${bit}</span>
+                <div style="font-size:10px; color:#94a3b8; margin-top:4px;">${i}</div>
+            `;
+            arrayContainer.appendChild(box);
+        });
+    }
+
+    function runQuery(type) {
+        initArray(); // Reset visuals
+        const data = queries[type];
+        const indices = data.indices;
+        
+        let allOn = true;
+        indices.forEach(idx => {
+            const box = document.getElementById(`ku2-check-bit-${idx}`);
+            box.classList.add('checking');
+            if (bitState[idx] === 0) {
+                allOn = false;
+                box.classList.add('miss');
+            } else {
+                box.classList.add('hit');
+            }
+        });
+
+        if (allOn) {
+            resultCard.className = 'ku2-res-positive';
+            resultCard.innerHTML = "RESULT: POSITIVE (Probably in Set)";
+            explanation.innerHTML = data.label + " <br> " + data.note;
+        } else {
+            resultCard.className = 'ku2-res-negative';
+            resultCard.innerHTML = "RESULT: NEGATIVE (Definitely Not in Set)";
+            explanation.innerHTML = data.label + " <br> " + data.note;
+        }
+    }
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            runQuery(chip.dataset.item);
+        });
+    });
+
+    // Initial run
+    initArray();
+    runQuery('new');
+})();
+</script></div>
+</section>
+<!-- The Impact of Array Size and Hash Count on Error Rates. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>The efficiency of a Bloom filter is defined by a delicate equilibrium between three parameters: the number of bits in the array ($m$), the number of elements inserted ($n$), and the number of hash functions ($k$). Because the bit array has a fixed capacity, every insertion increases the <strong>fill ratio</strong>—the proportion of bits set to $1$. As this ratio approaches $1.0$, the probability that a random query will collide with existing $1$s increases, eventually leading to a 100% false positive rate where the filter claims every item is "possibly present."</p><p>To maintain a specific target error rate $p$, the size of the bit array $m$ must scale linearly with the number of expected elements $n$. A common rule of thumb for a well-optimized filter is to allocate roughly $9.6$ bits per element to achieve a $1\%$ false positive rate. If memory is biological or hardware-constrained, increasing $m$ is the most direct way to reduce errors, but it negates the primary advantage of the structure: its <strong>compactness</strong>.</p><p>The choice of $k$ is equally critical. If $k$ is too small, the "signature" of an item (the set of specific bits it flips) is too simple, making it easy for other items to accidentally cover those same bits. If $k$ is too large, the bit array fills up much faster, causing the filter to become "congested" prematurely. Mathematically, for a given $m$ and $n$, the optimal number of hash functions that minimizes the false positive probability is given by:</p><p>$$k = \frac{m}{n} \ln 2 \approx 0.693 \cdot \frac{m}{n}$$</p><p>At this optimal value of $k$, exactly half of the bits in the array ($50\%$) are expected to be set to $1$. This state represents the maximum <strong>entropy</strong> of the filter, providing the highest possible amount of information per bit. When designing a Bloom filter for a real-world system, such as a <em>LSM-tree</em> in a database or a <em>malicious URL detector</em> in a browser, engineers first determine the expected $n$ and the maximum tolerable $p$, then use these formulas to derive the ideal $m$ and $k$ to minimize the memory footprint.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        margin: 20px 0;
+        color: #1e293b;
+    }
+
+    .ku3-control-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .ku3-control-item {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ku3-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #475569;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .ku3-slider {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    #ku3-viz-area {
+        background: white;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+    }
+
+    #ku3-bit-grid {
+        display: grid;
+        gap: 4px;
+        margin-bottom: 20px;
+        justify-content: center;
+    }
+
+    .ku3-bit {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        border: 1px solid #cbd5e1;
+        transition: background 0.3s ease;
+    }
+
+    .ku3-bit.on {
+        background: #3b82f6;
+        border-color: #2563eb;
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    }
+
+    .ku3-stats {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+        background: #f1f5f9;
+        border-radius: 6px;
+    }
+
+    .ku3-stat-box {
+        flex: 1;
+    }
+
+    .ku3-stat-val {
+        display: block;
+        font-size: 24px;
+        font-weight: 800;
+        color: #2563eb;
+    }
+
+    .ku3-stat-lbl {
+        font-size: 12px;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .ku3-optimal-hint {
+        margin-top: 15px;
+        font-size: 13px;
+        color: #64748b;
+        text-align: center;
+        font-style: italic;
+    }
+</style><div id="ku3-container">
+<div class="ku3-control-grid">
+<div class="ku3-control-item">
+<div class="ku3-label">
+<span>Array Size (m)</span>
+<span id="ku3-m-val">16</span>
+</div>
+<input class="ku3-slider" id="ku3-m-slider" max="64" min="8" type="range" value="32"/>
+</div>
+<div class="ku3-control-item">
+<div class="ku3-label">
+<span>Hash Functions (k)</span>
+<span id="ku3-k-val">2</span>
+</div>
+<input class="ku3-slider" id="ku3-k-slider" max="5" min="1" type="range" value="2"/>
+</div>
+<div class="ku3-control-item">
+<div class="ku3-label">
+<span>Elements (n)</span>
+<span id="ku3-n-val">3</span>
+</div>
+<input class="ku3-slider" id="ku3-n-slider" max="10" min="1" type="range" value="4"/>
+</div>
+</div>
+<div id="ku3-viz-area">
+<div id="ku3-bit-grid"></div>
+<div class="ku3-stats">
+<div class="ku3-stat-box">
+<span class="ku3-stat-val" id="ku3-fill-rate">0%</span>
+<span class="ku3-stat-lbl">Fill Ratio</span>
+</div>
+<div class="ku3-stat-box" style="border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1;">
+<span class="ku3-stat-val" id="ku3-fp-prob">0.0%</span>
+<span class="ku3-stat-lbl">False Positive Prob</span>
+</div>
+<div class="ku3-stat-box">
+<span class="ku3-stat-val" id="ku3-k-opt">0</span>
+<span class="ku3-stat-lbl">Optimal k</span>
+</div>
+</div>
+<div class="ku3-optimal-hint" id="ku3-hint">
+            Adjust sliders to see how density affects error rates.
+        </div>
+</div>
+</div><script>
+(function() {
+    const mSlider = document.getElementById('ku3-m-slider');
+    const kSlider = document.getElementById('ku3-k-slider');
+    const nSlider = document.getElementById('ku3-n-slider');
+    
+    const mValDisp = document.getElementById('ku3-m-val');
+    const kValDisp = document.getElementById('ku3-k-val');
+    const nValDisp = document.getElementById('ku3-n-val');
+    
+    const bitGrid = document.getElementById('ku3-bit-grid');
+    const fillDisp = document.getElementById('ku3-fill-rate');
+    const fpDisp = document.getElementById('ku3-fp-prob');
+    const kOptDisp = document.getElementById('ku3-k-opt');
+    const hintDisp = document.getElementById('ku3-hint');
+
+    function update() {
+        const m = parseInt(mSlider.value);
+        const k = parseInt(kSlider.value);
+        const n = parseInt(nSlider.value);
+
+        // Update Labels
+        mValDisp.textContent = m;
+        kValDisp.textContent = k;
+        nValDisp.textContent = n;
+
+        // Calculate Stats
+        // Probability p ≈ (1 - e^(-kn/m))^k
+        const exponent = -(k * n) / m;
+        const p = Math.pow(1 - Math.exp(exponent), k);
+        const pPct = (p * 100).toFixed(1);
+        
+        // Expected Fill Ratio: 1 - e^(-kn/m)
+        const fillRatio = 1 - Math.exp(exponent);
+        const fillPct = (fillRatio * 100).toFixed(0);
+
+        // Optimal k: (m/n) * ln(2)
+        const kOpt = Math.max(1, Math.round((m / n) * Math.log(2)));
+
+        // Update UI
+        fillDisp.textContent = fillPct + "%";
+        fpDisp.textContent = pPct + "%";
+        kOptDisp.textContent = kOpt;
+
+        // Visualizing the bit array (Simulation of filling)
+        // We use a deterministic pseudo-random distribution based on m, k, n 
+        // to simulate which bits are flipped to 1.
+        bitGrid.innerHTML = '';
+        const cols = m > 32 ? 16 : 8;
+        bitGrid.style.gridTemplateColumns = `repeat(${cols}, 20px)`;
+        
+        const activatedCount = Math.floor(m * fillRatio);
+        const indices = Array.from({length: m}, (_, i) => i);
+        
+        // Shuffle indices deterministically for the visual
+        let seed = 42; 
+        const pseudoRandom = () => {
+            seed = (seed * 16807) % 2147483647;
+            return (seed - 1) / 2147483646;
+        };
+        
+        for (let i = indices.length - 1; i > 0; i--) {
+            const j = Math.floor(pseudoRandom() * (i + 1));
+            [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+
+        const activeSet = new Set(indices.slice(0, activatedCount));
+
+        for (let i = 0; i < m; i++) {
+            const bit = document.createElement('div');
+            bit.className = 'ku3-bit' + (activeSet.has(i) ? ' on' : '');
+            bitGrid.appendChild(bit);
+        }
+
+        // Logic check for hint
+        if (k === kOpt) {
+            hintDisp.innerHTML = "<span style='color:#10b981'>Optimal configuration!</span> Bit array is roughly 50% full.";
+        } else if (k > kOpt) {
+            hintDisp.textContent = "k is too high: the array is filling up too fast, increasing collisions.";
+        } else {
+            hintDisp.textContent = "k is too low: the item signatures are too simple to be unique.";
+        }
+    }
+
+    [mSlider, kSlider, nSlider].forEach(s => s.addEventListener('input', update));
+    update();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dimensionality reduction of high-dimensional vectors for visualization</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Dimensionality reduction of high-dimensional vectors for visualization</h1>
+<!-- Introduction to the Curse of Dimensionality and the Need for Projection -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>In modern machine learning, data is often represented as vectors in spaces with hundreds or even thousands of dimensions. While we can easily visualize a vector in 2D or 3D, our spatial intuition fails completely when faced with a 768-dimensional embedding from a language model. This cognitive barrier is not just a matter of perspective; it is a fundamental mathematical challenge known as the <strong>Curse of Dimensionality</strong>.</p><p>One of the most counter-intuitive phenomena in high-dimensional spaces is the way distances behave. As the number of dimensions $d$ increases, the distance between any two random points tends to converge. If we consider a hypercube where points are distributed uniformly, the ratio between the distance of the farthest point and the nearest point to the origin approaches zero as $d \to \infty$. Mathematically, for a distance metric $dist$, this is expressed as:</p><p>$\lim_{d \to \infty} \frac{dist_{max} - dist_{min}}{dist_{min}} = 0$</p><p>This "thinning" of contrast makes it incredibly difficult to identify <strong>clusters</strong> or patterns, as every point appears roughly equidistant from every other point. To make sense of this data, we must employ <strong>dimensionality reduction</strong>—the process of transforming a dataset from a high-dimensional space $\mathbb{R}^D$ into a lower-dimensional space $\mathbb{R}^k$ (where $k$ is usually 2 or 3 for visualization) while retaining the <em>meaningful</em> structure of the original data.</p><p>Effective projection techniques aim to solve a core optimization problem: how do we discard the majority of the information while <strong>preserving specific topological or statistical properties</strong>? Some methods focus on preserving the <em>global variance</em> of the data (PCA), while others prioritize maintaining <em>local neighborhoods</em> (t-SNE or UMAP), ensuring that points that were "close" in the high-dimensional space remain "close" on our 2D screen.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fafafa;
+        border-radius: 8px;
+        padding: 20px;
+        color: #333;
+    }
+    #ku1-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    #ku1-controls .control-group {
+        display: flex;
+        flex-direction: column;
+    }
+    #ku1-controls label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #555;
+    }
+    #ku1-chart-container {
+        position: relative;
+        height: 400px;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #eee;
+    }
+    #ku1-metrics {
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+    .ku1-badge {
+        background: #e9ecef;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-weight: bold;
+    }
+    .ku1-loss-bar {
+        flex-grow: 1;
+        height: 8px;
+        background: #eee;
+        margin: 0 15px;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    #ku1-loss-fill {
+        height: 100%;
+        background: #4dabf7;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<div class="control-group">
+<label>Input Dimensions ($d$): <span id="ku1-dim-val">10</span></label>
+<input id="ku1-slider-dims" max="50" min="3" type="range" value="10"/>
+</div>
+<div class="control-group">
+<label>Rotate Projection Plane (Angle):</label>
+<input id="ku1-slider-angle" max="360" min="0" type="range" value="45"/>
+</div>
+</div>
+<div id="ku1-chart-container">
+<canvas id="ku1-canvas"></canvas>
+</div>
+<div id="ku1-metrics">
+<span>Variance Captured:</span>
+<div class="ku1-loss-bar">
+<div id="ku1-loss-fill"></div>
+</div>
+<span class="ku1-badge" id="ku1-variance-pct">0%</span>
+</div>
+</div><script>
+(function() {
+    const ctx = document.getElementById('ku1-canvas').getContext('2d');
+    const dimSlider = document.getElementById('ku1-slider-dims');
+    const angleSlider = document.getElementById('ku1-slider-angle');
+    const dimValDisplay = document.getElementById('ku1-dim-val');
+    const varianceDisplay = document.getElementById('ku1-variance-pct');
+    const lossFill = document.getElementById('ku1-loss-fill');
+
+    let points = [];
+    let numPoints = 100;
+    let chart;
+
+    function generatePoints(dims) {
+        points = [];
+        // Create 3 distinct clusters in high-D to show how they overlap
+        const clusters = [
+            { center: Array(dims).fill(0).map(() => Math.random() * 10 - 5), color: 'rgba(77, 171, 247, 0.7)' },
+            { center: Array(dims).fill(0).map(() => Math.random() * 10 - 5), color: 'rgba(255, 107, 107, 0.7)' },
+            { center: Array(dims).fill(0).map(() => Math.random() * 10 - 5), color: 'rgba(81, 207, 102, 0.7)' }
+        ];
+
+        for (let i = 0; i < numPoints; i++) {
+            const cluster = clusters[i % clusters.length];
+            const point = cluster.center.map(coord => coord + (Math.random() - 0.5) * 4);
+            points.push({ coords: point, color: cluster.color });
+        }
+    }
+
+    function projectPoints(angle) {
+        const dims = parseInt(dimSlider.value);
+        const rad = (angle * Math.PI) / 180;
+        
+        // Simple orthogonal projection onto a rotating 2D plane
+        // We simulate a rotation matrix specifically for two basis vectors
+        return points.map(p => {
+            let x = 0;
+            let y = 0;
+            for (let d = 0; d < dims; d++) {
+                // Basis 1: cosine-weighted sum
+                x += p.coords[d] * Math.cos(rad + (d * Math.PI / dims));
+                // Basis 2: sine-weighted sum
+                y += p.coords[d] * Math.sin(rad + (d * Math.PI / dims));
+            }
+            return { x, y, color: p.color };
+        });
+    }
+
+    function update() {
+        const dims = parseInt(dimSlider.value);
+        const angle = parseInt(angleSlider.value);
+        dimValDisplay.textContent = dims;
+
+        const projected = projectPoints(angle);
+        
+        // Calculate "Variance Captured" simulation
+        // In high-D, the captured variance 2/d is a heuristic for random projections
+        const captured = Math.max(5, Math.min(95, (2 / Math.sqrt(dims)) * 100 + (Math.sin(angle/10) * 5)));
+        varianceDisplay.textContent = captured.toFixed(1) + '%';
+        lossFill.style.width = captured + '%';
+
+        chart.data.datasets[0].data = projected.map(p => ({ x: p.x, y: p.y }));
+        chart.data.datasets[0].backgroundColor = projected.map(p => p.color);
+        chart.update('none');
+    }
+
+    function init() {
+        generatePoints(parseInt(dimSlider.value));
+        
+        chart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Projected Vectors',
+                    data: [],
+                    pointRadius: 6,
+                    borderWidth: 1,
+                    borderColor: 'white'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                animation: false,
+                scales: {
+                    x: { min: -15, max: 15, grid: { display: false }, ticks: { display: false } },
+                    y: { min: -15, max: 15, grid: { display: false }, ticks: { display: false } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
+            }
+        });
+
+        dimSlider.addEventListener('input', () => {
+            generatePoints(parseInt(dimSlider.value));
+            update();
+        });
+        angleSlider.addEventListener('input', update);
+        
+        update();
+    }
+
+    init();
+})();
+</script></div>
+</section>
+<!-- Principal Component Analysis (PCA) and Linear Information Preservation -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>While random projections offer a glimpse into high-dimensional data, they often obscure the underlying structure by choosing arbitrary axes. <strong>Principal Component Analysis (PCA)</strong> provides a more rigorous approach by identifying a new set of orthogonal axes—the <strong>Principal Components</strong>—ranked by the amount of variance they capture. Instead of looking at the data from a random angle, PCA mathematically rotates the coordinate system to find the "widest" spans of the data distribution.</p><p>The first principal component $u_1$ is defined as the direction that maximizes the variance of the projected data. Once $u_1$ is found, the second component $u_2$ is chosen to be orthogonal to the first while maximizing the remaining variance. Mathematically, for a centered data matrix $X$, this involves finding the eigenvectors of the covariance matrix $\Sigma = \frac{1}{n-1}X^T X$. The optimization objective for the first component can be expressed as:</p><p>$\max_{u: \|u\|=1} u^T \Sigma u$</p><p>By selecting the top $k$ eigenvectors (where $k=2$ or $3$ for visualization), we project the data into a lower-dimensional subspace that retains the <strong>maximum possible global variance</strong>. This ensures that the most prominent features—the "broad strokes" of the dataset—are preserved, even if the fine-grained local relationships are somewhat compressed.</p><p>This linear transformation is essentially a rigid rotation and scaling. Consequently, PCA is excellent for uncovering the <strong>global geometry</strong> and identifying linear correlations between dimensions. However, because it relies on global variance, it can struggle to visualize complex, non-linear manifolds where points might be "close" along a curved path but "far" in terms of Euclidean distance. In such cases, the top two components might overlap distinct clusters that are only separable through non-linear lenses.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fafafa;
+        border-radius: 8px;
+        padding: 20px;
+        color: #333;
+    }
+    #ku2-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    #ku2-controls .control-group {
+        display: flex;
+        flex-direction: column;
+    }
+    #ku2-controls label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #555;
+    }
+    #ku2-viz-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    .ku2-viz-box {
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #eee;
+        padding: 10px;
+        position: relative;
+    }
+    .ku2-label {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #888;
+        pointer-events: none;
+    }
+    #ku2-canvas-3d, #ku2-canvas-2d {
+        width: 100%;
+        height: 300px;
+    }
+    select {
+        padding: 6px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+    @media (max-width: 600px) {
+        #ku2-viz-layout { grid-template-columns: 1fr; }
+    }
+</style><div id="ku2-container">
+<div id="ku2-controls">
+<div class="control-group">
+<label for="ku2-data-shape">Data Distribution</label>
+<select id="ku2-data-shape">
+<option value="Elongated Ellipsoid">Elongated Ellipsoid</option>
+<option value="Planar Disk">Planar Disk</option>
+<option value="Sphere">Uniform Sphere</option>
+</select>
+</div>
+<div class="control-group">
+<label for="ku2-pca-count">Number of Components (k)</label>
+<select id="ku2-pca-count">
+<option value="1">k = 1 (Line)</option>
+<option selected="" value="2">k = 2 (Plane)</option>
+</select>
+</div>
+</div>
+<div id="ku2-viz-layout">
+<div class="ku2-viz-box">
+<div class="ku2-label">3D Space &amp; Principal Components</div>
+<canvas id="ku2-canvas-3d"></canvas>
+</div>
+<div class="ku2-viz-box">
+<div class="ku2-label" id="ku2-projection-label">2D PCA Projection</div>
+<canvas id="ku2-canvas-2d"></canvas>
+</div>
+</div>
+</div><script>
+(function() {
+    const canvas3d = document.getElementById('ku2-canvas-3d');
+    const canvas2d = document.getElementById('ku2-canvas-2d');
+    const ctx3d = canvas3d.getContext('2d');
+    const ctx2d = canvas2d.getContext('2d');
+    const shapeSelect = document.getElementById('ku2-data-shape');
+    const pcaSelect = document.getElementById('ku2-pca-count');
+    const projLabel = document.getElementById('ku2-projection-label');
+
+    let points = [];
+    let rotation = 0;
+
+    function generatePoints() {
+        points = [];
+        const shape = shapeSelect.value;
+        const count = 200;
+
+        for (let i = 0; i < count; i++) {
+            let x, y, z;
+            if (shape === "Elongated Ellipsoid") {
+                // Stretched along X axis
+                x = (Math.random() - 0.5) * 20;
+                y = (Math.random() - 0.5) * 4;
+                z = (Math.random() - 0.5) * 4;
+            } else if (shape === "Planar Disk") {
+                // Wide in XY, thin in Z
+                const r = Math.sqrt(Math.random()) * 8;
+                const theta = Math.random() * Math.PI * 2;
+                x = r * Math.cos(theta);
+                y = r * Math.sin(theta);
+                z = (Math.random() - 0.5) * 2;
+            } else {
+                // Sphere
+                const u = Math.random();
+                const v = Math.random();
+                const theta = 2 * Math.PI * u;
+                const phi = Math.acos(2 * v - 1);
+                const r = Math.cbrt(Math.random()) * 7;
+                x = r * Math.sin(phi) * Math.cos(theta);
+                y = r * Math.sin(phi) * Math.sin(theta);
+                z = r * Math.cos(phi);
+            }
+            points.push({ x, y, z });
+        }
+    }
+
+    function project3D(x, y, z, angle) {
+        // Simple 3D to 2D rotation for display
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const nx = x * cos - z * sin;
+        const nz = x * sin + z * cos;
+        // Projection
+        const factor = 200 / (nz + 30);
+        return {
+            x: nx * factor + canvas3d.width / 2,
+            y: y * factor + canvas3d.height / 2,
+            size: factor * 0.8
+        };
+    }
+
+    function draw() {
+        const k = parseInt(pcaSelect.value);
+        projLabel.textContent = k === 1 ? "1D PCA Projection" : "2D PCA Projection";
+        
+        // Clear canvases
+        ctx3d.clearRect(0, 0, canvas3d.width, canvas3d.height);
+        ctx2d.clearRect(0, 0, canvas2d.width, canvas2d.height);
+
+        // Rotation for 3D view
+        rotation += 0.01;
+
+        // Draw 3D Points
+        points.forEach(p => {
+            const screen = project3D(p.x, p.y, p.z, rotation);
+            ctx3d.fillStyle = 'rgba(77, 171, 247, 0.6)';
+            ctx3d.beginPath();
+            ctx3d.arc(screen.x, screen.y, Math.max(1, screen.size), 0, Math.PI * 2);
+            ctx3d.fill();
+        });
+
+        // Draw PCA Axes in 3D
+        const axes = [
+            {v: {x: 10, y:0, z:0}, color: '#ff6b6b', label: 'PC1'},
+            {v: {x: 0, y:8, z:0}, color: '#51cf66', label: 'PC2'}
+        ];
+
+        axes.forEach((axis, i) => {
+            if (i >= k) return;
+            const start = project3D(0, 0, 0, rotation);
+            const end = project3D(axis.v.x, axis.v.y, axis.v.z, rotation);
+            ctx3d.strokeStyle = axis.color;
+            ctx3d.lineWidth = 3;
+            ctx3d.beginPath();
+            ctx3d.moveTo(start.x, start.y);
+            ctx3d.lineTo(end.x, end.y);
+            ctx3d.stroke();
+        });
+
+        // Draw PCA Projection View (2D)
+        points.forEach(p => {
+            let px = p.x * 12 + canvas2d.width / 2;
+            let py = canvas2d.height / 2;
+            if (k === 2) {
+                py = p.y * 12 + canvas2d.height / 2;
+            }
+            
+            ctx2d.fillStyle = 'rgba(77, 171, 247, 0.6)';
+            ctx2d.beginPath();
+            ctx2d.arc(px, py, 3, 0, Math.PI * 2);
+            ctx2d.fill();
+        });
+
+        // Draw Base Line for 1D
+        if (k === 1) {
+            ctx2d.strokeStyle = '#eee';
+            ctx2d.beginPath();
+            ctx2d.moveTo(0, canvas2d.height/2);
+            ctx2d.lineTo(canvas2d.width, canvas2d.height/2);
+            ctx2d.stroke();
+        }
+
+        requestAnimationFrame(draw);
+    }
+
+    function init() {
+        // Set canvas sizes
+        canvas3d.width = canvas3d.offsetWidth;
+        canvas3d.height = canvas3d.offsetHeight;
+        canvas2d.width = canvas2d.offsetWidth;
+        canvas2d.height = canvas2d.offsetHeight;
+
+        shapeSelect.addEventListener('change', generatePoints);
+        generatePoints();
+        draw();
+    }
+
+    init();
+})();
+</script></div>
+</section>
+<!-- t-SNE and Manifold Learning for Local Structure -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>While PCA projects data onto a linear subspace, many real-world datasets—such as image embeddings or single-cell RNA sequences—reside on complex, curved <strong>non-linear manifolds</strong>. To visualize these, we turn to <strong>t-Distributed Stochastic Neighbor Embedding (t-SNE)</strong>. Unlike PCA, which prioritizes the preservation of large distances (global variance), t-SNE focuses on <strong>local structure</strong>: ensuring that points belonging to the same cluster in high-dimensional space remain neighbors in the 2D projection.</p><p>The algorithm operates in two stages. First, it converts Euclidean distances between high-dimensional points into conditional probabilities $p_{j|i}$ that represent similarities. For a point $x_i$, the probability that it would pick $x_j$ as its neighbor is modeled by a Gaussian distribution centered at $x_i$:</p><p>$p_{j|i} = \frac{\exp(-\|x_i - x_j\|^2 / 2\sigma_i^2)}{\sum_{k \neq i} \exp(-\|x_i - x_k\|^2 / 2\sigma_i^2)}$</p><p>In the low-dimensional space, t-SNE uses a <strong>Student’s t-distribution</strong> with one degree of freedom to model similarities $q_{ij}$. This "heavy-tailed" distribution is a clever solution to the <strong>Crowding Problem</strong>: in low dimensions, there is simply not enough "room" to preserve all distances accurately. The t-distribution allows moderately distant points in high-D to be pushed much further apart in 2D, preventing clusters from collapsing into a single dense blob.</p><p>The final layout is reached through an iterative optimization process, typically using gradient descent to minimize the <strong>Kullback-Leibler (KL) divergence</strong> between the high-dimensional distribution $P$ and the low-dimensional distribution $Q$. A critical hyperparameter in this process is <strong>perplexity</strong>, which can be thought of as a smooth measure of the effective number of neighbors. Adjusting perplexity allows the user to balance the algorithm's attention between microscopic local details and the macroscopic global cluster structure.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fafafa;
+        border-radius: 8px;
+        padding: 20px;
+        color: #333;
+    }
+    #ku3-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .ku3-control-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .ku3-control-group label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #666;
+    }
+    #ku3-viz-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 15px;
+    }
+    .ku3-card {
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #eee;
+        padding: 10px;
+        position: relative;
+    }
+    .ku3-card-title {
+        font-size: 0.7rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #999;
+        margin-bottom: 10px;
+    }
+    #ku3-scatter-container { height: 350px; }
+    #ku3-loss-container { height: 350px; }
+    @media (max-width: 768px) {
+        #ku3-controls { grid-template-columns: 1fr; }
+        #ku3-viz-grid { grid-template-columns: 1fr; }
+    }
+</style><div id="ku3-container">
+<div id="ku3-controls">
+<div class="ku3-control-group">
+<label>Data Strategy</label>
+<select id="ku3-data-type">
+<option value="Clusters">Three Dense Clusters</option>
+<option value="Spiral">Intertwined Spirals</option>
+<option value="Grid">High-D Grid</option>
+</select>
+</div>
+<div class="ku3-control-group">
+<label>Perplexity: <span id="ku3-perp-val">30</span></label>
+<input id="ku3-slider-perp" max="50" min="2" type="range" value="30"/>
+</div>
+<div class="ku3-control-group">
+<label>Optimization Step: <span id="ku3-iter-val">0</span></label>
+<input id="ku3-slider-iter" max="500" min="0" type="range" value="0"/>
+</div>
+</div>
+<div id="ku3-viz-grid">
+<div class="ku3-card">
+<div class="ku3-card-title">t-SNE Embedding (Low-D Projection)</div>
+<div id="ku3-scatter-container">
+<canvas id="ku3-canvas-scatter"></canvas>
+</div>
+</div>
+<div class="ku3-card">
+<div class="ku3-card-title">KL Divergence (Loss)</div>
+<div id="ku3-loss-container">
+<canvas id="ku3-canvas-loss"></canvas>
+</div>
+</div>
+</div>
+</div><script>
+(function() {
+    const perpSlider = document.getElementById('ku3-slider-perp');
+    const iterSlider = document.getElementById('ku3-slider-iter');
+    const dataTypeSelect = document.getElementById('ku3-data-type');
+    const perpVal = document.getElementById('ku3-perp-val');
+    const iterVal = document.getElementById('ku3-iter-val');
+
+    let scatterChart, lossChart;
+    let history = []; 
+    let currentPoints = [];
+
+    function generateData(type) {
+        const points = [];
+        if (type === 'Clusters') {
+            for (let i = 0; i < 90; i++) {
+                const center = i < 30 ? [-5, -5] : (i < 60 ? [5, 5] : [-5, 5]);
+                const color = i < 30 ? '#4dabf7' : (i < 60 ? '#ff6b6b' : '#51cf66');
+                points.push({
+                    orig: [center[0] + Math.random()*3, center[1] + Math.random()*3],
+                    color: color
+                });
+            }
+        } else if (type === 'Spiral') {
+            for (let i = 0; i < 90; i++) {
+                const angle = 0.1 * i;
+                const r = angle;
+                points.push({
+                    orig: [r * Math.cos(angle), r * Math.sin(angle)],
+                    color: `hsl(${(i*4)%360}, 70%, 60%)`
+                });
+            }
+        } else {
+            for (let x = 0; x < 10; x++) {
+                for (let y = 0; y < 9; y++) {
+                    points.push({ orig: [x*2, y*2], color: '#adb5bd' });
+                }
+            }
+        }
+        return points;
+    }
+
+    // This simulates the t-SNE optimization path based on perplexity
+    // Real t-SNE is too heavy for JS main thread in real-time, 
+    // so we pre-calculate a "path" towards a result determined by perplexity
+    function solveLayout() {
+        const perp = parseInt(perpSlider.value);
+        const type = dataTypeSelect.value;
+        const pts = generateData(type);
+        const states = [];
+        
+        // Initial random state
+        let currentPos = pts.map(p => ({
+            x: (Math.random() - 0.5) * 20,
+            y: (Math.random() - 0.5) * 20,
+            color: p.color
+        }));
+
+        // Generate target layout based on perplexity logic
+        // Low Perp: Points cluster only with few neighbors (fractured)
+        // High Perp: Points preserve global arrangement
+        const targets = pts.map((p, i) => {
+            let tx, ty;
+            if (perp < 15) { // Fragmented
+                const clusterId = Math.floor(i / (perp + 1));
+                tx = (clusterId % 5) * 6 - 12 + (Math.random() * 2);
+                ty = Math.floor(clusterId / 5) * 6 - 12 + (Math.random() * 2);
+            } else { // Preserved
+                tx = p.orig[0] * (perp/30);
+                ty = p.orig[1] * (perp/30);
+            }
+            return {x: tx, y: ty};
+        });
+
+        const totalSteps = 500;
+        for (let s = 0; s <= totalSteps; s++) {
+            const t = s / totalSteps;
+            // Sigmoid-like easing for t-SNE behavior (rapid movement then settling)
+            const ease = t < 0.2 ? (t*5)**2 * 0.5 : 0.5 + Math.sqrt(t-0.2)*0.5;
+            
+            const stepPoints = currentPos.map((p, i) => ({
+                x: p.x * (1 - ease) + targets[i].x * ease,
+                y: p.y * (1 - ease) + targets[i].y * ease,
+                color: p.color
+            }));
+            
+            // Logarithmic loss simulation
+            const loss = (10 / (s + 1)) + (50 / perp) * Math.exp(-s/100);
+            states.push({ points: stepPoints, loss: loss });
+        }
+        return states;
+    }
+
+    function updateViz() {
+        const iter = parseInt(iterSlider.value);
+        const state = history[iter];
+        
+        perpVal.textContent = perpSlider.value;
+        iterVal.textContent = iter;
+
+        scatterChart.data.datasets[0].data = state.points;
+        scatterChart.data.datasets[0].backgroundColor = state.points.map(p => p.color);
+        scatterChart.update('none');
+
+        lossChart.data.labels = Array.from({length: iter + 1}, (_, i) => i);
+        lossChart.data.datasets[0].data = history.slice(0, iter + 1).map(h => h.loss);
+        lossChart.update('none');
+    }
+
+    function reset() {
+        history = solveLayout();
+        iterSlider.value = 0;
+        updateViz();
+        
+        // Start animation
+        let i = 0;
+        const anim = setInterval(() => {
+            if (i >= 500 || iterSlider.value != i) {
+                clearInterval(anim);
+                return;
+            }
+            i += 5;
+            iterSlider.value = i;
+            updateViz();
+        }, 30);
+    }
+
+    function init() {
+        const ctxS = document.getElementById('ku3-canvas-scatter').getContext('2d');
+        const ctxL = document.getElementById('ku3-canvas-loss').getContext('2d');
+
+        scatterChart = new Chart(ctxS, {
+            type: 'scatter',
+            data: { datasets: [{ data: [], pointRadius: 5 }] },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    x: { min: -20, max: 20, grid: { display: false } },
+                    y: { min: -20, max: 20, grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        lossChart = new Chart(ctxL, {
+            type: 'line',
+            data: { labels: [], datasets: [{ 
+                label: 'KL Divergence', 
+                data: [], 
+                borderColor: '#4dabf7',
+                borderWidth: 2,
+                pointRadius: 0,
+                fill: true,
+                backgroundColor: 'rgba(77, 171, 247, 0.1)'
+            }]},
+            options: {
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    x: { display: false },
+                    y: { beginAtZero: true }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        perpSlider.addEventListener('change', reset);
+        dataTypeSelect.addEventListener('change', reset);
+        iterSlider.addEventListener('input', updateViz);
+
+        reset();
+    }
+
+    init();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

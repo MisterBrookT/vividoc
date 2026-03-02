@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimensionality Reduction: Visualizing the Unseen</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+            border-bottom: 5px solid #3b82f6;
+        }
+
+        section {
+            background: var(--card);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .interactive-box {
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .math {
+            font-family: "Courier New", Courier, monospace;
+            background: #e2e8f0;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .feature-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Visualizing the Unseen</h1>
+    <p>A Guide to Dimensionality Reduction for High-Dimensional Vectors</p>
+</header>
+
+<div class="container">
+    <section>
+        <h2>1. The Curse of Dimensionality</h2>
+        <p>In modern Data Science, "High-Dimensional" refers to data with many features. For example, a single 28x28 pixel image has <b>784 dimensions</b>. Humans can only perceive up to 3 dimensions. How do we understand the structure of data hiding in 700+ dimensions?</p>
+        <p>Dimensionality reduction is the process of mapping high-dimensional data <span class="math">X ∈ ℝⁿ</span> to a lower-dimensional space <span class="math">Y ∈ ℝ²</span> (or ℝ³) while preserving as much meaningful structure as possible.</p>
+    </section>
+
+    <section>
+        <h2>2. Comparing Popular Algorithms</h2>
+        <div class="feature-grid">
+            <div style="background: #eff6ff; padding: 1rem; border-radius: 8px;">
+                <strong style="color: #1e40af;">Principal Component Analysis (PCA)</strong>
+                <p>Linear reduction. It rotates the data to find directions (principal components) that maximize variance. Fast, but misses complex non-linear patterns.</p>
+            </div>
+            <div style="background: #fdf2f8; padding: 1rem; border-radius: 8px;">
+                <strong style="color: #9d174d;">t-SNE / UMAP</strong>
+                <p>Non-linear manifold learning. These focus on keeping "neighbors" together. Great for finding clusters, but distances between clusters might not be meaningful.</p>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. Interactive Playground</h2>
+        <p>Observe how 3D data is projected onto 2D. We have generated a <strong>3D Helix</strong>. Click the buttons to see how different perspectives change our understanding of the shape.</p>
+        
+        <div class="interactive-box">
+            <div class="controls">
+                <button onclick="projectPCA()">Apply PCA Projection</button>
+                <button onclick="projectTopDown()">Top-Down View</button>
+                <button onclick="resetPlot()">Reset to 3D</button>
+            </div>
+            <div id="plotArea" style="width:100%; height:500px;"></div>
+        </div>
+        <p><i>Note: In this simulation, "PCA" finds the projection that captures the most variance (the long axis of the helix).</i></p>
+    </section>
+
+    <section>
+        <h2>4. Key Considerations</h2>
+        <ul>
+            <li><strong>Information Loss:</strong> You cannot squash data without losing something. In PCA, you lose the variance of the discarded components.</li>
+            <li><strong>Global vs. Local Structure:</strong> Does the map preserve the "big picture" (PCA) or just the "immediate clusters" (t-SNE)?</li>
+            <li><strong>Interpretability:</strong> Lower dimensions are often just mathematical abstractions; they don't always correspond to physical features like "height" or "weight".</li>
+        </ul>
+    </section>
+</div>
+
+<script>
+    // Generate data: A 3D Helix (Spiral)
+    function generateHelix() {
+        let x = [], y = [], z = [], color = [];
+        for(let i=0; i<400; i++) {
+            let t = i / 20;
+            x.push(Math.cos(t) * (1 + t/10));
+            y.push(Math.sin(t) * (1 + t/10));
+            z.push(t);
+            color.push(t);
+        }
+        return {x, y, z, color};
+    }
+
+    const data = generateHelix();
+
+    function resetPlot() {
+        const trace = {
+            x: data.x, y: data.y, z: data.z,
+            mode: 'markers',
+            marker: { size: 4, color: data.color, colorscale: 'Viridis' },
+            type: 'scatter3d'
+        };
+        const layout = { 
+            title: 'Original 3D Data (Helix)',
+            margin: {l:0, r:0, b:0, t:40}
+        };
+        Plotly.newPlot('plotArea', [trace], layout);
+    }
+
+    function projectPCA() {
+        // Simulated PCA: Projection onto a 2D diagonal slice that captures length
+        const px = data.z.map((z_val, i) => z_val + data.x[i] * 0.2);
+        const py = data.y;
+
+        const trace = {
+            x: px, y: py,
+            mode: 'markers',
+            marker: { size: 6, color: data.color, colorscale: 'Viridis' },
+            type: 'scatter'
+        };
+        const layout = { 
+            title: '2D PCA Projection (Maximizing Variance)',
+            xaxis: {title: 'Principal Component 1'},
+            yaxis: {title: 'Principal Component 2'}
+        };
+        Plotly.newPlot('plotArea', [trace], layout);
+    }
+
+    function projectTopDown() {
+        // Flattening Z axis completely
+        const trace = {
+            x: data.x, y: data.y,
+            mode: 'markers',
+            marker: { size: 6, color: data.color, colorscale: 'Viridis' },
+            type: 'scatter'
+        };
+        const layout = { 
+            title: 'Top-Down Projection (Linear Shadow)',
+            xaxis: {title: 'X axis'},
+            yaxis: {title: 'Y axis'}
+        };
+        Plotly.newPlot('plotArea', [trace], layout);
+    }
+
+    // Initialize
+    resetPlot();
+</script>
+
+</body>
+</html>

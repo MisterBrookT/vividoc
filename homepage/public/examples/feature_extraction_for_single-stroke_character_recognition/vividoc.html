@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Feature extraction for single-stroke character recognition</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Feature extraction for single-stroke character recognition</h1>
+<!-- The concept of resampling strokes into equidistant points. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>When a user draws a character on a digital interface, the device captures a raw sequence of points $P = \{p_1, p_2, \dots, p_n\}$, where each point $p_i = (x_i, y_i)$. However, this raw data is inherently inconsistent. Because sensors sample data at constant time intervals, the spatial density of points depends entirely on the <strong>writing speed</strong>: a slow, deliberate stroke creates a dense cluster of points, while a rapid flick results in sparse, widely spaced points.</p><p>To extract meaningful geometric features, we must decouple the character's shape from the dynamics of the motion. This is achieved through <strong>resampling</strong>—the process of transforming the raw stroke into a new sequence of $N$ points that are <strong>equidistant</strong> along the path. By standardizing the number of points (typically $N=32$ or $N=64$), we ensure that the feature vector has a fixed dimension regardless of the original stroke's length or speed.</p><p>The resampling process begins by calculating the total path length $L$ of the stroke. Given the Euclidean distance $d(p_i, p_{i+1})$ between consecutive points, the total length is defined as:</p><p>$$L = \sum_{i=1}^{n-1} d(p_i, p_{i+1})$$</p><p>We then determine the target <em>inter-point interval</em>, denoted as $I = \frac{L}{N-1}$. The algorithm iterates through the original points, greedily adding new points at every distance $I$ along the segments of the polyline. If the distance to the next raw point is less than $I$, we move to the next segment; if it exceeds $I$, we use <strong>linear interpolation</strong> to find the exact coordinates of the new point. This produces a normalized representation where the spatial relationship between points is uniform, effectively "smoothing" the input and highlighting the structural topology of the character.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        user-select: none;
+    }
+    #ku1-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: crosshair;
+        touch-action: none;
+    }
+    #ku1-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    #ku1-controls {
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    #ku1-slider-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .ku1-hint {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 8px;
+    }
+    #ku1-stats {
+        font-size: 0.85rem;
+        color: #444;
+        font-weight: 500;
+    }
+</style><div id="ku1-container">
+<div class="ku1-hint">Draw a single stroke slowly or quickly to see how points are redistributed.</div>
+<div id="ku1-canvas-container">
+<canvas id="ku1-canvas"></canvas>
+</div>
+<div id="ku1-controls">
+<div id="ku1-slider-group">
+<label for="ku1-slider" style="font-weight: 600;">Resample Count ($N$):</label>
+<input id="ku1-slider" max="64" min="8" type="range" value="16"/>
+<span id="ku1-slider-val">16</span>
+</div>
+<button id="ku1-clear" style="padding: 4px 12px; cursor: pointer;">Clear Canvas</button>
+<div id="ku1-stats">Interval ($I$): <span id="ku1-interval">0</span>px</div>
+</div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku1-canvas');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('ku1-slider');
+    const sliderVal = document.getElementById('ku1-slider-val');
+    const intervalVal = document.getElementById('ku1-interval');
+    const clearBtn = document.getElementById('ku1-clear');
+
+    let rawPoints = [];
+    let isDrawing = false;
+    let nValue = parseInt(slider.value);
+
+    // Initialize with a sample "S" shape
+    function initDefault() {
+        const w = canvas.width;
+        const h = canvas.height;
+        rawPoints = [];
+        // Create an S shape with varying speed (density)
+        for (let t = 0; t <= 1; t += 0.01) {
+            // Speed factor: slower at ends, faster in middle curve
+            const speed = 1 + Math.sin(t * Math.PI) * 2;
+            const x = w * 0.5 + Math.sin(t * Math.PI * 1.5) * (w * 0.2);
+            const y = h * 0.2 + t * (h * 0.6);
+            rawPoints.push({x, y});
+        }
+        draw();
+    }
+
+    function resize() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        if (rawPoints.length === 0) initDefault();
+        draw();
+    }
+
+    function getDist(p1, p2) {
+        return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+    }
+
+    function resample(points, n) {
+        if (points.length < 2) return points;
+        
+        let totalLen = 0;
+        for (let i = 1; i < points.length; i++) {
+            totalLen += getDist(points[i - 1], points[i]);
+        }
+
+        const I = totalLen / (n - 1);
+        intervalVal.textContent = I.toFixed(1);
+        
+        let newPoints = [points[0]];
+        let D = 0;
+
+        for (let i = 1; i < points.length; i++) {
+            let d = getDist(points[i - 1], points[i]);
+            if ((D + d) >= I) {
+                let qx = points[i - 1].x + ((I - D) / d) * (points[i].x - points[i - 1].x);
+                let qy = points[i - 1].y + ((I - D) / d) * (points[i].y - points[i - 1].y);
+                let q = { x: qx, y: qy };
+                newPoints.push(q);
+                points.splice(i, 0, q); // insert q as the next point
+                D = 0;
+            } else {
+                D += d;
+            }
+        }
+        
+        // Ensure we always have exactly N points due to float precision
+        while (newPoints.length < n) {
+            newPoints.push(points[points.length - 1]);
+        }
+        return newPoints.slice(0, n);
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (rawPoints.length < 2) return;
+
+        // 1. Draw original raw points (faint gray)
+        ctx.fillStyle = '#e0e0e0';
+        rawPoints.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // 2. Calculate resampled points
+        const sampled = resample([...rawPoints], nValue);
+
+        // 3. Draw connecting lines
+        ctx.strokeStyle = '#007bff';
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(sampled[0].x, sampled[0].y);
+        for (let i = 1; i < sampled.length; i++) {
+            ctx.lineTo(sampled[i].x, sampled[i].y);
+        }
+        ctx.stroke();
+
+        // 4. Draw resampled points as bright blue circles
+        ctx.fillStyle = '#007bff';
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        sampled.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        });
+    }
+
+    // Input Events
+    function handleStart(e) {
+        isDrawing = true;
+        rawPoints = [];
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        rawPoints.push({x, y});
+    }
+
+    function handleMove(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        rawPoints.push({x, y});
+        draw();
+    }
+
+    function handleEnd() {
+        isDrawing = false;
+    }
+
+    canvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, {passive: false});
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, {passive: false});
+    canvas.addEventListener('touchend', handleEnd);
+
+    slider.addEventListener('input', (e) => {
+        nValue = parseInt(e.target.value);
+        sliderVal.textContent = nValue;
+        draw();
+    });
+
+    clearBtn.addEventListener('click', () => {
+        rawPoints = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        intervalVal.textContent = '0';
+    });
+
+    window.addEventListener('resize', resize);
+    setTimeout(resize, 0); // Initial call
+})();
+</script></div>
+</section>
+<!-- Normalization of scale and translation. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>After resampling the stroke to a uniform spatial density, the character remains sensitive to <strong>global transformations</strong>. A user might draw the letter "A" in the top-left corner of a tablet or the bottom-right; they might draw it as a tiny glyph or a large, sweeping gesture. If the raw coordinates were passed directly to a classifier, the system would treat these variations as entirely different patterns. To achieve <strong>translation and scale invariance</strong>, we must map the stroke into a standardized reference frame, typically a unit square centered at the origin $(0,0)$.</p><p>The first step is <strong>translation normalization</strong>. We find the stroke's centroid $(\bar{x}, \bar{y})$ by averaging the coordinates of the resampled points: $\bar{x} = \frac{1}{N} \sum x_i$ and $\bar{y} = \frac{1}{N} \sum y_i$. Every point $p_i$ is then shifted by subtracting this centroid: $p'_i = (x_i - \bar{x}, y_i - \bar{y})$. This centering process ensures that the position of the character on the screen no longer affects its numerical representation.</p><p>Next, we address <strong>scale normalization</strong>. Even when centered, a large "S" and a small "S" have different coordinate ranges. We define a bounding box for the stroke, determined by its minimum and maximum coordinates. Let $w$ and $h$ be the width and height of this box. To fit the character into a unit square of size $S$, we apply a scaling factor:
+$$x''_i = x'_i \cdot \frac{S}{\max(w, h)}, \quad y''_i = y'_i \cdot \frac{S}{\max(w, h)}$$
+By using the maximum dimension (aspect-ratio preservation), we avoid distorting the character’s shape—for instance, preventing a tall, thin "1" from being stretched into a square. This resulting <em>canonical form</em> ensures that the recognizer focuses strictly on the <strong>relative geometry</strong> and structural topology of the stroke, rather than where or how large it was drawn.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        user-select: none;
+    }
+    #ku2-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    #ku2-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        cursor: crosshair;
+        touch-action: none;
+    }
+    #ku2-controls {
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .ku2-toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    #ku2-btn-clear {
+        padding: 4px 12px;
+        cursor: pointer;
+    }
+    .ku2-legend {
+        font-size: 0.8rem;
+        display: flex;
+        gap: 15px;
+        color: #666;
+    }
+    .ku2-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .ku2-box-icon { width: 12px; height: 12px; border: 1px dashed #ff4757; }
+    .ku2-unit-icon { width: 12px; height: 12px; border: 2px solid #2ed573; }
+</style><div id="ku2-container">
+<div class="ku2-legend">
+<div class="ku2-legend-item"><div class="ku2-box-icon"></div> Bounding Box</div>
+<div class="ku2-legend-item"><div class="ku2-unit-icon"></div> Unit Square (Normalized Space)</div>
+</div>
+<div id="ku2-canvas-container">
+<canvas id="ku2-canvas"></canvas>
+</div>
+<div id="ku2-controls">
+<label class="ku2-toggle-container">
+<input id="ku2-normalize-toggle" type="checkbox"/> Apply Normalization
+        </label>
+<button id="ku2-btn-clear">Clear</button>
+<div id="ku2-status" style="font-size: 0.85rem; color: #444;">Draw anywhere at any scale</div>
+</div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku2-canvas');
+    const ctx = canvas.getContext('2d');
+    const toggle = document.getElementById('ku2-normalize-toggle');
+    const clearBtn = document.getElementById('ku2-btn-clear');
+
+    let points = [];
+    let isDrawing = false;
+    const UNIT_SIZE = 150; // Size of the canonical unit square in pixels
+    
+    // Animation state
+    let transitionProgress = 0; // 0 for raw, 1 for normalized
+    let animationId = null;
+
+    function initDefault() {
+        const w = canvas.width;
+        const h = canvas.height;
+        points = [];
+        // Tiny 'C' in the corner
+        const startX = w * 0.1;
+        const startY = h * 0.1;
+        for(let i=0; i<32; i++) {
+            const angle = (i/32) * Math.PI * 1.5 - Math.PI*0.75;
+            points.push({
+                x: startX + Math.cos(angle) * 20 + 20,
+                y: startY + Math.sin(angle) * 20 + 20
+            });
+        }
+        draw();
+    }
+
+    function resize() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        if (points.length === 0) initDefault();
+        draw();
+    }
+
+    function getBounds(pts) {
+        if (pts.length === 0) return {x:0, y:0, w:0, h:0};
+        const xs = pts.map(p => p.x);
+        const ys = pts.map(p => p.y);
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        return { x: minX, y: minY, w: maxX - minX, h: maxY - minY, cx: (minX+maxX)/2, cy: (minY+maxY)/2 };
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        // 1. Draw Target Unit Square
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = '#2ed573';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(centerX - UNIT_SIZE/2, centerY - UNIT_SIZE/2, UNIT_SIZE, UNIT_SIZE);
+        ctx.setLineDash([]);
+
+        if (points.length < 2) return;
+
+        const bounds = getBounds(points);
+        
+        // 2. Draw Original Bounding Box (fades out during normalization)
+        ctx.strokeStyle = `rgba(255, 71, 87, ${1 - transitionProgress})`;
+        ctx.setLineDash([2, 4]);
+        ctx.strokeRect(bounds.x, bounds.y, bounds.w, bounds.h);
+        ctx.setLineDash([]);
+
+        // 3. Calculate Normalized Points
+        // Centering + Scaling (Aspect Ratio Preserved)
+        const scale = UNIT_SIZE / Math.max(bounds.w, bounds.h, 1);
+        
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#007bff';
+
+        points.forEach((p, i) => {
+            // Target position in normalized square
+            const targetX = centerX + (p.x - bounds.cx) * scale;
+            const targetY = centerY + (p.y - bounds.cy) * scale;
+
+            // Interpolate based on transitionProgress
+            const currentX = p.x + (targetX - p.x) * transitionProgress;
+            const currentY = p.y + (targetY - p.y) * transitionProgress;
+
+            if (i === 0) ctx.moveTo(currentX, currentY);
+            else ctx.lineTo(currentX, currentY);
+        });
+        ctx.stroke();
+    }
+
+    function animate() {
+        const target = toggle.checked ? 1 : 0;
+        const step = 0.08;
+        
+        if (Math.abs(transitionProgress - target) < 0.01) {
+            transitionProgress = target;
+            draw();
+            cancelAnimationFrame(animationId);
+            animationId = null;
+            return;
+        }
+
+        transitionProgress += (target - transitionProgress) * step;
+        draw();
+        animationId = requestAnimationFrame(animate);
+    }
+
+    // Events
+    function handleStart(e) {
+        if (toggle.checked) return; // Don't draw while normalized
+        isDrawing = true;
+        points = [];
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches?.[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches?.[0].clientY) - rect.top;
+        points.push({x, y});
+    }
+
+    function handleMove(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches?.[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches?.[0].clientY) - rect.top;
+        points.push({x, y});
+        draw();
+    }
+
+    function handleEnd() { isDrawing = false; }
+
+    canvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    canvas.addEventListener('touchstart', (e) => { if(!toggle.checked) e.preventDefault(); handleStart(e); }, {passive: false});
+    canvas.addEventListener('touchmove', (e) => { if(!toggle.checked) e.preventDefault(); handleMove(e); }, {passive: false});
+    canvas.addEventListener('touchend', handleEnd);
+
+    toggle.addEventListener('change', () => {
+        if (!animationId) animate();
+    });
+
+    clearBtn.addEventListener('click', () => {
+        points = [];
+        transitionProgress = 0;
+        toggle.checked = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        draw();
+    });
+
+    window.addEventListener('resize', resize);
+    setTimeout(resize, 0);
+})();
+</script></div>
+</section>
+<!-- Directional feature vectors: Cosine and Sine of stroke angles. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>With the stroke now resampled and normalized, we possess a sequence of $N$ coordinates in a canonical space. While these points define the shape, passing absolute coordinates directly into a classifier can still be sensitive to local distortions. To create a more robust descriptor, we shift our focus from <strong>positional data</strong> to <strong>directional data</strong>. By analyzing the orientation of the segments connecting our resampled points, we can characterize the "flow" or curvature of the stroke, which is often more indicative of a user’s intent than the exact placement of a point.</p><p>For every pair of consecutive resampled points $p_i = (x_i, y_i)$ and $p_{i+1} = (x_{i+1}, y_{i+1})$, we treat the segment between them as a vector. We calculate the angle $\theta_i$ that this segment makes with the positive x-axis using the arctangent function:</p><p>$$\theta_i = \operatorname{atan2}(y_{i+1} - y_i, x_{i+1} - x_i)$$</p><p>However, raw angles present a mathematical challenge: <em>circularity</em>. An angle of $0$ radians is numerically far from $2\pi$, yet they represent the exact same direction. To map these angles into a continuous linear space suitable for machine learning, we decompose each angle into its trigonometric components: <strong>$\cos(\theta_i)$</strong> and <strong>$\sin(\theta_i)$</strong>. This transformation yields a feature vector of length $2(N-1)$.</p><p>The resulting vector $V = [\cos\theta_1, \sin\theta_1, \cos\theta_2, \sin\theta_2, \dots]$ provides a powerful, fixed-length representation of the stroke's geometry. Because trigonometric functions are bounded between $[-1, 1]$, the features are inherently normalized. This <strong>directional feature vector</strong> is the engine behind many classic recognizers, such as the <strong>$1 Unistroke Recognizer</strong>. It effectively captures the structural "signature" of a gesture—making it easy to distinguish between the sharp vertex of a "V" and the smooth, continuous rotation of an "O"—while remaining resilient to the slight wobbles or "noise" inherent in human handwriting.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        user-select: none;
+    }
+    #ku3-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+    @media (max-width: 600px) {
+        #ku3-layout { grid-template-columns: 1fr; }
+    }
+    .ku3-panel {
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        height: 250px;
+        position: relative;
+    }
+    #ku3-canvas-stroke, #ku3-canvas-circle {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    #ku3-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 4px;
+        border: 1px solid #eee;
+    }
+    .ku3-slider-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    #ku3-slider { flex-grow: 1; }
+    .ku3-data-display {
+        display: flex;
+        justify-content: space-around;
+        font-family: monospace;
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+    .ku3-cos { color: #e74c3c; }
+    .ku3-sin { color: #2ecc71; }
+    .ku3-label { font-size: 0.75rem; color: #666; position: absolute; top: 10px; left: 10px; font-weight: bold; text-transform: uppercase;}
+</style><div id="ku3-container">
+<div id="ku3-layout">
+<div class="ku3-panel">
+<span class="ku3-label">Resampled Stroke</span>
+<canvas id="ku3-canvas-stroke"></canvas>
+</div>
+<div class="ku3-panel">
+<span class="ku3-label">Unit Circle (Direction)</span>
+<canvas id="ku3-canvas-circle"></canvas>
+</div>
+</div>
+<div id="ku3-controls">
+<div class="ku3-slider-row">
+<label for="ku3-slider"><b>Segment (i):</b></label>
+<input id="ku3-slider" max="15" min="0" type="range" value="0"/>
+<span id="ku3-index-val">0</span>
+</div>
+<div class="ku3-data-display">
+<div>cos(θ<sub id="ku3-sub">0</sub>): <span class="ku3-cos" id="ku3-cos-val">1.00</span></div>
+<div>sin(θ<sub id="ku3-sub2">0</sub>): <span class="ku3-sin" id="ku3-sin-val">0.00</span></div>
+</div>
+</div>
+</div><script>
+(function() {
+    const canvasStroke = document.getElementById('ku3-canvas-stroke');
+    const canvasCircle = document.getElementById('ku3-canvas-circle');
+    const ctxS = canvasStroke.getContext('2d');
+    const ctxC = canvasCircle.getContext('2d');
+    const slider = document.getElementById('ku3-slider');
+    const indexVal = document.getElementById('ku3-index-val');
+    const cosVal = document.getElementById('ku3-cos-val');
+    const sinVal = document.getElementById('ku3-sin-val');
+    const sub1 = document.getElementById('ku3-sub');
+    const sub2 = document.getElementById('ku3-sub2');
+
+    let N = 17; // Points for 16 segments
+    let points = [];
+    
+    function initPoints() {
+        const w = canvasStroke.width;
+        const h = canvasStroke.height;
+        const padding = 50;
+        // Generate an "N" shape
+        const p1 = {x: padding, y: h - padding};
+        const p2 = {x: padding, y: padding};
+        const p3 = {x: w - padding, y: h - padding};
+        const p4 = {x: w - padding, y: padding};
+        
+        points = [];
+        // Segment 1 (Up)
+        for(let i=0; i<6; i++) points.push({x: p1.x, y: p1.y - (p1.y-p2.y)*(i/5)});
+        // Segment 2 (Diagonal)
+        for(let i=1; i<6; i++) points.push({x: p2.x + (p3.x-p2.x)*(i/5), y: p2.y + (p3.y-p2.y)*(i/5)});
+        // Segment 3 (Up)
+        for(let i=1; i<6; i++) points.push({x: p3.x, y: p3.y - (p3.y-p4.y)*(i/5)});
+    }
+
+    function draw() {
+        const idx = parseInt(slider.value);
+        indexVal.textContent = idx;
+        sub1.textContent = idx;
+        sub2.textContent = idx;
+
+        // 1. Draw Stroke
+        ctxS.clearRect(0, 0, canvasStroke.width, canvasStroke.height);
+        ctxS.strokeStyle = '#ccc';
+        ctxS.lineWidth = 2;
+        ctxS.beginPath();
+        points.forEach((p, i) => {
+            if(i === 0) ctxS.moveTo(p.x, p.y);
+            else ctxS.lineTo(p.x, p.y);
+        });
+        ctxS.stroke();
+
+        // Highlight active segment
+        const pStart = points[idx];
+        const pEnd = points[idx+1];
+        ctxS.strokeStyle = '#007bff';
+        ctxS.lineWidth = 4;
+        ctxS.beginPath();
+        ctxS.moveTo(pStart.x, pStart.y);
+        ctxS.lineTo(pEnd.x, pEnd.y);
+        ctxS.stroke();
+
+        ctxS.fillStyle = '#007bff';
+        points.forEach((p, i) => {
+            ctxS.beginPath();
+            ctxS.arc(p.x, p.y, i === idx || i === idx+1 ? 4 : 2, 0, Math.PI*2);
+            ctxS.fill();
+        });
+
+        // 2. Calculate Angle
+        const angle = Math.atan2(pEnd.y - pStart.y, pEnd.x - pStart.x);
+        const cv = Math.cos(angle);
+        const sv = Math.sin(angle);
+        cosVal.textContent = cv.toFixed(3);
+        sinVal.textContent = sv.toFixed(3);
+
+        // 3. Draw Unit Circle
+        const cx = canvasCircle.width / 2;
+        const cy = canvasCircle.height / 2;
+        const r = 70;
+
+        ctxC.clearRect(0, 0, canvasCircle.width, canvasCircle.height);
+        
+        // Axes
+        ctxC.strokeStyle = '#eee';
+        ctxC.beginPath();
+        ctxC.moveTo(0, cy); ctxC.lineTo(canvasCircle.width, cy);
+        ctxC.moveTo(cx, 0); ctxC.lineTo(cx, canvasCircle.height);
+        ctxC.stroke();
+
+        // Circle
+        ctxC.strokeStyle = '#666';
+        ctxC.setLineDash([2, 2]);
+        ctxC.beginPath();
+        ctxC.arc(cx, cy, r, 0, Math.PI*2);
+        ctxC.stroke();
+        ctxC.setLineDash([]);
+
+        // Component lines
+        ctxC.setLineDash([4, 2]);
+        ctxC.strokeStyle = '#e74c3c'; // Cos component
+        ctxC.beginPath();
+        ctxC.moveTo(cx, cy); ctxC.lineTo(cx + cv * r, cy);
+        ctxC.stroke();
+        
+        ctxC.strokeStyle = '#2ecc71'; // Sin component
+        ctxC.beginPath();
+        ctxC.moveTo(cx + cv * r, cy); ctxC.lineTo(cx + cv * r, cy + sv * r);
+        ctxC.stroke();
+        ctxC.setLineDash([]);
+
+        // Vector
+        ctxC.strokeStyle = '#007bff';
+        ctxC.lineWidth = 3;
+        ctxC.beginPath();
+        ctxC.moveTo(cx, cy);
+        ctxC.lineTo(cx + cv * r, cy + sv * r);
+        ctxC.stroke();
+
+        // End point
+        ctxC.fillStyle = '#007bff';
+        ctxC.beginPath();
+        ctxC.arc(cx + cv * r, cy + sv * r, 5, 0, Math.PI*2);
+        ctxC.fill();
+    }
+
+    function resize() {
+        [canvasStroke, canvasCircle].forEach(c => {
+            const rect = c.parentElement.getBoundingClientRect();
+            c.width = rect.width;
+            c.height = rect.height;
+        });
+        initPoints();
+        draw();
+    }
+
+    slider.addEventListener('input', draw);
+    window.addEventListener('resize', resize);
+    setTimeout(resize, 0);
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

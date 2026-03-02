@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Euclidean geometric constructions with compass and straightedge</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Euclidean geometric constructions with compass and straightedge</h1>
+<!-- The fundamental operations: drawing lines and circles. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>At the heart of Euclidean geometry lies a minimalist philosophy: complex figures are not "drawn" in the modern sense, but are instead <strong>constructed</strong> using a strictly limited set of moves. These moves are governed by the first three postulates of Euclid’s <em>Elements</em>, which define what is possible using only a straightedge (an unmarked ruler) and a collapsing compass.</p><p>The first operation is the ability to <strong>draw a straight line segment</strong> between any two distinct points $A$ and $B$. In this system, the straightedge serves no purpose for measurement; it exists solely as a physical guide to connect two spatial coordinates. Once these points are established, the segment $\overline{AB}$ becomes a rigid foundation for further geometric exploration.</p><p>The second operation involves <strong>extension</strong>. According to Euclidean principles, any finite line segment can be produced, or extended, continuously in a straight line. This allows us to transform a segment $\overline{AB}$ into a ray or an infinite line $\overleftrightarrow{AB}$. This is crucial when we need to find intersections between lines that originate far from one another.</p><p>The third and perhaps most versatile operation is the <strong>construction of a circle</strong>. Given any point $P$ as a center and any point $Q$ to define the radius, a circle can be drawn such that every point on the circumference is at an equal distance $r$ from the center $P$. Mathematically, this operation allows us to "transfer" distances and find the locus of all points satisfying the equation:</p><p>$(x - h)^2 + (y - k)^2 = r^2$</p><p>By mastering these three primitive actions—connecting points, extending lines, and swinging arcs—we gain the ability to locate new points through the <strong>intersection</strong> of these paths. These intersections are the only "legal" way to create new data in a construction, serving as the building blocks for every theorem and shape in the Greek tradition.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    #ku1-controls {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #f1f3f5;
+        padding: 15px;
+        border-radius: 6px;
+    }
+    #ku1-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 450px;
+        background: #fff;
+        border: 1px solid #ddd;
+        cursor: crosshair;
+        touch-action: none;
+    }
+    #ku1-ui-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        pointer-events: none;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #444;
+    }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<div>
+<label for="ku1-tool-mode" style="font-weight: bold; margin-right: 8px;">Construction Tool:</label>
+<select id="ku1-tool-mode" style="padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc;">
+<option value="Line Segment">Postulate 1: Line Segment</option>
+<option value="Circle">Postulate 3: Circle</option>
+</select>
+</div>
+<div id="ku1-distance-display" style="font-family: monospace; color: #666;">
+            Distance AB: <span id="ku1-dist-value">0</span>
+</div>
+</div>
+<div id="ku1-canvas-container">
+<div id="ku1-ui-overlay">Drag points A or B to re-construct</div>
+<svg height="100%" id="ku1-svg" width="100%">
+<!-- Geometry Layer -->
+<line id="ku1-line" stroke="#3498db" stroke-width="2" x1="0" x2="0" y1="0" y2="0"></line>
+<circle cx="0" cy="0" fill="rgba(52, 152, 219, 0.1)" id="ku1-circle" r="0" stroke="#3498db" stroke-width="2"></circle>
+<!-- Points Layer -->
+<circle cursor="grab" cx="150" cy="250" fill="#e74c3c" id="ku1-pointA" r="8"></circle>
+<text font-weight="bold" id="ku1-labelA" x="140" y="240">A</text>
+<circle cursor="grab" cx="350" cy="250" fill="#e74c3c" id="ku1-pointB" r="8"></circle>
+<text font-weight="bold" id="ku1-labelB" x="360" y="240">B</text>
+</svg>
+</div>
+</div><script>
+(function() {
+    const svg = document.getElementById('ku1-svg');
+    const toolSelect = document.getElementById('ku1-tool-mode');
+    const distSpan = document.getElementById('ku1-dist-value');
+    
+    const ptA = document.getElementById('ku1-pointA');
+    const ptB = document.getElementById('ku1-pointB');
+    const lblA = document.getElementById('ku1-labelA');
+    const lblB = document.getElementById('ku1-labelB');
+    
+    const line = document.getElementById('ku1-line');
+    const circle = document.getElementById('ku1-circle');
+
+    let state = {
+        A: { x: 150, y: 250 },
+        B: { x: 350, y: 250 },
+        activePoint: null,
+        tool: 'Line Segment'
+    };
+
+    function updateGeometry() {
+        // Calculate Distance
+        const dx = state.B.x - state.A.x;
+        const dy = state.B.y - state.A.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        distSpan.textContent = distance.toFixed(1) + " units";
+
+        // Update Point Vis
+        ptA.setAttribute('cx', state.A.x);
+        ptA.setAttribute('cy', state.A.y);
+        lblA.setAttribute('x', state.A.x - 15);
+        lblA.setAttribute('y', state.A.y - 15);
+
+        ptB.setAttribute('cx', state.B.x);
+        ptB.setAttribute('cy', state.B.y);
+        lblB.setAttribute('x', state.B.x + 10);
+        lblB.setAttribute('y', state.B.y - 15);
+
+        // Visibility Toggling
+        if (state.tool === 'Line Segment') {
+            line.style.display = 'block';
+            circle.style.display = 'none';
+            line.setAttribute('x1', state.A.x);
+            line.setAttribute('y1', state.A.y);
+            line.setAttribute('x2', state.B.x);
+            line.setAttribute('y2', state.B.y);
+        } else {
+            line.style.display = 'none';
+            circle.style.display = 'block';
+            circle.setAttribute('cx', state.A.x);
+            circle.setAttribute('cy', state.A.y);
+            circle.setAttribute('r', distance);
+        }
+    }
+
+    function getMousePos(evt) {
+        const CTM = svg.getScreenCTM();
+        if (evt.touches && evt.touches[0]) {
+            return {
+                x: (evt.touches[0].clientX - CTM.e) / CTM.a,
+                y: (evt.touches[0].clientY - CTM.f) / CTM.d
+            };
+        }
+        return {
+            x: (evt.clientX - CTM.e) / CTM.a,
+            y: (evt.clientY - CTM.f) / CTM.d
+        };
+    }
+
+    function handleStart(evt, pointKey) {
+        state.activePoint = pointKey;
+        evt.preventDefault();
+    }
+
+    function handleMove(evt) {
+        if (!state.activePoint) return;
+        const pos = getMousePos(evt);
+        state[state.activePoint].x = pos.x;
+        state[state.activePoint].y = pos.y;
+        updateGeometry();
+    }
+
+    function handleEnd() {
+        state.activePoint = null;
+    }
+
+    ptA.addEventListener('mousedown', (e) => handleStart(e, 'A'));
+    ptB.addEventListener('mousedown', (e) => handleStart(e, 'B'));
+    ptA.addEventListener('touchstart', (e) => handleStart(e, 'A'));
+    ptB.addEventListener('touchstart', (e) => handleStart(e, 'B'));
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchend', handleEnd);
+
+    toolSelect.addEventListener('change', (e) => {
+        state.tool = e.target.value;
+        updateGeometry();
+    });
+
+    // Initial Render
+    updateGeometry();
+})();
+</script></div>
+</section>
+<!-- The Perpendicular Bisector construction. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>With the fundamental operations established, we can begin to synthesize them into more complex structures. The <strong>perpendicular bisector</strong> is arguably the most essential compound construction in Euclidean geometry; it allows us to find the exact midpoint of a segment $\overline{AB}$ and generate a line that meets it at a perfect $90^\circ$ angle without the use of a protractor or marked ruler.</p><p>The process relies entirely on the principle of <strong>equidistance</strong>. By using the length of the segment $AB$ as a radius, we construct two congruent circles—one centered at $P_1 = A$ and the other at $P_2 = B$. Because these circles share the same radius $r = AB$, they are symmetric reflections of one another. The two points where these circles intersect, let us call them $C$ and $D$, are mathematically significant: they are the only points on the plane that are simultaneously at distance $r$ from both $A$ and $B$.</p><p>By invoking Postulate 1 to draw a line through these new intersections $\overleftrightarrow{CD}$, we create the perpendicular bisector. This line functions as the <strong>axis of symmetry</strong> for the segment. Every point on $\overleftrightarrow{CD}$ satisfies the condition that its distance to point $A$ is equal to its distance to point $B$. Where this line intersects the original segment, it identifies the midpoint $M$, effectively partitioning $\overline{AB}$ into two equal segments such that $AM = MB$.</p><p>This construction elegantly demonstrates how the "collapsing" nature of the Euclidean compass is bypassed. Even though the tool itself cannot "carry" a measurement across the page, the <strong>intersections</strong> of these rigid arcs lock the geometry into a configuration that is logically and spatially undeniable. In this way, the perpendicular bisector serves as the gateway to constructing squares, circumcircles, and deep symmetry.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    #ku2-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        background: #f1f3f5;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    .ku2-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .ku2-label {
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+        display: flex;
+        justify-content: space-between;
+    }
+    #ku2-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        background: #fff;
+        border: 1px solid #ddd;
+        overflow: hidden;
+    }
+    .ku2-guide-text {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        text-align: center;
+        background: rgba(255,255,255,0.9);
+        padding: 8px;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #555;
+        border: 1px solid #eee;
+    }
+    #ku2-svg {
+        width: 100%;
+        height: 100%;
+    }
+    .ku2-arc {
+        transition: stroke-dashoffset 0.5s ease-in-out;
+    }
+</style><div id="ku2-container">
+<div id="ku2-controls">
+<div class="ku2-control-group">
+<div class="ku2-label">
+<span>Construction Step:</span>
+<span id="ku2-step-val">0</span>
+</div>
+<input id="ku2-step-slider" max="3" min="0" step="1" type="range" value="0"/>
+</div>
+<div class="ku2-control-group">
+<div class="ku2-label">
+<span>Segment Length:</span>
+<span id="ku2-length-val">200</span>
+</div>
+<input id="ku2-length-slider" max="300" min="100" step="10" type="range" value="200"/>
+</div>
+</div>
+<div id="ku2-canvas-container">
+<svg id="ku2-svg">
+<!-- Construction Geometry -->
+<circle fill="none" id="ku2-circle-a" opacity="0" stroke="#3498db" stroke-dasharray="5,5" stroke-width="1.5"></circle>
+<circle fill="none" id="ku2-circle-b" opacity="0" stroke="#3498db" stroke-dasharray="5,5" stroke-width="1.5"></circle>
+<line id="ku2-bisector" opacity="0" stroke="#e67e22" stroke-width="3"></line>
+<!-- Base Segment -->
+<line id="ku2-base-line" stroke="#2c3e50" stroke-width="3"></line>
+<!-- Intersection Points -->
+<circle fill="#e67e22" id="ku2-int-top" opacity="0" r="5"></circle>
+<circle fill="#e67e22" id="ku2-int-bottom" opacity="0" r="5"></circle>
+<!-- Base Points -->
+<circle fill="#e74c3c" id="ku2-pt-a" r="6"></circle>
+<text font-size="16" font-weight="bold" id="ku2-lbl-a">A</text>
+<circle fill="#e74c3c" id="ku2-pt-b" r="6"></circle>
+<text font-size="16" font-weight="bold" id="ku2-lbl-b">B</text>
+</svg>
+<div class="ku2-guide-text" id="ku2-guide">Step 0: Start with segment AB.</div>
+</div>
+</div><script>
+(function() {
+    const stepSlider = document.getElementById('ku2-step-slider');
+    const lengthSlider = document.getElementById('ku2-length-slider');
+    const stepVal = document.getElementById('ku2-step-val');
+    const lengthVal = document.getElementById('ku2-length-val');
+    const guide = document.getElementById('ku2-guide');
+
+    const svg = document.getElementById('ku2-svg');
+    const lineAB = document.getElementById('ku2-base-line');
+    const circleA = document.getElementById('ku2-circle-a');
+    const circleB = document.getElementById('ku2-circle-b');
+    const bisector = document.getElementById('ku2-bisector');
+    const ptA = document.getElementById('ku2-pt-a');
+    const ptB = document.getElementById('ku2-pt-b');
+    const lblA = document.getElementById('ku2-lbl-a');
+    const lblB = document.getElementById('ku2-lbl-b');
+    const intTop = document.getElementById('ku2-int-top');
+    const intBottom = document.getElementById('ku2-int-bottom');
+
+    const instructions = [
+        "Step 0: Start with segment AB.",
+        "Step 1: Construct a circle centered at A with radius AB.",
+        "Step 2: Construct a circle centered at B with radius AB.",
+        "Step 3: Connect the intersections to form the perpendicular bisector."
+    ];
+
+    function draw() {
+        const width = svg.clientWidth;
+        const height = svg.clientHeight;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
+        const len = parseInt(lengthSlider.value);
+        const step = parseInt(stepSlider.value);
+        
+        stepVal.textContent = step;
+        lengthVal.textContent = len;
+        guide.textContent = instructions[step];
+
+        const xA = centerX - len/2;
+        const xB = centerX + len/2;
+        const y = centerY;
+
+        // Base Points and Line
+        ptA.setAttribute('cx', xA); ptA.setAttribute('cy', y);
+        ptB.setAttribute('cx', xB); ptB.setAttribute('cy', y);
+        lblA.setAttribute('x', xA - 10); lblA.setAttribute('y', y - 15);
+        lblB.setAttribute('x', xB + 10); lblB.setAttribute('y', y - 15);
+        
+        lineAB.setAttribute('x1', xA); lineAB.setAttribute('y1', y);
+        lineAB.setAttribute('x2', xB); lineAB.setAttribute('y2', y);
+
+        // Calculate Intersections
+        // For two circles of same radius R centered at (-d,0) and (d,0)
+        // x = 0, y = +/- sqrt(R^2 - d^2)
+        // Here R = len, d = len/2
+        const intersectYOffset = Math.sqrt(Math.pow(len, 2) - Math.pow(len/2, 2));
+        const yTop = y - intersectYOffset;
+        const yBottom = y + intersectYOffset;
+
+        // Circle A
+        circleA.setAttribute('cx', xA);
+        circleA.setAttribute('cy', y);
+        circleA.setAttribute('r', len);
+        circleA.setAttribute('opacity', step >= 1 ? "1" : "0");
+
+        // Circle B
+        circleB.setAttribute('cx', xB);
+        circleB.setAttribute('cy', y);
+        circleB.setAttribute('r', len);
+        circleB.setAttribute('opacity', step >= 2 ? "1" : "0");
+
+        // Intersections and Bisector
+        intTop.setAttribute('cx', centerX);
+        intTop.setAttribute('cy', yTop);
+        intBottom.setAttribute('cx', centerX);
+        intBottom.setAttribute('cy', yBottom);
+        
+        bisector.setAttribute('x1', centerX);
+        bisector.setAttribute('y1', yTop - 40);
+        bisector.setAttribute('x2', centerX);
+        bisector.setAttribute('y2', yBottom + 40);
+
+        const finalStepOpacity = step >= 3 ? "1" : "0";
+        intTop.setAttribute('opacity', finalStepOpacity);
+        intBottom.setAttribute('opacity', finalStepOpacity);
+        bisector.setAttribute('opacity', finalStepOpacity);
+    }
+
+    stepSlider.addEventListener('input', draw);
+    lengthSlider.addEventListener('input', draw);
+    window.addEventListener('resize', draw);
+    
+    // Initial draw
+    setTimeout(draw, 100);
+})();
+</script></div>
+</section>
+<!-- Angle Bisection technique. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>If the perpendicular bisector is the tool for partitioning linear space, the <strong>angle bisector</strong> is its rotational counterpart. To bisect an angle means to construct a ray that divides the original angle $\angle AOB$ into two congruent angles, such that $\angle AOC = \angle COB$. This technique rests on the principle of creating a <strong>rhombus</strong> or an equilateral kite, whose diagonal naturally serves as the axis of angular symmetry.</p><p>The construction begins by placing the compass at the vertex $O$ and swinging an arc of any radius $r$. This arc intersects the two rays of the angle at points $P_1$ and $P_2$. Because both points lie on the same arc centered at $O$, we have established that $OP_1 = OP_2$. These points serve as new, equidistant anchors for the final stage of the construction. In the Euclidean mindset, we have effectively "mapped" the divergence of the two lines onto two points at an identical distance from the origin.</p><p>From these two new anchors, $P_1$ and $P_2$, we draw two more arcs of equal radius. These arcs must have a radius large enough to intersect; typically, using the distance $P_1P_2$ is a safe choice. The point where these two arcs meet, point $C$, is technically the fourth vertex of a geometric figure where all sides (or at least adjacent pairs) are equal. Since point $C$ is <strong>equidistant</strong> from both $P_1$ and $P_2$, it must lie on the line of symmetry that passes through the vertex $O$.</p><p>By connecting the vertex $O$ to this intersection $C$ using a straightedge, we produce the bisecting ray. Mathematically, any point $(x, y)$ on this ray $\overrightarrow{OC}$ satisfies the property that its perpendicular distance to ray $\overrightarrow{OA}$ is equal to its perpendicular distance to ray $\overrightarrow{OB}$. This construction is vital for finding the <strong>incenter</strong> of a triangle—the unique point where the three internal angle bisectors meet—proving that even the most complex radial balances can be struck using only the intersection of simple circles.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    #ku3-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        background: #f1f3f5;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    .ku3-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .ku3-label {
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+        display: flex;
+        justify-content: space-between;
+    }
+    #ku3-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 450px;
+        background: #fff;
+        border: 1px solid #ddd;
+        overflow: hidden;
+    }
+    .ku3-toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    }
+    #ku3-svg {
+        width: 100%;
+        height: 100%;
+    }
+    .ku3-construction-arc {
+        stroke: #3498db;
+        stroke-width: 1.5;
+        fill: none;
+        stroke-dasharray: 4,4;
+    }
+    .ku3-bisector-ray {
+        stroke: #e67e22;
+        stroke-width: 3;
+        stroke-dasharray: 8,4;
+        transition: opacity 0.3s ease;
+    }
+    .ku3-main-ray {
+        stroke: #2c3e50;
+        stroke-width: 3;
+    }
+</style><div id="ku3-container">
+<div id="ku3-controls">
+<div class="ku3-control-group">
+<div class="ku3-label">
+<span>Angle Size:</span>
+<span id="ku3-angle-val">60°</span>
+</div>
+<input id="ku3-angle-slider" max="160" min="20" step="1" type="range" value="60"/>
+</div>
+<div class="ku3-control-group">
+<div class="ku3-label">Show Resulting Bisector</div>
+<label class="ku3-toggle-container">
+<input id="ku3-bisector-toggle" type="checkbox"/>
+<span style="font-size: 14px; color: #555;">Enable Postulate 1 Ray</span>
+</label>
+</div>
+</div>
+<div id="ku3-canvas-container">
+<svg id="ku3-svg">
+<!-- Arcs from points P1 and P2 -->
+<path class="ku3-construction-arc" id="ku3-arc-p1"></path>
+<path class="ku3-construction-arc" id="ku3-arc-p2"></path>
+<!-- Initial vertex arc (finding P1, P2) -->
+<path class="ku3-construction-arc" id="ku3-arc-vertex" style="stroke-dasharray: none; opacity: 0.6;"></path>
+<!-- Bisector Ray -->
+<line class="ku3-bisector-ray" id="ku3-bisector" opacity="0" x1="0" x2="0" y1="0" y2="0"></line>
+<!-- Angle Rays -->
+<line class="ku3-main-ray" id="ku3-ray-top"></line>
+<line class="ku3-main-ray" id="ku3-ray-bottom"></line>
+<!-- Points -->
+<circle fill="#2c3e50" id="ku3-pt-v" r="5"></circle>
+<text font-size="14" font-weight="bold" id="ku3-lbl-v">O</text>
+<circle fill="#3498db" id="ku3-pt-p1" r="4"></circle>
+<circle fill="#3498db" id="ku3-pt-p2" r="4"></circle>
+<circle fill="#e67e22" id="ku3-pt-c" opacity="0" r="5"></circle>
+<text fill="#e67e22" font-size="14" font-weight="bold" id="ku3-lbl-c" opacity="0">C</text>
+</svg>
+</div>
+</div><script>
+(function() {
+    const angleSlider = document.getElementById('ku3-angle-slider');
+    const bisectorToggle = document.getElementById('ku3-bisector-toggle');
+    const angleVal = document.getElementById('ku3-angle-val');
+    const svg = document.getElementById('ku3-svg');
+    
+    const rayTop = document.getElementById('ku3-ray-top');
+    const rayBottom = document.getElementById('ku3-ray-bottom');
+    const bisector = document.getElementById('ku3-bisector');
+    const arcVertex = document.getElementById('ku3-arc-vertex');
+    const arcP1 = document.getElementById('ku3-arc-p1');
+    const arcP2 = document.getElementById('ku3-arc-p2');
+    
+    const ptV = document.getElementById('ku3-pt-v');
+    const ptP1 = document.getElementById('ku3-pt-p1');
+    const ptP2 = document.getElementById('ku3-pt-p2');
+    const ptC = document.getElementById('ku3-pt-c');
+    const lblC = document.getElementById('ku3-lbl-c');
+
+    const radius = 120; // Radius of first arc
+    const secondRadius = 140; // Radius of construction arcs
+
+    function update() {
+        const width = svg.clientWidth;
+        const height = svg.clientHeight;
+        const vX = width * 0.2;
+        const vY = height * 0.5;
+        
+        const totalAngle = parseInt(angleSlider.value) * (Math.PI / 180);
+        const halfAngle = totalAngle / 2;
+        const showBisector = bisectorToggle.checked;
+
+        angleVal.textContent = angleSlider.value + "°";
+
+        // Vertex
+        ptV.setAttribute('cx', vX);
+        ptV.setAttribute('cy', vY);
+        document.getElementById('ku3-lbl-v').setAttribute('x', vX - 20);
+        document.getElementById('ku3-lbl-v').setAttribute('y', vY + 5);
+
+        // Ray coords
+        const x1 = vX + 300 * Math.cos(-halfAngle);
+        const y1 = vY + 300 * Math.sin(-halfAngle);
+        const x2 = vX + 300 * Math.cos(halfAngle);
+        const y2 = vY + 300 * Math.sin(halfAngle);
+
+        rayTop.setAttribute('x1', vX); rayTop.setAttribute('y1', vY);
+        rayTop.setAttribute('x2', x1); rayTop.setAttribute('y2', y1);
+        rayBottom.setAttribute('x1', vX); rayBottom.setAttribute('y1', vY);
+        rayBottom.setAttribute('x2', x2); rayBottom.setAttribute('y2', y2);
+
+        // Anchor points P1, P2
+        const p1x = vX + radius * Math.cos(-halfAngle);
+        const p1y = vY + radius * Math.sin(-halfAngle);
+        const p2x = vX + radius * Math.cos(halfAngle);
+        const p2y = vY + radius * Math.sin(halfAngle);
+
+        ptP1.setAttribute('cx', p1x); ptP1.setAttribute('cy', p1y);
+        ptP2.setAttribute('cx', p2x); ptP2.setAttribute('cy', p2y);
+
+        // Vertex Arc path
+        const arcPath = `M ${p1x} ${p1y} A ${radius} ${radius} 0 0 1 ${p2x} ${p2y}`;
+        arcVertex.setAttribute('d', arcPath);
+
+        // Construction arcs from P1 and P2
+        // Intersection C will be at (vX + dist, vY)
+        // distance from P1 to C = secondRadius
+        // Using Law of Cosines or simple symmetry:
+        const distC = radius * Math.cos(halfAngle) + Math.sqrt(Math.pow(secondRadius, 2) - Math.pow(radius * Math.sin(halfAngle), 2));
+        const cx = vX + distC;
+        const cy = vY;
+
+        // Draw partial arcs around C
+        const arcP1Path = `M ${cx} ${cy - 30} A ${secondRadius} ${secondRadius} 0 0 0 ${cx} ${cy + 30}`;
+        const arcP2Path = `M ${cx} ${cy - 30} A ${secondRadius} ${secondRadius} 0 0 1 ${cx} ${cy + 30}`;
+        
+        // Offset paths relative to centers
+        arcP1.setAttribute('d', `M ${cx} ${cy-40} A ${secondRadius} ${secondRadius} 0 0 0 ${cx} ${cy+40}`);
+        arcP1.setAttribute('transform', `rotate(${-halfAngle * 180 / Math.PI}, ${p1x}, ${p1y})`); // Simple way to point it toward center
+        
+        // Actually, let's just draw arcs centered at P1 and P2 that cross at C
+        function getArcPath(centerX, centerY, targetX, targetY, rad, sweep) {
+            const angle = Math.atan2(targetY - centerY, targetX - centerX);
+            const startAng = angle - 0.4;
+            const endAng = angle + 0.4;
+            const sx = centerX + rad * Math.cos(startAng);
+            const sy = centerY + rad * Math.sin(startAng);
+            const ex = centerX + rad * Math.cos(endAng);
+            const ey = centerY + rad * Math.sin(endAng);
+            return `M ${sx} ${sy} A ${rad} ${rad} 0 0 ${sweep} ${ex} ${ey}`;
+        }
+
+        arcP1.setAttribute('d', getArcPath(p1x, p1y, cx, cy, secondRadius, 1));
+        arcP2.setAttribute('d', getArcPath(p2x, p2y, cx, cy, secondRadius, 0));
+
+        // Bisector Result
+        bisector.setAttribute('x1', vX);
+        bisector.setAttribute('y1', vY);
+        bisector.setAttribute('x2', vX + 350);
+        bisector.setAttribute('y2', vY);
+        bisector.setAttribute('opacity', showBisector ? "1" : "0");
+
+        ptC.setAttribute('cx', cx);
+        ptC.setAttribute('cy', cy);
+        ptC.setAttribute('opacity', showBisector ? "1" : "0.3");
+        lblC.setAttribute('x', cx + 10);
+        lblC.setAttribute('y', cy - 10);
+        lblC.setAttribute('opacity', showBisector ? "1" : "0");
+    }
+
+    angleSlider.addEventListener('input', update);
+    bisectorToggle.addEventListener('change', update);
+    window.addEventListener('resize', update);
+    
+    setTimeout(update, 50);
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

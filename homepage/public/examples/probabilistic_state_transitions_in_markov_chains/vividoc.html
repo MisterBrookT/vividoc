@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Probabilistic state transitions in Markov chains</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Probabilistic state transitions in Markov chains</h1>
+<!-- Introduction to discrete states and the transition matrix. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>A <strong>Markov chain</strong> is a stochastic model that describes a sequence of possible events in which the probability of each event depends only on the state attained in the previous event. This core principle is known as the <strong>Markov Property</strong>, often summarized as "memorylessness." Formally, if we have a sequence of random variables $X_0, X_1, X_2, \dots$, the probability of the future state $X_{n+1}$ is determined entirely by the current state $X_n$, regardless of the path taken through $X_0, \dots, X_{n-1}$.</p><p>To mathematically model these transitions, we define a <strong>state space</strong>, which is a set of all possible conditions the system can occupy. For a system with $n$ discrete states, we represent the movement between these states using a <strong>transition matrix</strong> $P$. This square matrix serves as an organized map of probabilities, where each element $P_{ij}$ represents the probability of transitioning from state $i$ to state $j$ in a single time step:</p><p>$$P_{ij} = P(X_{n+1} = j \mid X_n = i)$$</p><p>In a transition matrix, each row corresponds to the "current state" and each column to the "next state." Because the system must always transition to <em>some</em> state (even if it transitions back to itself), the sum of the probabilities in any given row must always equal 1:</p><p>$$\sum_{j=1}^{n} P_{ij} = 1$$</p><p>These matrices are known as <strong>stochastic matrices</strong>. By looking at a transition matrix, we can instantly see the dynamics of the system: a value of $P_{ij} = 0$ indicates an impossible transition, while $P_{ij} = 1$ indicates a certain transition. Through this framework, we can transform complex behavioral observations into a rigorous linear algebra structure.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        color: #333;
+    }
+    #ku1-viz-layout {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 40px;
+        width: 100%;
+        margin-top: 20px;
+    }
+    #ku1-controls {
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .ku1-control-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .ku1-label-row {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    #ku1-svg-container {
+        flex: 1;
+        min-width: 300px;
+        height: 300px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    #ku1-matrix-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .ku1-matrix {
+        display: grid;
+        grid-template-columns: repeat(2, 60px);
+        gap: 10px;
+        padding: 15px;
+        border-left: 2px solid #333;
+        border-right: 2px solid #333;
+        position: relative;
+    }
+    .ku1-matrix::before, .ku1-matrix::after {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 2px;
+        background: #333;
+    }
+    .ku1-matrix::before { top: 0; left: 0; }
+    .ku1-matrix::after { bottom: 0; right: 0; }
+    .ku1-cell {
+        width: 60px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eee;
+        border-radius: 4px;
+        font-family: monospace;
+        font-weight: bold;
+    }
+    .ku1-matrix-label {
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+        color: #666;
+    }
+</style><div id="ku1-container">
+<div id="ku1-controls">
+<div class="ku1-control-group">
+<div class="ku1-label-row">
+<span>State A Transitions ($P_{AA}$)</span>
+<span id="ku1-val-aa">0.70</span>
+</div>
+<input id="ku1-slider-aa" max="1" min="0" step="0.01" type="range" value="0.7"/>
+</div>
+<div class="ku1-control-group">
+<div class="ku1-label-row">
+<span>State B Transitions ($P_{BB}$)</span>
+<span id="ku1-val-bb">0.40</span>
+</div>
+<input id="ku1-slider-bb" max="1" min="0" step="0.01" type="range" value="0.4"/>
+</div>
+</div>
+<div id="ku1-viz-layout">
+<div id="ku1-svg-container">
+<svg height="100%" id="ku1-svg" viewbox="0 0 400 300" width="100%"></svg>
+</div>
+<div id="ku1-matrix-container">
+<div class="ku1-matrix-label">Transition Matrix $P$</div>
+<div class="ku1-matrix">
+<div class="ku1-cell" id="ku1-m-aa">0.70</div>
+<div class="ku1-cell" id="ku1-m-ab">0.30</div>
+<div class="ku1-cell" id="ku1-m-ba">0.60</div>
+<div class="ku1-cell" id="ku1-m-bb">0.40</div>
+</div>
+</div>
+</div>
+</div><script>
+(function() {
+    const sliderAA = document.getElementById('ku1-slider-aa');
+    const sliderBB = document.getElementById('ku1-slider-bb');
+    const valAA = document.getElementById('ku1-val-aa');
+    const valBB = document.getElementById('ku1-val-bb');
+    
+    const mAA = document.getElementById('ku1-m-aa');
+    const mAB = document.getElementById('ku1-m-ab');
+    const mBA = document.getElementById('ku1-m-ba');
+    const mBB = document.getElementById('ku1-m-bb');
+    
+    const svg = d3.select("#ku1-svg");
+    const width = 400;
+    const height = 300;
+
+    // Definitions for markers
+    svg.append("defs").append("marker")
+        .attr("id", "ku1-arrowhead")
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 25)
+        .attr("refY", 0)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path")
+        .attr("d", "M0,-5L10,0L0,5")
+        .attr("fill", "#666");
+
+    const nodes = [
+        { id: 'A', x: 120, y: 150 },
+        { id: 'B', x: 280, y: 150 }
+    ];
+
+    // Edges setup
+    const edgePaths = {
+        aa: svg.append("path").attr("fill", "none").attr("stroke", "#4a90e2").attr("stroke-width", 2).attr("marker-end", "url(#ku1-arrowhead)"),
+        ab: svg.append("path").attr("fill", "none").attr("stroke", "#4a90e2").attr("stroke-width", 2).attr("marker-end", "url(#ku1-arrowhead)"),
+        ba: svg.append("path").attr("fill", "none").attr("stroke", "#e67e22").attr("stroke-width", 2).attr("marker-end", "url(#ku1-arrowhead)"),
+        bb: svg.append("path").attr("fill", "none").attr("stroke", "#e67e22").attr("stroke-width", 2).attr("marker-end", "url(#ku1-arrowhead)")
+    };
+
+    const edgeLabels = {
+        aa: svg.append("text").attr("text-anchor", "middle").attr("font-size", "12px").attr("font-weight", "bold"),
+        ab: svg.append("text").attr("text-anchor", "middle").attr("font-size", "12px").attr("font-weight", "bold"),
+        ba: svg.append("text").attr("text-anchor", "middle").attr("font-size", "12px").attr("font-weight", "bold"),
+        bb: svg.append("text").attr("text-anchor", "middle").attr("font-size", "12px").attr("font-weight", "bold")
+    };
+
+    // Draw Nodes
+    svg.selectAll("circle")
+        .data(nodes)
+        .enter()
+        .append("circle")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", 25)
+        .attr("fill", "#fff")
+        .attr("stroke", "#333")
+        .attr("stroke-width", 2);
+
+    svg.selectAll(".node-label")
+        .data(nodes)
+        .enter()
+        .append("text")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y + 5)
+        .attr("text-anchor", "middle")
+        .text(d => d.id)
+        .attr("font-weight", "bold");
+
+    function update() {
+        const paa = parseFloat(sliderAA.value);
+        const pab = 1 - paa;
+        const pbb = parseFloat(sliderBB.value);
+        const pba = 1 - pbb;
+
+        // Update Matrix Texts
+        valAA.textContent = paa.toFixed(2);
+        valBB.textContent = pbb.toFixed(2);
+        mAA.textContent = paa.toFixed(2);
+        mAB.textContent = pab.toFixed(2);
+        mBA.textContent = pba.toFixed(2);
+        mBB.textContent = pbb.toFixed(2);
+
+        // Path geometries
+        // Self-loop A
+        edgePaths.aa.attr("d", `M 105,130 A 20,20 0 1,1 135,130`);
+        edgeLabels.aa.attr("x", 120).attr("y", 90).text(paa.toFixed(2));
+        
+        // Self-loop B
+        edgePaths.bb.attr("d", `M 265,130 A 20,20 0 1,0 295,130`);
+        edgeLabels.bb.attr("x", 280).attr("y", 90).text(pbb.toFixed(2));
+
+        // A -> B (top curve)
+        edgePaths.ab.attr("d", `M 145,140 Q 200,110 255,140`);
+        edgeLabels.ab.attr("x", 200).attr("y", 120).text(pab.toFixed(2));
+
+        // B -> A (bottom curve)
+        edgePaths.ba.attr("d", `M 255,160 Q 200,190 145,160`);
+        edgeLabels.ba.attr("x", 200).attr("y", 195).text(pba.toFixed(2));
+        
+        // Opacity based on probability
+        Object.keys(edgePaths).forEach(key => {
+            const prob = key === 'aa' ? paa : key === 'ab' ? pab : key === 'ba' ? pba : pbb;
+            edgePaths[key].attr("opacity", prob > 0 ? 0.2 + prob * 0.8 : 0);
+            edgeLabels[key].attr("opacity", prob > 0 ? 1 : 0);
+        });
+    }
+
+    sliderAA.addEventListener('input', update);
+    sliderBB.addEventListener('input', update);
+    update();
+})();
+</script></div>
+</section>
+<!-- Simulating a single path through the state space. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>While the transition matrix $P$ defines the theoretical rules of a system, a <strong>random walk</strong> brings these rules to life by simulating a single realization of the process. To begin a simulation, we define an <strong>initial state</strong> $X_0$. At each discrete time step $n$, the system "queries" the transition matrix: it looks at the row corresponding to the current state $X_n$ and treats the probabilities in that row as a categorical distribution to determine the next state $X_{n+1}$.</p><p>Mathematically, this process is akin to sampling from a distribution. If the system is currently in state $i$, the next state $j$ is chosen such that the likelihood of picking $j$ is exactly $P_{ij}$. As we repeat this for $N$ steps, we generate a <strong>sample path</strong> or trajectory: a specific sequence of states $(x_0, x_1, x_2, \dots, x_N)$ that represents one possible "history" of the system. Because Markov chains are stochastic, two simulations starting from the same $X_0$ and using the same matrix $P$ will likely produce entirely different paths.</p><p>Visualizing these paths is crucial for understanding <strong>system dynamics</strong>. By observing a single path, we can identify patterns that might be obscured by the raw numbers in a matrix. For instance, in a two-state system, a path might reveal that the system tends to "get stuck" in a specific state for long periods (high self-transition probability) or that it oscillates rapidly between states. Over many steps, the relative frequency with which the path visits each state begins to approximate the underlying long-term behavior of the Markov chain.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    #ku2-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .ku2-control-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    #ku2-main-viz {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        min-height: 300px;
+    }
+    @media (max-width: 600px) {
+        #ku2-main-viz { grid-template-columns: 1fr; }
+    }
+    #ku2-node-display {
+        background: white;
+        border-radius: 8px;
+        position: relative;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    #ku2-history-display {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+    }
+    .ku2-btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.2s;
+    }
+    #ku2-btn-toggle { background: #2ecc71; color: white; }
+    #ku2-btn-toggle.running { background: #e74c3c; }
+    #ku2-btn-reset { background: #95a5a6; color: white; }
+    
+    .ku2-node { transition: fill 0.3s, stroke-width 0.3s; }
+    .ku2-node.active { fill: #f1c40f !important; stroke: #d35400; stroke-width: 4px; }
+    
+    .ku2-history-track {
+        flex: 1;
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        overflow-x: hidden;
+        border-bottom: 2px solid #333;
+        padding-bottom: 5px;
+        height: 150px;
+    }
+    .ku2-bar {
+        flex-shrink: 0;
+        width: 12px;
+        transition: height 0.3s;
+    }
+    .ku2-bar-A { background: #4a90e2; }
+    .ku2-bar-B { background: #e67e22; }
+    
+    .ku2-pulse {
+        stroke-dasharray: 5;
+        animation: ku2-dash 1s linear infinite;
+    }
+    @keyframes ku2-dash {
+        to { stroke-dashoffset: -20; }
+    }
+</style><div id="ku2-container">
+<div id="ku2-controls">
+<button class="ku2-btn" id="ku2-btn-toggle">Start Simulation</button>
+<button class="ku2-btn" id="ku2-btn-reset">Clear History</button>
+<div class="ku2-control-item">
+<label style="font-size: 0.8rem; font-weight: bold;">Step Speed: <span id="ku2-speed-val">500</span>ms</label>
+<input id="ku2-speed-slider" max="1000" min="100" step="50" type="range" value="500"/>
+</div>
+<div style="font-size: 0.8rem; color: #666;">
+            Using Matrix: A→A: 0.7, B→B: 0.4
+        </div>
+</div>
+<div id="ku2-main-viz">
+<div id="ku2-node-display">
+<svg height="100%" id="ku2-svg" viewbox="0 0 300 250" width="100%"></svg>
+</div>
+<div id="ku2-history-display">
+<div style="font-weight: bold; margin-bottom: 10px; font-size: 0.9rem;">Sample Path History</div>
+<div class="ku2-history-track" id="ku2-track"></div>
+<div style="display: flex; justify-content: space-between; font-size: 0.7rem; margin-top: 5px; color: #666;">
+<span>Earlier</span>
+<span>Latest Step</span>
+</div>
+</div>
+</div>
+</div><script>
+(function() {
+    const state = {
+        current: 'A',
+        history: ['A'],
+        speed: 500,
+        isRunning: false,
+        timer: null
+    };
+
+    // Use same probabilities as Section 1 for continuity
+    const P = {
+        AA: 0.70, AB: 0.30,
+        BA: 0.60, BB: 0.40
+    };
+
+    const toggleBtn = document.getElementById('ku2-btn-toggle');
+    const resetBtn = document.getElementById('ku2-btn-reset');
+    const speedSlider = document.getElementById('ku2-speed-slider');
+    const speedVal = document.getElementById('ku2-speed-val');
+    const track = document.getElementById('ku2-track');
+    const svg = d3.select("#ku2-svg");
+
+    // Setup Graph
+    const nodes = [{id: 'A', x: 80, y: 125}, {id: 'B', x: 220, y: 125}];
+    
+    svg.append("defs").append("marker")
+        .attr("id", "ku2-arrowhead")
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 20).attr("refY", 0)
+        .attr("markerWidth", 5).attr("markerHeight", 5)
+        .attr("orient", "auto")
+        .append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#999");
+
+    const links = [
+        {id: 'AA', d: "M 65,105 A 15,15 0 1,1 95,105"},
+        {id: 'BB', d: "M 205,105 A 15,15 0 1,0 235,105"},
+        {id: 'AB', d: "M 105,115 Q 150,95 195,115"},
+        {id: 'BA', d: "M 195,135 Q 150,155 105,135"}
+    ];
+
+    const edgePaths = svg.selectAll(".edge")
+        .data(links).enter().append("path")
+        .attr("id", d => "ku2-edge-" + d.id)
+        .attr("d", d => d.d)
+        .attr("fill", "none")
+        .attr("stroke", "#ccc")
+        .attr("stroke-width", 2)
+        .attr("marker-end", "url(#ku2-arrowhead)");
+
+    const nodeCircles = svg.selectAll(".ku2-node")
+        .data(nodes).enter().append("circle")
+        .attr("class", "ku2-node")
+        .attr("id", d => "ku2-node-" + d.id)
+        .attr("cx", d => d.x).attr("cy", d => d.y)
+        .attr("r", 20).attr("fill", "#fff").attr("stroke", "#333");
+
+    svg.selectAll(".label")
+        .data(nodes).enter().append("text")
+        .attr("x", d => d.x).attr("y", d => d.y + 5)
+        .attr("text-anchor", "middle").text(d => d.id).attr("font-weight", "bold");
+
+    function step() {
+        const rand = Math.random();
+        let next;
+        let edgeId;
+
+        if (state.current === 'A') {
+            if (rand < P.AA) { next = 'A'; edgeId = 'AA'; }
+            else { next = 'B'; edgeId = 'AB'; }
+        } else {
+            if (rand < P.BB) { next = 'B'; edgeId = 'BB'; }
+            else { next = 'A'; edgeId = 'BA'; }
+        }
+
+        // Animate transition
+        d3.select("#ku2-edge-" + edgeId)
+            .classed("ku2-pulse", true)
+            .transition().duration(state.speed * 0.8)
+            .attr("stroke", "#f1c40f")
+            .transition().duration(100)
+            .attr("stroke", "#ccc")
+            .on("end", () => {
+                d3.select("#ku2-edge-" + edgeId).classed("ku2-pulse", false);
+            });
+
+        state.current = next;
+        state.history.push(next);
+        if (state.history.length > 50) state.history.shift();
+        
+        updateUI();
+    }
+
+    function updateUI() {
+        nodeCircles.classed("active", d => d.id === state.current);
+        
+        track.innerHTML = '';
+        state.history.forEach(s => {
+            const bar = document.createElement('div');
+            bar.className = `ku2-bar ku2-bar-${s}`;
+            bar.style.height = s === 'A' ? '80%' : '40%';
+            track.appendChild(bar);
+        });
+        track.scrollLeft = track.scrollWidth;
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        state.isRunning = !state.isRunning;
+        toggleBtn.textContent = state.isRunning ? 'Pause' : 'Resume Simulation';
+        toggleBtn.className = 'ku2-btn ' + (state.isRunning ? 'running' : '');
+        
+        if (state.isRunning) {
+            state.timer = setInterval(step, state.speed);
+        } else {
+            clearInterval(state.timer);
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        state.history = [state.current];
+        updateUI();
+    });
+
+    speedSlider.addEventListener('input', (e) => {
+        state.speed = parseInt(e.target.value);
+        speedVal.textContent = state.speed;
+        if (state.isRunning) {
+            clearInterval(state.timer);
+            state.timer = setInterval(step, state.speed);
+        }
+    });
+
+    updateUI();
+})();
+</script></div>
+</section>
+<!-- The Steady-State Distribution. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>As we extend a random walk over thousands of iterations, a remarkable pattern emerges: the local fluctuations of the sample path give way to a global stability. While we cannot predict the exact state of the system at step $n=1,000,000$, we can often predict the <strong>probability</strong> of being in any specific state with near-certainty. This long-term behavior is captured by the <strong>steady-state distribution</strong> (also called the stationary distribution), represented by the row vector $\pi$.</p><p>A distribution $\pi$ is considered stationary if, after applying the transition matrix $P$, the distribution remains unchanged. Formally, this is expressed by the matrix equation:</p><p>$$\pi P = \pi$$</p><p>In this equation, $\pi$ is a probability vector where all elements sum to 1 ($\sum \pi_i = 1$). From a linear algebra perspective, the stationary distribution is a <strong>left eigenvector</strong> of the transition matrix $P$ associated with the eigenvalue $\lambda = 1$. If a Markov chain is <em>irreducible</em> (you can get from any state to any other state) and <em>aperiodic</em> (it doesn't get trapped in a repeating cycle), the system will eventually converge to this unique distribution regardless of the initial starting state $X_0$.</p><p>This convergence has profound implications for modeling. It tells us that the "memory" of the starting conditions eventually fades away, and the system settles into a statistical equilibrium. For a two-state system, if we let $\pi = [ \pi_A, \pi_B ]$, we can solve for the steady state by observing that the flow out of State A must equal the flow into State A:</p><p>$$\pi_A P_{AB} = \pi_B P_{BA}$$</p><p>This balance equation allows us to calculate exactly what fraction of time the system will spend in each state over an infinite horizon. Whether modeling weather patterns, stock market regimes, or web page rankings (like Google's PageRank), finding the steady state reveals the <strong>intrinsic importance</strong> or long-term occupancy of each node in the network.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        color: #333;
+    }
+    #ku3-controls {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    @media (max-width: 600px) {
+        #ku3-controls { grid-template-columns: 1fr; }
+    }
+    .ku3-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .ku3-label-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    #ku3-viz-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 20px;
+        height: 300px;
+    }
+    @media (max-width: 768px) {
+        #ku3-viz-grid { grid-template-columns: 1fr; height: auto; }
+        .ku3-chart-container { height: 250px; }
+    }
+    .ku3-chart-container {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        position: relative;
+    }
+    .ku3-legend {
+        font-size: 0.75rem;
+        color: #666;
+        text-align: center;
+        margin-top: 5px;
+    }
+</style><div id="ku3-container">
+<div id="ku3-controls">
+<div class="ku3-control-group">
+<div class="ku3-label-row">
+<span>Initial State $X_0$ (Prob. of A)</span>
+<span id="ku3-start-val">1.00</span>
+</div>
+<input id="ku3-slider-start" max="1" min="0" step="0.01" type="range" value="1.0"/>
+</div>
+<div class="ku3-control-group">
+<div class="ku3-label-row">
+<span>Time Step ($n$)</span>
+<span id="ku3-step-val">0</span>
+</div>
+<input id="ku3-slider-step" max="50" min="0" step="1" type="range" value="0"/>
+</div>
+</div>
+<div id="ku3-viz-grid">
+<div class="ku3-chart-container">
+<div style="font-weight: bold; font-size: 0.8rem; margin-bottom: 10px;">Distribution at Step $n$</div>
+<div style="height: 80%; width: 100%;">
+<canvas id="ku3-bar-chart"></canvas>
+</div>
+</div>
+<div class="ku3-chart-container">
+<div style="font-weight: bold; font-size: 0.8rem; margin-bottom: 10px;">Convergence Path (Prob. of State A)</div>
+<div style="height: 80%; width: 100%;">
+<canvas id="ku3-line-chart"></canvas>
+</div>
+<div class="ku3-legend">The dashed line represents the theoretical steady state $\pi_A \approx 0.667$</div>
+</div>
+</div>
+</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
+(function() {
+    const sliderStart = document.getElementById('ku3-slider-start');
+    const sliderStep = document.getElementById('ku3-slider-step');
+    const valStart = document.getElementById('ku3-start-val');
+    const valStep = document.getElementById('ku3-step-val');
+
+    // Matrix from previous sections: P = [[0.7, 0.3], [0.6, 0.4]]
+    const P = { aa: 0.7, ab: 0.3, ba: 0.6, bb: 0.4 };
+    
+    // Steady state math: pi_A * 0.3 = pi_B * 0.6 => pi_A = 2 * pi_B. 
+    // Since pi_A + pi_B = 1 => 3*pi_B = 1 => pi_B = 1/3, pi_A = 2/3
+    const steadyA = 0.666666666;
+
+    let barChart, lineChart;
+
+    function calculateDistribution(pa_init, steps) {
+        let currentA = pa_init;
+        let currentB = 1 - pa_init;
+        const history = [currentA];
+
+        for (let i = 0; i < 50; i++) {
+            let nextA = currentA * P.aa + currentB * P.ba;
+            let nextB = currentA * P.ab + currentB * P.bb;
+            currentA = nextA;
+            currentB = nextB;
+            history.push(currentA);
+        }
+        return history;
+    }
+
+    function initCharts() {
+        const ctxBar = document.getElementById('ku3-bar-chart').getContext('2d');
+        barChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['State A', 'State B'],
+                datasets: [{
+                    data: [1, 0],
+                    backgroundColor: ['#4a90e2', '#e67e22']
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { min: 0, max: 1 } }
+            }
+        });
+
+        const ctxLine = document.getElementById('ku3-line-chart').getContext('2d');
+        lineChart = new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 51}, (_, i) => i),
+                datasets: [
+                    {
+                        label: 'Prob(A)',
+                        data: [],
+                        borderColor: '#4a90e2',
+                        borderWidth: 2,
+                        pointRadius: (ctx) => ctx.dataIndex === parseInt(sliderStep.value) ? 5 : 0,
+                        pointBackgroundColor: '#2c3e50',
+                        tension: 0.2
+                    },
+                    {
+                        label: 'Steady State',
+                        data: Array(51).fill(steadyA),
+                        borderColor: '#95a5a6',
+                        borderDash: [5, 5],
+                        borderWidth: 1,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { min: 0, max: 1, title: { display: true, text: 'Probability', font: { size: 10 } } },
+                    x: { title: { display: true, text: 'Steps (n)', font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+    function update() {
+        const pa_init = parseFloat(sliderStart.value);
+        const steps = parseInt(sliderStep.value);
+        
+        valStart.textContent = pa_init.toFixed(2);
+        valStep.textContent = steps;
+
+        const history = calculateDistribution(pa_init, steps);
+        const currentA = history[steps];
+        
+        // Update Bar Chart
+        barChart.data.datasets[0].data = [currentA, 1 - currentA];
+        barChart.update('none');
+
+        // Update Line Chart
+        lineChart.data.datasets[0].data = history;
+        lineChart.update('none');
+    }
+
+    sliderStart.addEventListener('input', update);
+    sliderStep.addEventListener('input', update);
+
+    initCharts();
+    update();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Mandelbrot Set: Iterating the Complex Plane</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>The Mandelbrot Set: Iterating the Complex Plane</h1>
+<!-- Introduction to the Complex Plane and the function f(z) = z^2 + c. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>To understand the Mandelbrot set, we must first step into the <strong>complex plane</strong>. Unlike the standard number line, the complex plane is two-dimensional. Every point $c$ in this plane is represented as a complex number $c = a + bi$, where $a$ is the horizontal (real) component and $b$ is the vertical (imaginary) component. In the world of fractals, these coordinates are not just locations; they are the "seeds" that determine the fate of a mathematical process.</p><p>The entire Mandelbrot set is governed by a deceptively simple quadratic recurrence formula:</p><p>$f(z) = z^2 + c$</p><p>This formula describes a process called <strong>iteration</strong>. To iterate the function, we take a starting value $z_0$, plug it into the formula to get a result, and then use that result as the new input for the next step. For the Mandelbrot set, we always begin with the critical starting point $z_0 = 0$.</p><p>The sequence of values generated by this process—$z_0, z_1, z_2, z_3, \dots$—is known as the <strong>orbit</strong> of $c$. The first few steps of the iteration look like this:</p><p>$z_0 = 0$</p><p>$z_1 = 0^2 + c = c$</p><p>$z_2 = c^2 + c$</p><p>$z_3 = (c^2 + c)^2 + c$</p><p>As we repeat this calculation over and over, we observe the behavior of the orbit. Does the value of $z$ stay small and trapped near the origin, or does it grow infinitely large, "escaping" toward infinity? The Mandelbrot set is defined as the collection of all points $c$ in the complex plane for which the orbit <em>remains bounded</em>—it never escapes, no matter how many times we iterate the function.</p><p>By testing every point $c$ on the plane and coloring it based on whether it stays bounded or escapes, we reveal one of the most intricate and beautiful shapes in all of mathematics.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+    #ku1-ui-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 20px;
+    }
+    #ku1 .controls-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        justify-content: center;
+    }
+    #ku1 .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    #ku1 label {
+        font-weight: 600;
+        font-size: 0.9em;
+        color: #444;
+    }
+    #ku1 input[type="range"] {
+        width: 100%;
+        cursor: pointer;
+    }
+    #ku1 .viz-container {
+        height: 350px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        position: relative;
+    }
+    #ku1 .equation-display {
+        text-align: center;
+        padding: 15px;
+        background: #f0f4f8;
+        border-radius: 6px;
+        font-family: "serif";
+        font-style: italic;
+        font-size: 1.1em;
+        border-left: 4px solid #3498db;
+    }
+    #ku1 .coord-label {
+        font-family: monospace;
+        font-weight: bold;
+        color: #e74c3c;
+    }
+    @media (max-width: 600px) {
+        #ku1-ui-layout { grid-template-columns: 1fr; }
+        #ku1 .viz-container { height: 280px; }
+    }
+</style><div id="ku1-container">
+<div id="ku1-ui-layout">
+<div class="controls-panel" id="ku1">
+<div class="control-group">
+<label>Real component (a): <span class="coord-label" id="ku1-val-real">0.3</span></label>
+<input id="ku1-slider-real" max="1" min="-2" step="0.01" type="range" value="0.3"/>
+</div>
+<div class="control-group">
+<label>Imaginary component (bi): <span class="coord-label" id="ku1-val-imag">0.4</span></label>
+<input id="ku1-slider-imag" max="1" min="-1" step="0.01" type="range" value="0.4"/>
+</div>
+</div>
+<div class="viz-container">
+<canvas id="ku1-canvas"></canvas>
+</div>
+</div>
+<div class="equation-display" id="ku1-equation">
+        $f(0) = 0^2 + (0.3 + 0.4i) = 0.3 + 0.4i$
+    </div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku1-canvas');
+    const ctx = canvas.getContext('2d');
+    const sliderReal = document.getElementById('ku1-slider-real');
+    const sliderImag = document.getElementById('ku1-slider-imag');
+    const valReal = document.getElementById('ku1-val-real');
+    const valImag = document.getElementById('ku1-val-imag');
+    const eqDisplay = document.getElementById('ku1-equation');
+
+    const margin = 40;
+    
+    function resize() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        draw();
+    }
+
+    function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        // Map complex plane to pixels
+        // Domain x: [-2.5, 1.5], y: [-1.5, 1.5]
+        const xMin = -2.5, xMax = 1.5;
+        const yMin = -1.2, yMax = 1.2;
+
+        function toX(val) { return margin + (val - xMin) / (xMax - xMin) * (w - 2 * margin); }
+        function toY(val) { return h - (margin + (val - yMin) / (yMax - yMin) * (h - 2 * margin)); }
+
+        // Draw Axes
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        // X-axis
+        ctx.moveTo(toX(xMin), toY(0)); ctx.lineTo(toX(xMax), toY(0));
+        // Y-axis
+        ctx.moveTo(toX(0), toY(yMin)); ctx.lineTo(toX(0), toY(yMax));
+        ctx.stroke();
+
+        // Draw Mandelbrot Silhouette for reference
+        ctx.fillStyle = 'rgba(0,0,0,0.05)';
+        for(let py=0; py<h; py+=4) {
+            for(let px=0; px<w; px+=4) {
+                let cx = xMin + (px-margin)/(w-2*margin)*(xMax-xMin);
+                let cy = yMin + (h-py-margin)/(h-2*margin)*(yMax-yMin);
+                let x = 0, y = 0, i = 0;
+                while(x*x + y*y <= 4 && i < 15) {
+                    let xt = x*x - y*y + cx;
+                    y = 2*x*y + cy;
+                    x = xt;
+                    i++;
+                }
+                if(i === 15) ctx.fillRect(px, py, 4, 4);
+            }
+        }
+
+        // Current point C
+        const cr = parseFloat(sliderReal.value);
+        const ci = parseFloat(sliderImag.value);
+        const px = toX(cr);
+        const py = toY(ci);
+
+        // Pulse effect for C
+        const time = Date.now() / 200;
+        const pulse = Math.sin(time) * 3;
+
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.arc(px, py, 6 + pulse, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('c', px + 10, py - 10);
+
+        // Update UI Text
+        valReal.textContent = cr.toFixed(2);
+        valImag.textContent = ci.toFixed(2) + (ci >= 0 ? 'i' : 'i');
+        
+        const sign = ci >= 0 ? '+' : '-';
+        const absImag = Math.abs(ci).toFixed(2);
+        eqDisplay.innerHTML = `f(0) = 0² + (${cr.toFixed(2)} ${sign} ${absImag}i) = <b>${cr.toFixed(2)} ${sign} ${absImag}i</b>`;
+    }
+
+    sliderReal.addEventListener('input', draw);
+    sliderImag.addEventListener('input', draw);
+    window.addEventListener('resize', resize);
+    
+    resize();
+    
+    // Animation loop for pulse
+    function animate() {
+        draw();
+        requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+})();
+</script></div>
+</section>
+<!-- Visualizing Iteration: The Orbit of a Point. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>Visualizing the calculation of the Mandelbrot set requires us to watch a point <strong>dance</strong> across the complex plane. Each time we apply the formula $f(z) = z^2 + c$, the resulting value becomes the new $z$ for the next jump. This sequence of jumps—the <strong>orbit</strong>—reveals the hidden nature of the coordinate $c$. While the algebra may look abstract, the geometry is intuitive: iteration is a process of stretching, rotating, and shifting.</p><p>When we square a complex number $z$, we square its distance from the origin and double its angle. We then shift that result by adding the original constant $c$. If $c$ is located near the center of the set, the orbit might settle into a <strong>stable cycle</strong>, bouncing between a few fixed points, or it may wander chaotically but remain forever trapped within a specific radius. These "well-behaved" points are the permanent residents of the Mandelbrot set, usually colored black in standard visualizations.</p><p>However, if $c$ is too far from the origin, the "stretching" effect of the $z^2$ term quickly overwhelms the "shifting" effect of $c$. Once the magnitude of any $z_n$ exceeds the value of $2$, the orbit is guaranteed to <strong>escape</strong>. Like a rocket reaching escape velocity, each subsequent iteration flings the point further and further away toward infinity. The speed at which a point escapes—how many iterations it takes to cross that boundary of $2$—is what generates the vibrant, psychedelic halos of color we typically associate with fractal art.</p><p>Mathematically, we can summarize the fate of any point $c$ with a simple condition:</p><p>$c \in M \iff \lim_{n \to \infty} |z_n| \leq 2$</p><p>By tracing these orbits, we aren't just looking at a static shape; we are observing the <strong>dynamical history</strong> of a mathematical system. Every tiny filament and bulb in the Mandelbrot set is actually a map of where points stay bounded and where they fly apart.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+    #ku2-ui-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 20px;
+    }
+    #ku2 .controls-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        justify-content: flex-start;
+    }
+    #ku2 .viz-container {
+        height: 400px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+        cursor: crosshair;
+    }
+    #ku2 .status-box {
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+    #ku2 .status-bounded { background: #e8f5e9; border-left: 4px solid #4caf50; color: #1b5e20; }
+    #ku2 .status-escaped { background: #fff3e0; border-left: 4px solid #ff9800; color: #e65100; }
+    
+    #ku2 label { font-weight: 600; font-size: 0.9em; color: #444; }
+    #ku2 .hint { font-size: 0.8em; color: #888; margin-top: 5px; }
+    #ku2 .val-highlight { font-family: monospace; font-weight: bold; color: #3498db; }
+</style><div id="ku2-container">
+<div id="ku2-ui-layout">
+<div class="controls-panel" id="ku2">
+<div class="control-group">
+<label>Iterations: <span class="val-highlight" id="ku2-iter-val">10</span></label>
+<input id="ku2-iter-slider" max="50" min="0" step="1" type="range" value="10"/>
+<div class="hint">Watch how the orbit length changes.</div>
+</div>
+<div class="control-group">
+<label>Point $c$:</label>
+<div style="font-family: monospace; margin-top:5px;">
+                    Real: <span class="val-highlight" id="ku2-c-real">0.10</span><br/>
+                    Imag: <span class="val-highlight" id="ku2-c-imag">0.10</span>
+</div>
+<div class="hint">Click or drag on the map to move $c$.</div>
+</div>
+<div class="status-box status-bounded" id="ku2-status">
+<strong>Status:</strong> <span id="ku2-status-text">Bounded</span>
+</div>
+</div>
+<div class="viz-container" id="ku2-canvas-wrapper">
+<canvas id="ku2-canvas"></canvas>
+</div>
+</div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku2-canvas');
+    const ctx = canvas.getContext('2d');
+    const iterSlider = document.getElementById('ku2-iter-slider');
+    const iterVal = document.getElementById('ku2-iter-val');
+    const cRealLabel = document.getElementById('ku2-c-real');
+    const cImagLabel = document.getElementById('ku2-c-imag');
+    const statusBox = document.getElementById('ku2-status');
+    const statusText = document.getElementById('ku2-status-text');
+
+    let cx = 0.1, cy = 0.1;
+    let isDragging = false;
+
+    // Viewport mapping: [-2.2 to 1.2] x [-1.5 to 1.5]
+    const xMin = -2.2, xMax = 1.2;
+    const yMin = -1.3, yMax = 1.3;
+
+    function resize() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        draw();
+    }
+
+    function toScreenX(val) { return (val - xMin) / (xMax - xMin) * canvas.width; }
+    function toScreenY(val) { return canvas.height - (val - yMin) / (yMax - yMin) * canvas.height; }
+    function toWorldX(px) { return xMin + (px / canvas.width) * (xMax - xMin); }
+    function toWorldY(py) { return yMin + (1 - py / canvas.height) * (yMax - yMin); }
+
+    function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const iterations = parseInt(iterSlider.value);
+        ctx.clearRect(0, 0, w, h);
+
+        // 1. Draw Escape Boundary (Radius 2)
+        ctx.beginPath();
+        ctx.strokeStyle = '#eee';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        const r2 = toScreenX(2) - toScreenX(0);
+        ctx.arc(toScreenX(0), toScreenY(0), r2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = '#999';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('Escape Boundary (|z| = 2)', toScreenX(0) - 50, toScreenY(2.1));
+
+        // 2. Draw Axes
+        ctx.strokeStyle = '#ddd';
+        ctx.beginPath();
+        ctx.moveTo(0, toScreenY(0)); ctx.lineTo(w, toScreenY(0));
+        ctx.moveTo(toScreenX(0), 0); ctx.lineTo(toScreenX(0), h);
+        ctx.stroke();
+
+        // 3. Calculate Orbit
+        let orbit = [{x: 0, y: 0}];
+        let zx = 0, zy = 0;
+        let escaped = false;
+        let escapeIndex = -1;
+
+        for (let i = 0; i < iterations; i++) {
+            let nextX = zx * zx - zy * zy + cx;
+            let nextY = 2 * zx * zy + cy;
+            zx = nextX;
+            zy = nextY;
+            orbit.push({x: zx, y: zy});
+            
+            if (zx * zx + zy * zy > 4 && !escaped) {
+                escaped = true;
+                escapeIndex = i + 1;
+            }
+            if (zx * zx + zy * zy > 100) break; // Cap visualization
+        }
+
+        // 4. Draw Orbit Path
+        ctx.beginPath();
+        ctx.strokeStyle = escaped ? '#e67e22' : '#3498db';
+        ctx.lineWidth = 2;
+        ctx.moveTo(toScreenX(orbit[0].x), toScreenY(orbit[0].y));
+        for (let i = 1; i < orbit.length; i++) {
+            ctx.lineTo(toScreenX(orbit[i].x), toScreenY(orbit[i].y));
+        }
+        ctx.stroke();
+
+        // 5. Draw Points
+        orbit.forEach((p, i) => {
+            ctx.fillStyle = i === 0 ? '#333' : (escaped && i >= escapeIndex ? '#e67e22' : '#3498db');
+            ctx.beginPath();
+            ctx.arc(toScreenX(p.x), toScreenY(p.y), i === 0 ? 3 : 2, 0, Math.PI * 2);
+            ctx.fill();
+            if (i < 5 || i === orbit.length - 1) {
+                ctx.font = '10px monospace';
+                ctx.fillText('z' + i, toScreenX(p.x) + 5, toScreenY(p.y) - 5);
+            }
+        });
+
+        // 6. Draw Control Point C
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.arc(toScreenX(cx), toScreenY(cy), 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillText('c', toScreenX(cx) + 8, toScreenY(cy) + 12);
+
+        // Update UI
+        iterVal.textContent = iterations;
+        cRealLabel.textContent = cx.toFixed(3);
+        cImagLabel.textContent = cy.toFixed(3);
+        
+        if (escaped) {
+            statusBox.className = 'status-box status-escaped';
+            statusText.textContent = `Escapes at iteration ${escapeIndex}`;
+        } else {
+            statusBox.className = 'status-box status-bounded';
+            statusText.textContent = `Bounded (within ${iterations} steps)`;
+        }
+    }
+
+    function handleInteraction(e) {
+        const rect = canvas.getBoundingClientRect();
+        const px = (e.clientX || e.touches[0].clientX) - rect.left;
+        const py = (e.clientY || e.touches[0].clientY) - rect.top;
+        cx = toWorldX(px);
+        cy = toWorldY(py);
+        draw();
+    }
+
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; handleInteraction(e); });
+    window.addEventListener('mousemove', (e) => { if (isDragging) handleInteraction(e); });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    
+    canvas.addEventListener('touchstart', (e) => { isDragging = true; handleInteraction(e); e.preventDefault(); }, {passive: false});
+    canvas.addEventListener('touchmove', (e) => { if (isDragging) handleInteraction(e); e.preventDefault(); }, {passive: false});
+    canvas.addEventListener('touchend', () => { isDragging = false; });
+
+    iterSlider.addEventListener('input', draw);
+    window.addEventListener('resize', resize);
+    
+    resize();
+})();
+</script></div>
+</section>
+<!-- Bounded vs. Divergent behavior. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>The boundary of the Mandelbrot set is the ultimate frontier between two mathematical extremes: <strong>stability</strong> and <strong>chaos</strong>. Every point $c$ in the complex plane belongs to one of two camps. Either the orbit is "trapped" within a finite distance from the origin, or it "diverges," accelerating away into the infinite void. The "Set" itself is strictly defined as the collection of points that never escape—the mathematical equivalent of a <strong>black hole</strong> from which the orbit can never break free.</p><p>To differentiate these behaviors, mathematicians look at the <strong>magnitude</strong> of $z$, denoted as $|z|$. If at any step of the iteration the distance from the origin exceeds $2$, the orbit has reached a "point of no return." Beyond this threshold, the $z^2$ term will always dominate the $c$ term, ensuring that each subsequent result is larger than the last. This creates a binary classification: 
+<br/>1. <strong>Bounded:</strong> $|z_n| \leq 2$ for all $n$. These points are <em>inside</em> the set.
+<br/>2. <strong>Divergent:</strong> $|z_n| &gt; 2$ for some $n$. These points are <em>outside</em> the set.</p><p>While the members of the Mandelbrot set are traditionally colored solid black to represent their eternal stability, the points that escape provide the data for the famous, vibrant fractal "halos." We measure the <strong>escape velocity</strong>—the specific iteration $n$ where $|z_n|$ first jumps past the boundary of $2$. A point that escapes on the 3rd iteration is "unstable" and might be colored bright red, while a point that survives for 500 iterations before finally drifting away is "nearly stable" and might be colored deep indigo.</p><p>This escape-time mapping transforms a simple convergence test into a high-resolution landscape. The closer you get to the black heart of the Mandelbrot set, the more complex the orbits become as they struggle against the pull of infinity. The intricate "filaments" and "mini-Mandelbrots" found at the edges are actually regions where the balance between staying trapped and escaping is so delicate that a change of $10^{-15}$ in the value of $c$ can completely alter the orbit's destiny.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+    #ku3-ui-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    #ku3 .canvas-wrapper {
+        position: relative;
+        background: #000;
+        border-radius: 4px;
+        overflow: hidden;
+        height: 300px;
+        cursor: crosshair;
+    }
+    #ku3 .canvas-wrapper canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    #ku3 .label-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(255,255,255,0.8);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        pointer-events: none;
+    }
+    #ku3-info-panel {
+        grid-column: span 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 0.95em;
+        transition: background-color 0.3s;
+    }
+    #ku3 .status-bounded { background: #e8f5e9; border-left: 5px solid #4caf50; color: #1b5e20; }
+    #ku3 .status-escaped { background: #ffebee; border-left: 5px solid #f44336; color: #b71c1c; }
+    
+    #ku3 .coord-display { font-family: monospace; font-weight: bold; }
+    
+    @media (max-width: 650px) {
+        #ku3-ui-layout { grid-template-columns: 1fr; }
+        #ku3 .canvas-wrapper { height: 250px; }
+    }
+</style><div id="ku3-container">
+<div class="status-bounded" id="ku3-info-panel">
+<div>
+<strong>Point $c$:</strong> <span class="coord-display" id="ku3-coord-val">0.00 + 0.00i</span>
+</div>
+<div>
+<strong>Result:</strong> <span id="ku3-status-msg">Bounded</span>
+            (<span id="ku3-step-count">100</span> steps)
+        </div>
+</div>
+<div id="ku3-ui-layout">
+<div class="canvas-wrapper" id="ku3-map-wrapper">
+<div class="label-overlay">Mandelbrot Explorer</div>
+<canvas id="ku3-map-canvas"></canvas>
+</div>
+<div class="canvas-wrapper" id="ku3-orbit-wrapper">
+<div class="label-overlay">Orbit Trace (Magnified)</div>
+<canvas id="ku3-orbit-canvas"></canvas>
+</div>
+</div>
+</div><script>
+(function() {
+    const mapCanvas = document.getElementById('ku3-map-canvas');
+    const orbitCanvas = document.getElementById('ku3-orbit-canvas');
+    const coordVal = document.getElementById('ku3-coord-val');
+    const statusMsg = document.getElementById('ku3-status-msg');
+    const stepCount = document.getElementById('ku3-step-count');
+    const infoPanel = document.getElementById('ku3-info-panel');
+
+    const mapCtx = mapCanvas.getContext('2d');
+    const orbCtx = orbitCanvas.getContext('2d');
+
+    let cx = -0.1, cy = 0.1;
+    const MAX_ITER = 100;
+
+    function init() {
+        resize();
+        renderMandelbrot();
+        update();
+    }
+
+    function resize() {
+        mapCanvas.width = mapCanvas.offsetWidth;
+        mapCanvas.height = mapCanvas.offsetHeight;
+        orbitCanvas.width = orbitCanvas.offsetWidth;
+        orbitCanvas.height = orbitCanvas.offsetHeight;
+    }
+
+    function renderMandelbrot() {
+        const w = mapCanvas.width;
+        const h = mapCanvas.height;
+        const imgData = mapCtx.createImageData(w, h);
+        
+        for (let py = 0; py < h; py++) {
+            for (let px = 0; px < w; px++) {
+                let x0 = (px / w) * 3.0 - 2.1; // [-2.1, 0.9]
+                let y0 = (py / h) * 2.4 - 1.2; // [-1.2, 1.2]
+                let x = 0, y = 0, iter = 0;
+                
+                while (x*x + y*y <= 4 && iter < 40) {
+                    let xt = x*x - y*y + x0;
+                    y = 2*x*y + y0;
+                    x = xt;
+                    iter++;
+                }
+                
+                let idx = (py * w + px) * 4;
+                if (iter === 40) {
+                    imgData.data[idx] = 20;
+                    imgData.data[idx+1] = 20;
+                    imgData.data[idx+2] = 20;
+                } else {
+                    let hue = (iter / 40) * 360;
+                    imgData.data[idx] = 40 + iter * 3;
+                    imgData.data[idx+1] = 60 + iter * 2;
+                    imgData.data[idx+2] = 120 + iter * 2;
+                }
+                imgData.data[idx+3] = 255;
+            }
+        }
+        mapCtx.putImageData(imgData, 0, 0);
+    }
+
+    function update() {
+        const w = orbitCanvas.width;
+        const h = orbitCanvas.height;
+        orbCtx.clearRect(0, 0, w, h);
+
+        // Draw Background Grid
+        orbCtx.strokeStyle = '#333';
+        orbCtx.beginPath();
+        for(let i=0; i<=w; i+=w/4) { orbCtx.moveTo(i, 0); orbCtx.lineTo(i, h); }
+        for(let i=0; i<=h; i+=h/4) { orbCtx.moveTo(0, i); orbCtx.lineTo(w, i); }
+        orbCtx.stroke();
+
+        // Calculate Orbit
+        let zx = 0, zy = 0;
+        let orbit = [{x: 0, y: 0}];
+        let escaped = false;
+        let escIter = MAX_ITER;
+
+        for (let i = 1; i <= MAX_ITER; i++) {
+            let nX = zx * zx - zy * zy + cx;
+            let nY = 2 * zx * zy + cy;
+            zx = nX; zy = nY;
+            orbit.push({x: zx, y: zy});
+            if (zx * zx + zy * zy > 4 && !escaped) {
+                escaped = true;
+                escIter = i;
+            }
+            if (zx * zx + zy * zy > 100) break;
+        }
+
+        // Mapping to Orbit view (Zoomed centered on 0,0)
+        function tx(v) { return w/2 + v * (w/4.5); }
+        function ty(v) { return h/2 - v * (h/4.5); }
+
+        // Escape Circle
+        orbCtx.beginPath();
+        orbCtx.strokeStyle = 'rgba(255,255,255,0.2)';
+        orbCtx.setLineDash([5,5]);
+        orbCtx.arc(tx(0), ty(0), Math.abs(tx(2) - tx(0)), 0, Math.PI*2);
+        orbCtx.stroke();
+        orbCtx.setLineDash([]);
+
+        // Orbit Line
+        orbCtx.beginPath();
+        orbCtx.lineWidth = 2;
+        orbCtx.strokeStyle = escaped ? '#ff4757' : '#2ed573';
+        orbCtx.moveTo(tx(orbit[0].x), ty(orbit[0].y));
+        for (let i = 1; i < orbit.length; i++) {
+            orbCtx.lineTo(tx(orbit[i].x), ty(orbit[i].y));
+        }
+        orbCtx.stroke();
+
+        // UI Updates
+        coordVal.textContent = `${cx.toFixed(3)} ${cy >= 0 ? '+' : '-'} ${Math.abs(cy).toFixed(3)}i`;
+        if (escaped) {
+            infoPanel.className = 'status-escaped';
+            statusMsg.textContent = 'Divergent (Escapes)';
+            stepCount.textContent = escIter;
+        } else {
+            infoPanel.className = 'status-bounded';
+            statusMsg.textContent = 'Bounded (Stays)';
+            stepCount.textContent = '100+';
+        }
+
+        // Small crosshair on map
+        renderMandelbrot();
+        let mapX = ((cx + 2.1) / 3.0) * mapCanvas.width;
+        let mapY = ((cy + 1.2) / 2.4) * mapCanvas.height;
+        mapCtx.strokeStyle = 'white';
+        mapCtx.lineWidth = 1;
+        mapCtx.beginPath();
+        mapCtx.arc(mapX, mapY, 5, 0, Math.PI*2);
+        mapCtx.stroke();
+    }
+
+    function handleInput(e) {
+        const rect = mapCanvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        cx = (x / mapCanvas.width) * 3.0 - 2.1;
+        cy = (y / mapCanvas.height) * 2.4 - 1.2;
+        update();
+    }
+
+    mapCanvas.addEventListener('mousedown', (e) => { 
+        handleInput(e);
+        const onMove = (me) => handleInput(me);
+        const onUp = () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    });
+
+    mapCanvas.addEventListener('touchstart', (e) => {
+        handleInput(e);
+        e.preventDefault();
+    }, {passive: false});
+
+    window.addEventListener('resize', () => {
+        resize();
+        renderMandelbrot();
+        update();
+    });
+
+    init();
+})();
+</script></div>
+</section>
+<!-- Infinite Complexity and Self-Similarity. -->
+<section class="knowledge-unit" id="ku4">
+<div class="text-content"><p>The true magic of the Mandelbrot set lies in its <strong>infinite complexity</strong>. Because the iterative formula $f(z) = z^2 + c$ is non-linear, the boundary between the points that stay and the points that go is not a smooth curve, but a jagged, infinitely descending frontier. No matter how much you magnify the edge of the set, the detail never simplifies into a straight line. This property is the hallmark of a <strong>fractal</strong>: a geometric object that exhibits detailed structure at every conceivable scale.</p><p>As we zoom into the boundary, we encounter a phenomenon known as <strong>self-similarity</strong>. Deep within the chaotic filaments and swirling "seahorse tails" of the outer edges, you will suddenly find perfect, tiny replicas of the entire Mandelbrot set—often called <strong>mini-mandelbrots</strong>. These small copies are not identical to the original; they are warped and decorated by the specific local dynamics of the region they inhabit, yet their fundamental shape remains unmistakable. This suggests that the simple rule $z^2 + c$ contains a recursive logic that echoes through the complex plane at a scale of $10^{-1}$ just as clearly as it does at $10^{-100}$.</p><p>This nested complexity is a direct result of how the squaring process interacts with the constant $c$. Small changes in the initial "seed" value are amplified by the iteration, a concept central to <strong>Chaos Theory</strong>. In many regions, the boundary is so intricate that it is considered to have a <strong>Hausdorff dimension</strong> of 2—meaning that although it is a "line," it is so crinkled and dense that it effectively fills a two-dimensional area. Exploring these depths is like embarking on an infinite journey; there is no "bottom" to the Mandelbrot set, only more patterns waiting to be unraveled by the next iteration.</p><p>Ultimately, the Mandelbrot set serves as a mathematical dictionary. Every coordinate $c$ in the plane corresponds to a unique <strong>Julia Set</strong>—another type of fractal that describes the dynamics of the same function. By looking at the "Big Picture" of the Mandelbrot set, we are actually looking at a map of all possible behaviors for the function $f(z) = z^2 + c$, organized into a single, breathtakingly complex geography.</p></div>
+<div class="interactive-content"><style>
+    #ku4-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #fdfdfd;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+    #ku4-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 20px;
+    }
+    #ku4 .controls-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    #ku4 .fractal-viewport {
+        position: relative;
+        height: 450px;
+        background: #000;
+        border-radius: 4px;
+        overflow: hidden;
+        cursor: crosshair;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+    #ku4 canvas {
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+    }
+    #ku4 .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    #ku4 label {
+        font-weight: 600;
+        font-size: 0.85em;
+        color: #444;
+        display: flex;
+        justify-content: space-between;
+    }
+    #ku4 .val-box {
+        font-family: monospace;
+        color: #3498db;
+    }
+    #ku4 .info-note {
+        font-size: 0.75em;
+        line-height: 1.3;
+        color: #666;
+        padding: 10px;
+        background: #f0f4f8;
+        border-radius: 4px;
+        border-left: 3px solid #3498db;
+    }
+    #ku4 .overlay-coords {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(0,0,0,0.6);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 10px;
+        pointer-events: none;
+    }
+    @media (max-width: 768px) {
+        #ku4-layout { grid-template-columns: 1fr; }
+        #ku4 .fractal-viewport { height: 350px; }
+    }
+</style><div id="ku4-container">
+<div id="ku4-layout">
+<div class="controls-panel">
+<div class="control-group">
+<label>Zoom Level: <span class="val-box" id="ku4-zoom-text">1.0x</span></label>
+<input id="ku4-zoom-slider" max="1000" min="1" step="1" type="range" value="1"/>
+</div>
+<div class="control-group">
+<label>Detail (Iterations): <span class="val-box" id="ku4-iter-text">50</span></label>
+<input id="ku4-iter-slider" max="500" min="10" step="10" type="range" value="50"/>
+</div>
+<div class="info-note">
+<strong>Exploration Tip:</strong> Zoom into the edges (the "boundary") to find mini-mandelbrots. Higher zoom levels require higher Detail settings to resolve fine structures.
+            </div>
+<div class="control-group">
+<button id="ku4-reset" style="padding: 8px; cursor: pointer; background: #fff; border: 1px solid #ccc; border-radius: 4px;">Reset View</button>
+</div>
+</div>
+<div class="fractal-viewport" id="ku4-viewport">
+<canvas id="ku4-canvas"></canvas>
+<div class="overlay-coords" id="ku4-coords">Center: -0.500, 0.000</div>
+</div>
+</div>
+</div><script>
+(function() {
+    const canvas = document.getElementById('ku4-canvas');
+    const ctx = canvas.getContext('2d');
+    const zoomSlider = document.getElementById('ku4-zoom-slider');
+    const iterSlider = document.getElementById('ku4-iter-slider');
+    const zoomText = document.getElementById('ku4-zoom-text');
+    const iterText = document.getElementById('ku4-iter-text');
+    const coordText = document.getElementById('ku4-coords');
+    const resetBtn = document.getElementById('ku4-reset');
+
+    let centerX = -0.5;
+    let centerY = 0;
+    let zoom = 1.0;
+    let maxIter = 50;
+
+    function resize() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth / 1.5; // Render at lower res for performance
+        canvas.height = container.clientHeight / 1.5;
+        render();
+    }
+
+    function render() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const imgData = ctx.createImageData(w, h);
+        const data = imgData.data;
+
+        // Viewport scale
+        const aspect = w / h;
+        const rangeY = 2.4 / zoom;
+        const rangeX = rangeY * aspect;
+
+        const xMin = centerX - rangeX / 2;
+        const yMin = centerY - rangeY / 2;
+
+        for (let py = 0; py < h; py++) {
+            const cY = yMin + (py / h) * rangeY;
+            for (let px = 0; px < w; px++) {
+                const cX = xMin + (px / w) * rangeX;
+                
+                let zX = 0, zY = 0;
+                let i = 0;
+                while (zX*zX + zY*zY <= 4 && i < maxIter) {
+                    const xt = zX*zX - zY*zY + cX;
+                    zY = 2*zX*zY + cY;
+                    zX = xt;
+                    i++;
+                }
+
+                const pixelIndex = (py * w + px) * 4;
+                if (i === maxIter) {
+                    data[pixelIndex] = 0;
+                    data[pixelIndex + 1] = 0;
+                    data[pixelIndex + 2] = 0;
+                } else {
+                    // Smooth coloring
+                    const smooth = i + 1 - Math.log(Math.log(Math.sqrt(zX*zX + zY*zY))) / Math.log(2);
+                    const hue = (200 + smooth * 10) % 360;
+                    const rgb = hslToRgb(hue / 360, 0.8, 0.5);
+                    data[pixelIndex] = rgb[0];
+                    data[pixelIndex + 1] = rgb[1];
+                    data[pixelIndex + 2] = rgb[2];
+                }
+                data[pixelIndex + 3] = 255;
+            }
+        }
+        ctx.putImageData(imgData, 0, 0);
+        
+        zoomText.textContent = zoom.toFixed(1) + 'x';
+        iterText.textContent = maxIter;
+        coordText.textContent = `Center: ${centerX.toFixed(4)}, ${centerY.toFixed(4)}i`;
+    }
+
+    function hslToRgb(h, s, l) {
+        let r, g, b;
+        if (s == 0) { r = g = b = l; } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1; if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    // Interaction handling
+    zoomSlider.addEventListener('input', (e) => {
+        zoom = parseFloat(e.target.value);
+        render();
+    });
+
+    iterSlider.addEventListener('input', (e) => {
+        maxIter = parseInt(e.target.value);
+        render();
+    });
+
+    canvas.parentElement.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        
+        const aspect = canvas.width / canvas.height;
+        const rangeY = 2.4 / zoom;
+        const rangeX = rangeY * aspect;
+        
+        centerX = (centerX - rangeX / 2) + (px / rect.width) * rangeX;
+        centerY = (centerY - rangeY / 2) + (py / rect.height) * rangeY;
+        render();
+    });
+
+    resetBtn.addEventListener('click', () => {
+        centerX = -0.5; centerY = 0; zoom = 1; maxIter = 50;
+        zoomSlider.value = 1; iterSlider.value = 50;
+        render();
+    });
+
+    window.addEventListener('resize', resize);
+    resize();
+})();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

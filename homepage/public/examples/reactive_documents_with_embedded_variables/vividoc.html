@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reactive documents with embedded variables</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- KaTeX for math rendering -->
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- D3.js and Chart.js for visualizations -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Global styles -->
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header Styles */
+        .vividoc-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .brand-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-style: italic;
+            letter-spacing: 0.3px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        
+        .knowledge-unit {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .text-content {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .text-content p {
+            margin-bottom: 20px;
+        }
+        
+        .text-content strong {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .interactive-content {
+            margin-top: 20px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .controls input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .controls button:hover {
+            background: #4338ca;
+        }
+        
+        .visualization {
+            min-height: 300px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .vividoc-header {
+                padding: 25px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .brand-name {
+                font-size: 32px;
+            }
+            
+            .brand-tagline {
+                font-size: 13px;
+                text-align: center;
+                white-space: normal;
+            }
+            
+            .main-content {
+                padding: 0 10px 20px 10px;
+            }
+            
+            .knowledge-unit {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ViviDoc Header -->
+<header class="vividoc-header">
+<div class="header-content">
+<h1 class="brand-name">ViviDoc</h1>
+<p class="brand-tagline">Generate Exploratory Explanations Automatically</p>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main-content">
+<h1>Reactive documents with embedded variables</h1>
+<!-- Fundamental concept of reactive variables in documents. -->
+<section class="knowledge-unit" id="ku1">
+<div class="text-content"><p>In a traditional document, once a word or number is typed onto the page, it remains <strong>static</strong>. If you decide to change a specific data point—such as a budget figure or a project deadline—you must manually search for every instance of that value and update it one by one. This process is not only tedious but prone to human error, often leading to inconsistent information where one part of the document contradicts another.</p><p><strong>Reactive documents</strong> solve this by introducing the concept of <strong>variables</strong>. A variable is a named placeholder that stores a specific value, such as $x = 100$ or $total\_cost = 500$. Instead of typing a literal number into your text, you embed a reference to that variable. When the underlying value of the variable is modified, the change "reacts" through the document, automatically refreshing every linked sentence, table, and formula.</p><p>This creates a <strong>living document</strong> where the relationship between data points is preserved. For example, if you define a variable for a radius $r$, you can link it to a formula for area: $A = \pi r^2$. If you update $r$ from $5$ to $10$, the text describing the area will update instantaneously without any manual recalculation. By decoupling the <em>content</em> from the <em>data</em>, reactive documents ensure that your narrative remains synchronized with your figures at all times.</p></div>
+<div class="interactive-content"><style>
+    #ku1-container {
+        padding: 2rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        margin: 1.5rem 0;
+        font-family: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    #ku1-sentence-box {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #2d3436;
+        padding: 1rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border-left: 5px solid #4a90e2;
+        min-width: 300px;
+        text-align: center;
+    }
+
+    #ku1-variable-display {
+        color: #4a90e2;
+        font-weight: 700;
+        border-bottom: 2px dashed #4a90e2;
+    }
+
+    #ku1-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #fff;
+        padding: 0.75rem 1.25rem;
+        border-radius: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    #ku1-controls label {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #636e72;
+    }
+
+    #ku1-userName-select {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #dfe6e9;
+        background-color: white;
+        cursor: pointer;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    #ku1-userName-select:focus {
+        border-color: #4a90e2;
+    }
+
+    .ku1-hint {
+        font-size: 0.85rem;
+        color: #b2bec3;
+        font-style: italic;
+    }
+</style><div id="ku1-container">
+<div id="ku1-sentence-box">
+        Hello, <span id="ku1-variable-display">Alice</span>!
+    </div>
+<div id="ku1-controls">
+<label for="ku1-userName-select">Update Variable:</label>
+<select id="ku1-userName-select">
+<option value="Alice">Alice</option>
+<option value="Bob">Bob</option>
+<option value="Charlie">Charlie</option>
+</select>
+</div>
+<div class="ku1-hint">Changing the dropdown updates the variable value everywhere.</div>
+</div><script>
+    (function() {
+        const select = document.getElementById('ku1-userName-select');
+        const display = document.getElementById('ku1-variable-display');
+
+        /**
+         * The state of our reactive component
+         */
+        const state = {
+            userName: 'Alice'
+        };
+
+        /**
+         * Render function that ensures the UI is a pure reflection of state
+         */
+        function render() {
+            display.textContent = state.userName;
+            
+            // Visual feedback: brief highlight on change
+            display.style.backgroundColor = '#e1f5fe';
+            display.style.transition = 'none';
+            
+            setTimeout(() => {
+                display.style.transition = 'background-color 0.5s ease';
+                display.style.backgroundColor = 'transparent';
+            }, 50);
+        }
+
+        // Transition: Handle user interaction
+        select.addEventListener('change', (event) => {
+            state.userName = event.target.value;
+            render();
+        });
+
+        // Initialize
+        render();
+    })();
+</script></div>
+</section>
+<!-- Bidirectional binding and input controls. -->
+<section class="knowledge-unit" id="ku2">
+<div class="text-content"><p>While variables allow documents to update, the real power of reactivity is unlocked through <strong>input controls</strong>. In a static document, the reader is a passive consumer of information; in a reactive document, the reader becomes a participant. By integrating UI elements like sliders, toggles, and text fields directly into the prose, we create a <strong>bidirectional binding</strong> between the reader’s input and the document's logic. This means that when a user moves a slider, the underlying variable updates, which in turn triggers a recalculation of every dependent value in the narrative.</p><p>Consider a financial projection where you want to estimate the future value of an investment. Instead of reading a static table, you might use a slider to adjust the <em>interest rate</em> $r$. Through bidirectional binding, the formula for compound interest, $A = P(1 + r)^n$, is re-evaluated in real-time. The UI stays in sync with the data model: the slider position represents the current state of $r$, and the state of $r$ determines the text you see on the screen.</p><p>This approach transforms abstract equations into <strong>tangible experiences</strong>. By manipulating a quantitative value within a narrative context, users can immediately observe the sensitivity of a system. Whether you are adjusting the "shipping cost" variable in a business proposal or the "gravitational constant" $g$ in a physics simulation, bidirectional binding ensures that the interface and the underlying data remain a single, cohesive source of truth.</p></div>
+<div class="interactive-content"><style>
+    #ku2-container {
+        padding: 2.5rem;
+        background-color: #fcfcfc;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        margin: 1.5rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        font-family: inherit;
+    }
+
+    #ku2-sentence-display {
+        background: white;
+        padding: 1.5rem 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        font-size: 1.75rem;
+        font-weight: 500;
+        color: #2d3436;
+        border: 1px solid #f0f0f0;
+        text-align: center;
+        transition: transform 0.2s ease;
+    }
+
+    .ku2-highlight {
+        color: #ff7675;
+        font-weight: 700;
+        display: inline-block;
+        min-width: 1.2ch;
+    }
+
+    #ku2-controls-wrapper {
+        width: 100%;
+        max-width: 400px;
+        background: #fff;
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 1px solid #edf2f7;
+    }
+
+    .ku2-label-group {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        color: #636e72;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    #ku2-slider {
+        width: 100%;
+        cursor: pointer;
+        accent-color: #ff7675;
+        height: 8px;
+        border-radius: 4px;
+        outline: none;
+    }
+
+    .ku2-apple-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        margin-top: 1rem;
+    }
+
+    .ku2-apple-icon {
+        font-size: 1.5rem;
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .ku2-hint {
+        font-size: 0.85rem;
+        color: #b2bec3;
+        font-style: italic;
+    }
+</style><div id="ku2-container">
+<div id="ku2-sentence-display">
+        I have <span class="ku2-highlight" id="ku2-count-val">1</span> 
+        apple<span id="ku2-plural-suffix"></span>.
+    </div>
+<div class="ku2-apple-container" id="ku2-apple-container">
+<!-- Icons generated by JS -->
+</div>
+<div id="ku2-controls-wrapper">
+<div class="ku2-label-group">
+<span>Quantity</span>
+<span id="ku2-slider-feedback">1</span>
+</div>
+<input id="ku2-slider" max="10" min="1" type="range" value="1"/>
+</div>
+<div class="ku2-hint">Directly manipulating the slider re-evaluates the narrative logic.</div>
+</div><script>
+    (function() {
+        const slider = document.getElementById('ku2-slider');
+        const countDisplay = document.getElementById('ku2-count-val');
+        const suffixDisplay = document.getElementById('ku2-plural-suffix');
+        const sliderFeedback = document.getElementById('ku2-slider-feedback');
+        const appleContainer = document.getElementById('ku2-apple-container');
+
+        const state = {
+            count: 1
+        };
+
+        function render() {
+            const val = parseInt(state.count);
+            
+            // Update Text Binding
+            countDisplay.innerText = val;
+            suffixDisplay.innerText = val === 1 ? '' : 's';
+            sliderFeedback.innerText = val;
+
+            // Visual Representation
+            appleContainer.innerHTML = '';
+            for(let i = 0; i < val; i++) {
+                const span = document.createElement('span');
+                span.className = 'ku2-apple-icon';
+                span.innerText = '🍎';
+                span.style.transform = `scale(${0.5 + Math.random() * 0.5 + 0.5})`;
+                appleContainer.appendChild(span);
+            }
+
+            // Visual feedback on the number
+            countDisplay.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                countDisplay.style.transform = 'scale(1)';
+            }, 100);
+        }
+
+        slider.addEventListener('input', (e) => {
+            state.count = e.target.value;
+            render();
+        });
+
+        // Initialize display
+        render();
+    })();
+</script></div>
+</section>
+<!-- Computed properties and derived dependencies. -->
+<section class="knowledge-unit" id="ku3">
+<div class="text-content"><p>The true depth of a reactive document is realized through <strong>computed properties</strong>—variables that do not hold a static value, but instead derive their state from other "upstream" variables. While independent variables serve as the document's primary inputs, computed properties act as the logic layer that connects these inputs into a meaningful network. This creates a <strong>dependency graph</strong>: a map of relationships where changing a single root value initiates a "chain reaction" or <strong>propagation</strong>, instantly recalculating every downstream consequence across the entire narrative.</p><p>Consider a project proposal that defines two independent variables: the <em>hourly rate</em> $r$ and the <em>number of hours</em> $h$. In a static document, you would manually calculate the total and type it out. In a reactive document, you define a derived variable for the <em>total cost</em> $C$, expressed as the function $C = r \times h$. If the reader adjusts the slider for hours, the document doesn't just update that specific number; it triggers the derived variable to re-evaluate the product, which might then feed into a <em>tax</em> calculation $T = C \times 0.15$, and finally a <em>grand total</em> $G = C + T$.</p><p>This automated consistency ensures that the document remains <strong>logically infallible</strong>. Because these calculations are baked into the document's structure, it is impossible for a reader to see a "total" that contradicts the "unit price." By shifting the burden of calculation from the author to the document itself, we eliminate the risk of mathematical drift. Whether you are modeling a biological population growth $P = P_0 e^{rt}$ or a simple retail discount, derived dependencies guarantee that every word and figure in your narrative reflects a single, unified version of the data.</p></div>
+<div class="interactive-content"><style>
+    #ku3-container {
+        padding: 2.5rem;
+        background-color: #f8fbfd;
+        border-radius: 12px;
+        border: 1px solid #e1e8ed;
+        margin: 1.5rem 0;
+        font-family: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    #ku3-receipt {
+        background: white;
+        padding: 2rem;
+        border-radius: 4px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        border: 1px solid #dcdde1;
+        width: 100%;
+        max-width: 320px;
+        position: relative;
+    }
+
+    /* Serrated edge effect for receipt */
+    #ku3-receipt::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        right: 0;
+        height: 10px;
+        background: linear-gradient(-45deg, transparent 5px, white 5px), 
+                    linear-gradient(45deg, transparent 5px, white 5px);
+        background-size: 10px 10px;
+    }
+
+    .ku3-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-family: 'Courier New', Courier, monospace;
+        color: #2d3436;
+    }
+
+    .ku3-total-row {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px dashed #b2bec3;
+        font-weight: 700;
+        font-size: 1.4rem;
+        color: #27ae60;
+    }
+
+    #ku3-controls-area {
+        width: 100%;
+        max-width: 320px;
+        background: #fff;
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 1px solid #edf2f7;
+    }
+
+    .ku3-label-group {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        color: #636e72;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    #ku3-price-slider {
+        width: 100%;
+        cursor: pointer;
+        accent-color: #27ae60;
+        height: 8px;
+        border-radius: 4px;
+        outline: none;
+    }
+
+    .ku3-value-highlight {
+        transition: color 0.2s ease;
+    }
+
+    .ku3-hint {
+        font-size: 0.85rem;
+        color: #b2bec3;
+        font-style: italic;
+        text-align: center;
+    }
+</style><div id="ku3-container">
+<div id="ku3-receipt">
+<div class="ku3-row">
+<span>Item Price:</span>
+<span id="ku3-item-price">$20.00</span>
+</div>
+<div class="ku3-row">
+<span>Tax (8%):</span>
+<span id="ku3-tax-amount">$1.60</span>
+</div>
+<div class="ku3-row ku3-total-row">
+<span>TOTAL:</span>
+<span id="ku3-total-val">$21.60</span>
+</div>
+</div>
+<div id="ku3-controls-area">
+<div class="ku3-label-group">
+<span>Adjust Item Cost</span>
+<span id="ku3-slider-feedback">$20</span>
+</div>
+<input id="ku3-price-slider" max="100" min="10" step="1" type="range" value="20"/>
+</div>
+<div class="ku3-hint">
+        As the "Price" variable changes, the "Tax" and "Total" computed properties propagate the change instantly.
+    </div>
+</div><script>
+    (function() {
+        const slider = document.getElementById('ku3-price-slider');
+        const priceDisplay = document.getElementById('ku3-item-price');
+        const taxDisplay = document.getElementById('ku3-tax-amount');
+        const totalDisplay = document.getElementById('ku3-total-val');
+        const sliderFeedback = document.getElementById('ku3-slider-feedback');
+
+        // State definition
+        const state = {
+            price: 20,
+            taxRate: 0.08
+        };
+
+        function render() {
+            // Computed Properties (The Logic Layer)
+            const price = parseFloat(state.price);
+            const tax = price * state.taxRate;
+            const total = price + tax;
+
+            // Update UI
+            priceDisplay.textContent = `$${price.toFixed(2)}`;
+            taxDisplay.textContent = `$${tax.toFixed(2)}`;
+            totalDisplay.textContent = `$${total.toFixed(2)}`;
+            sliderFeedback.textContent = `$${price}`;
+
+            // Visual feedback on total
+            totalDisplay.style.color = '#2ecc71';
+            setTimeout(() => {
+                totalDisplay.style.color = '#27ae60';
+            }, 150);
+        }
+
+        slider.addEventListener('input', (e) => {
+            state.price = e.target.value;
+            render();
+        });
+
+        // Initial render
+        render();
+    })();
+</script></div>
+</section>
+<!-- Visualizing data relationships through reactivity. -->
+<section class="knowledge-unit" id="ku4">
+<div class="text-content"><p>A reactive document’s most profound capability is its ability to provide <strong>multimodal representations</strong> of the same data. While text and formulas excel at conveying precision and logic, <strong>data visualization</strong> offers an intuitive, spatial understanding of magnitude and scale. By binding a single variable to both a numeric value in a sentence and a graphical element—such as a bar height, a point on a coordinate plane, or the radius of a circle—the document addresses multiple cognitive pathways simultaneously. This ensures that the reader does not just see a number change, but <em>feels</em> the impact of that change through immediate visual feedback.</p><p>Consider the relationship between a monthly <em>savings rate</em> $s$ and a <em>goal progress</em> bar. In a static report, you might read that "the user has saved $s = \$400$, reaching $80\%$ of their goal." In a reactive context, as you adjust a slider to increase the savings rate, the sentence updates its percentage in real-time, while a progress bar physically expands to fill the screen. This <strong>linked reactivity</strong> eliminates the cognitive load of mentally translating abstract digits into physical proportions. Whether you are scaling a 3D model by adjusting a <em>length</em> variable $L$ or watching a bell curve shift by modifying the <em>standard deviation</em> $\sigma$, the visual and textual elements remain in perfect mathematical lockstep.</p><p>This synchronization transforms data from a list of isolated facts into a <strong>dynamic system</strong>. When a change in an input variable triggers a concurrent update across a paragraph, a table, and a chart, the document reveals the underlying "shape" of the information. By bridging the gap between symbolic logic and visual perception, reactive documents turn passive charts into <strong>exploratory interfaces</strong>, allowing users to uncover patterns and outliers that would remain hidden in a series of static snapshots.</p></div>
+<div class="interactive-content"><style>
+    #ku4-container {
+        padding: 2rem;
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e1e8ed;
+        margin: 1.5rem 0;
+        font-family: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    #ku4-summary-card {
+        width: 100%;
+        max-width: 500px;
+        padding: 1.25rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #6c5ce7;
+        font-size: 1.1rem;
+        color: #2d3436;
+        line-height: 1.5;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .ku4-variable {
+        font-weight: 700;
+        color: #6c5ce7;
+    }
+
+    #ku4-viz-stage {
+        width: 100%;
+        height: 250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-image: radial-gradient(#dfe6e9 1px, transparent 1px);
+        background-size: 20px 20px;
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+    }
+
+    #ku4-rectangle {
+        background-color: rgba(108, 92, 231, 0.2);
+        border: 2px solid #6c5ce7;
+        transition: width 0.1s ease-out, height 0.1s ease-out;
+        position: relative;
+    }
+
+    #ku4-controls-panel {
+        width: 100%;
+        max-width: 500px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .ku4-control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .ku4-label-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #636e72;
+    }
+
+    .ku4-slider {
+        width: 100%;
+        accent-color: #6c5ce7;
+        cursor: pointer;
+    }
+
+    .ku4-hint {
+        font-size: 0.85rem;
+        color: #b2bec3;
+        font-style: italic;
+    }
+</style><div id="ku4-container">
+<div id="ku4-summary-card">
+        The area of this <span class="ku4-variable" id="ku4-txt-w">100</span>x<span class="ku4-variable" id="ku4-txt-h">50</span> rectangle is <span class="ku4-variable" id="ku4-txt-area">5,000</span> pixels.
+    </div>
+<div id="ku4-viz-stage">
+<div id="ku4-rectangle"></div>
+</div>
+<div id="ku4-controls-panel">
+<div class="ku4-control-group">
+<div class="ku4-label-row">
+<span>Width</span>
+<span id="ku4-val-w">100px</span>
+</div>
+<input class="ku4-slider" id="ku4-slider-w" max="200" min="20" type="range" value="100"/>
+</div>
+<div class="ku4-control-group">
+<div class="ku4-label-row">
+<span>Height</span>
+<span id="ku4-val-h">50px</span>
+</div>
+<input class="ku4-slider" id="ku4-slider-h" max="200" min="20" type="range" value="50"/>
+</div>
+</div>
+<div class="ku4-hint">
+        Visual magnitude and textual data are bound to the same state variables.
+    </div>
+</div><script>
+    (function() {
+        const sliderW = document.getElementById('ku4-slider-w');
+        const sliderH = document.getElementById('ku4-slider-h');
+        const txtW = document.getElementById('ku4-txt-w');
+        const txtH = document.getElementById('ku4-txt-h');
+        const txtArea = document.getElementById('ku4-txt-area');
+        const valW = document.getElementById('ku4-val-w');
+        const valH = document.getElementById('ku4-val-h');
+        const rect = document.getElementById('ku4-rectangle');
+
+        const state = {
+            width: 100,
+            height: 50
+        };
+
+        function render() {
+            // Derived state
+            const area = state.width * state.height;
+
+            // Update Text Representations
+            txtW.textContent = state.width;
+            txtH.textContent = state.height;
+            txtArea.textContent = area.toLocaleString();
+            
+            // Update UI Labels
+            valW.textContent = state.width + 'px';
+            valH.textContent = state.height + 'px';
+
+            // Update Visual Representation
+            rect.style.width = state.width + 'px';
+            rect.style.height = state.height + 'px';
+        }
+
+        sliderW.addEventListener('input', (e) => {
+            state.width = parseInt(e.target.value);
+            render();
+        });
+
+        sliderH.addEventListener('input', (e) => {
+            state.height = parseInt(e.target.value);
+            render();
+        });
+
+        // Initialize
+        render();
+    })();
+</script></div>
+</section>
+</div>
+<!-- KaTeX auto-render script -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>
