@@ -14,7 +14,7 @@ function App() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [liveHtml, setLiveHtml] = useState<string | null>(null);
-  const [configModalOpen, setConfigModalOpen] = useState(true);
+  const [configModalOpen, setConfigModalOpen] = useState(false);
   const [isSpecGenerating, setIsSpecGenerating] = useState(false);
   // Track whether spec was freshly generated (not loaded from history)
   const [specJustGenerated, setSpecJustGenerated] = useState(false);
