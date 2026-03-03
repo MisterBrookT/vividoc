@@ -77,6 +77,9 @@ export const useJobPolling = (
                         pollingIntervalRef.current = null;
                     }
 
+                    // Clear polled liveHtml so App's liveHtml (updated by chat) takes precedence
+                    setLiveHtml(null);
+
                     if (!hasCompletedRef.current && status.result?.document_id) {
                         hasCompletedRef.current = true;
                         if (onJobCompletedRef.current) onJobCompletedRef.current(status.result.document_id);

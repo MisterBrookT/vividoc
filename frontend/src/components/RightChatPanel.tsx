@@ -190,7 +190,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
     }, [input, isStreaming, spec, onSendMessage, onHtmlUpdated, onSpecUpdated, activeStage]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); handleSend(); }
     };
 
     const renderEditStatusCard = (msg: Message) => {
