@@ -79,3 +79,9 @@ Thumbs.db
 # reference repo
 opencode/
 exps/
+
+# baseline repo
+baselines/**/logs/
+baselines/**/workspace/
+baselines/**/metagpt/
+baselines/metagpt_baseline/config/config2.yaml

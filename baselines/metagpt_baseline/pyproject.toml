@@ -1,0 +1,11 @@
+[project]
+name = "metagpt-baseline"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "metagpt>=0.8",
+]
+
+[tool.uv]
+prerelease = "allow"
+python-preference = "managed"

@@ -8,7 +8,7 @@ from vividoc.core.models import GeneratedDocument, DocumentSpec
 from vividoc.core.config import RunnerConfig
 from vividoc.utils.io import save_json, load_json
 from vividoc.utils.logger import logger
-from vividoc.utils.naming import topic_to_uuid, make_output_dirname
+from vividoc.utils.naming import topic_to_dirname
 
 
 class Runner:
@@ -26,9 +26,8 @@ class Runner:
         self.evaluator = Evaluator(config)
 
     def _get_topic_dir(self, topic: str) -> Path:
-        """Get output directory for a topic: {topic_name}_{uuid_short}/vividoc/."""
-        topic_uuid = topic_to_uuid(topic)
-        dirname = make_output_dirname(topic, topic_uuid)
+        """Get output directory for a topic: {topic_name}/vividoc/."""
+        dirname = topic_to_dirname(topic)
         topic_dir = Path(self.config.output_dir) / dirname / "vividoc"
         topic_dir.mkdir(parents=True, exist_ok=True)
         return topic_dir

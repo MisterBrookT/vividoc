@@ -6,7 +6,7 @@ from pathlib import Path
 from datetime import datetime
 from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
 from vividoc.core.planner import Planner
-from vividoc.utils.naming import topic_to_uuid, make_output_dirname
+from vividoc.utils.naming import topic_to_dirname
 
 
 class SpecService:
@@ -33,10 +33,8 @@ class SpecService:
         self._load_specs_from_disk()
 
     def _generate_spec_id(self, topic: str) -> str:
-        """Generate a human-readable spec ID: {topic_name}_{uuid_short}."""
-        salt = datetime.now().isoformat()
-        uid = topic_to_uuid(topic, deterministic=False, salt=salt)
-        return make_output_dirname(topic, uid)
+        """Generate a human-readable spec ID from topic name."""
+        return topic_to_dirname(topic)
 
     def _get_spec_dir(self, spec_id: str) -> Path:
         """Get the directory path for a spec: outputs/{spec_id}/vividoc/."""
