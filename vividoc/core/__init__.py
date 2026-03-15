@@ -11,7 +11,8 @@ from vividoc.core.models import (
 from vividoc.core.planner import Planner
 from vividoc.core.executor import Executor
 from vividoc.core.evaluator import Evaluator
-from vividoc.core.runner import Runner, topic_to_uuid
+from vividoc.core.runner import Runner
+from vividoc.utils.naming import topic_to_uuid, make_output_dirname
 
 __all__ = [
     "RunnerConfig",
@@ -25,4 +26,5 @@ __all__ = [
     "Evaluator",
     "Runner",
     "topic_to_uuid",
+    "make_output_dirname",
 ]

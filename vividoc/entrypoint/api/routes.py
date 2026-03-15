@@ -306,7 +306,7 @@ async def get_job_html(job_id: str):
             from pathlib import Path
 
             project_root = Path(__file__).parent.parent.parent.parent
-            html_path = project_root / "outputs" / spec_id / "document.html"
+            html_path = project_root / "outputs" / spec_id / "vividoc" / "document.html"
 
             if html_path.exists():
                 with open(html_path, "r", encoding="utf-8") as f:

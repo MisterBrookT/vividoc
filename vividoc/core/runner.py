@@ -1,8 +1,6 @@
 """Runner workflow for vividoc pipeline."""
 
 from pathlib import Path
-import hashlib
-import uuid
 from vividoc.core.planner import Planner
 from vividoc.core.executor import Executor
 from vividoc.core.evaluator import Evaluator
@@ -10,12 +8,7 @@ from vividoc.core.models import GeneratedDocument, DocumentSpec
 from vividoc.core.config import RunnerConfig
 from vividoc.utils.io import save_json, load_json
 from vividoc.utils.logger import logger
-
-
-def topic_to_uuid(topic: str) -> str:
-    """Generate deterministic UUID from topic using MD5 hash."""
-    hash_obj = hashlib.md5(topic.encode("utf-8"))
-    return str(uuid.UUID(hash_obj.hexdigest()))
+from vividoc.utils.naming import topic_to_uuid, make_output_dirname
 
 
 class Runner:
@@ -33,9 +26,10 @@ class Runner:
         self.evaluator = Evaluator(config)
 
     def _get_topic_dir(self, topic: str) -> Path:
-        """Get output directory for a topic (using UUID)."""
+        """Get output directory for a topic: {topic_name}_{uuid_short}/vividoc/."""
         topic_uuid = topic_to_uuid(topic)
-        topic_dir = Path(self.config.output_dir) / topic_uuid
+        dirname = make_output_dirname(topic, topic_uuid)
+        topic_dir = Path(self.config.output_dir) / dirname / "vividoc"
         topic_dir.mkdir(parents=True, exist_ok=True)
         return topic_dir
 

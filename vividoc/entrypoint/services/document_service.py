@@ -96,9 +96,9 @@ class DocumentService:
             from pathlib import Path
             from dataclasses import replace
 
-            # Get project root and create output directory for this spec
+            # Get project root and create output directory: outputs/{spec_id}/vividoc/
             project_root = Path(__file__).parent.parent.parent.parent
-            spec_output_dir = project_root / "outputs" / spec_id
+            spec_output_dir = project_root / "outputs" / spec_id / "vividoc"
             spec_output_dir.mkdir(parents=True, exist_ok=True)
 
             # Create new config with updated output_dir
@@ -283,9 +283,9 @@ class DocumentService:
         """
         from pathlib import Path
 
-        # Construct path: project_root/outputs/spec_id/document.html
+        # Construct path: project_root/outputs/spec_id/vividoc/document.html
         project_root = Path(__file__).parent.parent.parent.parent
-        html_path = project_root / "outputs" / spec_id / "document.html"
+        html_path = project_root / "outputs" / spec_id / "vividoc" / "document.html"
 
         if html_path.exists():
             try:

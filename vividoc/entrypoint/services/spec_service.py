@@ -1,13 +1,12 @@
 """Service for spec generation and management."""
 
 from typing import Dict, Tuple, List
-import uuid
 import json
-import hashlib
 from pathlib import Path
 from datetime import datetime
 from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
 from vividoc.core.planner import Planner
+from vividoc.utils.naming import topic_to_uuid, make_output_dirname
 
 
 class SpecService:
@@ -33,16 +32,15 @@ class SpecService:
         # Load existing specs from disk
         self._load_specs_from_disk()
 
-    def _topic_to_uuid(self, topic: str) -> str:
-        """Generate unique UUID from topic and timestamp."""
-        # Use MD5 hash of topic + timestamp to generate unique UUID
-        unique_string = f"{topic}_{datetime.now().isoformat()}"
-        hash_obj = hashlib.md5(unique_string.encode("utf-8"))
-        return str(uuid.UUID(hash_obj.hexdigest()))
+    def _generate_spec_id(self, topic: str) -> str:
+        """Generate a human-readable spec ID: {topic_name}_{uuid_short}."""
+        salt = datetime.now().isoformat()
+        uid = topic_to_uuid(topic, deterministic=False, salt=salt)
+        return make_output_dirname(topic, uid)
 
     def _get_spec_dir(self, spec_id: str) -> Path:
-        """Get the directory path for a spec."""
-        return self.storage_base_dir / spec_id
+        """Get the directory path for a spec: outputs/{spec_id}/vividoc/."""
+        return self.storage_base_dir / spec_id / "vividoc"
 
     def list_specs(self) -> List[Dict]:
         """List all available specs ordered by time (newest first)."""
@@ -61,27 +59,38 @@ class SpecService:
         return specs_list
 
     def _load_specs_from_disk(self):
-        """Load all specs from disk into memory."""
-        for spec_dir in self.storage_base_dir.iterdir():
-            if spec_dir.is_dir():
-                spec_file = spec_dir / "spec.json"
-                if spec_file.exists():
-                    try:
-                        with open(spec_file, "r", encoding="utf-8") as f:
-                            data = json.load(f)
-                            # Handle legacy or new format
-                            spec = DocumentSpec(**data["spec"])
-                            spec_id = data.get(
-                                "spec_id", spec_dir.name
-                            )  # Fallback to dir name if no spec_id
+        """Load all specs from disk into memory.
 
-                            self.specs[spec_id] = spec
-                            self.spec_metadata[spec_id] = {
-                                "topic": data.get("topic", spec.topic),
-                                "time": data.get("time", datetime.now().isoformat()),
-                            }
-                    except Exception as e:
-                        print(f"Warning: Failed to load spec from {spec_file}: {e}")
+        Supports both new layout (outputs/{id}/vividoc/spec.json)
+        and legacy layout (outputs/{id}/spec.json).
+        """
+        for topic_dir in self.storage_base_dir.iterdir():
+            if not topic_dir.is_dir():
+                continue
+
+            # Try new layout first: {topic_dir}/vividoc/spec.json
+            spec_file = topic_dir / "vividoc" / "spec.json"
+            if not spec_file.exists():
+                # Fallback to legacy layout: {topic_dir}/spec.json
+                spec_file = topic_dir / "spec.json"
+            if not spec_file.exists():
+                continue
+
+            try:
+                with open(spec_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    spec = DocumentSpec(**data["spec"])
+                    spec_id = data.get(
+                        "spec_id", topic_dir.name
+                    )  # Fallback to dir name if no spec_id
+
+                    self.specs[spec_id] = spec
+                    self.spec_metadata[spec_id] = {
+                        "topic": data.get("topic", spec.topic),
+                        "time": data.get("time", datetime.now().isoformat()),
+                    }
+            except Exception as e:
+                print(f"Warning: Failed to load spec from {spec_file}: {e}")
 
     def _save_spec_to_disk(self, spec_id: str, spec: DocumentSpec, topic: str):
         """Save a spec to disk in outputs/spec_id/ directory."""
@@ -104,12 +113,12 @@ class SpecService:
         self.spec_metadata[spec_id] = {"topic": topic, "time": data["time"]}
 
     def _delete_spec_from_disk(self, spec_id: str):
-        """Delete a spec directory from disk."""
-        spec_dir = self._get_spec_dir(spec_id)
-        if spec_dir.exists():
+        """Delete the entire topic directory (outputs/{spec_id}/) from disk."""
+        topic_dir = self.storage_base_dir / spec_id
+        if topic_dir.exists():
             import shutil
 
-            shutil.rmtree(spec_dir)
+            shutil.rmtree(topic_dir)
 
     def generate_spec(self, topic: str) -> Tuple[str, DocumentSpec]:
         """
@@ -126,7 +135,7 @@ class SpecService:
         spec = self.planner.run(topic)
 
         # Generate unique spec ID
-        spec_id = self._topic_to_uuid(topic)
+        spec_id = self._generate_spec_id(topic)
 
         # Store spec in memory and disk
         self.specs[spec_id] = spec
