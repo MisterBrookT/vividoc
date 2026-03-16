@@ -1,3 +1,4 @@
+import base64
 import os
 from PIL.Image import Image as PILImage
 from typing import Any, Generator, Type
@@ -100,6 +101,40 @@ class OpenrouterCaller(LLMCaller):
         for chunk in stream:
             if chunk.choices and chunk.choices[0].delta.content:
                 yield chunk.choices[0].delta.content
+
+    def understand_image(
+        self, model: str, prompt: str, image_path: str, **kwargs: Any
+    ) -> str:
+        """Vision: send image + text prompt via OpenAI-compatible multimodal API."""
+        with open(image_path, "rb") as f:
+            img_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+        # Detect mime type from extension
+        ext = os.path.splitext(image_path)[1].lower()
+        mime = {
+            "png": "image/png",
+            "jpg": "image/jpeg",
+            "jpeg": "image/jpeg",
+            "gif": "image/gif",
+            "webp": "image/webp",
+        }.get(ext.lstrip("."), "image/png")
+
+        response = self._client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:{mime};base64,{img_b64}"},
+                        },
+                    ],
+                }
+            ],
+        )
+        return response.choices[0].message.content
 
     def generate_structured(
         self, model: str, prompt: str, schema: Type[BaseModel], **kwargs: Any

@@ -85,3 +85,6 @@ baselines/**/logs/
 baselines/**/workspace/
 baselines/**/metagpt/
 baselines/metagpt_baseline/config/config2.yaml
+
+# eval results
+evals/results/
