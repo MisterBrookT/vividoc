@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Freeform Construction — Fourier Drawing</title>
+<style>
+  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
+  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: crosshair; }
+  .controls { margin: 1rem 0; display: flex; gap: 1rem; align-items: center; }
+  .controls button { padding: 0.4rem 1rem; border: 2px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; }
+  .note { color: #666; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<h2>Fourier Decomposition</h2>
+<p>Draw a signal on the canvas, then adjust the number of Fourier terms.</p>
+<canvas id="c" width="600" height="300"></canvas>
+<div class="controls">
+  <button id="clearBtn">Clear</button>
+  <label>Terms: <strong id="nVal">5</strong></label>
+  <input type="range" id="terms" min="1" max="30" value="5" style="width:200px">
+</div>
+<div class="note" id="note">Draw a waveform by clicking and dragging on the canvas</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 600, H = 300;
+let userSignal = [];
+let drawing = false;
+
+canvas.addEventListener('mousedown', () => { drawing = true; userSignal = []; });
+canvas.addEventListener('mousemove', e => {
+  if (!drawing) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  userSignal.push({ x, y: (H / 2 - y) / (H / 2) }); // normalize to [-1, 1]
+  render();
+});
+canvas.addEventListener('mouseup', () => { drawing = false; render(); });
+document.getElementById('clearBtn').addEventListener('click', () => { userSignal = []; render(); });
+document.getElementById('terms').addEventListener('input', () => { render(); });
+
+function dft(signal, nTerms) {
+  const N = signal.length;
+  if (N === 0) return [];
+  const coeffs = [];
+  for (let k = 0; k < nTerms; k++) {
+    let re = 0, im = 0;
+    for (let n = 0; n < N; n++) {
+      const angle = (2 * Math.PI * k * n) / N;
+      re += signal[n] * Math.cos(angle);
+      im -= signal[n] * Math.sin(angle);
+    }
+    coeffs.push({ re: re / N, im: im / N, freq: k });
+  }
+  return coeffs;
+}
+
+function reconstruct(coeffs, N) {
+  const result = [];
+  for (let n = 0; n < N; n++) {
+    let val = 0;
+    for (const c of coeffs) {
+      const angle = (2 * Math.PI * c.freq * n) / N;
+      val += c.re * Math.cos(angle) - c.im * Math.sin(angle);
+    }
+    result.push(val);
+  }
+  return result;
+}
+
+function render() {
+  const nTerms = parseInt(document.getElementById('terms').value);
+  document.getElementById('nVal').textContent = nTerms;
+  ctx.clearRect(0, 0, W, H);
+
+  // Center line
+  ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+
+  if (userSignal.length < 2) return;
+
+  // Draw user signal (blue)
+  ctx.beginPath();
+  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2;
+  for (let i = 0; i < userSignal.length; i++) {
+    const x = (i / userSignal.length) * W;
+    const y = H / 2 - userSignal[i].y * (H / 2 - 10);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Fourier reconstruction (red)
+  const signal = userSignal.map(p => p.y);
+  const coeffs = dft(signal, Math.min(nTerms, signal.length));
+  const recon = reconstruct(coeffs, signal.length);
+
+  ctx.beginPath();
+  ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 2;
+  for (let i = 0; i < recon.length; i++) {
+    const x = (i / recon.length) * W;
+    const y = H / 2 - recon[i] * (H / 2 - 10);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  document.getElementById('note').textContent = `Blue: your signal (${signal.length} samples) | Red: ${nTerms}-term Fourier reconstruction`;
+}
+render();
+</script>
+</body>
+</html>

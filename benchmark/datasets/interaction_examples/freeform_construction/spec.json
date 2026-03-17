@@ -1,0 +1,16 @@
+{
+  "category": "Freeform Construction",
+  "topic": "Fourier decomposition of signals",
+  "source_url": "http://jackschaedler.github.io/circles-sines-signals/",
+  "srtc": {
+    "S": {
+      "user_signal": { "type": "drawable", "domain": [0, "2π"], "range": [-1, 1], "label": "Draw a periodic signal" },
+      "n_terms": { "type": "slider", "range": [1, 20], "default": 5, "label": "Fourier terms" },
+      "coefficients": { "type": "derived", "formula": "DFT(user_signal, n_terms)" },
+      "reconstruction": { "type": "derived", "formula": "inverse_DFT(coefficients)" }
+    },
+    "R": "Top: user-drawn signal (blue) overlaid with Fourier reconstruction (red); Bottom: rotating circles whose radii are the Fourier coefficients",
+    "T": "Drawing on the canvas updates user_signal; adjusting n_terms changes the number of circles and reconstruction fidelity",
+    "C": "As n_terms increases, the reconstruction converges to the user-drawn signal"
+  }
+}

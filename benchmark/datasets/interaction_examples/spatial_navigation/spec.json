@@ -1,0 +1,16 @@
+{
+  "category": "Spatial Navigation",
+  "topic": "Parametric and implicit 3D surfaces",
+  "source_url": "https://marimo.io/@public/surfaces",
+  "srtc": {
+    "S": {
+      "surface": { "type": "select", "options": ["paraboloid", "saddle", "sphere", "torus"], "default": "paraboloid" },
+      "camera_theta": { "type": "draggable", "range": [0, 360], "default": 45 },
+      "camera_phi": { "type": "draggable", "range": [0, 180], "default": 60 },
+      "mesh": { "type": "derived", "formula": "compute_surface(surface)" }
+    },
+    "R": "3D wireframe/surface plot rendered from (camera_theta, camera_phi) viewpoint",
+    "T": "Click-and-drag rotates the camera; scroll zooms in/out",
+    "C": "Rotating reveals the full 3D geometry that a single viewpoint cannot convey"
+  }
+}

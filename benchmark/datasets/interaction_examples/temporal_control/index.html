@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Temporal Control — Bubble Sort</title>
+<style>
+  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
+  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; }
+  .controls { margin: 1rem 0; display: flex; gap: 0.8rem; align-items: center; }
+  .controls button { padding: 0.4rem 1rem; border: 2px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.95rem; }
+  .controls button:hover { border-color: #2563eb; }
+  .info { color: #555; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<h2>Bubble Sort — Step Through</h2>
+<p>Use Play, Step, or the slider to control the sorting animation.</p>
+<canvas id="c" width="500" height="300"></canvas>
+<div class="controls">
+  <button id="playBtn">▶ Play</button>
+  <button id="stepBtn">Step →</button>
+  <button id="resetBtn">Reset</button>
+  <label>Step <span id="stepNum">0</span>/<span id="totalSteps"></span></label>
+  <input type="range" id="slider" min="0" value="0" style="width:180px">
+</div>
+<div class="info" id="info"></div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 500, H = 300, N = 15;
+let original, history, step, playing, timer;
+
+function init() {
+  original = Array.from({length: N}, (_, i) => i + 1);
+  // Shuffle
+  for (let i = N - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [original[i], original[j]] = [original[j], original[i]]; }
+  // Record all steps of bubble sort
+  history = [];
+  const arr = [...original];
+  history.push({ arr: [...arr], comparing: [-1, -1] });
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N - 1 - i; j++) {
+      history.push({ arr: [...arr], comparing: [j, j + 1] });
+      if (arr[j] > arr[j + 1]) { [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]]; }
+      history.push({ arr: [...arr], comparing: [j, j + 1] });
+    }
+  }
+  step = 0; playing = false;
+  document.getElementById('slider').max = history.length - 1;
+  document.getElementById('totalSteps').textContent = history.length - 1;
+  draw();
+}
+
+function draw() {
+  const s = history[step];
+  const barW = (W - 40) / N;
+  ctx.clearRect(0, 0, W, H);
+  for (let i = 0; i < N; i++) {
+    const h = (s.arr[i] / N) * (H - 40);
+    const x = 20 + i * barW;
+    const y = H - 20 - h;
+    if (s.comparing.includes(i)) ctx.fillStyle = '#dc2626';
+    else if (s.arr[i] === i + 1) ctx.fillStyle = '#059669';
+    else ctx.fillStyle = '#2563eb';
+    ctx.fillRect(x + 1, y, barW - 2, h);
+  }
+  document.getElementById('stepNum').textContent = step;
+  document.getElementById('slider').value = step;
+  // Check if sorted
+  const sorted = s.arr.every((v, i) => v === i + 1);
+  document.getElementById('info').textContent = sorted ? '✓ Array is sorted!' : `Comparing indices ${s.comparing[0]} and ${s.comparing[1]}`;
+}
+
+document.getElementById('stepBtn').addEventListener('click', () => {
+  if (step < history.length - 1) { step++; draw(); }
+});
+document.getElementById('playBtn').addEventListener('click', () => {
+  if (playing) { clearInterval(timer); playing = false; document.getElementById('playBtn').textContent = '▶ Play'; }
+  else { playing = true; document.getElementById('playBtn').textContent = '⏸ Pause'; timer = setInterval(() => { if (step < history.length - 1) { step++; draw(); } else { clearInterval(timer); playing = false; document.getElementById('playBtn').textContent = '▶ Play'; } }, 50); }
+});
+document.getElementById('resetBtn').addEventListener('click', () => { clearInterval(timer); playing = false; document.getElementById('playBtn').textContent = '▶ Play'; init(); });
+document.getElementById('slider').addEventListener('input', e => { step = parseInt(e.target.value); draw(); });
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scroll-driven Narrative — Complex Iteration</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #f8f9fa; }
+  .header { text-align: center; padding: 2rem; }
+  .header p { color: #555; }
+  .scroll-container { position: relative; height: 400vh; }
+  .sticky-viz { position: sticky; top: 0; height: 100vh; display: flex; justify-content: center; align-items: center; }
+  canvas { border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+  .step-label { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: #fff; padding: 0.6rem 1.5rem; border-radius: 20px; font-size: 0.95rem; z-index: 10; }
+  .footer { text-align: center; padding: 4rem 2rem; color: #888; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h2>Julia Set — Scroll to Explore</h2>
+  <p>Scroll down to progress through the narrative. The visualization updates with your scroll position.</p>
+</div>
+<div class="scroll-container">
+  <div class="sticky-viz"><canvas id="c" width="400" height="400"></canvas></div>
+</div>
+<div class="step-label" id="label">Step 1/4 — The Complex Plane</div>
+<div class="footer">End of narrative</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 400, H = 400;
+
+const steps = [
+  { title: 'The Complex Plane', desc: 'Each pixel maps to a complex number c = x + yi' },
+  { title: 'Iteration: z → z² + c', desc: 'Starting from z₀ = 0, we repeatedly apply the function' },
+  { title: 'Escape or Stay', desc: 'If |z| > 2, the point escapes; color by iteration count' },
+  { title: 'The Julia Set Emerges', desc: 'Fixed c = -0.7 + 0.27i reveals the fractal boundary' },
+];
+
+const cReal = -0.7, cImag = 0.27;
+
+function mandelbrotIter(cr, ci, maxIter) {
+  let zr = 0, zi = 0;
+  for (let i = 0; i < maxIter; i++) {
+    const zr2 = zr * zr - zi * zi + cr;
+    const zi2 = 2 * zr * zi + ci;
+    zr = zr2; zi = zi2;
+    if (zr * zr + zi * zi > 4) return i;
+  }
+  return maxIter;
+}
+
+function juliaIter(zr, zi, maxIter) {
+  for (let i = 0; i < maxIter; i++) {
+    const zr2 = zr * zr - zi * zi + cReal;
+    const zi2 = 2 * zr * zi + cImag;
+    zr = zr2; zi = zi2;
+    if (zr * zr + zi * zi > 4) return i;
+  }
+  return maxIter;
+}
+
+function hsl(h, s, l) {
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+function drawStep(stepIdx, t) {
+  const img = ctx.createImageData(W, H);
+  const maxIter = stepIdx < 2 ? Math.max(2, Math.floor(t * 30) + 2) : 50;
+  const zoom = stepIdx === 3 ? 1.5 : 2;
+  const cx = stepIdx === 3 ? -0.1 : 0;
+  const cy = 0;
+
+  for (let py = 0; py < H; py++) {
+    for (let px = 0; px < W; px++) {
+      const x = (px - W / 2) / (W / 2) * zoom + cx;
+      const y = (py - H / 2) / (H / 2) * zoom + cy;
+      let iter;
+
+      if (stepIdx <= 1) {
+        // Show Mandelbrot with increasing iterations
+        iter = mandelbrotIter(x, y, maxIter);
+      } else {
+        // Show Julia set
+        iter = juliaIter(x, y, maxIter);
+      }
+
+      const idx = (py * W + px) * 4;
+      if (iter === maxIter) {
+        img.data[idx] = 20; img.data[idx+1] = 20; img.data[idx+2] = 40;
+      } else {
+        const h = (iter / maxIter) * 360;
+        // Convert HSL to RGB inline
+        const s = 0.8, l = 0.5;
+        const c = (1 - Math.abs(2 * l - 1)) * s;
+        const hh = h / 60;
+        const x2 = c * (1 - Math.abs(hh % 2 - 1));
+        let r1 = 0, g1 = 0, b1 = 0;
+        if (hh < 1) { r1 = c; g1 = x2; }
+        else if (hh < 2) { r1 = x2; g1 = c; }
+        else if (hh < 3) { g1 = c; b1 = x2; }
+        else if (hh < 4) { g1 = x2; b1 = c; }
+        else if (hh < 5) { r1 = x2; b1 = c; }
+        else { r1 = c; b1 = x2; }
+        const m = l - c / 2;
+        img.data[idx] = Math.round((r1 + m) * 255);
+        img.data[idx+1] = Math.round((g1 + m) * 255);
+        img.data[idx+2] = Math.round((b1 + m) * 255);
+      }
+      img.data[idx+3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Step 0: draw grid lines for "complex plane"
+  if (stepIdx === 0) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1;
+    for (let i = -2; i <= 2; i++) {
+      const px = W / 2 + (i / zoom) * (W / 2);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+      const py2 = H / 2 + (i / zoom) * (H / 2);
+      ctx.beginPath(); ctx.moveTo(0, py2); ctx.lineTo(W, py2); ctx.stroke();
+    }
+    ctx.fillStyle = '#fff'; ctx.font = '14px system-ui';
+    ctx.fillText('Re', W - 30, H / 2 - 8);
+    ctx.fillText('Im', W / 2 + 8, 20);
+  }
+}
+
+function onScroll() {
+  const container = document.querySelector('.scroll-container');
+  const rect = container.getBoundingClientRect();
+  const progress = Math.max(0, Math.min(1, -rect.top / (rect.height - window.innerHeight)));
+  const totalSteps = steps.length;
+  const raw = progress * totalSteps;
+  const stepIdx = Math.min(Math.floor(raw), totalSteps - 1);
+  const t = raw - stepIdx;
+
+  drawStep(stepIdx, t);
+  document.getElementById('label').textContent = `Step ${stepIdx + 1}/${totalSteps} — ${steps[stepIdx].title}: ${steps[stepIdx].desc}`;
+}
+
+window.addEventListener('scroll', onScroll);
+onScroll();
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Inspection — Image Kernel Convolution</title>
+<style>
+  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
+  .grid-container { display: flex; gap: 2rem; align-items: flex-start; }
+  .grid-box { text-align: center; }
+  .grid-box h3 { margin-bottom: 0.5rem; }
+  table { border-collapse: collapse; }
+  td { width: 36px; height: 36px; text-align: center; font-size: 12px; border: 1px solid #ddd; transition: background 0.1s; }
+  td.highlight { background: #fef3c7 !important; outline: 2px solid #d97706; }
+  .kernel-display { margin-top: 1rem; }
+  .kernel-display td { background: #f1f5f9; font-weight: 600; }
+  .result { margin-top: 1rem; font-size: 1.1rem; color: #2563eb; font-weight: 600; min-height: 1.5em; }
+  p { color: #555; }
+</style>
+</head>
+<body>
+<h2>Image Kernel Convolution</h2>
+<p>Hover over any cell in the input grid to see the 3×3 convolution calculation.</p>
+<div class="grid-container">
+  <div class="grid-box">
+    <h3>Input</h3>
+    <table id="input"></table>
+  </div>
+  <div class="grid-box">
+    <h3>Kernel (Sharpen)</h3>
+    <table class="kernel-display" id="kernel"></table>
+  </div>
+  <div class="grid-box">
+    <h3>Output</h3>
+    <table id="output"></table>
+  </div>
+</div>
+<div class="result" id="result"></div>
+<script>
+const SIZE = 8;
+const kernel = [[0, -1, 0], [-1, 5, -1], [0, -1, 0]];
+
+// Generate a smooth gradient-like input
+const input = [];
+for (let r = 0; r < SIZE; r++) {
+  input[r] = [];
+  for (let c = 0; c < SIZE; c++) {
+    input[r][c] = Math.round(30 + (r + c) * 12 + Math.sin(r * 0.8) * 15 + Math.cos(c * 0.6) * 10);
+  }
+}
+
+// Compute output via convolution
+const output = [];
+for (let r = 0; r < SIZE; r++) {
+  output[r] = [];
+  for (let c = 0; c < SIZE; c++) {
+    let sum = 0;
+    for (let kr = -1; kr <= 1; kr++) {
+      for (let kc = -1; kc <= 1; kc++) {
+        const ir = Math.min(Math.max(r + kr, 0), SIZE - 1);
+        const ic = Math.min(Math.max(c + kc, 0), SIZE - 1);
+        sum += input[ir][ic] * kernel[kr + 1][kc + 1];
+      }
+    }
+    output[r][c] = Math.min(255, Math.max(0, Math.round(sum)));
+  }
+}
+
+function buildTable(id, data) {
+  const table = document.getElementById(id);
+  for (let r = 0; r < SIZE; r++) {
+    const tr = document.createElement('tr');
+    for (let c = 0; c < SIZE; c++) {
+      const td = document.createElement('td');
+      td.textContent = data[r][c];
+      const gray = data[r][c];
+      td.style.background = `rgb(${gray},${gray},${gray})`;
+      td.style.color = gray > 128 ? '#000' : '#fff';
+      td.dataset.row = r; td.dataset.col = c;
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+}
+
+function buildKernel() {
+  const table = document.getElementById('kernel');
+  for (let r = 0; r < 3; r++) {
+    const tr = document.createElement('tr');
+    for (let c = 0; c < 3; c++) {
+      const td = document.createElement('td');
+      td.textContent = kernel[r][c];
+      td.id = `k${r}${c}`;
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+}
+
+buildTable('input', input);
+buildTable('output', output);
+buildKernel();
+
+// Hover interaction
+const inputTable = document.getElementById('input');
+const outputTable = document.getElementById('output');
+
+function clearHighlights() {
+  inputTable.querySelectorAll('td').forEach(td => td.classList.remove('highlight'));
+  outputTable.querySelectorAll('td').forEach(td => td.classList.remove('highlight'));
+  document.querySelectorAll('.kernel-display td').forEach(td => td.style.background = '#f1f5f9');
+  document.getElementById('result').textContent = '';
+}
+
+inputTable.addEventListener('mouseover', e => {
+  if (e.target.tagName !== 'TD') return;
+  clearHighlights();
+  const r = parseInt(e.target.dataset.row), c = parseInt(e.target.dataset.col);
+  // Highlight 3x3 block in input
+  let terms = [];
+  for (let kr = -1; kr <= 1; kr++) {
+    for (let kc = -1; kc <= 1; kc++) {
+      const ir = Math.min(Math.max(r + kr, 0), SIZE - 1);
+      const ic = Math.min(Math.max(c + kc, 0), SIZE - 1);
+      const cell = inputTable.rows[ir].cells[ic];
+      cell.classList.add('highlight');
+      const kv = kernel[kr + 1][kc + 1];
+      if (kv !== 0) terms.push(`${input[ir][ic]}×${kv}`);
+      document.getElementById(`k${kr+1}${kc+1}`).style.background = '#fef3c7';
+    }
+  }
+  // Highlight output cell
+  outputTable.rows[r].cells[c].classList.add('highlight');
+  document.getElementById('result').textContent = `Output[${r},${c}] = ${terms.join(' + ')} = ${output[r][c]}`;
+});
+inputTable.addEventListener('mouseleave', clearHighlights);
+</script>
+</body>
+</html>

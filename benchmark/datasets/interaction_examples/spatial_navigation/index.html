@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spatial Navigation — 3D Surface</title>
+<style>
+  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
+  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: grab; }
+  .controls { margin: 1rem 0; display: flex; gap: 1rem; align-items: center; }
+  .controls select { padding: 0.4rem; border-radius: 4px; border: 1px solid #ddd; }
+  .note { color: #666; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<h2>3D Parametric Surfaces</h2>
+<p>Click and drag to rotate the view. Select a surface type.</p>
+<canvas id="c" width="500" height="400"></canvas>
+<div class="controls">
+  <select id="surface">
+    <option value="paraboloid">Paraboloid</option>
+    <option value="saddle">Saddle</option>
+    <option value="sphere">Sphere</option>
+  </select>
+</div>
+<div class="note">θ = <span id="theta">30</span>° φ = <span id="phi">25</span>°</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 500, H = 400;
+let theta = 30, phi = 25, dragging = false, lastX, lastY;
+
+const surfaces = {
+  paraboloid: (u, v) => [u, v, (u * u + v * v) * 0.3],
+  saddle: (u, v) => [u, v, (u * u - v * v) * 0.3],
+  sphere: (u, v) => {
+    const r = 1.8;
+    return [r * Math.cos(u) * Math.cos(v), r * Math.sin(u) * Math.cos(v), r * Math.sin(v)];
+  }
+};
+const ranges = {
+  paraboloid: { u: [-2, 2], v: [-2, 2] },
+  saddle: { u: [-2, 2], v: [-2, 2] },
+  sphere: { u: [0, 2 * Math.PI], v: [-Math.PI / 2, Math.PI / 2] }
+};
+
+function project(x, y, z) {
+  const rad = Math.PI / 180;
+  const ct = Math.cos(theta * rad), st = Math.sin(theta * rad);
+  const cp = Math.cos(phi * rad), sp = Math.sin(phi * rad);
+  const rx = ct * x + st * z;
+  const ry = sp * st * x + cp * y - sp * ct * z;
+  const rz = -cp * st * x + sp * y + cp * ct * z;
+  const scale = 80;
+  return [W / 2 + rx * scale, H / 2 - ry * scale, rz];
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const type = document.getElementById('surface').value;
+  const fn = surfaces[type];
+  const rng = ranges[type];
+  const N = 20;
+
+  // Draw wireframe
+  const lines = [];
+  for (let i = 0; i <= N; i++) {
+    for (let j = 0; j <= N; j++) {
+      const u = rng.u[0] + (rng.u[1] - rng.u[0]) * i / N;
+      const v = rng.v[0] + (rng.v[1] - rng.v[0]) * j / N;
+      const [x, y, z] = fn(u, v);
+      const [px, py, pz] = project(x, y, z);
+      if (j < N) {
+        const v2 = rng.v[0] + (rng.v[1] - rng.v[0]) * (j + 1) / N;
+        const [x2, y2, z2] = fn(u, v2);
+        const [px2, py2] = project(x2, y2, z2);
+        lines.push({ x1: px, y1: py, x2: px2, y2: py2, z: (pz + project(x2, y2, z2)[2]) / 2 });
+      }
+      if (i < N) {
+        const u2 = rng.u[0] + (rng.u[1] - rng.u[0]) * (i + 1) / N;
+        const [x2, y2, z2] = fn(u2, v);
+        const [px2, py2] = project(x2, y2, z2);
+        lines.push({ x1: px, y1: py, x2: px2, y2: py2, z: (pz + project(x2, y2, z2)[2]) / 2 });
+      }
+    }
+  }
+
+  // Sort by depth (painter's algorithm)
+  lines.sort((a, b) => a.z - b.z);
+  for (const l of lines) {
+    const t = (l.z + 3) / 6; // normalize depth for color
+    ctx.beginPath();
+    ctx.moveTo(l.x1, l.y1);
+    ctx.lineTo(l.x2, l.y2);
+    ctx.strokeStyle = `rgba(37,99,235,${0.3 + t * 0.5})`;
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+  }
+
+  document.getElementById('theta').textContent = Math.round(theta);
+  document.getElementById('phi').textContent = Math.round(phi);
+}
+
+canvas.addEventListener('mousedown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.style.cursor = 'grabbing'; });
+canvas.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  theta += (e.clientX - lastX) * 0.5;
+  phi += (e.clientY - lastY) * 0.5;
+  phi = Math.max(-89, Math.min(89, phi));
+  lastX = e.clientX; lastY = e.clientY;
+  draw();
+});
+canvas.addEventListener('mouseup', () => { dragging = false; canvas.style.cursor = 'grab'; });
+document.getElementById('surface').addEventListener('change', draw);
+draw();
+</script>
+</body>
+</html>

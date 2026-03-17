@@ -1,0 +1,85 @@
+{
+  "total_interactions": 482,
+  "total_documents": 101,
+  "taxonomy": {
+    "State Switching": {
+      "description": "Switching between discrete configurations, datasets, algorithms, or modes that qualitatively change what is displayed (e.g., selecting a dataset, toggling a view, choosing a preset).",
+      "count": 181,
+      "percentage": 37.6,
+      "examples": [
+        "Kernel Selection (Image processing with convolution kernels)",
+        "Custom Kernel Editing (Image processing with convolution kernels)",
+        "Change Growth Factor (Exponential growth as repeated multiplication)"
+      ]
+    },
+    "Parameter Exploration": {
+      "description": "Adjusting a continuous or near-continuous parameter to observe how the visualization responds (e.g., changing radius, frequency, learning rate, threshold via slider or dial).",
+      "count": 121,
+      "percentage": 25.1,
+      "examples": [
+        "Wrap Size (The definition of Pi as the ratio of circumference)",
+        "Adjust Animation Steps (Exponential growth as repeated multiplication)",
+        "Controlling iteration steps (The Mandelbrot set's generation from iterating a f)"
+      ]
+    },
+    "Freeform Construction": {
+      "description": "Creating or editing content freely: drawing on a canvas, writing code, editing numerical values, uploading media (e.g., drawing a custom signal, editing matrix cells, writing shader code).",
+      "count": 53,
+      "percentage": 11.0,
+      "examples": [
+        "Image Upload (Image processing with convolution kernels)",
+        "Live Video Input (Image processing with convolution kernels)",
+        "Draw Custom Signal (Fourier decomposition of signals)"
+      ]
+    },
+    "Direct Manipulation": {
+      "description": "Dragging or repositioning objects within the visualization to alter the underlying data or model in real time (e.g., moving data points, control points, graph nodes).",
+      "count": 45,
+      "percentage": 9.3,
+      "examples": [
+        "Define Construction (Euclidean geometric constructions with compass and)",
+        "Repositioning a complex number (The Mandelbrot set's generation from iterating a f)",
+        "Drawing the set (The Mandelbrot set's generation from iterating a f)"
+      ]
+    },
+    "Temporal Control": {
+      "description": "Controlling the time dimension of a simulation or animation: play, pause, step through, scrub a timeline, adjust speed (e.g., stepping through a sorting algorithm, replaying a simulation).",
+      "count": 32,
+      "percentage": 6.6,
+      "examples": [
+        "Control Animation Speed (Exponential growth as repeated multiplication)",
+        "Restart Animation (Exponential growth as repeated multiplication)",
+        "Algorithmic Step-through (Mathematical definition and geometric construction)"
+      ]
+    },
+    "Inspection": {
+      "description": "Exploring details without modifying state: hovering for tooltips, cursor tracking, highlighting related elements (e.g., hovering over a data point to see its label).",
+      "count": 24,
+      "percentage": 5.0,
+      "examples": [
+        "Pixel Inspection (Image processing with convolution kernels)",
+        "Cursor Position Tracking (Mathematical definition and geometric construction)",
+        "Hover over data points (Dimensionality reduction of high-dimensional vecto)"
+      ]
+    },
+    "Spatial Navigation": {
+      "description": "Navigating a spatial view: zooming, panning, rotating a 3D scene (e.g., rotating a 3D surface, zooming into a fractal).",
+      "count": 24,
+      "percentage": 5.0,
+      "examples": [
+        "Zooming the view (The Mandelbrot set's generation from iterating a f)",
+        "Resetting the view (The Mandelbrot set's generation from iterating a f)",
+        "Rotating the data cloud (Principal components analysis for dimensionality r)"
+      ]
+    },
+    "Scroll-driven Narrative": {
+      "description": "Scrolling the page triggers synchronized animations or progresses through a step-by-step visual narrative.",
+      "count": 2,
+      "percentage": 0.4,
+      "examples": [
+        "Scroll-driven Slideshow (Generation of Julia set fractals through the itera)",
+        "Scroll-based Animation (Decision tree classification)"
+      ]
+    }
+  }
+}

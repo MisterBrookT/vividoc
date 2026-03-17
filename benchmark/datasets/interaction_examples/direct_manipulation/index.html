@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Direct Manipulation — OLS Regression</title>
+<style>
+  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
+  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: grab; }
+  .eq { margin-top: 1rem; font-size: 1.1rem; }
+  .eq span { font-weight: 600; color: #2563eb; }
+  p { color: #555; }
+</style>
+</head>
+<body>
+<h2>Ordinary Least Squares Regression</h2>
+<p>Drag any data point to see the regression line and residual squares update.</p>
+<canvas id="c" width="500" height="400"></canvas>
+<div class="eq">y = <span id="slope"></span>x + <span id="intercept"></span> &nbsp; (Σ residuals² = <span id="sse"></span>)</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 500, H = 400, pad = 50;
+let points = [[1,1.8],[2,3.2],[3,2.5],[4,4.2],[5,3.8],[6,5.5],[7,5.0]];
+let dragging = -1;
+
+function toCanvas(x, y) {
+  return [pad + (x / 8) * (W - 2 * pad), H - pad - (y / 7) * (H - 2 * pad)];
+}
+function fromCanvas(cx, cy) {
+  return [(cx - pad) / (W - 2 * pad) * 8, (H - pad - cy) / (H - 2 * pad) * 7];
+}
+
+function ols(pts) {
+  const n = pts.length;
+  let sx = 0, sy = 0, sxy = 0, sx2 = 0;
+  for (const [x, y] of pts) { sx += x; sy += y; sxy += x * y; sx2 += x * x; }
+  const slope = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
+  const intercept = (sy - slope * sx) / n;
+  return { slope, intercept };
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const { slope, intercept } = ols(points);
+
+  // Axes
+  ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad, pad); ctx.lineTo(pad, H - pad); ctx.lineTo(W - pad, H - pad); ctx.stroke();
+
+  // Regression line
+  const [lx0, ly0] = toCanvas(0, intercept);
+  const [lx1, ly1] = toCanvas(8, slope * 8 + intercept);
+  ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.lineTo(lx1, ly1);
+  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Residual squares + points
+  let sse = 0;
+  for (const [x, y] of points) {
+    const pred = slope * x + intercept;
+    const res = y - pred;
+    sse += res * res;
+    const [px, py] = toCanvas(x, y);
+    const [, predy] = toCanvas(x, pred);
+    const side = Math.abs(py - predy);
+
+    // Residual square
+    ctx.fillStyle = 'rgba(220,38,38,0.12)';
+    ctx.strokeStyle = 'rgba(220,38,38,0.4)';
+    ctx.lineWidth = 1;
+    const top = Math.min(py, predy);
+    ctx.fillRect(px, top, side, side);
+    ctx.strokeRect(px, top, side, side);
+
+    // Point
+    ctx.beginPath(); ctx.arc(px, py, 6, 0, 2 * Math.PI);
+    ctx.fillStyle = '#dc2626'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  }
+
+  document.getElementById('slope').textContent = slope.toFixed(3);
+  document.getElementById('intercept').textContent = intercept.toFixed(3);
+  document.getElementById('sse').textContent = sse.toFixed(2);
+}
+
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  for (let i = 0; i < points.length; i++) {
+    const [px, py] = toCanvas(points[i][0], points[i][1]);
+    if (Math.hypot(mx - px, my - py) < 12) { dragging = i; canvas.style.cursor = 'grabbing'; break; }
+  }
+});
+canvas.addEventListener('mousemove', e => {
+  if (dragging < 0) return;
+  const rect = canvas.getBoundingClientRect();
+  const [x, y] = fromCanvas(e.clientX - rect.left, e.clientY - rect.top);
+  points[dragging] = [Math.max(0.2, Math.min(7.8, x)), Math.max(0.2, Math.min(6.8, y))];
+  draw();
+});
+canvas.addEventListener('mouseup', () => { dragging = -1; canvas.style.cursor = 'grab'; });
+draw();
+</script>
+</body>
+</html>

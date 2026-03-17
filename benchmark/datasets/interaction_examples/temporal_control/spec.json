@@ -1,0 +1,16 @@
+{
+  "category": "Temporal Control",
+  "topic": "Algorithmic processes for sampling, shuffling, sorting, and maze generation",
+  "source_url": "https://bost.ocks.org/mike/algorithms/",
+  "srtc": {
+    "S": {
+      "array": { "type": "derived", "formula": "shuffle(initial_array)" },
+      "step": { "type": "slider", "range": [0, "N"], "default": 0, "label": "Step" },
+      "playing": { "type": "toggle", "default": false },
+      "snapshot": { "type": "derived", "formula": "bubble_sort_at_step(array, step)" }
+    },
+    "R": "Bar chart where each bar's height represents a value; the two bars being compared are highlighted; sorted portion is colored green",
+    "T": "Play button auto-advances step; slider scrubs to any step; each step shows one comparison-and-swap",
+    "C": "After N(N-1)/2 steps in the worst case, the array is fully sorted"
+  }
+}

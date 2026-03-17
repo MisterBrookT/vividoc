@@ -1,0 +1,16 @@
+{
+  "category": "Inspection",
+  "topic": "Image processing with convolution kernels",
+  "source_url": "http://setosa.io/ev/image-kernels/",
+  "srtc": {
+    "S": {
+      "hover_pos": { "type": "cursor", "default": null, "label": "Pixel position under cursor" },
+      "kernel": { "type": "constant", "value": "sharpen_3x3" },
+      "input_block": { "type": "derived", "formula": "image[hover_pos ± 1]" },
+      "output_value": { "type": "derived", "formula": "dot(input_block, kernel)" }
+    },
+    "R": "Input image and output image side by side; on hover, the 3×3 block in the input is highlighted and the kernel multiplication is shown",
+    "T": "Moving the cursor over either image updates hover_pos; the highlighted block and calculation follow the cursor",
+    "C": "Each output pixel is the weighted sum of its 3×3 neighborhood in the input"
+  }
+}

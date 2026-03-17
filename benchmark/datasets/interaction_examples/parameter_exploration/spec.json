@@ -1,0 +1,16 @@
+{
+  "category": "Parameter Exploration",
+  "topic": "The definition of Pi as the ratio of circumference to diameter",
+  "source_url": "http://setosa.io/ev/pi/",
+  "srtc": {
+    "S": {
+      "r": { "type": "slider", "range": [0.5, 5], "step": 0.1, "default": 1.5, "label": "Radius" },
+      "C": { "type": "derived", "formula": "2 * π * r" },
+      "D": { "type": "derived", "formula": "2 * r" },
+      "ratio": { "type": "derived", "formula": "C / D" }
+    },
+    "R": "A circle whose size reflects r; labels showing C, D, and ratio ≈ π",
+    "T": "Dragging the slider changes r; C, D, ratio update automatically",
+    "C": "ratio ≈ 3.14159 regardless of r"
+  }
+}

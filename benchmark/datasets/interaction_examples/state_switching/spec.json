@@ -1,0 +1,14 @@
+{
+  "category": "State Switching",
+  "topic": "Dimensionality reduction of high-dimensional vectors for visualization",
+  "source_url": "https://marimo.io/p/@marimo/embedding-visualizer",
+  "srtc": {
+    "S": {
+      "algorithm": { "type": "select", "options": ["PCA", "t-SNE", "UMAP"], "default": "PCA" },
+      "points": { "type": "derived", "formula": "project(data, algorithm)" }
+    },
+    "R": "2D scatter plot of projected data points, colored by cluster label",
+    "T": "Selecting a different algorithm recalculates the projection and animates points to new positions",
+    "C": "Different algorithms reveal different structure: PCA preserves global variance, t-SNE preserves local neighborhoods"
+  }
+}

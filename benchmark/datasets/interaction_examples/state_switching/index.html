@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>State Switching — Dimensionality Reduction</title>
+<style>
+  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
+  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; }
+  .controls { margin: 1rem 0; display: flex; gap: 0.5rem; }
+  .controls button { padding: 0.5rem 1.2rem; border: 2px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.95rem; }
+  .controls button.active { border-color: #2563eb; background: #eff6ff; color: #2563eb; font-weight: 600; }
+  .note { color: #666; font-size: 0.9rem; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+<h2>Dimensionality Reduction</h2>
+<p>Switch between algorithms to see how the same data projects differently.</p>
+<div class="controls">
+  <button class="active" data-algo="pca">PCA</button>
+  <button data-algo="tsne">t-SNE</button>
+  <button data-algo="umap">UMAP</button>
+</div>
+<canvas id="c" width="500" height="400"></canvas>
+<div class="note" id="note"></div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 500, H = 400;
+const colors = ['#2563eb','#dc2626','#059669','#d97706'];
+
+// Generate synthetic clustered data (4 clusters in 5D)
+function genData() {
+  const centers = [[2,3,1,0,1],[6,1,4,2,3],[1,7,2,5,1],[5,6,3,1,4]];
+  const pts = [];
+  for (let c = 0; c < 4; c++) {
+    for (let i = 0; i < 25; i++) {
+      const p = centers[c].map(v => v + (Math.random() - 0.5) * 2);
+      pts.push({ d: p, cluster: c });
+    }
+  }
+  return pts;
+}
+const data = genData();
+
+// Simple "projections" (deterministic pseudo-algorithms for demo)
+function projectPCA(pts) {
+  return pts.map(p => ({ x: p.d[0] * 0.6 + p.d[1] * 0.3 + p.d[2] * 0.1, y: p.d[1] * 0.5 + p.d[3] * 0.4 + p.d[4] * 0.1, c: p.cluster }));
+}
+function projectTSNE(pts) {
+  // Simulate t-SNE: tighter clusters, more separated
+  const cx = [[1,1],[8,1],[1,8],[8,8]];
+  return pts.map((p, i) => {
+    const ci = p.cluster;
+    return { x: cx[ci][0] + (Math.random() - 0.5) * 1.5, y: cx[ci][1] + (Math.random() - 0.5) * 1.5, c: p.cluster };
+  });
+}
+function projectUMAP(pts) {
+  const cx = [[2,2],[7,3],[3,7],[6,7]];
+  return pts.map(p => {
+    const ci = p.cluster;
+    return { x: cx[ci][0] + (Math.random() - 0.5) * 1.8, y: cx[ci][1] + (Math.random() - 0.5) * 1.8, c: p.cluster };
+  });
+}
+
+const projections = { pca: projectPCA, tsne: projectTSNE, umap: projectUMAP };
+const notes = {
+  pca: 'PCA: linear projection preserving global variance',
+  tsne: 't-SNE: nonlinear, preserves local neighborhood structure',
+  umap: 'UMAP: nonlinear, balances local and global structure'
+};
+
+// Cache t-SNE and UMAP so they don't re-randomize on every click
+const cache = {};
+
+function draw(algo) {
+  if (!cache[algo]) cache[algo] = projections[algo](data);
+  const pts = cache[algo];
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const pad = 40;
+  const sx = v => pad + (v - minX) / (maxX - minX) * (W - 2 * pad);
+  const sy = v => pad + (v - minY) / (maxY - minY) * (H - 2 * pad);
+
+  ctx.clearRect(0, 0, W, H);
+  pts.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(sx(p.x), sy(p.y), 5, 0, 2 * Math.PI);
+    ctx.fillStyle = colors[p.c];
+    ctx.globalAlpha = 0.7;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+  document.getElementById('note').textContent = notes[algo];
+}
+
+document.querySelectorAll('.controls button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    draw(btn.dataset.algo);
+  });
+});
+draw('pca');
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Parameter Exploration — π</title>
+<style>
+  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
+  h2 { margin-bottom: 0.5rem; }
+  .viz { position: relative; width: 400px; height: 400px; }
+  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; }
+  .controls { margin-top: 1rem; display: flex; align-items: center; gap: 1rem; }
+  .stats { margin-top: 1rem; font-size: 1.1rem; }
+  .stats span { font-weight: 600; color: #2563eb; }
+  label { font-size: 0.95rem; color: #555; }
+</style>
+</head>
+<body>
+<h2>The Definition of π</h2>
+<p>Drag the slider to change the radius and observe that C/D ≈ π always holds.</p>
+<div class="viz"><canvas id="c" width="400" height="400"></canvas></div>
+<div class="controls">
+  <label>Radius r = <strong id="rVal">1.5</strong></label>
+  <input type="range" id="slider" min="0.5" max="5" step="0.1" value="1.5" style="width:220px">
+</div>
+<div class="stats">
+  C = <span id="cVal"></span> &nbsp; D = <span id="dVal"></span> &nbsp; C / D = <span id="ratioVal"></span>
+</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const slider = document.getElementById('slider');
+
+function draw() {
+  const r = parseFloat(slider.value);
+  const C = 2 * Math.PI * r;
+  const D = 2 * r;
+  const ratio = C / D;
+  document.getElementById('rVal').textContent = r.toFixed(1);
+  document.getElementById('cVal').textContent = C.toFixed(3);
+  document.getElementById('dVal').textContent = D.toFixed(1);
+  document.getElementById('ratioVal').textContent = ratio.toFixed(5);
+
+  const cx = 200, cy = 200;
+  const scale = 35;
+  const pr = r * scale;
+
+  ctx.clearRect(0, 0, 400, 400);
+
+  // Circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#2563eb';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(37,99,235,0.08)';
+  ctx.fill();
+
+  // Diameter line
+  ctx.beginPath();
+  ctx.moveTo(cx - pr, cy);
+  ctx.lineTo(cx + pr, cy);
+  ctx.strokeStyle = '#dc2626';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels
+  ctx.font = '14px system-ui';
+  ctx.fillStyle = '#2563eb';
+  ctx.fillText(`C = ${C.toFixed(2)}`, cx + pr + 8, cy - pr / 2);
+  ctx.fillStyle = '#dc2626';
+  ctx.fillText(`D = ${D.toFixed(2)}`, cx - 30, cy + 20);
+
+  // Ratio badge
+  ctx.fillStyle = '#059669';
+  ctx.font = 'bold 16px system-ui';
+  ctx.fillText(`C/D = ${ratio.toFixed(5)}`, cx - 55, cy + pr + 30);
+}
+
+slider.addEventListener('input', draw);
+draw();
+</script>
+</body>
+</html>

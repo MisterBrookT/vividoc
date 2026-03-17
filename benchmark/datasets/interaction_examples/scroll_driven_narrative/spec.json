@@ -1,0 +1,15 @@
+{
+  "category": "Scroll-driven Narrative",
+  "topic": "Generation of Julia set fractals through the iteration of complex functions",
+  "source_url": "http://acko.net/blog/how-to-fold-a-julia-fractal/",
+  "srtc": {
+    "S": {
+      "scroll_progress": { "type": "scroll", "range": [0, 1], "label": "Page scroll position" },
+      "current_step": { "type": "derived", "formula": "floor(scroll_progress * total_steps)" },
+      "animation_t": { "type": "derived", "formula": "fract(scroll_progress * total_steps)" }
+    },
+    "R": "A fixed-position visualization that morphs between narrative steps: from complex multiplication to Julia set generation, synchronized with scroll position",
+    "T": "Scrolling the page advances current_step and interpolates animation_t within each step",
+    "C": "The Julia set emerges from repeatedly applying z → z² + c, which is a folding of the complex plane"
+  }
+}

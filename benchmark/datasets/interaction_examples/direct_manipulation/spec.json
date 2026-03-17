@@ -1,0 +1,16 @@
+{
+  "category": "Direct Manipulation",
+  "topic": "Ordinary Least Squares regression",
+  "source_url": "http://setosa.io/ev/ordinary-least-squares-regression/",
+  "srtc": {
+    "S": {
+      "points": { "type": "draggable", "default": [[1,2],[2,3],[3,2.5],[4,4.5],[5,4]], "label": "Data points" },
+      "slope": { "type": "derived", "formula": "OLS_slope(points)" },
+      "intercept": { "type": "derived", "formula": "OLS_intercept(points)" },
+      "residuals": { "type": "derived", "formula": "points[i].y - (slope * points[i].x + intercept)" }
+    },
+    "R": "Scatter plot with draggable points; regression line y = slope·x + intercept; residual squares drawn at each point",
+    "T": "Dragging any data point recalculates slope, intercept, and residuals in real time",
+    "C": "The OLS line minimizes the total area of the residual squares"
+  }
+}
