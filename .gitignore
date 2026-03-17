@@ -80,11 +80,10 @@ Thumbs.db
 opencode/
 exps/
 
-# baseline repo
-baselines/**/logs/
-baselines/**/workspace/
-baselines/**/metagpt/
-baselines/metagpt_baseline/config/config2.yaml
-
-# eval results
-evals/results/
+# benchmark
+benchmark/outputs/
+benchmark/baselines/**/logs/
+benchmark/baselines/**/workspace/
+benchmark/baselines/**/metagpt/
+benchmark/baselines/metagpt_baseline/config/config2.yaml
+benchmark/evals/results/

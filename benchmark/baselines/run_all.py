@@ -1,8 +1,9 @@
 """Run all baselines for a given topic (or list of topics).
 
 Usage:
+    cd codebase/benchmark
     python baselines/run_all.py "Fourier Transform"
-    python baselines/run_all.py --topics-file exps/sampled_topics.jsonl
+    python baselines/run_all.py --topics-file datasets/prepped/topics.jsonl --num 5
     python baselines/run_all.py "Fourier Transform" --only naive_agent,autogen
 """
 
@@ -12,19 +13,28 @@ import subprocess
 from pathlib import Path
 
 BASELINES_DIR = Path(__file__).parent
+BENCHMARK_DIR = BASELINES_DIR.parent
+CODEBASE_DIR = BENCHMARK_DIR.parent
 
-# Each baseline: (name, directory, command template)
-# Commands are run via `uv run` in each baseline's own directory.
+# Each baseline: (name, cwd, command template)
 BASELINES = [
     {
         "name": "vividoc",
-        "cwd": BASELINES_DIR.parent,  # codebase/ root (uses vividoc's venv)
-        "cmd": ["uv", "run", "python", "baselines/vividoc_wrapper.py"],
+        "cwd": CODEBASE_DIR,
+        "cmd": ["uv", "run", "python", "benchmark/baselines/vividoc_wrapper.py"],
     },
     {
         "name": "naive_agent",
-        "cwd": BASELINES_DIR.parent,  # codebase/ root (uses vividoc's venv)
-        "cmd": ["uv", "run", "python", "-m", "baselines.naive_agent"],
+        "cwd": CODEBASE_DIR,
+        "cmd": [
+            "uv",
+            "run",
+            "python",
+            "-m",
+            "benchmark.baselines.naive_agent",
+            "--output-dir",
+            str(BENCHMARK_DIR / "outputs"),
+        ],
     },
     {
         "name": "autogen",
@@ -44,9 +54,11 @@ BASELINES = [
 ]
 
 
-def run_baseline(baseline: dict, topic: str) -> None:
+def run_baseline(baseline: dict, topic: str, force: bool = False) -> None:
     name = baseline["name"]
     cmd = baseline["cmd"] + [topic]
+    if force:
+        cmd += ["--force"]
     cwd = baseline["cwd"]
 
     print(f"\n{'=' * 60}")
@@ -67,7 +79,11 @@ def main():
     parser = argparse.ArgumentParser(description="Run all baselines")
     parser.add_argument("topic", nargs="?", help="Single topic")
     parser.add_argument("--topics-file", help="JSONL file with topics")
+    parser.add_argument("--num", type=int, help="Only run first N topics")
     parser.add_argument("--only", help="Comma-separated list of baselines to run")
+    parser.add_argument(
+        "--force", action="store_true", help="Force re-generate (overwrite existing)"
+    )
     args = parser.parse_args()
 
     # Collect topics
@@ -84,6 +100,9 @@ def main():
     if not topics:
         parser.error("Provide a topic or --topics-file")
 
+    if args.num:
+        topics = topics[: args.num]
+
     # Filter baselines
     active = BASELINES
     if args.only:
@@ -95,7 +114,7 @@ def main():
         print(f"# Topic: {topic}")
         print(f"{'#' * 60}")
         for baseline in active:
-            run_baseline(baseline, topic)
+            run_baseline(baseline, topic, args.force)
 
 
 if __name__ == "__main__":

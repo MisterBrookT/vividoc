@@ -14,10 +14,11 @@ def main():
         help="LLM model (default: openrouter/google/gemini-3-flash-preview)",
     )
     parser.add_argument("--output-dir", default="outputs", help="Output directory")
+    parser.add_argument("--force", action="store_true", help="Force re-generate")
     args = parser.parse_args()
 
     runner = NaiveAgentRunner(llm_model=args.model, output_dir=args.output_dir)
-    result = runner.run(args.topic)
+    result = runner.run(args.topic, skip_existing=not args.force)
     print(result)
 
 

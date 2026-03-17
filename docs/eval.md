@@ -12,7 +12,7 @@
 
 ## 当前实现
 
-代码在 `evals/` 目录：
+代码在 `benchmark/evals/` 目录：
 - `prompts.py` — 评分 rubric
 - `llm_judge.py` — LLM 评分（3个维度）
 - `functional_eval.py` — Playwright 自动化（2个维度）
@@ -21,9 +21,16 @@
 运行方式：
 ```bash
 cd codebase
-uv run python evals/run_eval.py                          # 评估所有
-uv run python evals/run_eval.py --topic what_is_pi       # 评估单个 topic
-uv run python evals/run_eval.py --method vividoc --method naive_agent  # 评估指定方法
+
+# 统一入口
+uv run python benchmark/run.py --num 5                              # 生成+评估前5个topic
+uv run python benchmark/run.py --mode generate --num 5              # 只生成
+uv run python benchmark/run.py --mode eval                          # 只评估
+uv run python benchmark/run.py --topic "what is pi" --only vividoc  # 单个topic+方法
+
+# 单独跑评估
+uv run python benchmark/evals/run_eval.py
+uv run python benchmark/evals/run_eval.py --topic what_is_pi
 ```
 
 Playwright 自动化指标（RC/IF）已验证可用，区分度良好。

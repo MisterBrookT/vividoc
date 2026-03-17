@@ -11,6 +11,7 @@ Be strict and objective. Output valid JSON only."""
 
 CONTENT_RICHNESS_PROMPT = """\
 Evaluate the **Content Richness** of this interactive educational document.
+Focus ONLY on the textual/educational content — ignore styling, layout, and interactivity.
 
 Topic: {topic}
 
@@ -21,9 +22,9 @@ Topic: {topic}
 - **2 (Poor):** Superficial coverage. Only 1-2 thin sections, or content is largely filler. May contain inaccuracies.
 - **1 (Very Poor):** Minimal or no meaningful content. Mostly empty, placeholder text, or completely off-topic.
 
-## HTML Source Code
-```html
-{html}
+## Document Text Content (script/style removed)
+```
+{text_content}
 ```
 
 Rate this document's Content Richness. Respond with JSON:

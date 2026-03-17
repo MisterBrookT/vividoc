@@ -21,7 +21,7 @@ dependencies = [
 
 
 [tool.setuptools]
-packages = ["vividoc", "prompts"]
+packages = ["vividoc", "prompts", "benchmark", "benchmark.baselines", "benchmark.baselines.naive_agent", "benchmark.evals"]
 
 
 [build-system]

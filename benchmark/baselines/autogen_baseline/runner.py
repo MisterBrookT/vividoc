@@ -46,14 +46,14 @@ def extract_html(text: str) -> str:
     return text
 
 
-def run(topic: str, model: str, output_dir: str) -> dict:
+def run(topic: str, model: str, output_dir: str, force: bool = False) -> dict:
     from autogen import ConversableAgent, GroupChat, GroupChatManager, LLMConfig
 
     dirname = topic_to_dirname(topic)
     out = Path(output_dir) / dirname / BASELINE_NAME
     html_path = out / "document.html"
 
-    if html_path.exists():
+    if not force and html_path.exists():
         print(f"[{BASELINE_NAME}] Skip (exists): {topic[:60]}")
         return {"topic": topic, "status": "skipped"}
 
@@ -138,9 +138,10 @@ def main():
     parser.add_argument("topic", help="Topic for the document")
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--output-dir", default="../../outputs")
+    parser.add_argument("--force", action="store_true", help="Force re-generate")
     args = parser.parse_args()
 
-    result = run(args.topic, args.model, args.output_dir)
+    result = run(args.topic, args.model, args.output_dir, args.force)
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
 

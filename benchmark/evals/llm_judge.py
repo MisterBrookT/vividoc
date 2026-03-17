@@ -1,23 +1,53 @@
 """LLM-as-Judge evaluation for three dimensions.
 
-- Content Richness: evaluated from HTML source code
+- Content Richness: evaluated from text content (script/style stripped)
 - Interaction Design: evaluated from HTML source code
 - Visual Quality: evaluated from screenshot + HTML source code
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from pydantic import BaseModel
 from vividoc.utils.llm.client import LLMClient
-from evals.prompts import (
+from benchmark.evals.prompts import (
     CONTENT_RICHNESS_PROMPT,
     INTERACTION_DESIGN_PROMPT,
     VISUAL_QUALITY_PROMPT,
 )
+
+
+def extract_text_content(html: str) -> str:
+    """Extract semantic HTML structure, stripping <script> and <style> tags.
+
+    Keeps structural tags (h1-h6, p, ul, ol, li, table, etc.) but removes
+    all JavaScript, CSS, and non-content head elements so the LLM focuses
+    on textual content only.
+    """
+    # Remove <script>...</script>
+    text = re.sub(
+        r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE
+    )
+    # Remove <style>...</style>
+    text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    # Remove <head>...</head> (meta, link, title are not educational content)
+    text = re.sub(r"<head[^>]*>.*?</head>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    # Remove inline event handlers (onclick, onchange, etc.)
+    text = re.sub(r'\s+on\w+="[^"]*"', "", text)
+    text = re.sub(r"\s+on\w+='[^']*'", "", text)
+    # Remove <canvas> tags (no text content)
+    text = re.sub(
+        r"<canvas[^>]*>.*?</canvas>", "", text, flags=re.DOTALL | re.IGNORECASE
+    )
+    # Remove <svg> tags
+    text = re.sub(r"<svg[^>]*>.*?</svg>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    # Collapse excessive whitespace
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
 
 
 class DimensionScore(BaseModel):
@@ -54,9 +84,9 @@ def _parse_score(response: str | dict) -> DimensionScore:
 
 
 def evaluate_content_richness(
-    client: LLMClient, topic: str, html: str
+    client: LLMClient, topic: str, text_content: str
 ) -> DimensionScore:
-    prompt = CONTENT_RICHNESS_PROMPT.format(topic=topic, html=html)
+    prompt = CONTENT_RICHNESS_PROMPT.format(topic=topic, text_content=text_content)
     response = client.call_text_generation(prompt)
     return _parse_score(response)
 
@@ -89,11 +119,12 @@ def evaluate_document(
     Returns dict with scores for each dimension.
     """
     html = Path(html_path).read_text(encoding="utf-8")
+    text_content = extract_text_content(html)
 
     results = {}
 
-    # Content Richness (code only)
-    cr = evaluate_content_richness(client, topic, html)
+    # Content Richness (text content only — no script/style)
+    cr = evaluate_content_richness(client, topic, text_content)
     results["content_richness"] = {"score": cr.score, "reason": cr.reason}
 
     # Interaction Design (code only)

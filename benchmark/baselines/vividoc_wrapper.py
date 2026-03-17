@@ -14,15 +14,18 @@ DEFAULT_MODEL = "openrouter/google/gemini-3-flash-preview"
 
 
 def main():
-    # Lazy import: add project root so we can import vividoc
-    sys.path.insert(0, str(Path(__file__).parent.parent))
+    # Lazy import: add codebase root so we can import vividoc
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
     from vividoc.core.runner import Runner  # noqa: E402
     from vividoc.core.config import RunnerConfig  # noqa: E402
 
     parser = argparse.ArgumentParser(description="ViviDoc single-topic runner")
     parser.add_argument("topic", help="Topic for the document")
     parser.add_argument("--model", default=DEFAULT_MODEL)
-    parser.add_argument("--output-dir", default="outputs")
+    parser.add_argument(
+        "--output-dir", default=str(Path(__file__).parent.parent / "outputs")
+    )
+    parser.add_argument("--force", action="store_true", help="Force re-generate")
     args = parser.parse_args()
 
     print(f"[vividoc] Generating: {args.topic[:60]}")
@@ -31,7 +34,7 @@ def main():
     config = RunnerConfig(
         llm_model=args.model,
         output_dir=args.output_dir,
-        resume=True,
+        resume=not args.force,
     )
     runner = Runner(config)
     doc = runner.run(args.topic)
