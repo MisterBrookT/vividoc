@@ -87,3 +87,4 @@ benchmark/baselines/**/workspace/
 benchmark/baselines/**/metagpt/
 benchmark/baselines/metagpt_baseline/config/config2.yaml
 benchmark/evals/results/
+benchmark/evals/human/
