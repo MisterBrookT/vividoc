@@ -123,11 +123,12 @@ def evaluate_functional(html_path: str, screenshot_dir: str | None = None) -> di
                     # Move slider to a different value
                     cur = el.evaluate("e => e.value")
                     max_val = el.evaluate("e => e.max || '100'")
-                    new_val = (
-                        str(int(max_val) // 2)
-                        if cur != str(int(max_val) // 2)
-                        else str(int(max_val) // 3)
-                    )
+                    min_val = el.evaluate("e => e.min || '0'")
+                    fmax = float(max_val)
+                    fmin = float(min_val)
+                    mid = (fmax + fmin) / 2
+                    third = fmin + (fmax - fmin) / 3
+                    new_val = mid if str(cur) != str(mid) else third
                     el.evaluate(
                         f"e => {{ e.value = {new_val}; e.dispatchEvent(new Event('input', {{bubbles:true}})); e.dispatchEvent(new Event('change', {{bubbles:true}})); }}"
                     )

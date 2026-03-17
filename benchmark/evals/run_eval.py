@@ -73,19 +73,59 @@ def find_documents(
     return docs
 
 
-def evaluate_one(doc: dict, client: LLMClient) -> dict:
-    """Run all evaluations on a single document."""
+def evaluate_one(
+    doc: dict, client: LLMClient | None, functional_only: bool = False
+) -> dict:
+    """Run evaluations on a single document."""
     html_path = doc["html_path"]
     topic = doc["topic"]
     method = doc["method"]
 
-    print(f"  [{method}] Evaluating...")
+    print(f"  [{method}] Evaluating{'(functional only)' if functional_only else ''}...")
 
     # 1. Functional eval (Playwright) — also captures screenshot
     result_dir = EVAL_RESULTS_DIR / doc["topic_dir"] / method
     result_dir.mkdir(parents=True, exist_ok=True)
 
     func_result = evaluate_functional(html_path, screenshot_dir=str(result_dir))
+
+    if functional_only:
+        scores = {
+            "topic": topic,
+            "method": method,
+            "render_correctness": func_result["render_correctness"],
+            "interaction_functionality": func_result["interaction_functionality"],
+        }
+        # Merge with existing LLM scores if available
+        existing_path = result_dir / "eval_result.json"
+        if existing_path.exists():
+            try:
+                existing = json.loads(existing_path.read_text())
+                old_scores = existing.get("scores", {})
+                scores["content_richness"] = old_scores.get("content_richness", 0)
+                scores["interaction_design"] = old_scores.get("interaction_design", 0)
+                scores["visual_quality"] = old_scores.get("visual_quality", 0)
+                # Update functional parts in existing result
+                existing["scores"].update(
+                    {
+                        "render_correctness": scores["render_correctness"],
+                        "interaction_functionality": scores[
+                            "interaction_functionality"
+                        ],
+                    }
+                )
+                existing["functional"] = {
+                    k: v for k, v in func_result.items() if k != "interaction_details"
+                }
+                existing["functional_details"] = func_result.get(
+                    "interaction_details", []
+                )
+                existing_path.write_text(
+                    json.dumps(existing, indent=2, ensure_ascii=False), encoding="utf-8"
+                )
+            except (json.JSONDecodeError, KeyError):
+                pass
+        return scores
 
     # 2. LLM-as-Judge
     screenshot_path = func_result.get("screenshot_path")
@@ -137,6 +177,11 @@ def main():
     parser.add_argument(
         "--skip-existing", action="store_true", help="Skip if eval_result.json exists"
     )
+    parser.add_argument(
+        "--functional-only",
+        action="store_true",
+        help="Only run Playwright functional eval (RC + IF), skip LLM judge",
+    )
     args = parser.parse_args()
 
     outputs_dir = Path(args.outputs_dir)
@@ -157,16 +202,18 @@ def main():
                 filtered.append(doc)
         docs = filtered
 
-    print(f"Evaluating {len(docs)} documents (judge: {args.judge_model})")
+    print(
+        f"Evaluating {len(docs)} documents{' (functional only)' if args.functional_only else ''} (judge: {args.judge_model})"
+    )
 
-    client = LLMClient(args.judge_model)
+    client = None if args.functional_only else LLMClient(args.judge_model)
     all_scores = []
 
     for doc in docs:
         topic_label = doc["topic_dir"]
         print(f"\n[{topic_label}]")
         try:
-            scores = evaluate_one(doc, client)
+            scores = evaluate_one(doc, client, functional_only=args.functional_only)
             all_scores.append(scores)
             print(
                 f"  [{doc['method']}] CR={scores['content_richness']} "

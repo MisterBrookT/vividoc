@@ -35,6 +35,19 @@ uv run python benchmark/evals/run_eval.py --topic what_is_pi
 
 Playwright 自动化指标（RC/IF）已验证可用，区分度良好。
 
+Content Richness 评估时会先提取纯文本内容（去掉 script/style/head/canvas/svg），只让 LLM 评文字部分，避免被代码量干扰。
+
+## 已知局限
+
+### IF (Interaction Functionality) 的 canvas 盲区
+
+当前 IF 通过 DOM diff 检测交互是否生效（交互前后 `document.body.innerHTML` 是否变化）。这有两个局限：
+
+1. **canvas 交互未被统计**：canvas 上的 mousedown/mousemove 等交互不在检测范围内（只检测 button/slider/checkbox/select/[onclick]）
+2. **canvas 操作被误判为失败**：如 "Clear All" 按钮清空 canvas 内容，DOM 不变但交互实际成功
+
+这对所有方法是公平的（同样的检测方式），相对排序应该不受影响。后续可通过 `canvas.toDataURL()` 截图对比来改进。
+
 ## 当前问题
 
 LLM-as-Judge（CR/ID/VQ）区分度不足，几乎所有方法都拿满分。
