@@ -75,8 +75,8 @@ def run_eval(
     if only:
         for method in only.split(","):
             cmd += ["--method", method.strip()]
-    if not force:
-        cmd += ["--skip-existing"]
+    if force:
+        cmd += ["--force"]
 
     print(f"\n{'#' * 60}")
     print("# Running evaluation")

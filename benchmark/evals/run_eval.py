@@ -175,7 +175,9 @@ def main():
     )
     parser.add_argument("--outputs-dir", default=str(OUTPUTS_DIR))
     parser.add_argument(
-        "--skip-existing", action="store_true", help="Skip if eval_result.json exists"
+        "--force",
+        action="store_true",
+        help="Re-evaluate even if eval_result.json exists (default: skip existing)",
     )
     parser.add_argument(
         "--functional-only",
@@ -191,56 +193,55 @@ def main():
         print("No documents found to evaluate.")
         return
 
-    # Filter already evaluated
-    if args.skip_existing:
-        filtered = []
-        for doc in docs:
-            result_path = (
-                EVAL_RESULTS_DIR / doc["topic_dir"] / doc["method"] / "eval_result.json"
-            )
-            if not result_path.exists():
-                filtered.append(doc)
-        docs = filtered
-
-    print(
-        f"Evaluating {len(docs)} documents{' (functional only)' if args.functional_only else ''} (judge: {args.judge_model})"
-    )
-
-    client = None if args.functional_only else LLMClient(args.judge_model)
-    all_scores = []
-
+    # Filter already evaluated (default: skip existing unless --force)
+    to_eval = []
+    skipped = 0
     for doc in docs:
-        topic_label = doc["topic_dir"]
-        print(f"\n[{topic_label}]")
-        try:
-            scores = evaluate_one(doc, client, functional_only=args.functional_only)
-            all_scores.append(scores)
-            print(
-                f"  [{doc['method']}] CR={scores['content_richness']} "
-                f"ID={scores['interaction_design']} "
-                f"VQ={scores['visual_quality']} "
-                f"RC={scores['render_correctness']} "
-                f"IF={scores['interaction_functionality']}"
-            )
-        except Exception as e:
-            print(f"  [{doc['method']}] ERROR: {e}")
-            all_scores.append(
-                {
-                    "topic": doc["topic"],
-                    "method": doc["method"],
-                    "error": str(e),
-                }
-            )
+        result_path = (
+            EVAL_RESULTS_DIR / doc["topic_dir"] / doc["method"] / "eval_result.json"
+        )
+        if result_path.exists() and not args.force:
+            skipped += 1
+        else:
+            to_eval.append(doc)
 
-    # Save summary
+    if skipped:
+        print(f"Skipping {skipped} already-evaluated documents (use --force to re-run)")
+
+    if to_eval:
+        print(
+            f"Evaluating {len(to_eval)} documents"
+            f"{' (functional only)' if args.functional_only else ''}"
+            f" (judge: {args.judge_model})"
+        )
+
+        client = None if args.functional_only else LLMClient(args.judge_model)
+
+        for doc in to_eval:
+            topic_label = doc["topic_dir"]
+            print(f"\n[{topic_label}]")
+            try:
+                scores = evaluate_one(doc, client, functional_only=args.functional_only)
+                print(
+                    f"  [{doc['method']}] CR={scores['content_richness']} "
+                    f"ID={scores['interaction_design']} "
+                    f"VQ={scores['visual_quality']} "
+                    f"RC={scores['render_correctness']} "
+                    f"IF={scores['interaction_functionality']}"
+                )
+            except Exception as e:
+                print(f"  [{doc['method']}] ERROR: {e}")
+    else:
+        print("All documents already evaluated.")
+
+    # Always aggregate summary from ALL existing results
+    all_scores = _collect_all_results()
     EVAL_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     summary_path = EVAL_RESULTS_DIR / "summary.json"
     summary_path.write_text(
         json.dumps(all_scores, indent=2, ensure_ascii=False), encoding="utf-8"
     )
-    print(f"\nSummary saved to {summary_path}")
-
-    # Print aggregate table
+    print(f"\nSummary saved to {summary_path} ({len(all_scores)} results)")
     _print_summary(all_scores)
 
 
@@ -273,6 +274,30 @@ def _print_summary(all_scores: list[dict]):
         print(
             f"{method:<15} {cr:>5.2f} {iq:>5.2f} {vq:>5.2f} {rc:>5.2f} {ifn:>5.2f} {n:>4}"
         )
+
+
+def _collect_all_results() -> list[dict]:
+    """Collect scores from all existing eval_result.json files."""
+    all_scores = []
+    if not EVAL_RESULTS_DIR.exists():
+        return all_scores
+    for topic_dir in sorted(EVAL_RESULTS_DIR.iterdir()):
+        if not topic_dir.is_dir():
+            continue
+        for method_dir in sorted(topic_dir.iterdir()):
+            if not method_dir.is_dir():
+                continue
+            result_path = method_dir / "eval_result.json"
+            if not result_path.exists():
+                continue
+            try:
+                data = json.loads(result_path.read_text())
+                scores = data.get("scores", {})
+                if scores:
+                    all_scores.append(scores)
+            except (json.JSONDecodeError, KeyError):
+                continue
+    return all_scores
 
 
 if __name__ == "__main__":
