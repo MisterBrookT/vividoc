@@ -92,24 +92,25 @@ class Runner:
         else:
             logger.info("Document validated successfully")
 
-        # Save meta.json with timing
+        # Save meta.json with timing (only if not already present)
         elapsed = time.time() - t0
-        html_path = topic_dir / "document.html"
-        html_length = html_path.stat().st_size if html_path.exists() else 0
-
-        meta = {
-            "topic": topic,
-            "model": self.config.llm_model,
-            "baseline": "vividoc",
-            "elapsed_sec": round(elapsed, 2),
-            "html_length": html_length,
-            "num_kus": len(doc_spec.knowledge_units),
-            "timestamp": datetime.now().isoformat(),
-        }
         meta_path = topic_dir / "meta.json"
-        meta_path.write_text(
-            json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"
-        )
+        if not meta_path.exists():
+            html_path = topic_dir / "document.html"
+            html_length = html_path.stat().st_size if html_path.exists() else 0
+
+            meta = {
+                "topic": topic,
+                "model": self.config.llm_model,
+                "baseline": "vividoc",
+                "elapsed_sec": round(elapsed, 2),
+                "html_length": html_length,
+                "num_kus": len(doc_spec.knowledge_units),
+                "timestamp": datetime.now().isoformat(),
+            }
+            meta_path.write_text(
+                json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
 
         logger.info(f"Pipeline completed in {elapsed:.1f}s")
         return generated_doc
