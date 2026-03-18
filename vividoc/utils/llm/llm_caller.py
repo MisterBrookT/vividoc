@@ -86,8 +86,7 @@ class OpenrouterCaller(LLMCaller):
             model=model,
             messages=[{"role": "user", "content": prompt}],
         )
-        response = response.choices[0].message.content
-        return response
+        return response.choices[0].message.content
 
     def generate_text_stream(
         self, model: str, prompt: str, **kwargs: Any

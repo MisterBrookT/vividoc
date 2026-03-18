@@ -7,7 +7,7 @@ from datetime import datetime
 
 from vividoc.utils.llm.client import LLMClient
 from vividoc.utils.logger import logger
-from vividoc.utils.naming import topic_to_dirname
+from vividoc.utils.naming import topic_to_dirname, model_to_method_suffix
 from .prompt import get_naive_agent_prompt
 
 BASELINE_NAME = "naive_agent"
@@ -22,9 +22,11 @@ class NaiveAgentRunner:
         self.output_dir = Path(output_dir)
 
     def _get_topic_dir(self, topic: str) -> Path:
-        """Get output directory: outputs/{topic_name}/naive_agent/."""
+        """Get output directory: outputs/{topic_name}/naive_agent_{model_suffix}/."""
         dirname = topic_to_dirname(topic)
-        topic_dir = self.output_dir / dirname / BASELINE_NAME
+        suffix = model_to_method_suffix(self.llm_model)
+        method_name = f"{BASELINE_NAME}_{suffix}"
+        topic_dir = self.output_dir / dirname / method_name
         topic_dir.mkdir(parents=True, exist_ok=True)
         return topic_dir
 
@@ -57,6 +59,7 @@ class NaiveAgentRunner:
         meta = {
             "topic": topic,
             "model": self.llm_model,
+            "baseline": BASELINE_NAME,
             "elapsed_sec": round(elapsed, 2),
             "html_length": len(html),
             "timestamp": datetime.now().isoformat(),

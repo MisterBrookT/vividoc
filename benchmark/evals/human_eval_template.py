@@ -13,14 +13,27 @@ from pathlib import Path
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "outputs"
 EVAL_DIR = Path(__file__).parent / "human"
-METHODS = ["vividoc", "naive_agent", "autogen", "camel", "metagpt"]
+
+
+def _discover_methods() -> list[str]:
+    """Discover method names from outputs directory."""
+    methods = set()
+    if OUTPUTS_DIR.exists():
+        for topic_dir in OUTPUTS_DIR.iterdir():
+            if not topic_dir.is_dir():
+                continue
+            for method_dir in topic_dir.iterdir():
+                if method_dir.is_dir() and (method_dir / "document.html").exists():
+                    methods.add(method_dir.name)
+    return sorted(methods)
 
 
 def generate_sheets(num_evaluators: int):
+    methods = _discover_methods()
     topics = sorted(
         d.name
         for d in OUTPUTS_DIR.iterdir()
-        if d.is_dir() and any((d / m / "document.html").exists() for m in METHODS)
+        if d.is_dir() and any((d / m / "document.html").exists() for m in methods)
     )
     if not topics:
         print("No documents found.")
@@ -43,7 +56,7 @@ def generate_sheets(num_evaluators: int):
                 ]
             )
             for topic in topics:
-                for method in METHODS:
+                for method in methods:
                     if (OUTPUTS_DIR / topic / method / "document.html").exists():
                         writer.writerow([topic, method, "", "", "", ""])
         print(f"Created {csv_path}")
@@ -53,7 +66,7 @@ def generate_sheets(num_evaluators: int):
     rubric_path.write_text(RUBRIC_TEXT, encoding="utf-8")
     print(f"Rubric saved to {rubric_path}")
     print(
-        f"\n{len(topics)} topics × {len(METHODS)} methods × {num_evaluators} evaluators"
+        f"\n{len(topics)} topics × {len(methods)} methods × {num_evaluators} evaluators"
     )
 
 

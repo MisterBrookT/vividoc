@@ -40,11 +40,18 @@ def load_topics(topics_file: Path, num: int | None = None) -> list[str]:
     return topics
 
 
-def run_generate(topics: list[str], only: str | None = None, force: bool = False):
+def run_generate(
+    topics: list[str],
+    only: str | None = None,
+    model: str = "google/gemini-3-flash-preview",
+    force: bool = False,
+):
     """Run baselines/run_all.py for each topic."""
     cmd = [
         sys.executable,
         str(BENCHMARK_DIR / "baselines" / "run_all.py"),
+        "--model",
+        model,
     ]
     if only:
         cmd += ["--only", only]
@@ -101,6 +108,11 @@ def main():
         "--only", help="Comma-separated methods (e.g. vividoc,naive_agent)"
     )
     parser.add_argument(
+        "--model",
+        default="openrouter/google/gemini-3-flash-preview",
+        help="LLM model for generation (e.g. openrouter/openai/gpt-4o)",
+    )
+    parser.add_argument(
         "--judge-model", default="openrouter/google/gemini-3-flash-preview"
     )
     parser.add_argument(
@@ -117,11 +129,12 @@ def main():
         topics = load_topics(Path(args.topics_file), args.num)
 
     print(
-        f"Benchmark: mode={args.mode}, topics={len(topics)}, methods={args.only or 'all'}"
+        f"Benchmark: mode={args.mode}, topics={len(topics)}, "
+        f"methods={args.only or 'all'}, model={args.model}"
     )
 
     if args.mode in ("generate", "all"):
-        run_generate(topics, args.only, args.force)
+        run_generate(topics, args.only, args.model, args.force)
 
     if args.mode in ("eval", "all"):
         run_eval(args.only, args.judge_model, args.force)

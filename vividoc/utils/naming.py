@@ -16,6 +16,22 @@ def topic_to_dirname(topic: str) -> str:
     return name[:120]
 
 
+def model_to_method_suffix(model: str) -> str:
+    """Extract a short model name from a full model string for use as method suffix.
+
+    Examples:
+        "openrouter/google/gemini-3-flash-preview" -> "gemini-3-flash"
+        "google/gemini-3-flash-preview"            -> "gemini-3-flash"
+        "openai/gpt-4o"                            -> "gpt-4o"
+        "openrouter/openai/gpt-5.4"                -> "gpt-5.4"
+    """
+    # Strip provider prefixes (openrouter/, google/, openai/, etc.)
+    name = model.split("/")[-1]
+    # Remove common suffixes: -preview, -latest
+    name = re.sub(r"-(preview|latest)$", "", name)
+    return name
+
+
 def topic_to_uuid(topic: str, *, deterministic: bool = True, salt: str = "") -> str:
     """Generate UUID from topic.
 

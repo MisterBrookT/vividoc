@@ -35,6 +35,13 @@ def topic_to_dirname(topic: str) -> str:
     return name[:120]
 
 
+def _model_suffix(model: str) -> str:
+    """Extract short model name for directory suffix."""
+    name = model.split("/")[-1]
+    name = re.sub(r"-(preview|latest)$", "", name)
+    return name
+
+
 def extract_html(text: str) -> str:
     """Extract the last (best) HTML block from text."""
     # findall returns all matches; take the last one (likely from Evaluator)
@@ -160,7 +167,8 @@ async def run_async(
     # --- Run pipeline ---
 
     dirname = topic_to_dirname(topic)
-    out = Path(output_dir) / dirname / BASELINE_NAME
+    method_name = f"{BASELINE_NAME}_{_model_suffix(model)}"
+    out = Path(output_dir) / dirname / method_name
     html_path = out / "document.html"
 
     if not force and html_path.exists():

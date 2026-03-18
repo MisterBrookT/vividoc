@@ -40,6 +40,31 @@ DEFAULT_JUDGE_MODEL = "openrouter/google/gemini-3-flash-preview"
 METHODS = ["vividoc", "naive_agent", "autogen", "camel", "metagpt"]
 
 
+def _discover_methods() -> list[str]:
+    """Discover all method names from outputs and eval results directories."""
+    methods = set()
+    for base_dir in (OUTPUTS_DIR, EVAL_RESULTS_DIR):
+        if not base_dir.exists():
+            continue
+        for topic_dir in base_dir.iterdir():
+            if not topic_dir.is_dir():
+                continue
+            for method_dir in topic_dir.iterdir():
+                if method_dir.is_dir() and method_dir.name != ".DS_Store":
+                    methods.add(method_dir.name)
+    # Sort: known base methods first (grouped), then alphabetical
+    BASE_ORDER = ["vividoc", "naive_agent", "autogen", "camel", "metagpt"]
+
+    def sort_key(m):
+        # Extract base method name (before _model suffix)
+        for i, base in enumerate(BASE_ORDER):
+            if m == base or m.startswith(base + "_"):
+                return (i, m)
+        return (len(BASE_ORDER), m)
+
+    return sorted(methods, key=sort_key)
+
+
 def find_documents(
     outputs_dir: Path,
     topic_filter: str | None = None,
@@ -464,7 +489,8 @@ def _print_summary(all_scores: list[dict]):
             f"{'Method':<15} {'CR':>5} {'ID':>5} {'IQ':>5} {'VQ':>5} {'RC':>5} {'IF':>5} {'N':>4}"
         )
         print("-" * 62)
-        for method in METHODS:
+        all_methods = _discover_methods()
+        for method in all_methods:
             entries = by_method.get(method, [])
             if not entries:
                 continue

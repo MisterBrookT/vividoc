@@ -8,8 +8,7 @@ def main():
     parser = argparse.ArgumentParser(description="Naive Agent baseline")
     parser.add_argument("topic", help="Topic for the document")
     parser.add_argument(
-        "model",
-        nargs="?",
+        "--model",
         default="openrouter/google/gemini-3-flash-preview",
         help="LLM model (default: openrouter/google/gemini-3-flash-preview)",
     )

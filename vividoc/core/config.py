@@ -5,6 +5,12 @@ from typing import Set
 
 AVAILABLE_LLM_MODELS: Set[str] = {
     "openrouter/google/gemini-3-flash-preview",
+    "openrouter/google/gemini-3.1-pro-preview",
+    "openrouter/openai/gpt-4o",
+    "openrouter/openai/gpt-5.4",
+    "openrouter/anthropic/claude-sonnet-4",
+    "openrouter/openai/gpt-5.4-mini",
+    "openrouter/z-ai/glm-5",
 }
 
 

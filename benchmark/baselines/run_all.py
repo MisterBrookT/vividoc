@@ -5,6 +5,7 @@ Usage:
     python baselines/run_all.py "Fourier Transform"
     python baselines/run_all.py --topics-file datasets/prepped/topics.jsonl --num 5
     python baselines/run_all.py "Fourier Transform" --only naive_agent,autogen
+    python baselines/run_all.py "Fourier Transform" --model google/gemini-3-flash-preview
 """
 
 import argparse
@@ -16,7 +17,10 @@ BASELINES_DIR = Path(__file__).parent
 BENCHMARK_DIR = BASELINES_DIR.parent
 CODEBASE_DIR = BENCHMARK_DIR.parent
 
+DEFAULT_MODEL = "openrouter/google/gemini-3-flash-preview"
+
 # Each baseline: (name, cwd, command template)
+# --model is appended automatically by run_baseline()
 BASELINES = [
     {
         "name": "vividoc",
@@ -54,9 +58,10 @@ BASELINES = [
 ]
 
 
-def run_baseline(baseline: dict, topic: str, force: bool = False) -> None:
+def run_baseline(baseline: dict, topic: str, model: str, force: bool = False) -> None:
     name = baseline["name"]
     cmd = baseline["cmd"] + [topic]
+    cmd += ["--model", model]
     if force:
         cmd += ["--force"]
     cwd = baseline["cwd"]
@@ -81,6 +86,7 @@ def main():
     parser.add_argument("--topics-file", help="JSONL file with topics")
     parser.add_argument("--num", type=int, help="Only run first N topics")
     parser.add_argument("--only", help="Comma-separated list of baselines to run")
+    parser.add_argument("--model", default=DEFAULT_MODEL, help="LLM model to use")
     parser.add_argument(
         "--force", action="store_true", help="Force re-generate (overwrite existing)"
     )
@@ -114,7 +120,7 @@ def main():
         print(f"# Topic: {topic}")
         print(f"{'#' * 60}")
         for baseline in active:
-            run_baseline(baseline, topic, args.force)
+            run_baseline(baseline, topic, args.model, args.force)
 
 
 if __name__ == "__main__":

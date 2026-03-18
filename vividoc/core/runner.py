@@ -8,7 +8,7 @@ from vividoc.core.models import GeneratedDocument, DocumentSpec
 from vividoc.core.config import RunnerConfig
 from vividoc.utils.io import save_json, load_json
 from vividoc.utils.logger import logger
-from vividoc.utils.naming import topic_to_dirname
+from vividoc.utils.naming import topic_to_dirname, model_to_method_suffix
 
 
 class Runner:
@@ -26,15 +26,22 @@ class Runner:
         self.evaluator = Evaluator(config)
 
     def _get_topic_dir(self, topic: str) -> Path:
-        """Get output directory for a topic: {topic_name}/vividoc/."""
+        """Get output directory for a topic: {topic_name}/vividoc_{model_suffix}/."""
         dirname = topic_to_dirname(topic)
-        topic_dir = Path(self.config.output_dir) / dirname / "vividoc"
+        suffix = model_to_method_suffix(self.config.llm_model)
+        method_name = f"vividoc_{suffix}"
+        topic_dir = Path(self.config.output_dir) / dirname / method_name
         topic_dir.mkdir(parents=True, exist_ok=True)
         return topic_dir
 
     def run(self, topic: str) -> GeneratedDocument:
         """Execute the complete pipeline: plan → exec → eval."""
+        import json
+        import time
+        from datetime import datetime
+
         logger.info(f"Starting pipeline for topic: {topic}")
+        t0 = time.time()
 
         # Get topic-specific directory
         topic_dir = self._get_topic_dir(topic)
@@ -85,5 +92,24 @@ class Runner:
         else:
             logger.info("Document validated successfully")
 
-        logger.info("Pipeline completed")
+        # Save meta.json with timing
+        elapsed = time.time() - t0
+        html_path = topic_dir / "document.html"
+        html_length = html_path.stat().st_size if html_path.exists() else 0
+
+        meta = {
+            "topic": topic,
+            "model": self.config.llm_model,
+            "baseline": "vividoc",
+            "elapsed_sec": round(elapsed, 2),
+            "html_length": html_length,
+            "num_kus": len(doc_spec.knowledge_units),
+            "timestamp": datetime.now().isoformat(),
+        }
+        meta_path = topic_dir / "meta.json"
+        meta_path.write_text(
+            json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+
+        logger.info(f"Pipeline completed in {elapsed:.1f}s")
         return generated_doc
