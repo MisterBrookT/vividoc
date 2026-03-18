@@ -92,7 +92,9 @@ def evaluate_content_richness(
 
 
 def evaluate_interaction_design(
-    client: LLMClient, topic: str, html: str
+    client: LLMClient,
+    topic: str,
+    html: str,
 ) -> DimensionScore:
     prompt = INTERACTION_DESIGN_PROMPT.format(topic=topic, html=html)
     response = client.call_text_generation(prompt)
@@ -113,8 +115,13 @@ def evaluate_document(
     topic: str,
     html_path: str,
     screenshot_path: str | None = None,
+    functional_result: dict | None = None,
 ) -> dict:
     """Run all LLM-as-Judge evaluations on a single document.
+
+    Args:
+        functional_result: Output from evaluate_functional(), used to inform
+            the Interaction Design judge about which interactions actually work.
 
     Returns dict with scores for each dimension.
     """
@@ -127,7 +134,7 @@ def evaluate_document(
     cr = evaluate_content_richness(client, topic, text_content)
     results["content_richness"] = {"score": cr.score, "reason": cr.reason}
 
-    # Interaction Design (code only)
+    # Interaction Design (code only — functional results used separately as multiplier)
     iq = evaluate_interaction_design(client, topic, html)
     results["interaction_design"] = {"score": iq.score, "reason": iq.reason}
 
@@ -142,3 +149,29 @@ def evaluate_document(
     results["visual_quality"] = {"score": vq.score, "reason": vq.reason}
 
     return results
+
+
+def _format_functional_summary(func_result: dict | None) -> str:
+    """Format functional eval results into a human-readable summary for the LLM."""
+    if not func_result:
+        return "No automated test results available."
+
+    total = func_result.get("interactive_elements_found", 0)
+    responsive = func_result.get("responsive_elements", 0)
+    if_score = func_result.get("interaction_functionality", 0)
+    details = func_result.get("interaction_details", [])
+
+    lines = [
+        f"Found {total} interactive elements, {responsive}/{total} responded to input (IF={if_score:.2f})."
+    ]
+
+    if details:
+        lines.append("Per-element results:")
+        for d in details:
+            tag = d.get("tag", "?")
+            el_type = d.get("type", "")
+            status = "OK" if d.get("responsive") else "FAIL"
+            label = f"[{tag}" + (f" type={el_type}" if el_type else "") + f"] {status}"
+            lines.append(f"  {label}")
+
+    return "\n".join(lines)

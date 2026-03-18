@@ -33,6 +33,7 @@ Rate this document's Content Richness. Respond with JSON:
 INTERACTION_DESIGN_PROMPT = """\
 Evaluate the **Interaction Design Quality** of this interactive educational document.
 Focus on whether the interactive elements are pedagogically meaningful — do they help the reader explore and understand the concept, or are they superficial?
+Evaluate the DESIGN INTENT from the code, not whether the interactions actually work at runtime.
 
 Topic: {topic}
 
@@ -41,7 +42,7 @@ Topic: {topic}
 - **4 (Good):** Several interactive elements that are relevant to the topic. Most interactions serve a clear educational purpose, with minor missed opportunities.
 - **3 (Adequate):** Some interactive elements present, but they may be generic (e.g., click-to-reveal) or only loosely connected to the core concepts.
 - **2 (Poor):** Minimal interactivity. Perhaps one button or a trivial interaction that adds little educational value.
-- **1 (Very Poor):** No interactive elements, or interactions are broken/meaningless (e.g., buttons that do nothing relevant).
+- **1 (Very Poor):** No interactive elements, or interactions are purely decorative with no educational purpose.
 
 ## HTML Source Code
 ```html

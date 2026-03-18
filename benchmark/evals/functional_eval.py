@@ -11,25 +11,43 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
 
+def _element_label(el) -> str:
+    """Get a short human-readable label for an element."""
+    try:
+        eid = el.evaluate("e => e.id") or ""
+        text = el.evaluate("e => (e.textContent || '').trim().slice(0, 50)") or ""
+        tag = el.evaluate("e => e.tagName.toLowerCase()") or ""
+        parts = [tag]
+        if eid:
+            parts.append(f"id={eid}")
+        if text:
+            parts.append(f'"{text}"')
+        return " ".join(parts)
+    except Exception:
+        return "?"
+
+
 def _collect_interactive_elements(page) -> list[dict]:
     """Find all interactive elements in the page."""
     elements = []
     # Buttons
     for btn in page.query_selector_all("button"):
-        elements.append({"type": "button", "el": btn})
+        elements.append({"type": "button", "el": btn, "label": _element_label(btn)})
     # Range sliders
     for slider in page.query_selector_all("input[type=range]"):
-        elements.append({"type": "slider", "el": slider})
+        elements.append(
+            {"type": "slider", "el": slider, "label": _element_label(slider)}
+        )
     # Clickable inputs (checkbox, radio)
     for inp in page.query_selector_all("input[type=checkbox], input[type=radio]"):
-        elements.append({"type": "toggle", "el": inp})
+        elements.append({"type": "toggle", "el": inp, "label": _element_label(inp)})
     # Select dropdowns
     for sel in page.query_selector_all("select"):
-        elements.append({"type": "select", "el": sel})
+        elements.append({"type": "select", "el": sel, "label": _element_label(sel)})
     # Elements with onclick attribute
     for el in page.query_selector_all("[onclick]"):
         if el not in [e["el"] for e in elements]:
-            elements.append({"type": "onclick", "el": el})
+            elements.append({"type": "onclick", "el": el, "label": _element_label(el)})
     return elements
 
 
@@ -113,11 +131,18 @@ def evaluate_functional(html_path: str, screenshot_dir: str | None = None) -> di
         for item in interactive:
             el = item["el"]
             el_type = item["type"]
-            detail = {"type": el_type, "responded": False}
+            label = item.get("label", "")
+            detail = {"type": el_type, "label": label, "responded": False}
 
             try:
-                # Snapshot before interaction
+                # Snapshot before interaction (DOM + canvas)
                 before = page.evaluate("() => document.body.innerHTML")
+                canvas_before = page.evaluate("""() => {
+                    const canvases = document.querySelectorAll('canvas');
+                    return Array.from(canvases).map(c => {
+                        try { return c.toDataURL(); } catch(e) { return ''; }
+                    });
+                }""")
 
                 if el_type == "slider":
                     # Move slider to a different value
@@ -145,11 +170,22 @@ def evaluate_functional(html_path: str, screenshot_dir: str | None = None) -> di
 
                 page.wait_for_timeout(500)
 
-                # Snapshot after interaction
+                # Snapshot after interaction (DOM + canvas)
                 after = page.evaluate("() => document.body.innerHTML")
+                canvas_after = page.evaluate("""() => {
+                    const canvases = document.querySelectorAll('canvas');
+                    return Array.from(canvases).map(c => {
+                        try { return c.toDataURL(); } catch(e) { return ''; }
+                    });
+                }""")
 
-                if before != after:
+                dom_changed = before != after
+                canvas_changed = canvas_before != canvas_after
+
+                if dom_changed or canvas_changed:
                     detail["responded"] = True
+                    if canvas_changed and not dom_changed:
+                        detail["via"] = "canvas"
                     responsive_count += 1
 
             except Exception as e:
@@ -162,13 +198,30 @@ def evaluate_functional(html_path: str, screenshot_dir: str | None = None) -> di
         browser.close()
 
     # --- Compute scores ---
+    # Filter out network/resource errors — only count real JS runtime errors
+    NETWORK_ERROR_PATTERNS = (
+        "ERR_CONNECTION_CLOSED",
+        "ERR_FILE_NOT_FOUND",
+        "ERR_NAME_NOT_RESOLVED",
+        "ERR_INTERNET_DISCONNECTED",
+        "ERR_CONNECTION_REFUSED",
+        "ERR_BLOCKED_BY_CLIENT",
+        "Failed to load resource",
+        "net::",
+    )
+    runtime_errors = [
+        e
+        for e in result["js_errors"]
+        if not any(pat in e for pat in NETWORK_ERROR_PATTERNS)
+    ]
+
     # Render Correctness: 0-1
     render_score = 1.0
     if not result["has_content"]:
         render_score -= 0.5
-    if result["js_errors"]:
-        # Deduct based on number of errors (max 0.5 deduction)
-        render_score -= min(0.5, len(result["js_errors"]) * 0.1)
+    if runtime_errors:
+        # Deduct based on number of real JS errors (max 0.5 deduction)
+        render_score -= min(0.5, len(runtime_errors) * 0.1)
     render_score = max(0.0, render_score)
 
     # Interaction Functionality: 0-1
