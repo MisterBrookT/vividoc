@@ -82,9 +82,11 @@ exps/
 
 # benchmark
 benchmark/outputs/
+benchmark/outputs_archive
 benchmark/baselines/**/logs/
 benchmark/baselines/**/workspace/
 benchmark/baselines/**/metagpt/
 benchmark/baselines/metagpt_baseline/config/config2.yaml
 benchmark/evals/results/
+benchmark/evals/results_archive/
 benchmark/evals/human/

@@ -97,7 +97,9 @@ class Runner:
         meta_path = topic_dir / "meta.json"
         if not meta_path.exists():
             html_path = topic_dir / "document.html"
-            html_length = html_path.stat().st_size if html_path.exists() else 0
+            html_length = (
+                len(html_path.read_text(encoding="utf-8")) if html_path.exists() else 0
+            )
 
             meta = {
                 "topic": topic,

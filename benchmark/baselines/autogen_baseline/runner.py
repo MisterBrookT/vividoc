@@ -56,6 +56,9 @@ def extract_html(text: str) -> str:
 def run(topic: str, model: str, output_dir: str, force: bool = False) -> dict:
     from autogen import ConversableAgent, GroupChat, GroupChatManager, LLMConfig
 
+    # Strip "openrouter/" prefix — OpenRouter API expects e.g. "google/gemini-3-flash-preview"
+    api_model = model.removeprefix("openrouter/")
+
     dirname = topic_to_dirname(topic)
     method_name = f"{BASELINE_NAME}_{_model_suffix(model)}"
     out = Path(output_dir) / dirname / method_name
@@ -71,7 +74,7 @@ def run(topic: str, model: str, output_dir: str, force: bool = False) -> dict:
 
     llm_config = LLMConfig(
         {
-            "model": model,
+            "model": api_model,
             "api_key": os.environ.get("OPENROUTER_API_KEY", ""),
             "base_url": "https://openrouter.ai/api/v1",
         },

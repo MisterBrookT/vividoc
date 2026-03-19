@@ -9,7 +9,7 @@ guidance would overlap with ViviDoc's contributions (DocSpec, SRTC).
 
 PLANNER_SYSTEM = """\
 You are an educational content planner. Given a topic, decompose it
-into 3-5 sections for an interactive educational document."""
+into 3-4 sections for an interactive educational document."""
 
 CODER_SYSTEM = """\
 You are a web developer. Given a plan, generate a single self-contained

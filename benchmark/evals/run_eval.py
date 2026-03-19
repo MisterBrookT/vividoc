@@ -18,6 +18,7 @@ Usage:
 import argparse
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -35,7 +36,7 @@ from vividoc.utils.llm.client import LLMClient
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "outputs"
 EVAL_RESULTS_DIR = Path(__file__).parent / "results"
-DEFAULT_JUDGE_MODEL = "openrouter/google/gemini-3-flash-preview"
+DEFAULT_JUDGE_MODEL = "openrouter/google/gemini-3.1-pro-preview"
 
 METHODS = ["vividoc", "naive_agent", "autogen", "camel", "metagpt"]
 
@@ -344,6 +345,12 @@ def main():
         action="store_true",
         help="Shortcut for --dimension CR --dimension ID --dimension VQ",
     )
+    parser.add_argument(
+        "--parallel",
+        type=int,
+        default=1,
+        help="Number of parallel eval workers (default: 1)",
+    )
     args = parser.parse_args()
 
     # Resolve dimensions
@@ -384,13 +391,21 @@ def main():
                 llm_judge = data.get("llm_judge", {})
                 model_data = llm_judge.get(model_name, {})
 
+                # Also collect dims from other versions of the same base model
+                # (cross-version fallback: e.g. CR/VQ from v1 count for v2)
+                base_model = model_name.split("@")[0]
+                all_model_dims = set(model_data.keys())
+                for key, val in llm_judge.items():
+                    if key.split("@")[0] == base_model and isinstance(val, dict):
+                        all_model_dims.update(val.keys())
+
                 need_run = False
                 requested_llm = (dimensions or LLM_DIMS) & LLM_DIMS
                 requested_func = (dimensions or FUNC_DIMS) & FUNC_DIMS
 
-                # Check LLM dims for this model@version
+                # Check LLM dims (with cross-version fallback)
                 for dim in requested_llm:
-                    if dim not in model_data:
+                    if dim not in all_model_dims:
                         need_run = True
                         break
 
@@ -425,25 +440,58 @@ def main():
         print(
             f"Evaluating {len(to_eval)} documents{dim_label}"
             f" (judge: {args.judge_model} → {model_name})"
+            f" parallel={args.parallel}"
         )
 
-        for doc in to_eval:
-            topic_label = doc["topic_dir"]
-            print(f"\n[{topic_label}]")
+        def _eval_worker(doc):
+            """Evaluate a single doc, return (doc, scores_or_error)."""
             try:
+                # Each worker needs its own LLM client for thread safety
+                worker_client = LLMClient(args.judge_model) if need_llm else None
                 scores = evaluate_one(
-                    doc, client, dimensions=dimensions, model_name=model_name
+                    doc, worker_client, dimensions=dimensions, model_name=model_name
                 )
-                print(
-                    f"  [{doc['method']}] CR={scores.get('content_richness', '-')} "
-                    f"ID={scores.get('interaction_design', '-')} "
-                    f"IQ={scores.get('interaction_quality', '-')} "
-                    f"VQ={scores.get('visual_quality', '-')} "
-                    f"RC={scores.get('render_correctness', '-')} "
-                    f"IF={scores.get('interaction_functionality', '-')}"
-                )
+                return doc, scores, None
             except Exception as e:
-                print(f"  [{doc['method']}] ERROR: {e}")
+                return doc, None, str(e)
+
+        if args.parallel > 1:
+            with ThreadPoolExecutor(max_workers=args.parallel) as pool:
+                futures = {pool.submit(_eval_worker, doc): doc for doc in to_eval}
+                done_count = 0
+                for future in as_completed(futures):
+                    done_count += 1
+                    doc, scores, err = future.result()
+                    prefix = f"({done_count}/{len(to_eval)}) [{doc['topic_dir']}][{doc['method']}]"
+                    if err:
+                        print(f"  {prefix} ERROR: {err}")
+                    else:
+                        print(
+                            f"  {prefix} CR={scores.get('content_richness', '-')} "
+                            f"ID={scores.get('interaction_design', '-')} "
+                            f"IQ={scores.get('interaction_quality', '-')} "
+                            f"VQ={scores.get('visual_quality', '-')} "
+                            f"RC={scores.get('render_correctness', '-')} "
+                            f"IF={scores.get('interaction_functionality', '-')}"
+                        )
+        else:
+            for doc in to_eval:
+                topic_label = doc["topic_dir"]
+                print(f"\n[{topic_label}]")
+                try:
+                    scores = evaluate_one(
+                        doc, client, dimensions=dimensions, model_name=model_name
+                    )
+                    print(
+                        f"  [{doc['method']}] CR={scores.get('content_richness', '-')} "
+                        f"ID={scores.get('interaction_design', '-')} "
+                        f"IQ={scores.get('interaction_quality', '-')} "
+                        f"VQ={scores.get('visual_quality', '-')} "
+                        f"RC={scores.get('render_correctness', '-')} "
+                        f"IF={scores.get('interaction_functionality', '-')}"
+                    )
+                except Exception as e:
+                    print(f"  [{doc['method']}] ERROR: {e}")
     else:
         print("All documents already evaluated.")
 

@@ -24,7 +24,7 @@ Generate a comprehensive document specification with knowledge units. Each knowl
      the learner should discover through interaction (null if not applicable)
 
 Guidelines:
-- Break down the topic into 3-5 logical knowledge units
+- Break down the topic into 3-4 logical knowledge units
 - Each text_description should explain what the reader should understand after reading that section
 - Make interaction_spec self-contained so it can be used independently for code generation
 - Focus on building intuition and understanding through interaction

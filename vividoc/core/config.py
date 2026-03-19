@@ -11,6 +11,13 @@ AVAILABLE_LLM_MODELS: Set[str] = {
     "openrouter/anthropic/claude-sonnet-4",
     "openrouter/openai/gpt-5.4-mini",
     "openrouter/z-ai/glm-5",
+    "openrouter/qwen/qwen3.5-9b",
+    "openrouter/qwen/qwen3.5-27b:nitro",
+    "openrouter/qwen/qwen3.5-27b",
+    "openrouter/mistralai/mistral-small-2603",
+    "openrouter/qwen/qwen3.5-35b-a3b",
+    "openrouter/qwen/qwen3.5-flash-02-23",
+    "openrouter/qwen/qwen3-coder-next",
 }
 
 

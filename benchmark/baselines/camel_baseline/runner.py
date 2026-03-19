@@ -71,6 +71,9 @@ def run(topic: str, model: str, output_dir: str, force: bool = False) -> dict:
     from camel.configs import ChatGPTConfig
     from camel.models import ModelFactory
 
+    # Strip "openrouter/" prefix — OpenRouter API expects e.g. "google/gemini-3-flash-preview"
+    api_model = model.removeprefix("openrouter/")
+
     dirname = topic_to_dirname(topic)
     method_name = f"{BASELINE_NAME}_{_model_suffix(model)}"
     out = Path(output_dir) / dirname / method_name
@@ -86,7 +89,7 @@ def run(topic: str, model: str, output_dir: str, force: bool = False) -> dict:
 
     camel_model = ModelFactory.create(
         model_platform=ModelPlatformType.OPENAI_COMPATIBLE_MODEL,
-        model_type=model,
+        model_type=api_model,
         url="https://openrouter.ai/api/v1",
         api_key=os.environ.get("OPENROUTER_API_KEY", ""),
         model_config_dict=ChatGPTConfig(temperature=0.0).as_dict(),
@@ -106,7 +109,7 @@ def run(topic: str, model: str, output_dir: str, force: bool = False) -> dict:
 
     input_msg = society.init_chat()
     all_messages = []
-    for round_i in range(5):
+    for round_i in range(6):
         assistant_response, user_response = society.step(input_msg)
         a_content = assistant_response.msg.content or ""
         u_content = user_response.msg.content or ""

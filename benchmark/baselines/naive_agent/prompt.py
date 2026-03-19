@@ -7,7 +7,7 @@ Topic: {topic}
 
 Requirements:
 1. The document must be a single, complete HTML file (<!DOCTYPE html> ... </html>).
-2. Aim for 3-5 sections.
+2. Aim for 3-4 sections.
 
 Return ONLY the complete HTML document, nothing else.
 """

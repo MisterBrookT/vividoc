@@ -62,6 +62,9 @@ def _write_config(model: str):
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY environment variable is not set")
 
+    # Strip "openrouter/" prefix — OpenRouter API expects e.g. "google/gemini-3-flash-preview"
+    api_model = model.removeprefix("openrouter/")
+
     config_dir = Path(__file__).parent / "config"
     config_dir.mkdir(exist_ok=True)
     config_path = config_dir / "config2.yaml"
@@ -70,7 +73,7 @@ def _write_config(model: str):
 llm:
   api_type: 'openai'
   base_url: 'https://openrouter.ai/api/v1'
-  model: '{model}'
+  model: '{api_model}'
   api_key: '{api_key}'
 """,
         encoding="utf-8",
