@@ -11,7 +11,12 @@ _CHAT_PROMPT_PREFIX = """You are Vivi, an expert web developer assistant helping
 
 _CHAT_PROMPT_MIDDLE = """
 
-=== USER REQUEST ===
+=== CHAT HISTORY ===
+"""
+
+_CHAT_PROMPT_USER = """
+
+=== CURRENT USER REQUEST ===
 """
 
 _CHAT_PROMPT_SUFFIX = """
@@ -67,12 +72,30 @@ Now respond to the user's request:
 """
 
 
-def get_chat_edit_prompt(html_content: str, user_message: str) -> str:
+def _format_history(history: list) -> str:
+    """Format chat history into a readable string."""
+    if not history:
+        return "(No previous conversation)"
+    lines = []
+    for msg in history:
+        role = msg.get("role", "user").capitalize()
+        content = msg.get("content", "")
+        if not content:
+            continue
+        lines.append(f"{role}: {content}")
+    return "\n".join(lines)
+
+
+def get_chat_edit_prompt(
+    html_content: str, user_message: str, history: list | None = None
+) -> str:
     """Generate the chat edit prompt."""
     return (
         _CHAT_PROMPT_PREFIX
         + html_content
         + _CHAT_PROMPT_MIDDLE
+        + _format_history(history or [])
+        + _CHAT_PROMPT_USER
         + user_message
         + _CHAT_PROMPT_SUFFIX
     )
@@ -92,7 +115,12 @@ Knowledge Units:
 
 _SPEC_PROMPT_MIDDLE = """
 
-=== USER REQUEST ===
+=== CHAT HISTORY ===
+"""
+
+_SPEC_PROMPT_USER = """
+
+=== CURRENT USER REQUEST ===
 """
 
 _SPEC_PROMPT_SUFFIX = """
@@ -139,7 +167,10 @@ Now respond to the user's request:
 
 
 def get_spec_edit_prompt(
-    topic: str, knowledge_units_text: str, user_message: str
+    topic: str,
+    knowledge_units_text: str,
+    user_message: str,
+    history: list | None = None,
 ) -> str:
     """Generate the spec edit prompt."""
     return (
@@ -148,6 +179,8 @@ def get_spec_edit_prompt(
         + _SPEC_PROMPT_KU_HEADER
         + knowledge_units_text
         + _SPEC_PROMPT_MIDDLE
+        + _format_history(history or [])
+        + _SPEC_PROMPT_USER
         + user_message
         + _SPEC_PROMPT_SUFFIX
     )

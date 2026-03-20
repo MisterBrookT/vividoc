@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Sparkles, AlertCircle, CheckCircle2, Loader2, FileText } from 'lucide-react';
+import { Send, Sparkles, AlertCircle, CheckCircle2, Loader2, FileText, Hash, ChevronDown } from 'lucide-react';
 import Markdown from 'react-markdown';
 import type { JobStatus, DocumentSpec } from '../types/models';
-import { streamChat, getChatHistory, saveChatHistory } from '../api/services';
+import { streamChat, getChatHistory, saveChatHistory, getConfig, updateConfig } from '../api/services';
 
 /* Cute Vivi avatar SVG — a small friendly bot face */
 const ViviAvatar: React.FC<{ className?: string }> = ({ className }) => (
@@ -68,10 +68,18 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
     ]);
     const [input, setInput] = useState('');
     const [isStreaming, setIsStreaming] = useState(false);
+    const [showKuMenu, setShowKuMenu] = useState(false);
+    const [kuMenuFilter, setKuMenuFilter] = useState('');
+    const [kuSelectedIdx, setKuSelectedIdx] = useState(0);
+    const [currentModel, setCurrentModel] = useState('');
+    const [availableModels, setAvailableModels] = useState<string[]>([]);
+    const [showModelMenu, setShowModelMenu] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const progressMsgIdRef = useRef<string | null>(null);
     const prevSpecIdRef = useRef<string | null>(null);
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const hashPosRef = useRef<number>(-1);
 
     const defaultMessages: Message[] = [
         {
@@ -81,6 +89,14 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
             timestamp: Date.now(),
         },
     ];
+
+    // Load model config on mount
+    useEffect(() => {
+        getConfig().then(cfg => {
+            setCurrentModel(cfg.llm_model);
+            setAvailableModels(cfg.available_models);
+        }).catch(() => {});
+    }, []);
 
     // Save current messages to backend (debounced)
     const saveMessages = useCallback((specId: string, msgs: Message[]) => {
@@ -191,6 +207,11 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
 
             try {
                 const chatStage = activeStage === 'spec' ? 'spec' : 'doc';
+                // Build history from previous messages (only user/assistant text messages)
+                const chatHistory = messages
+                    .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content && m.type !== 'spec-notification' && m.type !== 'progress')
+                    .map(m => ({ role: m.role, content: m.content }));
+
                 await streamChat(spec.id, userMsg, (event) => {
                     if (event.type === 'edit_mode_start') {
                         isEditMode = true;
@@ -232,7 +253,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                                 : m
                         ));
                     }
-                }, chatStage);
+                }, chatStage, chatHistory);
             } catch (err: any) {
                 setMessages((prev) => prev.map(m =>
                     m.id === assistantMsgId
@@ -246,8 +267,117 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
     }, [input, isStreaming, spec, onSendMessage, onHtmlUpdated, onSpecUpdated, activeStage]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (showKuMenu) {
+            if (e.key === 'Escape') { e.preventDefault(); setShowKuMenu(false); return; }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setKuSelectedIdx(prev => Math.min(prev + 1, filteredKuOptions.length - 1));
+                return;
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setKuSelectedIdx(prev => Math.max(prev - 1, 0));
+                return;
+            }
+            if (e.key === 'Enter' && filteredKuOptions.length > 0) {
+                e.preventDefault();
+                handleSelectKu(filteredKuOptions[kuSelectedIdx]);
+                return;
+            }
+            if (e.key === 'Tab' && filteredKuOptions.length > 0) {
+                e.preventDefault();
+                handleSelectKu(filteredKuOptions[kuSelectedIdx]);
+                return;
+            }
+        }
+        // Backspace: delete entire #KU reference at once
+        if (e.key === 'Backspace' && textareaRef.current) {
+            const pos = textareaRef.current.selectionStart || 0;
+            const selEnd = textareaRef.current.selectionEnd || 0;
+            // Only if no text is selected (cursor is a point)
+            if (pos === selEnd && pos > 0) {
+                const match = input.slice(0, pos).match(/#KU\d+\s?$/);
+                if (match) {
+                    e.preventDefault();
+                    const start = pos - match[0].length;
+                    const newVal = input.slice(0, start) + input.slice(pos);
+                    setInput(newVal);
+                    setTimeout(() => {
+                        textareaRef.current?.setSelectionRange(start, start);
+                    }, 0);
+                    return;
+                }
+            }
+        }
         if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); handleSend(); }
     };
+
+    // Build KU options from spec
+    const kuOptions = (spec?.knowledge_units || []).map((ku, idx) => ({
+        id: `KU${idx + 1}`,
+        label: `KU${idx + 1}: ${ku.title || ku.description || ''}`.slice(0, 60),
+    }));
+
+    const filteredKuOptions = kuOptions.filter(opt =>
+        opt.label.toLowerCase().includes(kuMenuFilter.toLowerCase())
+    );
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const val = e.target.value;
+        const cursorPos = e.target.selectionStart || 0;
+        setInput(val);
+
+        // Detect # trigger
+        if (val[cursorPos - 1] === '#' && (cursorPos === 1 || val[cursorPos - 2] === ' ' || val[cursorPos - 2] === '\n')) {
+            setShowKuMenu(true);
+            setKuMenuFilter('');
+            setKuSelectedIdx(0);
+            hashPosRef.current = cursorPos - 1;
+        } else if (showKuMenu && hashPosRef.current >= 0) {
+            // Close menu if # was deleted or cursor moved before it
+            if (cursorPos <= hashPosRef.current || val[hashPosRef.current] !== '#') {
+                setShowKuMenu(false);
+            } else {
+                // Update filter based on text after #
+                const afterHash = val.slice(hashPosRef.current + 1, cursorPos);
+                if (afterHash.includes(' ') && !afterHash.startsWith('KU')) {
+                    setShowKuMenu(false);
+                } else {
+                    setKuMenuFilter(afterHash);
+                    setKuSelectedIdx(0);
+                }
+            }
+        }
+    };
+
+    const handleSelectKu = (option: { id: string; label: string }) => {
+        const before = input.slice(0, hashPosRef.current);
+        const afterCursor = textareaRef.current ? input.slice(textareaRef.current.selectionStart || hashPosRef.current + 1) : '';
+        const newInput = `${before}#${option.id} ${afterCursor}`;
+        setInput(newInput);
+        setShowKuMenu(false);
+        // Focus back on textarea
+        setTimeout(() => {
+            if (textareaRef.current) {
+                const pos = before.length + option.id.length + 2; // # + id + space
+                textareaRef.current.focus();
+                textareaRef.current.setSelectionRange(pos, pos);
+            }
+        }, 0);
+    };
+
+    const handleModelSwitch = async (model: string) => {
+        try {
+            const cfg = await updateConfig(model);
+            setCurrentModel(cfg.llm_model);
+            setShowModelMenu(false);
+        } catch {
+            setShowModelMenu(false);
+        }
+    };
+
+    // Short display name for model (last segment)
+    const modelDisplayName = currentModel ? currentModel.split('/').pop() || currentModel : 'Model';
 
     const renderEditStatusCard = (msg: Message) => {
         const { editDone, description } = msg.metadata || {};
@@ -470,23 +600,102 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
 
             {/* Input Area */}
             <div className="flex-shrink-0 p-3 bg-white/40 border-t border-[var(--border-color)]">
-                <div className="relative group">
-                    <textarea
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Ask AI to modify..."
-                        className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/10 outline-none transition-all shadow-sm group-hover:shadow-md h-[42px] overflow-hidden leading-snug placeholder:text-slate-400"
-                        rows={1}
-                        style={{ minHeight: '42px' }}
-                    />
-                    <button
-                        onClick={handleSend}
-                        disabled={!input.trim() || isAnyJobRunning}
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-[var(--accent-primary)] text-white shadow-sm hover:shadow-md hover:bg-[var(--accent-secondary)] disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
-                    >
-                        {isAnyJobRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                    </button>
+                {/* KU mention dropdown */}
+                {showKuMenu && filteredKuOptions.length > 0 && (
+                    <div className="mb-1 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden z-50 max-h-[180px] overflow-y-auto">
+                        {filteredKuOptions.map((opt, idx) => (
+                            <button
+                                key={opt.id}
+                                onClick={() => handleSelectKu(opt)}
+                                className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 border-b border-slate-50 last:border-0 ${idx === kuSelectedIdx ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-indigo-50 text-slate-700'}`}
+                            >
+                                <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-indigo-100 text-indigo-600 text-[10px] font-bold flex-shrink-0">#</span>
+                                <span className="truncate">{opt.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+                {/* Model selector dropdown */}
+                {showModelMenu && (
+                    <div className="mb-1 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden z-50 max-h-[200px] overflow-y-auto">
+                        {availableModels.map((model) => (
+                            <button
+                                key={model}
+                                onClick={() => handleModelSwitch(model)}
+                                className={`w-full text-left px-3 py-2 text-xs hover:bg-indigo-50 transition-colors border-b border-slate-50 last:border-0 ${model === currentModel ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-700'}`}
+                            >
+                                {model.split('/').pop()}
+                            </button>
+                        ))}
+                    </div>
+                )}
+                {/* Unified input box */}
+                <div className="rounded-xl border-2 border-indigo-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:shadow-md transition-all">
+                    <div className="relative">
+                        {/* Overlay for highlighting #KU references */}
+                        <div
+                            aria-hidden="true"
+                            className="absolute inset-0 px-3 pt-2.5 pb-1 pr-10 text-sm pointer-events-none h-[60px] overflow-hidden leading-snug whitespace-pre-wrap break-words font-normal"
+                        >
+                            {input ? input.split(/(#KU\d+)/g).map((part, i) =>
+                                /^#KU\d+$/.test(part) ? (
+                                    <span key={i} className="bg-indigo-100 text-indigo-600 rounded">{part}</span>
+                                ) : (
+                                    <span key={i} className="text-slate-800">{part}</span>
+                                )
+                            ) : null}
+                        </div>
+                        <textarea
+                            ref={textareaRef}
+                            value={input}
+                            onChange={handleInputChange}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Ask AI to modify... (type # to ref a KU)"
+                            className="w-full resize-none bg-transparent px-3 pt-2.5 pb-1 pr-10 text-sm outline-none h-[60px] overflow-hidden leading-snug placeholder:text-slate-400 relative z-10"
+                            rows={1}
+                            style={{ minHeight: '60px', color: 'transparent', caretColor: '#1e293b' }}
+                        />
+                        <button
+                            onClick={handleSend}
+                            disabled={!input.trim() || isAnyJobRunning}
+                            className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-[var(--accent-primary)] text-white shadow-sm hover:shadow-md hover:bg-[var(--accent-secondary)] disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                        >
+                            {isAnyJobRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                        </button>
+                    </div>
+                    {/* Toolbar inside the box */}
+                    <div className="flex items-center justify-between px-2 pb-1.5 pt-0">
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => {
+                                    if (textareaRef.current) {
+                                        const pos = textareaRef.current.selectionStart || input.length;
+                                        const before = input.slice(0, pos);
+                                        const after = input.slice(pos);
+                                        const needSpace = before.length > 0 && before[before.length - 1] !== ' ' && before[before.length - 1] !== '\n';
+                                        const newInput = before + (needSpace ? ' #' : '#') + after;
+                                        setInput(newInput);
+                                        hashPosRef.current = before.length + (needSpace ? 1 : 0);
+                                        setShowKuMenu(true);
+                                        setKuMenuFilter('');
+                                        setTimeout(() => textareaRef.current?.focus(), 0);
+                                    }
+                                }}
+                                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                                title="Add context (#)"
+                            >
+                                <Hash className="w-3 h-3" />
+                            </button>
+                        </div>
+                        <button
+                            onClick={() => setShowModelMenu(!showModelMenu)}
+                            className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                            title="Switch model"
+                        >
+                            <span className="truncate max-w-[120px]">{modelDisplayName}</span>
+                            <ChevronDown className="w-2.5 h-2.5" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

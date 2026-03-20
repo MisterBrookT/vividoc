@@ -136,13 +136,14 @@ export const streamChat = async (
   specId: string,
   message: string,
   onEvent: (event: ChatStreamEvent) => void,
-  stage: 'spec' | 'doc' = 'doc'
+  stage: 'spec' | 'doc' = 'doc',
+  history: Array<{ role: string; content: string }> = []
 ): Promise<void> => {
   const baseURL = apiClient.defaults.baseURL || '';
   const response = await fetch(`${baseURL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ spec_id: specId, message, stage }),
+    body: JSON.stringify({ spec_id: specId, message, stage, history }),
   });
 
   if (!response.ok) {

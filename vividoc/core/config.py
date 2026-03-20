@@ -5,19 +5,9 @@ from typing import Set
 
 AVAILABLE_LLM_MODELS: Set[str] = {
     "openrouter/google/gemini-3-flash-preview",
-    "openrouter/google/gemini-3.1-pro-preview",
-    "openrouter/openai/gpt-4o",
-    "openrouter/openai/gpt-5.4",
-    "openrouter/anthropic/claude-sonnet-4",
-    "openrouter/openai/gpt-5.4-mini",
-    "openrouter/z-ai/glm-5",
     "openrouter/qwen/qwen3.5-9b",
-    "openrouter/qwen/qwen3.5-27b:nitro",
-    "openrouter/qwen/qwen3.5-27b",
     "openrouter/mistralai/mistral-small-2603",
     "openrouter/qwen/qwen3.5-35b-a3b",
-    "openrouter/qwen/qwen3.5-flash-02-23",
-    "openrouter/qwen/qwen3-coder-next",
 }
 
 

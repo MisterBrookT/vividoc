@@ -396,6 +396,7 @@ class ChatRequest(BaseModel):
     spec_id: str
     message: str
     stage: str = "doc"  # "spec" or "doc"
+    history: list = []  # previous chat messages [{role, content}, ...]
 
 
 def _apply_edit_blocks(html: str, edit_blocks: list[dict]) -> str:
@@ -501,7 +502,9 @@ async def chat_stream(request: ChatRequest):
                     f"    Interaction Spec: {spec_str}"
                 )
             ku_text = "\n".join(ku_lines)
-            prompt = get_spec_edit_prompt(internal_spec.topic, ku_text, request.message)
+            prompt = get_spec_edit_prompt(
+                internal_spec.topic, ku_text, request.message, request.history
+            )
             edit_marker = "[SPEC_EDIT]"
         else:
             # Build HTML editing prompt
@@ -510,7 +513,9 @@ async def chat_stream(request: ChatRequest):
             html_content = document_service.get_html_for_spec(request.spec_id)
             if not html_content:
                 html_content = "<p>No document generated yet.</p>"
-            prompt = get_chat_edit_prompt(html_content, request.message)
+            prompt = get_chat_edit_prompt(
+                html_content, request.message, request.history
+            )
             edit_marker = "[EDIT_MODE]"
 
         if dev_mode:
