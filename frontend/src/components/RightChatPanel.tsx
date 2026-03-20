@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Sparkles, AlertCircle, CheckCircle2, Loader2, FileText } from 'lucide-react';
 import Markdown from 'react-markdown';
 import type { JobStatus, DocumentSpec } from '../types/models';
-import { streamChat } from '../api/services';
+import { streamChat, getChatHistory, saveChatHistory } from '../api/services';
 
 /* Cute Vivi avatar SVG — a small friendly bot face */
 const ViviAvatar: React.FC<{ className?: string }> = ({ className }) => (
@@ -70,6 +70,55 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
     const [isStreaming, setIsStreaming] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const progressMsgIdRef = useRef<string | null>(null);
+    const prevSpecIdRef = useRef<string | null>(null);
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const defaultMessages: Message[] = [
+        {
+            id: 'welcome',
+            role: 'assistant',
+            content: "Hi! I'm Vivi, your AI assistant. I can help you modify the generated document. What would you like to do?",
+            timestamp: Date.now(),
+        },
+    ];
+
+    // Save current messages to backend (debounced)
+    const saveMessages = useCallback((specId: string, msgs: Message[]) => {
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = setTimeout(() => {
+            saveChatHistory(specId, msgs).catch(() => {});
+        }, 500);
+    }, []);
+
+    // When spec changes: save old, load new
+    useEffect(() => {
+        const prevId = prevSpecIdRef.current;
+        const newId = spec?.id || null;
+
+        if (prevId === newId) return;
+
+        // Save current messages for the old spec
+        if (prevId && messages.length > 1) {
+            saveChatHistory(prevId, messages).catch(() => {});
+        }
+
+        // Load messages for the new spec
+        if (newId) {
+            getChatHistory(newId).then((saved) => {
+                if (saved && saved.length > 0) {
+                    setMessages(saved);
+                } else {
+                    setMessages(defaultMessages);
+                }
+            }).catch(() => {
+                setMessages(defaultMessages);
+            });
+        } else {
+            setMessages(defaultMessages);
+        }
+
+        prevSpecIdRef.current = newId;
+    }, [spec?.id]);
 
     useEffect(() => {
         if (specJustGenerated && spec) {
@@ -111,6 +160,13 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, [messages, isStreaming]);
+
+    // Persist messages when they change
+    useEffect(() => {
+        if (spec?.id && messages.length > 1) {
+            saveMessages(spec.id, messages);
+        }
+    }, [messages, spec?.id, saveMessages]);
 
     const handleSend = useCallback(async () => {
         if (!input.trim() || isStreaming) return;

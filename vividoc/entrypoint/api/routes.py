@@ -159,6 +159,27 @@ async def get_spec_html(spec_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/spec/{spec_id}/chat")
+async def get_chat_history(spec_id: str):
+    """Get chat history for a spec."""
+    try:
+        messages = spec_service.get_chat_history(spec_id)
+        return {"messages": messages}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/spec/{spec_id}/chat")
+async def save_chat_history(spec_id: str, request: dict):
+    """Save chat history for a spec."""
+    try:
+        messages = request.get("messages", [])
+        spec_service.save_chat_history(spec_id, messages)
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/history")
 async def get_history():
     """List all specification history."""
@@ -598,6 +619,7 @@ async def chat_stream(request: ChatRequest):
                                 project_root
                                 / "outputs"
                                 / request.spec_id
+                                / "vividoc"
                                 / "document.html"
                             )
                             html_path.parent.mkdir(parents=True, exist_ok=True)

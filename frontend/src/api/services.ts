@@ -48,6 +48,19 @@ export const getSpecHtml = async (specId: string): Promise<string | null> => {
   }
 };
 
+export const getChatHistory = async (specId: string): Promise<any[]> => {
+  try {
+    const response = await apiClient.get<{ messages: any[] }>(`/api/spec/${specId}/chat`);
+    return response.data.messages;
+  } catch (error) {
+    return [];
+  }
+};
+
+export const saveChatHistory = async (specId: string, messages: any[]): Promise<void> => {
+  await apiClient.put(`/api/spec/${specId}/chat`, { messages });
+};
+
 export const updateSpec = async (
   specId: string,
   spec: DocumentSpec

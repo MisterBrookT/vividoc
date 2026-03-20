@@ -93,8 +93,17 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
   }, [spec]);
 
   const handleDownload = () => {
-    if (!documentId) return;
-    window.open(getDocumentDownloadUrl(documentId), '_blank');
+    if (documentId) {
+      window.open(getDocumentDownloadUrl(documentId), '_blank');
+    } else if (html) {
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${spec?.topic || 'document'}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   const handleGenerateSpec = async () => {
@@ -216,7 +225,7 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
               <span className="text-xs font-medium text-indigo-600 truncate max-w-[150px]">{getStatusText()}</span>
             </div>
           )}
-          {documentId && (
+          {(documentId || html) && (
             <button
               onClick={handleDownload}
               disabled={loading || !!error}

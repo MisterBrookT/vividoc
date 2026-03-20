@@ -301,3 +301,22 @@ class SpecService:
         self.specs[spec_id] = updated_spec
         self._save_spec_to_disk(spec_id, updated_spec, topic)
         return updated_spec
+
+    def get_chat_history(self, spec_id: str) -> list:
+        """Load chat history from outputs/{spec_id}/vividoc/chat_history.json."""
+        chat_file = self._get_spec_dir(spec_id) / "chat_history.json"
+        if not chat_file.exists():
+            return []
+        try:
+            with open(chat_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, Exception):
+            return []
+
+    def save_chat_history(self, spec_id: str, messages: list):
+        """Save chat history to outputs/{spec_id}/vividoc/chat_history.json."""
+        spec_dir = self._get_spec_dir(spec_id)
+        spec_dir.mkdir(parents=True, exist_ok=True)
+        chat_file = spec_dir / "chat_history.json"
+        with open(chat_file, "w", encoding="utf-8") as f:
+            json.dump(messages, f, indent=2, ensure_ascii=False)
