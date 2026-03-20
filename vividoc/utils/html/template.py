@@ -17,6 +17,7 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
         scope_id = f"ku{idx}"
         section_html = f'''    <!-- {ku.unit_content} -->
     <section class="knowledge-unit" id="{scope_id}">
+        <h2 class="ku-title">{ku.unit_content}</h2>
         <div class="text-content">
             <!-- Stage 1: Text content will be filled here -->
         </div>
@@ -127,6 +128,16 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
             padding: 30px;
             margin-bottom: 30px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        
+        .ku-title {{
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
         }}
         
         .text-content {{
