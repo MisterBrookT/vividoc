@@ -534,9 +534,10 @@ def _print_summary(all_scores: list[dict]):
     for model, by_method in sorted(models_data.items()):
         print(f"\n=== Judge: {model} ===")
         print(
-            f"{'Method':<15} {'CR':>5} {'ID':>5} {'IQ':>5} {'VQ':>5} {'RC':>5} {'IF':>5} {'N':>4}"
+            f"{'Method':<30} {'CR':>5} {'ID':>5} {'IQ':>5} {'VQ':>5} {'RC':>5} {'IF':>5}"
+            f" {'Time':>7} {'HTML':>7} {'Eff':>7} {'N':>4}"
         )
-        print("-" * 62)
+        print("-" * 100)
         all_methods = _discover_methods()
         for method in all_methods:
             entries = by_method.get(method, [])
@@ -549,8 +550,25 @@ def _print_summary(all_scores: list[dict]):
             vq = sum(e["visual_quality"] for e in entries) / n
             rc = sum(e["render_correctness"] for e in entries) / n
             ifn = sum(e["interaction_functionality"] for e in entries) / n
+
+            # Time/HTML/Efficiency — exclude entries with elapsed_sec <= 1 (invalid)
+            valid_time = [e for e in entries if e.get("elapsed_sec", 0) > 1]
+            nt = len(valid_time)
+            if nt > 0:
+                avg_time = sum(e["elapsed_sec"] for e in valid_time) / nt
+                avg_html = sum(e.get("html_length", 0) for e in valid_time) / nt
+                avg_eff = avg_html / avg_time if avg_time > 0 else 0
+                time_s = f"{avg_time:>7.1f}"
+                html_s = f"{avg_html:>7.0f}"
+                eff_s = f"{avg_eff:>7.0f}"
+            else:
+                time_s = f"{'n/a':>7}"
+                html_s = f"{'n/a':>7}"
+                eff_s = f"{'n/a':>7}"
+
             print(
-                f"{method:<15} {cr:>5.2f} {iq_raw:>5.2f} {iq:>5.2f} {vq:>5.2f} {rc:>5.2f} {ifn:>5.2f} {n:>4}"
+                f"{method:<30} {cr:>5.2f} {iq_raw:>5.2f} {iq:>5.2f} {vq:>5.2f} {rc:>5.2f} {ifn:>5.2f}"
+                f" {time_s} {html_s} {eff_s} {n:>4}"
             )
 
 
@@ -563,6 +581,8 @@ def _collect_all_results() -> list[dict]:
     For partial runs (e.g. only ID was re-evaluated in v2), missing LLM
     dimensions are filled from the same base model's other versions
     (preferring the highest version).
+
+    Also reads meta.json from outputs/ for elapsed_sec and html_length.
     """
     all_scores = []
     if not EVAL_RESULTS_DIR.exists():
@@ -584,6 +604,18 @@ def _collect_all_results() -> list[dict]:
                 topic = scores_base.get("topic", topic_dir.name)
                 method = scores_base.get("method", method_dir.name)
 
+                # Read meta.json from outputs for time/html_length
+                meta_path = OUTPUTS_DIR / topic_dir.name / method_dir.name / "meta.json"
+                elapsed_sec = 0.0
+                html_length = 0
+                if meta_path.exists():
+                    try:
+                        meta = json.loads(meta_path.read_text())
+                        elapsed_sec = meta.get("elapsed_sec", 0.0)
+                        html_length = meta.get("html_length", 0)
+                    except (json.JSONDecodeError, KeyError):
+                        pass
+
                 # Detect format: nested (model-keyed) vs flat (legacy)
                 llm_judge = _migrate_llm_judge(data)
 
@@ -600,6 +632,8 @@ def _collect_all_results() -> list[dict]:
                         "interaction_functionality": func.get(
                             "interaction_functionality", 0
                         ),
+                        "elapsed_sec": elapsed_sec,
+                        "html_length": html_length,
                     }
                     all_scores.append(entry)
                     continue
@@ -659,6 +693,8 @@ def _collect_all_results() -> list[dict]:
                                 scores_base.get("render_correctness", 0),
                             ),
                             "interaction_functionality": if_val,
+                            "elapsed_sec": elapsed_sec,
+                            "html_length": html_length,
                         }
                         all_scores.append(entry)
             except (json.JSONDecodeError, KeyError):
