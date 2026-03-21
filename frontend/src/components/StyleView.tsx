@@ -72,14 +72,6 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
     const allDescs = opt.descs || {};
     return (
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <span className="text-xs text-indigo-600 font-semibold">
-            {allLabels[val] || val}
-          </span>
-          {allDescs[val] && (
-            <span className="text-[11px] text-slate-400">{allDescs[val]}</span>
-          )}
-        </div>
         <input
           type="range"
           min={opt.min}
@@ -101,6 +93,11 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
             </span>
           ))}
         </div>
+        {allDescs[val] && (
+          <div className="mt-2 px-3 py-2 bg-indigo-50/60 rounded-lg transition-all">
+            <p className="text-xs text-indigo-600/80 leading-relaxed">{allDescs[val]}</p>
+          </div>
+        )}
       </div>
     );
   };
@@ -136,18 +133,33 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
   const renderColor = (key: string, opt: any) => {
     const val = values[key];
     return (
-      <div className="flex gap-3 pt-1">
-        {opt.choices.map((c: any) => (
-          <button
-            key={c.value}
-            onClick={() => handleChange(key, c.value)}
-            className={`w-9 h-9 rounded-full transition-all ${
-              val === c.value ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-105'
-            }`}
-            style={{ backgroundColor: c.hex || COLOR_MAP[c.value] || '#666' }}
-            title={c.label}
-          />
-        ))}
+      <div className="grid grid-cols-3 gap-3 pt-1">
+        {opt.choices.map((c: any) => {
+          const isAuto = c.value === 'auto';
+          return (
+            <button
+              key={c.value}
+              onClick={() => handleChange(key, c.value)}
+              className="flex flex-col items-center gap-1.5 group"
+            >
+              <div
+                className={`w-12 h-12 rounded-full transition-all flex items-center justify-center ${
+                  val === c.value ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'group-hover:scale-105'
+                }`}
+                style={
+                  isAuto
+                    ? { background: 'conic-gradient(#4f46e5, #059669, #d97706, #e11d48, #4f46e5)' }
+                    : { backgroundColor: c.hex || COLOR_MAP[c.value] || '#666' }
+                }
+              >
+                {isAuto && <span className="text-white text-xs font-bold drop-shadow">✦</span>}
+              </div>
+              <span className={`text-[11px] ${val === c.value ? 'text-indigo-600 font-semibold' : 'text-slate-400'}`}>
+                {c.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
     );
   };
@@ -169,7 +181,9 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-2xl mx-auto py-10 px-6">
-        <p className="text-sm text-slate-500 mb-6">Customize your own doc</p>
+        <h2 className="text-lg font-semibold text-slate-700 text-center mb-6">
+          Customize your own style
+        </h2>
 
         <div className="grid grid-cols-2 gap-4">
           {Object.entries(options).map(([key, opt]) => renderOption(key, opt))}

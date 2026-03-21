@@ -18,11 +18,11 @@ STYLE_OPTIONS = {
             5: "Comprehensive",
         },
         "descs": {
-            1: "Only essential points, no elaboration",
-            2: "Short paragraphs, key points only",
-            3: "Clear explanations, moderate detail",
-            4: "Thorough with examples",
-            5: "Rich examples and analogies",
+            1: "Use very concise text. Only essential explanations, no elaboration.",
+            2: "Use brief text. Short paragraphs with key points only.",
+            3: "Use balanced text. Clear explanations with moderate detail.",
+            4: "Use detailed text. Thorough explanations with examples.",
+            5: "Use very detailed text. Comprehensive coverage with rich examples and analogies.",
         },
     },
     "tone": {
@@ -69,13 +69,14 @@ STYLE_OPTIONS = {
         "label": "Color Scheme",
         "type": "color",
         "choices": [
+            {"value": "auto", "label": "Auto"},
             {"value": "indigo", "label": "Indigo", "hex": "#4f46e5"},
             {"value": "emerald", "label": "Emerald", "hex": "#059669"},
             {"value": "rose", "label": "Rose", "hex": "#e11d48"},
             {"value": "amber", "label": "Amber", "hex": "#d97706"},
             {"value": "slate", "label": "Slate", "hex": "#475569"},
         ],
-        "default": "indigo",
+        "default": "auto",
     },
 }
 
@@ -120,6 +121,9 @@ class Styler:
             _DENSITY_MAP.get(config.text_density, _DENSITY_MAP[3]),
             _TONE_MAP.get(config.tone, _TONE_MAP["conversational"]),
             _INTERACTION_MAP.get(config.interaction_style, _INTERACTION_MAP["rich"]),
-            f"Color scheme: use '{config.color_scheme}' as the primary accent color for interactive elements.",
         ]
+        if config.color_scheme and config.color_scheme != "auto":
+            lines.append(
+                f"Color scheme: use '{config.color_scheme}' as the primary accent color for interactive elements."
+            )
         return "\n".join(lines)

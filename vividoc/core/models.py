@@ -102,6 +102,6 @@ class StyleConfig(BaseModel):
         description="Interaction style: minimal, balanced, rich",
     )
     color_scheme: str = Field(
-        default="indigo",
-        description="Color scheme: indigo, emerald, rose, amber, slate",
+        default="auto",
+        description="Color scheme: auto, indigo, emerald, rose, amber, slate",
     )
