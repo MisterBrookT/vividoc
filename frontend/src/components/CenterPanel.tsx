@@ -304,7 +304,7 @@ const TopicView: React.FC<TopicViewProps> = ({ topic, onTopicChange, onGenerate,
     <div className="w-full h-full flex items-center justify-center bg-[var(--bg-app)]">
       <div className="w-full max-w-lg px-8">
         <div className="text-center mb-8">
-          <img src="/vividoc-logo.svg" alt="ViviDoc" className="w-16 h-16 mx-auto mb-4" />
+          <img src="/vivi-cat-transparent.png" alt="Vivi" className="w-48 h-48 mx-auto mb-6 object-contain drop-shadow-md" />
           <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">What would you like to explore?</h2>
           <p className="text-sm text-[var(--text-secondary)]">Enter a topic and we'll generate an interactive document specification.</p>
         </div>

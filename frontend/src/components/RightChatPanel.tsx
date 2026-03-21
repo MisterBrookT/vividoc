@@ -4,26 +4,9 @@ import Markdown from 'react-markdown';
 import type { JobStatus, DocumentSpec } from '../types/models';
 import { streamChat, getChatHistory, saveChatHistory, getConfig, updateConfig } from '../api/services';
 
-/* Cute Vivi avatar SVG — a small friendly bot face */
+/* Cute Vivi avatar SVG — a lazy purple cat lounging, full body */
 const ViviAvatar: React.FC<{ className?: string }> = ({ className }) => (
-    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="16" cy="16" r="15" fill="url(#vivi-grad)" stroke="#818cf8" strokeWidth="1" />
-        <ellipse cx="11" cy="14" rx="2.2" ry="2.5" fill="white" />
-        <ellipse cx="21" cy="14" rx="2.2" ry="2.5" fill="white" />
-        <circle cx="11" cy="14.5" r="1.2" fill="#312e81" />
-        <circle cx="21" cy="14.5" r="1.2" fill="#312e81" />
-        <circle cx="11.6" cy="13.8" r="0.5" fill="white" />
-        <circle cx="21.6" cy="13.8" r="0.5" fill="white" />
-        <path d="M12 20.5Q16 23.5 20 20.5" stroke="#312e81" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-        <ellipse cx="7.5" cy="18" rx="1.8" ry="1" fill="#c7d2fe" opacity="0.6" />
-        <ellipse cx="24.5" cy="18" rx="1.8" ry="1" fill="#c7d2fe" opacity="0.6" />
-        <defs>
-            <linearGradient id="vivi-grad" x1="0" y1="0" x2="32" y2="32">
-                <stop offset="0%" stopColor="#e0e7ff" />
-                <stop offset="100%" stopColor="#c7d2fe" />
-            </linearGradient>
-        </defs>
-    </svg>
+    <img src="/vivi-cat.png" alt="Vivi" className={`object-contain mix-blend-multiply ${className || ''}`} />
 );
 
 interface Message {
