@@ -82,3 +82,26 @@ class EvaluationFeedback(BaseModel):
         description="List of issues found in interactive components"
     )
     requires_revision: bool = Field(description="Whether the document needs revision")
+
+
+class StyleConfig(BaseModel):
+    """User style preferences for document generation."""
+
+    text_density: int = Field(
+        default=3,
+        ge=1,
+        le=5,
+        description="Text density: 1=minimal, 3=balanced, 5=detailed",
+    )
+    tone: str = Field(
+        default="conversational",
+        description="Writing tone: academic, conversational, playful",
+    )
+    interaction_style: str = Field(
+        default="rich",
+        description="Interaction style: minimal, balanced, rich",
+    )
+    color_scheme: str = Field(
+        default="indigo",
+        description="Color scheme: indigo, emerald, rose, amber, slate",
+    )

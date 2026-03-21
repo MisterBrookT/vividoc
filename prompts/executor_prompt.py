@@ -3,6 +3,8 @@
 # Stage 1: Generate text content fragment only
 FRAGMENT_STAGE1_PROMPT = """You are an expert educational content writer creating an interactive document about "{topic}".
 
+{style_instructions}
+
 === COMPLETED SECTIONS (for style reference only, DO NOT modify) ===
 {completed_sections}
 
@@ -36,6 +38,8 @@ Now generate the text content fragment for section {scope_id}:
 
 # Stage 2: Generate interactive content fragment only
 FRAGMENT_STAGE2_PROMPT = """You are an expert at creating interactive educational visualizations for a document about "{topic}".
+
+{style_instructions}
 
 === COMPLETED SECTIONS (for style reference only, DO NOT modify) ===
 {completed_sections}
@@ -111,6 +115,7 @@ def get_fragment_stage1_prompt(
     scope_id: str,
     unit_content: str,
     text_description: str,
+    style_instructions: str = "",
 ) -> str:
     """Generate Stage 1 prompt for text content fragment."""
     return FRAGMENT_STAGE1_PROMPT.format(
@@ -119,6 +124,7 @@ def get_fragment_stage1_prompt(
         scope_id=scope_id,
         unit_content=unit_content,
         text_description=text_description,
+        style_instructions=style_instructions,
     )
 
 
@@ -128,6 +134,7 @@ def get_fragment_stage2_prompt(
     scope_id: str,
     current_text_content: str,
     interaction_spec_text: str,
+    style_instructions: str = "",
 ) -> str:
     """Generate Stage 2 prompt for interactive content fragment."""
     return FRAGMENT_STAGE2_PROMPT.format(
@@ -136,4 +143,5 @@ def get_fragment_stage2_prompt(
         scope_id=scope_id,
         current_text_content=current_text_content,
         interaction_spec_text=interaction_spec_text,
+        style_instructions=style_instructions,
     )

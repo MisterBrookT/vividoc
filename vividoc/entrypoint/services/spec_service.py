@@ -320,3 +320,22 @@ class SpecService:
         chat_file = spec_dir / "chat_history.json"
         with open(chat_file, "w", encoding="utf-8") as f:
             json.dump(messages, f, indent=2, ensure_ascii=False)
+
+    def get_style(self, spec_id: str) -> dict:
+        """Load style config from outputs/{spec_id}/vividoc/style.json."""
+        style_file = self._get_spec_dir(spec_id) / "style.json"
+        if not style_file.exists():
+            return {}
+        try:
+            with open(style_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, Exception):
+            return {}
+
+    def save_style(self, spec_id: str, style: dict):
+        """Save style config to outputs/{spec_id}/vividoc/style.json."""
+        spec_dir = self._get_spec_dir(spec_id)
+        spec_dir.mkdir(parents=True, exist_ok=True)
+        style_file = spec_dir / "style.json"
+        with open(style_file, "w", encoding="utf-8") as f:
+            json.dump(style, f, indent=2, ensure_ascii=False)

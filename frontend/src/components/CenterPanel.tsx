@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   Download, ChevronRight, FileText, Layout, FileCode,
-  Sparkles, Play, Loader2
+  Sparkles, Play, Loader2, Palette
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DocumentViewer from './DocumentViewer';
+import StyleView from './StyleView';
 import { getDocumentHtml, getDocumentDownloadUrl, generateSpec, generateDocument, updateSpec } from '../api/services';
 import type { JobStatus, DocumentSpec, KnowledgeUnit } from '../types/models';
 
@@ -20,7 +21,7 @@ interface CenterPanelProps {
   onGenerateDocument: (jobId: string) => void;
 }
 
-type ActiveStage = 'topic' | 'spec' | 'doc';
+type ActiveStage = 'topic' | 'spec' | 'style' | 'doc';
 
 const CenterPanel: React.FC<CenterPanelProps> = ({
   spec,
@@ -183,6 +184,13 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
       current: activeStage === 'spec',
     },
     {
+      id: 'style' as const,
+      label: 'Style',
+      icon: Palette,
+      active: !!spec,
+      current: activeStage === 'style',
+    },
+    {
       id: 'doc' as const,
       label: 'Doc',
       icon: FileCode,
@@ -252,8 +260,16 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
           <SpecView
             spec={spec}
             onSpecUpdated={handleSpecUpdate}
-            onGenerateDocument={handleGenerateDocument}
+            onGenerateDocument={() => setManualStage('style')}
             generatingDoc={generatingDoc}
+          />
+        )}
+        {displayStage === 'style' && spec?.id && (
+          <StyleView
+            specId={spec.id}
+            onStyleSaved={() => {
+              handleGenerateDocument();
+            }}
           />
         )}
         {displayStage === 'doc' && (
@@ -573,7 +589,7 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
         </div>
       </div>
 
-      {/* Generate Document Footer */}
+      {/* Next: Style Preferences */}
       <div className="flex-shrink-0 p-4 border-t border-[var(--border-color)] bg-white/30 backdrop-blur-sm">
         <div className="px-6">
           <button
@@ -588,8 +604,8 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
               </>
             ) : (
               <>
-                <Play className="w-4 h-4 fill-current group-hover:translate-x-0.5 transition-transform" />
-                <span>Generate Document</span>
+                <Palette className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                <span>Next: Style Preferences</span>
               </>
             )}
           </button>

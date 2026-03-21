@@ -123,6 +123,24 @@ export const updateConfig = async (llmModel: string): Promise<{ llm_model: strin
   });
   return response.data;
 };
+
+export const getStyleOptions = async (): Promise<{ options: Record<string, any> }> => {
+  const response = await apiClient.get<{ options: Record<string, any> }>('/api/style/options');
+  return response.data;
+};
+
+export const getStyle = async (specId: string): Promise<Record<string, any>> => {
+  try {
+    const response = await apiClient.get<{ style: Record<string, any> }>(`/api/spec/${specId}/style`);
+    return response.data.style;
+  } catch {
+    return {};
+  }
+};
+
+export const saveStyle = async (specId: string, style: Record<string, any>): Promise<void> => {
+  await apiClient.put(`/api/spec/${specId}/style`, { style });
+};
 // Chat Streaming API
 
 export interface ChatStreamEvent {

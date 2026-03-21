@@ -80,7 +80,7 @@ function App() {
   };
 
   // Compute active stage for chat context
-  const getActiveStage = (): 'topic' | 'spec' | 'doc' => {
+  const getActiveStage = (): 'topic' | 'spec' | 'style' | 'doc' => {
     if (documentId || liveHtml || polledHtml || jobStatus?.status === 'running') return 'doc';
     if (spec) return 'spec';
     return 'topic';

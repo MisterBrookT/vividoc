@@ -180,6 +180,35 @@ async def save_chat_history(spec_id: str, request: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/style/options")
+async def get_style_options():
+    """Get available style options for frontend rendering."""
+    from vividoc.core.styler import Styler
+
+    return {"options": Styler.get_options()}
+
+
+@router.get("/spec/{spec_id}/style")
+async def get_style(spec_id: str):
+    """Get style config for a spec."""
+    try:
+        style = spec_service.get_style(spec_id)
+        return {"style": style}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/spec/{spec_id}/style")
+async def save_style(spec_id: str, request: dict):
+    """Save style config for a spec."""
+    try:
+        style = request.get("style", {})
+        spec_service.save_style(spec_id, style)
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/history")
 async def get_history():
     """List all specification history."""

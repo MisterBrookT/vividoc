@@ -44,7 +44,7 @@ interface RightChatPanelProps {
     onSpecJustGeneratedConsumed: () => void;
     onHtmlUpdated?: (html: string) => void;
     onSpecUpdated?: (spec: DocumentSpec) => void;
-    activeStage?: 'topic' | 'spec' | 'doc';
+    activeStage?: 'topic' | 'spec' | 'style' | 'doc';
 }
 
 const RightChatPanel: React.FC<RightChatPanelProps> = ({

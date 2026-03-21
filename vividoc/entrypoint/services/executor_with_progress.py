@@ -20,6 +20,7 @@ class ExecutorWithProgress(Executor):
         progress_callback: Optional[
             Callable[[str, Optional[str], Optional[str]], None]
         ] = None,
+        style_config=None,
     ):
         """
         Initialize executor with progress callback support.
@@ -31,8 +32,9 @@ class ExecutorWithProgress(Executor):
                 - phase: "planning" | "executing" | "evaluating"
                 - ku_id: Knowledge unit identifier (e.g., "ku1", "ku2")
                 - stage: "stage1" | "stage2" | "completed" | None
+            style_config: Optional StyleConfig for style preferences
         """
-        super().__init__(config)
+        super().__init__(config, style_config=style_config)
         self.progress_callback = progress_callback
 
     def _report_progress(

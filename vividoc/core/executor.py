@@ -17,11 +17,16 @@ from prompts.executor_prompt import (
 class Executor:
     """Fragment-based executor with context awareness for style consistency."""
 
-    def __init__(self, config: RunnerConfig):
+    def __init__(self, config: RunnerConfig, style_config=None):
         """Initialize executor with configuration."""
+        from vividoc.core.styler import Styler
+        from vividoc.core.models import StyleConfig
+
         self.config = config
         self.llm_client = LLMClient(config.llm_model)
         self.html_validator = HTMLValidator()
+        self.style_config = style_config or StyleConfig()
+        self.style_instructions = Styler.to_prompt_instructions(self.style_config)
 
     def _read_html(self, html_path: str) -> str:
         """Read HTML file."""
@@ -136,6 +141,7 @@ class Executor:
                 scope_id=scope_id,
                 unit_content=ku_spec.unit_content,
                 text_description=ku_spec.text_description,
+                style_instructions=self.style_instructions,
             )
 
             # Call LLM to generate fragment
@@ -204,6 +210,7 @@ class Executor:
                 interaction_spec_text=json.dumps(
                     ku_spec.interaction_spec.model_dump(), indent=2
                 ),
+                style_instructions=self.style_instructions,
             )
 
             # Call LLM to generate fragment

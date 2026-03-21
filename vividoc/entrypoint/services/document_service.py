@@ -104,9 +104,25 @@ class DocumentService:
             # Create new config with updated output_dir
             executor_config = replace(self.config, output_dir=str(spec_output_dir))
 
+            # Load style config if available
+            style_config = None
+            try:
+                from vividoc.core.models import StyleConfig
+
+                style_file = spec_output_dir / "style.json"
+                if style_file.exists():
+                    import json as json_mod
+
+                    style_data = json_mod.loads(style_file.read_text())
+                    style_config = StyleConfig(**style_data)
+            except Exception:
+                pass
+
             # Create executor with progress callback
             executor = ExecutorWithProgress(
-                executor_config, progress_callback=progress_callback
+                executor_config,
+                progress_callback=progress_callback,
+                style_config=style_config,
             )
 
             # Execute document generation
