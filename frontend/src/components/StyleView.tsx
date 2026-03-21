@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, AlignLeft, MessageSquare, MousePointerClick, Palette } from 'lucide-react';
 import { getStyleOptions, getStyle, saveStyle } from '../api/services';
 
 interface StyleViewProps {
@@ -165,12 +165,24 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
   };
 
   const renderOption = (key: string, opt: any) => {
+    let Icon = Sparkles;
+    const lower = key.toLowerCase();
+    if (lower.includes('dens')) Icon = AlignLeft;
+    else if (lower.includes('tone') || lower.includes('writ')) Icon = MessageSquare;
+    else if (lower.includes('interact')) Icon = MousePointerClick;
+    else if (lower.includes('color')) Icon = Palette;
+
     return (
       <div
         key={key}
-        className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-shadow"
+        className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/80 p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_32px_rgba(79,70,229,0.06)] hover:-translate-y-1 transition-all duration-300"
       >
-        <h3 className="text-sm font-semibold text-slate-800 mb-3">{opt.label}</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="p-1.5 bg-indigo-100/50 rounded-lg text-indigo-500 shadow-sm border border-indigo-50">
+            <Icon className="w-4 h-4" />
+          </div>
+          <h3 className="text-sm font-bold text-slate-800 tracking-wide">{opt.label}</h3>
+        </div>
         {opt.type === 'slider' && renderSlider(key, opt)}
         {opt.type === 'radio' && renderRadio(key, opt)}
         {opt.type === 'color' && renderColor(key, opt)}
