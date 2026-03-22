@@ -30,6 +30,7 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const generatingRef = React.useRef(false);
 
   useEffect(() => {
     loadOptions();
@@ -47,19 +48,24 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
         setTextDimensions(saved._options.text_dimensions || []);
         setInteractionDimensions(saved._options.interaction_dimensions || []);
         restoreSelections(saved, saved._options.text_dimensions || [], saved._options.interaction_dimensions || []);
+        setLoading(false);
       } else {
         // Generate new options from LLM
+        setLoading(false);
         await generateOptions(saved);
       }
     } catch {
       setError('Failed to load style options');
-    } finally {
       setLoading(false);
     }
   };
 
   const generateOptions = async (savedStyle?: Record<string, any>) => {
+    // Prevent concurrent calls
+    if (generatingRef.current) return;
+    generatingRef.current = true;
     setGenerating(true);
+    setError(null);
     try {
       const res = await generateStyleOptions(specId);
       const opts = res.options;
@@ -88,6 +94,7 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
       setError('Failed to generate style options');
     } finally {
       setGenerating(false);
+      generatingRef.current = false;
     }
   };
 

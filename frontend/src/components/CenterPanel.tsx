@@ -192,7 +192,7 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
       id: 'style' as const,
       label: 'Style',
       icon: Palette,
-      active: styleVisited || displayStage === 'style' || displayStage === 'doc',
+      active: styleVisited || displayStage === 'style' || !!documentId || !!liveHtml || isRunning,
       current: activeStage === 'style',
     },
     {
