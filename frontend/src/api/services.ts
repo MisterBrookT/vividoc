@@ -129,6 +129,11 @@ export const getStyleOptions = async (): Promise<{ options: Record<string, any> 
   return response.data;
 };
 
+export const generateStyleOptions = async (specId: string): Promise<{ options: Record<string, any> }> => {
+  const response = await apiClient.post<{ options: Record<string, any> }>(`/api/spec/${specId}/style/generate`);
+  return response.data;
+};
+
 export const getStyle = async (specId: string): Promise<Record<string, any>> => {
   try {
     const response = await apiClient.get<{ style: Record<string, any> }>(`/api/spec/${specId}/style`);

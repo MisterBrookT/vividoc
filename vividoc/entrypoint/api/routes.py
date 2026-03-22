@@ -182,10 +182,24 @@ async def save_chat_history(spec_id: str, request: dict):
 
 @router.get("/style/options")
 async def get_style_options():
-    """Get available style options for frontend rendering."""
-    from vividoc.core.styler import Styler
+    """Legacy: return empty options (style is now LLM-generated per spec)."""
+    return {"options": {}}
 
-    return {"options": Styler.get_options()}
+
+@router.post("/spec/{spec_id}/style/generate")
+async def generate_style_options(spec_id: str):
+    """Generate dynamic style options from spec content using LLM."""
+    try:
+        spec = spec_service.get_spec(spec_id)
+        from vividoc.core.styler import Styler
+
+        llm_model = spec_service.planner.config.llm_model
+        options = Styler.generate_options(spec, llm_model)
+        return {"options": options}
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Spec not found: {spec_id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/spec/{spec_id}/style")

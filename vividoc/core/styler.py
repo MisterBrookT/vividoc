@@ -1,129 +1,117 @@
-"""Styler module — converts user style preferences into prompt instructions."""
+"""LLM-based Styler — generates dynamic style options from spec content."""
 
-from vividoc.core.models import StyleConfig
-
-# Fixed style options for frontend rendering
-STYLE_OPTIONS = {
-    "text_density": {
-        "label": "Text Density",
-        "type": "slider",
-        "min": 1,
-        "max": 5,
-        "default": 3,
-        "labels": {
-            1: "Minimal",
-            2: "Brief",
-            3: "Balanced",
-            4: "Detailed",
-            5: "Comprehensive",
-        },
-        "descs": {
-            1: "Use very concise text. Only essential explanations, no elaboration.",
-            2: "Use brief text. Short paragraphs with key points only.",
-            3: "Use balanced text. Clear explanations with moderate detail.",
-            4: "Use detailed text. Thorough explanations with examples.",
-            5: "Use very detailed text. Comprehensive coverage with rich examples and analogies.",
-        },
-    },
-    "tone": {
-        "label": "Writing Tone",
-        "type": "radio",
-        "choices": [
-            {
-                "value": "academic",
-                "label": "Academic",
-                "desc": "Formal, precise, structured",
-            },
-            {
-                "value": "conversational",
-                "label": "Conversational",
-                "desc": "Friendly, approachable, clear",
-            },
-            {
-                "value": "playful",
-                "label": "Playful",
-                "desc": "Fun, engaging, adventurous",
-            },
-        ],
-        "default": "conversational",
-    },
-    "interaction_style": {
-        "label": "Interaction Style",
-        "type": "radio",
-        "choices": [
-            {
-                "value": "minimal",
-                "label": "Minimal",
-                "desc": "Simple controls, clarity first",
-            },
-            {
-                "value": "balanced",
-                "label": "Balanced",
-                "desc": "Smooth transitions, intuitive",
-            },
-            {"value": "rich", "label": "Rich", "desc": "Animated, visually engaging"},
-        ],
-        "default": "rich",
-    },
-    "color_scheme": {
-        "label": "Color Scheme",
-        "type": "color",
-        "choices": [
-            {"value": "auto", "label": "Auto"},
-            {"value": "indigo", "label": "Indigo", "hex": "#4f46e5"},
-            {"value": "emerald", "label": "Emerald", "hex": "#059669"},
-            {"value": "rose", "label": "Rose", "hex": "#e11d48"},
-            {"value": "amber", "label": "Amber", "hex": "#d97706"},
-            {"value": "slate", "label": "Slate", "hex": "#475569"},
-        ],
-        "default": "auto",
-    },
-}
+from pydantic import BaseModel, Field
+from vividoc.core.models import DocumentSpec
 
 
-_DENSITY_MAP = {
-    1: "Use very concise text. Only essential explanations, no elaboration.",
-    2: "Use brief text. Short paragraphs with key points only.",
-    3: "Use balanced text. Clear explanations with moderate detail.",
-    4: "Use detailed text. Thorough explanations with examples.",
-    5: "Use very detailed text. Comprehensive coverage with rich examples and analogies.",
-}
+class StyleOption(BaseModel):
+    """A single style option."""
 
-_TONE_MAP = {
-    "academic": "Use a formal academic tone. Precise terminology, structured arguments, citations-style references where appropriate.",
-    "conversational": "Use a friendly conversational tone. Explain concepts as if talking to a curious friend. Use 'we' and 'you'.",
-    "playful": "Use a fun, playful tone. Include analogies, humor, and engaging language. Make learning feel like an adventure.",
-}
+    id: str
+    label: str
+    description: str
 
-_INTERACTION_MAP = {
-    "minimal": "Use simple, minimal interactive controls (basic sliders, buttons). Prioritize clarity over visual flair.",
-    "balanced": "Use a balanced mix of controls and visualizations. Include smooth transitions but keep interactions intuitive.",
-    "rich": "Use rich, animated interactive elements. Include smooth CSS/JS animations, hover effects, and visually engaging transitions.",
-}
+
+class StyleDimension(BaseModel):
+    """A style dimension with multiple options."""
+
+    id: str
+    label: str
+    options: list[StyleOption]
+
+
+class StyleOptions(BaseModel):
+    """Structured output from LLM: style dimensions grouped by category."""
+
+    text_dimensions: list[StyleDimension] = Field(
+        description="Writing/text style dimensions (max 3)"
+    )
+    interaction_dimensions: list[StyleDimension] = Field(
+        description="Interaction/animation style dimensions (max 3)"
+    )
 
 
 class Styler:
-    """Converts style preferences into prompt instructions."""
+    """LLM-based styler that generates dynamic style options from spec content."""
+
+    @staticmethod
+    def generate_options(spec: DocumentSpec, llm_model: str) -> dict:
+        """Call LLM to generate style options based on spec content.
+
+        Returns dict with text_dimensions and interaction_dimensions.
+        """
+        from vividoc.utils.llm.client import LLMClient
+        from prompts.styler_prompt import get_styler_prompt
+
+        # Build KU summaries
+        ku_lines = []
+        for i, ku in enumerate(spec.knowledge_units, 1):
+            ku_lines.append(f"  KU{i}: {ku.unit_content} — {ku.text_description[:120]}")
+        ku_summaries = "\n".join(ku_lines)
+
+        prompt = get_styler_prompt(spec.topic, ku_summaries)
+
+        client = LLMClient(llm_model)
+        result: StyleOptions = client.call_structured_output(prompt, StyleOptions)
+
+        return result.model_dump()
+
+    @staticmethod
+    def build_instructions(selections: dict) -> dict[str, str]:
+        """Build text and interaction instruction strings from user selections.
+
+        Args:
+            selections: dict like {
+                "text_selections": {"tone": "Use a friendly...", "density": "..."},
+                "interaction_selections": {"animation": "Use smooth...", ...},
+                "_options": {"text_dimensions": [...], "interaction_dimensions": [...]}
+            }
+
+        Returns:
+            {"text": "...", "interaction": "..."}
+        """
+        # Build dimension id -> label lookup from cached options
+        dim_labels: dict[str, str] = {}
+        options = selections.get("_options") or {}
+        for dim in (options.get("text_dimensions") or []) + (
+            options.get("interaction_dimensions") or []
+        ):
+            if isinstance(dim, dict):
+                dim_labels[dim.get("id", "")] = dim.get("label", "")
+
+        text_parts = []
+        for dim_id, desc in (selections.get("text_selections") or {}).items():
+            if desc and desc.strip():
+                val = desc.strip()
+                if val.startswith("__custom__:"):
+                    val = val[len("__custom__:") :]
+                if val:
+                    label = dim_labels.get(dim_id, dim_id)
+                    text_parts.append(f"{label}: {val}")
+
+        interaction_parts = []
+        for dim_id, desc in (selections.get("interaction_selections") or {}).items():
+            if desc and desc.strip():
+                val = desc.strip()
+                if val.startswith("__custom__:"):
+                    val = val[len("__custom__:") :]
+                if val:
+                    label = dim_labels.get(dim_id, dim_id)
+                    interaction_parts.append(f"{label}: {val}")
+
+        text_instruction = ""
+        if text_parts:
+            text_instruction = "=== STYLE PREFERENCES ===\n" + "\n".join(text_parts)
+
+        interaction_instruction = ""
+        if interaction_parts:
+            interaction_instruction = (
+                "=== INTERACTION STYLE PREFERENCES ===\n" + "\n".join(interaction_parts)
+            )
+
+        return {"text": text_instruction, "interaction": interaction_instruction}
 
     @staticmethod
     def get_options() -> dict:
-        """Return the fixed style options for frontend rendering."""
-        return STYLE_OPTIONS
-
-    @staticmethod
-    def to_prompt_instructions(config: StyleConfig | None = None) -> str:
-        """Convert a StyleConfig into a prompt instruction block."""
-        if config is None:
-            config = StyleConfig()
-
-        lines = [
-            "=== STYLE PREFERENCES ===",
-            _DENSITY_MAP.get(config.text_density, _DENSITY_MAP[3]),
-            _TONE_MAP.get(config.tone, _TONE_MAP["conversational"]),
-            _INTERACTION_MAP.get(config.interaction_style, _INTERACTION_MAP["rich"]),
-        ]
-        if config.color_scheme and config.color_scheme != "auto":
-            lines.append(
-                f"Color scheme: use '{config.color_scheme}' as the primary accent color for interactive elements."
-            )
-        return "\n".join(lines)
+        """Legacy: return empty options (no longer fixed)."""
+        return {}

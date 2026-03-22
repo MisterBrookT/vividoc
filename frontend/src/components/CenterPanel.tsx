@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Download, ChevronRight, FileText, Layout, FileCode,
-  Sparkles, Play, Loader2, Palette
+  Sparkles, Loader2, Palette
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DocumentViewer from './DocumentViewer';
@@ -49,11 +49,13 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
   const activeStage = getActiveStage();
   // Allow user to manually switch to spec view
   const [manualStage, setManualStage] = useState<ActiveStage | null>(null);
-  const displayStage = manualStage || activeStage;
+  // When spec is generating, force show spec stage with loading
+  const displayStage = isSpecGenerating ? 'spec' : (manualStage || activeStage);
 
   // Reset manual stage when active stage or spec changes
   useEffect(() => {
     setManualStage(null);
+    setStyleVisited(false);
   }, [activeStage, spec?.id]);
 
   useEffect(() => {
@@ -168,6 +170,9 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
     return 'Initializing...';
   };
 
+  // Track whether user has entered style stage
+  const [styleVisited, setStyleVisited] = useState(false);
+
   const steps = [
     {
       id: 'topic' as const,
@@ -180,14 +185,14 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
       id: 'spec' as const,
       label: 'Spec',
       icon: FileText,
-      active: !!spec,
+      active: !!spec || isSpecGenerating,
       current: activeStage === 'spec',
     },
     {
       id: 'style' as const,
       label: 'Style',
       icon: Palette,
-      active: !!spec,
+      active: styleVisited || displayStage === 'style' || displayStage === 'doc',
       current: activeStage === 'style',
     },
     {
@@ -260,9 +265,24 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
           <SpecView
             spec={spec}
             onSpecUpdated={handleSpecUpdate}
-            onGenerateDocument={() => setManualStage('style')}
+            onGenerateDocument={() => { setStyleVisited(true); setManualStage('style'); }}
             generatingDoc={generatingDoc}
           />
+        )}
+        {displayStage === 'spec' && !spec && isSpecGenerating && (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-base font-semibold text-slate-700">Generating Spec</p>
+                <p className="text-sm text-slate-400 mt-1">Analyzing your topic and creating knowledge units...</p>
+              </div>
+            </div>
+          </div>
         )}
         {displayStage === 'style' && spec?.id && (
           <StyleView

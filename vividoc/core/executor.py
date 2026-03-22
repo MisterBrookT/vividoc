@@ -17,16 +17,37 @@ from prompts.executor_prompt import (
 class Executor:
     """Fragment-based executor with context awareness for style consistency."""
 
-    def __init__(self, config: RunnerConfig, style_config=None):
-        """Initialize executor with configuration."""
-        from vividoc.core.styler import Styler
-        from vividoc.core.models import StyleConfig
+    def __init__(
+        self,
+        config: RunnerConfig,
+        style_config=None,
+        text_style_instructions: str = "",
+        interaction_style_instructions: str = "",
+    ):
+        """Initialize executor with configuration.
 
+        Args:
+            config: RunnerConfig
+            style_config: Legacy StyleConfig (ignored if text/interaction instructions provided)
+            text_style_instructions: Style instructions for text generation (stage1)
+            interaction_style_instructions: Style instructions for interaction generation (stage2)
+        """
         self.config = config
         self.llm_client = LLMClient(config.llm_model)
         self.html_validator = HTMLValidator()
-        self.style_config = style_config or StyleConfig()
-        self.style_instructions = Styler.to_prompt_instructions(self.style_config)
+        self.text_style_instructions = text_style_instructions
+        self.interaction_style_instructions = interaction_style_instructions
+        # Legacy compat: self.style_instructions used nowhere now, but keep for safety
+        self.style_instructions = text_style_instructions
+
+    def _log_prompt(self, scope_id: str, stage: str, prompt: str) -> None:
+        """Log prompt to output directory for debugging."""
+        output_dir = Path(self.config.output_dir)
+        prompts_dir = output_dir / "prompt_logs"
+        prompts_dir.mkdir(parents=True, exist_ok=True)
+        log_file = prompts_dir / f"{scope_id}_{stage}.txt"
+        with open(log_file, "w", encoding="utf-8") as f:
+            f.write(prompt)
 
     def _read_html(self, html_path: str) -> str:
         """Read HTML file."""
@@ -141,8 +162,12 @@ class Executor:
                 scope_id=scope_id,
                 unit_content=ku_spec.unit_content,
                 text_description=ku_spec.text_description,
-                style_instructions=self.style_instructions,
+                style_instructions=self.text_style_instructions,
             )
+
+            # Log prompt for debugging
+            if attempt == 1:
+                self._log_prompt(scope_id, "stage1", prompt)
 
             # Call LLM to generate fragment
             fragment = self.llm_client.call_text_generation(prompt=prompt)
@@ -210,8 +235,12 @@ class Executor:
                 interaction_spec_text=json.dumps(
                     ku_spec.interaction_spec.model_dump(), indent=2
                 ),
-                style_instructions=self.style_instructions,
+                style_instructions=self.interaction_style_instructions,
             )
+
+            # Log prompt for debugging
+            if attempt == 1:
+                self._log_prompt(scope_id, "stage2", prompt)
 
             # Call LLM to generate fragment
             fragment = self.llm_client.call_text_generation(prompt=prompt)
