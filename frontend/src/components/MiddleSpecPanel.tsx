@@ -104,7 +104,7 @@ const MiddleSpecPanel: React.FC<MiddleSpecPanelProps> = ({
                     <button
                         onClick={handleGenerateDocument}
                         disabled={generating}
-                        className="w-full btn-primary py-3 px-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-indigo-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm group"
+                        className="w-full btn-primary py-3 px-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-primary-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm group"
                     >
                         {generating ? (
                             <>

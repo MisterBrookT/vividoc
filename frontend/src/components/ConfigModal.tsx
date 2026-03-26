@@ -67,8 +67,8 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-              <Settings className="w-5 h-5 text-indigo-600" />
+            <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
+              <Settings className="w-5 h-5 text-primary-600" />
             </div>
             <h2 className="text-xl font-bold text-slate-900">Config</h2>
           </div>
@@ -84,7 +84,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
         <div className="p-6">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
             <div className="space-y-4">
@@ -99,7 +99,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
                   id="llm-model-select"
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
-                  className="w-full px-2 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className="w-full px-2 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 >
                   {availableModels.map((model) => (
                     <option key={model} value={model}>
@@ -127,7 +127,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose }) => {
           <button
             onClick={handleSave}
             disabled={saving || !selectedModel || selectedModel === currentModel}
-            className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {saving ? (
               <>

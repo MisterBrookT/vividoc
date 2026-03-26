@@ -8,6 +8,7 @@ AVAILABLE_LLM_MODELS: Set[str] = {
     "openrouter/qwen/qwen3.5-9b",
     "openrouter/mistralai/mistral-small-2603",
     "openrouter/qwen/qwen3.5-35b-a3b",
+    "openrouter/google/gemini-3.1-pro-preview",
 }
 
 

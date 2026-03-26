@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, Palette } from 'lucide-react';
 import ConfigModal from './ConfigModal';
 import { getHistory } from '../api/services';
 import type { HistoryItem } from '../api/services';
@@ -10,6 +10,8 @@ interface LeftSidebarProps {
   configModalOpen: boolean;
   onConfigModalChange: (open: boolean) => void;
   currentSpecId: string | null;
+  theme: 'default' | 'warm';
+  onToggleTheme: () => void;
 }
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({
@@ -18,6 +20,8 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
   configModalOpen,
   onConfigModalChange,
   currentSpecId,
+  theme,
+  onToggleTheme,
 }) => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
@@ -53,7 +57,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
           onClick={onNewDoc}
           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 btn-primary rounded-xl text-sm font-semibold transition-all"
         >
-          <img src="/vividoc-logo.svg" alt="" className="w-5 h-5" />
+          <img src={theme === 'default' ? "/vividoc-logo.svg" : "/vividoc-logo-warm.svg"} alt="" className="w-5 h-5" />
           <span>New Doc</span>
         </button>
       </div>
@@ -95,13 +99,24 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
       </div>
 
       {/* Config Button */}
-      <div className="p-3 border-t border-[var(--border-color)] bg-white/30 backdrop-blur-sm">
+      <div className="p-3 border-t border-[var(--border-color)] bg-white/30 backdrop-blur-sm flex items-center gap-2">
         <button
           onClick={() => onConfigModalChange(true)}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
         >
           <Settings className="w-4 h-4" />
           <span>Config</span>
+        </button>
+        <button
+          onClick={onToggleTheme}
+          className={`w-10 h-10 flex items-center justify-center rounded-lg transition-all flex-shrink-0 ${
+            theme === 'warm'
+              ? 'text-primary-600 bg-primary-50'
+              : 'text-slate-600 hover:text-primary-600 hover:bg-primary-50'
+          }`}
+          title="Toggle Warm Theme"
+        >
+          <Palette className="w-4 h-4" />
         </button>
       </div>
 

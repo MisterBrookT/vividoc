@@ -53,7 +53,7 @@ const SortableKUItem: React.FC<SortableKUItemProps & { index: number }> = ({ ku,
       className="glass-card rounded-xl border border-[var(--border-color)] bg-[var(--surface-color)] p-3 mb-3 group hover:shadow-md transition-all relative overflow-hidden"
     >
       {/* Decorative gradient overlay */}
-      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500 opacity-80" />
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary-500 to-secondary-500 opacity-80" />
 
       <div className="flex items-center justify-between pl-3">
         <div className="flex-1 flex items-center gap-3">
@@ -82,7 +82,7 @@ const SortableKUItem: React.FC<SortableKUItemProps & { index: number }> = ({ ku,
         <div className="flex flex-col gap-1 ml-2 border-l border-[var(--border-color)] pl-2">
           <button
             onClick={() => onEdit(ku)}
-            className="p-1.5 text-[var(--text-secondary)] hover:text-indigo-600 hover:bg-indigo-50/50 rounded-md transition-colors"
+            className="p-1.5 text-[var(--text-secondary)] hover:text-primary-600 hover:bg-primary-50/50 rounded-md transition-colors"
             aria-label="Edit"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
@@ -292,7 +292,7 @@ const KUEditModal: React.FC<KUEditModalProps> = ({ ku, onSave, onClose }) => {
             <div className="flex gap-3 mt-8 pt-6 border-t border-[var(--border-color)]">
               <button
                 type="submit"
-                className="flex-1 btn-primary py-2.5 px-4 rounded-xl font-semibold transition-all active:scale-[0.98] shadow-lg hover:shadow-indigo-500/25"
+                className="flex-1 btn-primary py-2.5 px-4 rounded-xl font-semibold transition-all active:scale-[0.98] shadow-lg hover:shadow-primary-500/25"
               >
                 Save Changes
               </button>

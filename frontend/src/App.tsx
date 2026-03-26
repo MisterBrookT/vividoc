@@ -16,6 +16,7 @@ function App() {
   const [liveHtml, setLiveHtml] = useState<string | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [isSpecGenerating, setIsSpecGenerating] = useState(false);
+  const [theme, setTheme] = useState<'default' | 'warm'>('default');
   // Track whether spec was freshly generated (not loaded from history)
   const [specJustGenerated, setSpecJustGenerated] = useState(false);
 
@@ -86,6 +87,22 @@ function App() {
     return 'topic';
   };
 
+  const toggleTheme = () => {
+    const newTheme = theme === 'default' ? 'warm' : 'default';
+    setTheme(newTheme);
+    if (newTheme === 'warm') {
+      document.documentElement.setAttribute('data-theme', 'warm');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    // Broadcast theme change to any embedded iframes
+    setTimeout(() => {
+      document.querySelectorAll('iframe').forEach(iframe => {
+        iframe.contentWindow?.postMessage({ type: 'THEME_CHANGE', theme: newTheme }, '*');
+      });
+    }, 50);
+  };
+
   return (
     <>
       <Toaster
@@ -108,9 +125,9 @@ function App() {
         }}
       />
 
-      <div className="fixed inset-0 bg-[var(--bg-app)] selection:bg-indigo-500/30 selection:text-indigo-200 overflow-hidden flex">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-900/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="fixed inset-0 bg-[var(--bg-app)] selection:bg-primary-500/30 selection:text-primary-200 overflow-hidden flex">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-900/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary-900/10 rounded-full blur-[100px] pointer-events-none" />
 
         <LeftSidebar
           onSelectHistory={handleSelectHistory}
@@ -118,6 +135,8 @@ function App() {
           configModalOpen={configModalOpen}
           onConfigModalChange={setConfigModalOpen}
           currentSpecId={spec?.id || null}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         <CenterPanel
@@ -130,6 +149,7 @@ function App() {
           onSpecGenerationStart={handleSpecGenerationStart}
           onSpecUpdated={handleSpecUpdated}
           onGenerateDocument={handleGenerateDocument}
+          theme={theme}
         />
 
         <RightChatPanel
@@ -142,6 +162,7 @@ function App() {
           onHtmlUpdated={(html) => setLiveHtml(html)}
           onSpecUpdated={handleSpecUpdated}
           activeStage={getActiveStage()}
+          theme={theme}
         />
       </div>
     </>

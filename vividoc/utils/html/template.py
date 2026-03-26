@@ -59,19 +59,35 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
             box-sizing: border-box;
         }}
         
+        :root {{
+            /* Default Indigo/Purple Theme */
+            --primary: #4f46e5;
+            --secondary: #7c3aed;
+            --bg-color: #f5f5f5;
+        }}
+        
+        :root[data-theme='warm'] {{
+            /* Warm Orange/Amber Theme */
+            --primary: #f59e0b;
+            --secondary: #fb923c;
+            --bg-color: #fffdf5;
+        }}
+
         body {{
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
             color: #333;
-            background-color: #f5f5f5;
+            background-color: var(--bg-color);
+            transition: background-color 0.3s ease;
         }}
         
         /* Header Styles */
         .vividoc-header {{
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             padding: 20px 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 40px;
+            transition: background 0.3s ease;
         }}
         
         .header-content {{
@@ -134,10 +150,11 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
             font-family: 'Poppins', sans-serif;
             font-size: 1.4em;
             font-weight: 600;
-            color: #4f46e5;
+            color: var(--primary);
             margin-bottom: 16px;
             padding-bottom: 10px;
             border-bottom: 2px solid #e5e7eb;
+            transition: color 0.3s ease;
         }}
         
         .text-content {{
@@ -180,18 +197,18 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
         
         .controls button {{
             padding: 8px 16px;
-            background: #4f46e5;
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            transition: background 0.3s ease;
+            transition: background 0.3s ease, filter 0.3s ease;
         }}
         
         .controls button:hover {{
-            background: #4338ca;
+            filter: brightness(0.9);
         }}
         
         .visualization {{
@@ -260,6 +277,26 @@ def create_document_skeleton(doc_spec: DocumentSpec, output_path: str) -> None:
                     {{left: "\\\\(", right: "\\\\)", display: false}}
                 ],
                 throwOnError: false
+            }});
+            
+            // Check for theme parameter passing if embedded in iframe
+            if (window.parent) {{
+                try {{
+                    const theme = window.parent.document.documentElement.getAttribute('data-theme');
+                    if (theme === 'warm') {{
+                        document.documentElement.setAttribute('data-theme', 'warm');
+                    }}
+                }} catch(e) {{}}
+            }}
+            
+            window.addEventListener('message', (event) => {{
+                if (event.data && event.data.type === 'THEME_CHANGE') {{
+                    if (event.data.theme === 'warm') {{
+                        document.documentElement.setAttribute('data-theme', 'warm');
+                    }} else {{
+                        document.documentElement.removeAttribute('data-theme');
+                    }}
+                }}
             }});
         }});
     </script>

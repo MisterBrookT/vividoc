@@ -19,6 +19,7 @@ interface CenterPanelProps {
   onSpecGenerationStart: () => void;
   onSpecUpdated: (spec: DocumentSpec) => void;
   onGenerateDocument: (jobId: string) => void;
+  theme?: 'default' | 'warm';
 }
 
 type ActiveStage = 'topic' | 'spec' | 'style' | 'doc';
@@ -33,6 +34,7 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
   onSpecGenerationStart,
   onSpecUpdated,
   onGenerateDocument,
+  theme = 'default',
 }) => {
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -233,16 +235,16 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
 
         <div className="flex items-center gap-4">
           {isRunning && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-indigo-50/50 rounded-full border border-indigo-100">
-              <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-              <span className="text-xs font-medium text-indigo-600 truncate max-w-[150px]">{getStatusText()}</span>
+            <div className="flex items-center gap-2 px-3 py-1 bg-primary-50/50 rounded-full border border-primary-100">
+              <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
+              <span className="text-xs font-medium text-primary-600 truncate max-w-[150px]">{getStatusText()}</span>
             </div>
           )}
           {(documentId || html) && (
             <button
               onClick={handleDownload}
               disabled={loading || !!error}
-              className="inline-flex items-center gap-2 px-4 py-2 btn-primary rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-lg hover:shadow-indigo-500/25 active:scale-95"
+              className="inline-flex items-center gap-2 px-4 py-2 btn-primary rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-lg hover:shadow-primary-500/25 active:scale-95"
             >
               <Download className="w-4 h-4" />
               <span>Download</span>
@@ -259,6 +261,7 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
             onTopicChange={setTopic}
             onGenerate={handleGenerateSpec}
             isGenerating={isSpecGenerating}
+            theme={theme}
           />
         )}
         {displayStage === 'spec' && spec && (
@@ -273,8 +276,8 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
           <div className="w-full h-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                <div className="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
                 </div>
               </div>
               <div className="text-center">
@@ -310,9 +313,10 @@ interface TopicViewProps {
   onTopicChange: (t: string) => void;
   onGenerate: () => void;
   isGenerating: boolean;
+  theme?: 'default' | 'warm';
 }
 
-const TopicView: React.FC<TopicViewProps> = ({ topic, onTopicChange, onGenerate, isGenerating }) => {
+const TopicView: React.FC<TopicViewProps> = ({ topic, onTopicChange, onGenerate, isGenerating, theme = 'default' }) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
@@ -324,7 +328,7 @@ const TopicView: React.FC<TopicViewProps> = ({ topic, onTopicChange, onGenerate,
     <div className="w-full h-full flex items-center justify-center bg-[var(--bg-app)]">
       <div className="w-full max-w-lg px-8">
         <div className="text-center mb-8">
-          <img src="/vivi-cat-transparent.png" alt="Vivi" className="w-48 h-48 mx-auto mb-6 object-contain drop-shadow-md" />
+          <img src={theme === 'default' ? "/vivi-cat-transparent.png" : "/vivi-cat-warm.png"} alt="Vivi" className="w-64 h-64 mx-auto mb-6 object-contain drop-shadow-md" />
           <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">What would you like to explore?</h2>
           <p className="text-sm text-[var(--text-secondary)]">Enter a topic and we'll generate an interactive document specification.</p>
         </div>
@@ -451,7 +455,7 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
                     : 'border-[var(--border-color)] hover:shadow-md'
                     }`}
                 >
-                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500 opacity-80" />
+                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary-500 to-secondary-500 opacity-80" />
                   <div className="pl-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[10px] font-bold text-[var(--accent-primary)] uppercase tracking-wider">
@@ -469,7 +473,7 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
                           <>
                             <button
                               onClick={() => setEditingKuId(ku.id)}
-                              className="text-[11px] text-indigo-500 hover:text-indigo-700 px-1.5 py-0.5 rounded hover:bg-indigo-50 transition-colors font-medium"
+                              className="text-[11px] text-primary-500 hover:text-primary-700 px-1.5 py-0.5 rounded hover:bg-primary-50 transition-colors font-medium"
                             >
                               Edit
                             </button>
@@ -511,7 +515,7 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
                           />
                         </div>
                         <div className="border-t border-slate-100 pt-3">
-                          <label className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider block mb-2">Interaction Spec (S, R, T, C)</label>
+                          <label className="text-[10px] font-semibold text-primary-500 uppercase tracking-wider block mb-2">Interaction Spec (S, R, T, C)</label>
                           <div className="space-y-2">
                             <div>
                               <label className="text-[10px] text-slate-400 block mb-0.5">State (JSON)</label>
@@ -561,10 +565,10 @@ const SpecView: React.FC<SpecViewProps> = ({ spec, onSpecUpdated, onGenerateDocu
                           <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
                             {Object.keys(ku.interaction_spec.state || {}).length > 0 && (
                               <div>
-                                <span className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider">State</span>
+                                <span className="text-[10px] font-semibold text-primary-500 uppercase tracking-wider">State</span>
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {Object.entries(ku.interaction_spec.state).map(([name, def]: [string, any]) => (
-                                    <span key={name} className="text-[10px] px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full font-mono">
+                                    <span key={name} className="text-[10px] px-2 py-0.5 bg-primary-50 text-primary-600 rounded-full font-mono">
                                       {name}{def.derived ? ` = ${def.derived}` : def.control ? ` (${def.control})` : ''}
                                     </span>
                                   ))}

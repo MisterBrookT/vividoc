@@ -176,16 +176,16 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
             onClick={() => setSelections(prev => ({ ...prev, [dim.id]: { type: 'auto' } }))}
             className={`w-full text-left px-4 py-2.5 rounded-xl border-2 transition-all ${
               sel.type === 'auto'
-                ? 'border-indigo-500 bg-indigo-50/60 shadow-md ring-4 ring-indigo-500/10'
-                : 'border-slate-100 bg-white/60 hover:border-indigo-200 hover:bg-white hover:shadow-md'
+                ? 'border-primary-500 bg-primary-50/60 shadow-md ring-4 ring-primary-500/10'
+                : 'border-slate-100 bg-white/60 hover:border-primary-200 hover:bg-white hover:shadow-md'
             }`}
           >
             <div className="flex items-center justify-between">
-              <div className={`text-sm font-bold ${sel.type === 'auto' ? 'text-indigo-700' : 'text-slate-600'}`}>
+              <div className={`text-sm font-bold ${sel.type === 'auto' ? 'text-primary-700' : 'text-slate-600'}`}>
                 Auto
               </div>
               {sel.type === 'auto' && (
-                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500 text-white shadow-sm">
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-500 text-white shadow-sm">
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}><path d="M5 13l4 4L19 7" /></svg>
                 </div>
               )}
@@ -202,21 +202,21 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
                 onClick={() => setSelections(prev => ({ ...prev, [dim.id]: { type: 'option', description: opt.description } }))}
                 className={`w-full text-left px-4 py-2.5 rounded-xl border-2 transition-all ${
                   isSelected
-                    ? 'border-indigo-500 bg-indigo-50/60 shadow-md ring-4 ring-indigo-500/10'
-                    : 'border-slate-100 bg-white/60 hover:border-indigo-200 hover:bg-white hover:shadow-md'
+                    ? 'border-primary-500 bg-primary-50/60 shadow-md ring-4 ring-primary-500/10'
+                    : 'border-slate-100 bg-white/60 hover:border-primary-200 hover:bg-white hover:shadow-md'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className={`text-sm font-bold ${isSelected ? 'text-indigo-700' : 'text-slate-700'}`}>
+                  <div className={`text-sm font-bold ${isSelected ? 'text-primary-700' : 'text-slate-700'}`}>
                     {opt.label}
                   </div>
                   {isSelected && (
-                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500 text-white shadow-sm">
+                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-500 text-white shadow-sm">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}><path d="M5 13l4 4L19 7" /></svg>
                     </div>
                   )}
                 </div>
-                <p className={`text-xs mt-1 leading-relaxed ${isSelected ? 'text-indigo-600/80' : 'text-slate-500'}`}>
+                <p className={`text-xs mt-1 leading-relaxed ${isSelected ? 'text-primary-600/80' : 'text-slate-500'}`}>
                   {opt.description}
                 </p>
               </button>
@@ -228,16 +228,16 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
             onClick={() => setSelections(prev => ({ ...prev, [dim.id]: { type: 'custom', text: sel.type === 'custom' ? sel.text : '' } }))}
             className={`w-full text-left px-4 py-2.5 rounded-xl border-2 transition-all ${
               sel.type === 'custom'
-                ? 'border-indigo-500 bg-indigo-50/60 shadow-md ring-4 ring-indigo-500/10'
-                : 'border-slate-100 bg-white/60 hover:border-indigo-200 hover:bg-white hover:shadow-md'
+                ? 'border-primary-500 bg-primary-50/60 shadow-md ring-4 ring-primary-500/10'
+                : 'border-slate-100 bg-white/60 hover:border-primary-200 hover:bg-white hover:shadow-md'
             }`}
           >
             <div className="flex items-center justify-between">
-              <div className={`text-sm font-bold ${sel.type === 'custom' ? 'text-indigo-700' : 'text-slate-600'}`}>
+              <div className={`text-sm font-bold ${sel.type === 'custom' ? 'text-primary-700' : 'text-slate-600'}`}>
                 Custom
               </div>
               {sel.type === 'custom' && (
-                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500 text-white shadow-sm">
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-500 text-white shadow-sm">
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}><path d="M5 13l4 4L19 7" /></svg>
                 </div>
               )}
@@ -249,7 +249,7 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
               onChange={e => setSelections(prev => ({ ...prev, [dim.id]: { type: 'custom', text: e.target.value } }))}
               placeholder="Describe your preferred style..."
               rows={2}
-              className="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 transition-all resize-none"
+              className="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/10 transition-all resize-none"
             />
           )}
         </div>
@@ -261,8 +261,8 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center gap-4">
         <div className="relative">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+          <div className="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
           </div>
         </div>
         <div className="text-center">
@@ -281,7 +281,7 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center gap-3">
         <p className="text-sm text-red-500">{error}</p>
-        <button onClick={() => generateOptions()} className="text-sm text-indigo-500 hover:underline">
+        <button onClick={() => generateOptions()} className="text-sm text-primary-500 hover:underline">
           Retry
         </button>
       </div>
@@ -301,7 +301,7 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
             {/* Text Style Column */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="p-1.5 bg-indigo-100/50 rounded-lg text-indigo-500">
+                <div className="p-1.5 bg-primary-100/50 rounded-lg text-primary-500">
                   <Type className="w-4 h-4" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-700">Writing Style</h3>
@@ -314,7 +314,7 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
             {/* Interaction Style Column */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="p-1.5 bg-indigo-100/50 rounded-lg text-indigo-500">
+                <div className="p-1.5 bg-primary-100/50 rounded-lg text-primary-500">
                   <MousePointerClick className="w-4 h-4" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-700">Interaction Style</h3>
@@ -330,7 +330,7 @@ const StyleView: React.FC<StyleViewProps> = ({ specId, onStyleSaved }) => {
             <button
               onClick={() => generateOptions()}
               disabled={generating}
-              className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-500 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-primary-500 transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5" />
               Regenerate options

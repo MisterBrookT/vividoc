@@ -5,8 +5,8 @@ import type { JobStatus, DocumentSpec } from '../types/models';
 import { streamChat, getChatHistory, saveChatHistory, getConfig, updateConfig } from '../api/services';
 
 /* Cute Vivi avatar SVG — a lazy purple cat lounging, full body */
-const ViviAvatar: React.FC<{ className?: string }> = ({ className }) => (
-    <img src="/vivi-cat.png" alt="Vivi" className={`object-contain mix-blend-multiply ${className || ''}`} />
+const ViviAvatar: React.FC<{ className?: string, theme?: 'default' | 'warm' }> = ({ className, theme = 'default' }) => (
+    <img src={theme === 'default' ? "/vivi-cat.png" : "/vivi-cat-warm.png"} alt="Vivi" className={`object-contain mix-blend-multiply ${className || ''}`} />
 );
 
 interface Message {
@@ -28,6 +28,7 @@ interface RightChatPanelProps {
     onHtmlUpdated?: (html: string) => void;
     onSpecUpdated?: (spec: DocumentSpec) => void;
     activeStage?: 'topic' | 'spec' | 'style' | 'doc';
+    theme?: 'default' | 'warm';
 }
 
 const RightChatPanel: React.FC<RightChatPanelProps> = ({
@@ -40,6 +41,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
     onHtmlUpdated,
     onSpecUpdated,
     activeStage = 'doc',
+    theme = 'default',
 }) => {
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -367,12 +369,12 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
         return (
             <div className="flex flex-col items-start">
                 <div className="flex items-start gap-2 max-w-[95%]">
-                    <ViviAvatar className="w-6 h-6 flex-shrink-0 mt-0.5" />
+                    <ViviAvatar theme={theme} className="w-6 h-6 flex-shrink-0 mt-0.5" />
                     <div>
-                        <span className="text-[10px] font-medium text-indigo-500 mb-1 block">Vivi</span>
-                        <div className="bg-white border border-indigo-100 rounded-xl shadow-sm text-sm overflow-hidden">
-                            <div className="px-3 py-2 border-b border-indigo-50 flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600">
+                        <span className="text-[10px] font-medium text-primary-500 mb-1 block">Vivi</span>
+                        <div className="bg-white border border-primary-100 rounded-xl shadow-sm text-sm overflow-hidden">
+                            <div className="px-3 py-2 border-b border-primary-50 flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-1.5 text-xs font-semibold text-primary-600">
                                     {editDone ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                                     <span>{editDone ? 'Document Updated' : 'Editing Document...'}</span>
                                 </div>
@@ -386,7 +388,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                             {!editDone && (
                                 <div className="px-3 pb-2">
                                     <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-indigo-500 rounded-full animate-pulse" style={{ width: '60%' }} />
+                                        <div className="h-full bg-primary-500 rounded-full animate-pulse" style={{ width: '60%' }} />
                                     </div>
                                 </div>
                             )}
@@ -402,12 +404,12 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
         const { phase, ku_progress, overall_percent } = js.progress;
         const cappedPercent = Math.min(Math.round(overall_percent || 0), 100);
         return (
-            <div className="p-3 bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-100 shadow-sm">
+            <div className="p-3 bg-white/80 backdrop-blur-sm rounded-xl border border-primary-100 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                     {isRunning ? (
                         <div className="relative flex h-2.5 w-2.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500"></span>
                         </div>
                     ) : js.status === 'failed' ? (
                         <AlertCircle className="w-3.5 h-3.5 text-red-500" />
@@ -423,12 +425,12 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                         <span>Progress</span><span>{cappedPercent}%</span>
                     </div>
                     <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${cappedPercent}%` }} />
+                        <div className="h-full bg-primary-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${cappedPercent}%` }} />
                     </div>
                     <div className="mt-2 space-y-1.5">
-                        <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'executing' && isRunning ? 'text-indigo-600 font-medium' : phase === 'evaluating' || !isRunning ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'executing' && isRunning ? 'text-primary-600 font-medium' : phase === 'evaluating' || !isRunning ? 'text-emerald-600' : 'text-slate-400'}`}>
                             {phase === 'executing' && isRunning ? (
-                                <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+                                <div className="w-1 h-1 rounded-full bg-primary-500 animate-pulse" />
                             ) : phase === 'evaluating' || !isRunning ? (
                                 <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
                             ) : (
@@ -437,18 +439,18 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                             Generating Content
                         </div>
                         {phase === 'executing' && ku_progress && (
-                            <div className="ml-2.5 pl-2 border-l border-indigo-100 space-y-1 mt-0.5">
+                            <div className="ml-2.5 pl-2 border-l border-primary-100 space-y-1 mt-0.5">
                                 {ku_progress.filter(k => k.status === 'stage1' || k.status === 'stage2').map(k => (
-                                    <div key={k.ku_id} className="text-[10px] text-indigo-500 flex items-center gap-1">
+                                    <div key={k.ku_id} className="text-[10px] text-primary-500 flex items-center gap-1">
                                         <Loader2 className="w-2 h-2 animate-spin" />
                                         <span className="truncate max-w-[160px] leading-tight">{k.title || 'Processing unit...'}</span>
                                     </div>
                                 ))}
                             </div>
                         )}
-                        <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'evaluating' && isRunning ? 'text-indigo-600 font-medium' : !isRunning && js.status === 'completed' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        <div className={`flex items-center gap-1.5 text-[10px] ${phase === 'evaluating' && isRunning ? 'text-primary-600 font-medium' : !isRunning && js.status === 'completed' ? 'text-emerald-600' : 'text-slate-400'}`}>
                             {phase === 'evaluating' && isRunning ? (
-                                <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+                                <div className="w-1 h-1 rounded-full bg-primary-500 animate-pulse" />
                             ) : !isRunning && js.status === 'completed' ? (
                                 <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
                             ) : (
@@ -457,8 +459,8 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                             Refining & Finalizing
                         </div>
                         {phase === 'evaluating' && isRunning && (
-                            <div className="ml-2.5 pl-2 border-l border-indigo-100 space-y-1 mt-0.5">
-                                <div className="text-[10px] text-indigo-500 flex items-center gap-1">
+                            <div className="ml-2.5 pl-2 border-l border-primary-100 space-y-1 mt-0.5">
+                                <div className="text-[10px] text-primary-500 flex items-center gap-1">
                                     <Loader2 className="w-2 h-2 animate-spin" />
                                     <span className="leading-tight">Evaluating document quality...</span>
                                 </div>
@@ -488,12 +490,12 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                     if (msg.type === 'spec-notification') {
                         return (
                             <div key={msg.id} className="flex items-start gap-2">
-                                <ViviAvatar className="w-6 h-6 flex-shrink-0 mt-0.5" />
+                                <ViviAvatar theme={theme} className="w-6 h-6 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <span className="text-[10px] font-medium text-indigo-500 mb-1 block">Vivi</span>
+                                    <span className="text-[10px] font-medium text-primary-500 mb-1 block">Vivi</span>
                                     <div className="max-w-full bg-white border border-slate-200 rounded-xl shadow-sm text-sm overflow-hidden">
                                         <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between gap-4">
-                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600">
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-primary-600">
                                                 <FileText className="w-3.5 h-3.5" />
                                                 <span>Spec Generated</span>
                                             </div>
@@ -512,9 +514,9 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                     if (msg.type === 'progress' && msg.metadata?.jobStatus) {
                         return (
                             <div key={msg.id} className="flex items-start gap-2">
-                                <ViviAvatar className="w-6 h-6 flex-shrink-0 mt-0.5" />
+                                <ViviAvatar theme={theme} className="w-6 h-6 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <span className="text-[10px] font-medium text-indigo-500 mb-1 block">Vivi</span>
+                                    <span className="text-[10px] font-medium text-primary-500 mb-1 block">Vivi</span>
                                     {renderProgressCard(msg.metadata.jobStatus)}
                                     <span className="text-[10px] text-slate-400 mt-1 block">
                                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -545,9 +547,9 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                     // Assistant text messages — with avatar + markdown
                     return (
                         <div key={msg.id} className="flex items-start gap-2">
-                            <ViviAvatar className="w-6 h-6 flex-shrink-0 mt-0.5" />
+                            <ViviAvatar theme={theme} className="w-6 h-6 flex-shrink-0 mt-0.5" />
                             <div className="max-w-[85%]">
-                                <span className="text-[10px] font-medium text-indigo-500 mb-1 block">Vivi</span>
+                                <span className="text-[10px] font-medium text-primary-500 mb-1 block">Vivi</span>
                                 <div className="rounded-2xl px-3 py-2 text-sm shadow-sm bg-white border border-slate-100 text-slate-700 rounded-tl-none">
                                     {msg.content ? (
                                         <div className="vivi-markdown prose prose-sm prose-slate max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
@@ -570,7 +572,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
 
                 {isGeneratingSpec && (
                     <div className="flex items-start gap-2 animate-pulse">
-                        <ViviAvatar className="w-6 h-6 flex-shrink-0 mt-0.5" />
+                        <ViviAvatar theme={theme} className="w-6 h-6 flex-shrink-0 mt-0.5" />
                         <div className="rounded-2xl px-3 py-2 text-sm shadow-sm bg-white border border-slate-100 text-slate-700 rounded-tl-none flex items-center gap-2">
                             <Loader2 className="w-3 h-3 animate-spin text-[var(--accent-primary)]" />
                             <span>Generating specification...</span>
@@ -590,9 +592,9 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                             <button
                                 key={opt.id}
                                 onClick={() => handleSelectKu(opt)}
-                                className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 border-b border-slate-50 last:border-0 ${idx === kuSelectedIdx ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-indigo-50 text-slate-700'}`}
+                                className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 border-b border-slate-50 last:border-0 ${idx === kuSelectedIdx ? 'bg-primary-100 text-primary-700' : 'hover:bg-primary-50 text-slate-700'}`}
                             >
-                                <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-indigo-100 text-indigo-600 text-[10px] font-bold flex-shrink-0">#</span>
+                                <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-primary-100 text-primary-600 text-[10px] font-bold flex-shrink-0">#</span>
                                 <span className="truncate">{opt.label}</span>
                             </button>
                         ))}
@@ -605,7 +607,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                             <button
                                 key={model}
                                 onClick={() => handleModelSwitch(model)}
-                                className={`w-full text-left px-3 py-2 text-xs hover:bg-indigo-50 transition-colors border-b border-slate-50 last:border-0 ${model === currentModel ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-700'}`}
+                                className={`w-full text-left px-3 py-2 text-xs hover:bg-primary-50 transition-colors border-b border-slate-50 last:border-0 ${model === currentModel ? 'bg-primary-50 text-primary-600 font-medium' : 'text-slate-700'}`}
                             >
                                 {model.split('/').pop()}
                             </button>
@@ -613,7 +615,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                     </div>
                 )}
                 {/* Unified input box */}
-                <div className="rounded-xl border-2 border-indigo-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:shadow-md transition-all">
+                <div className="rounded-xl border-2 border-primary-300 bg-white shadow-sm focus-within:border-primary-500 focus-within:shadow-md transition-all">
                     <div className="relative">
                         {/* Overlay for highlighting #KU references */}
                         <div
@@ -622,7 +624,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                         >
                             {input ? input.split(/(#KU\d+)/g).map((part, i) =>
                                 /^#KU\d+$/.test(part) ? (
-                                    <span key={i} className="bg-indigo-100 text-indigo-600 rounded">{part}</span>
+                                    <span key={i} className="bg-primary-100 text-primary-600 rounded">{part}</span>
                                 ) : (
                                     <span key={i} className="text-slate-800">{part}</span>
                                 )
@@ -664,7 +666,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                                         setTimeout(() => textareaRef.current?.focus(), 0);
                                     }
                                 }}
-                                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] text-slate-400 hover:text-primary-500 hover:bg-primary-50 transition-colors"
                                 title="Add context (#)"
                             >
                                 <Hash className="w-3 h-3" />
@@ -672,7 +674,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
                         </div>
                         <button
                             onClick={() => setShowModelMenu(!showModelMenu)}
-                            className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                            className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] text-slate-400 hover:text-primary-500 hover:bg-primary-50 transition-colors"
                             title="Switch model"
                         >
                             <span className="truncate max-w-[120px]">{modelDisplayName}</span>
