@@ -1,147 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Scroll-driven Narrative — Complex Iteration</title>
+<meta charset="utf-8"/>
+<title>Thermodynamic Entropy</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&family=Merriweather:ital,wght@0,300;0,700;1,300&family=Space+Mono&display=swap" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 0; background: #f8f9fa; }
-  .header { text-align: center; padding: 2rem; }
-  .header p { color: #555; }
-  .scroll-container { position: relative; height: 400vh; }
-  .sticky-viz { position: sticky; top: 0; height: 100vh; display: flex; justify-content: center; align-items: center; }
-  canvas { border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
-  .step-label { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: #fff; padding: 0.6rem 1.5rem; border-radius: 20px; font-size: 0.95rem; z-index: 10; }
-  .footer { text-align: center; padding: 4rem 2rem; color: #888; }
+body { background: #09090b; color: #a1a1aa; font-family: 'Merriweather', serif; margin:0; padding:40px; display:flex; justify-content:center; }
+.wrapper { max-width: 850px; width: 100%; position: relative; }
+.main-title { font-family: 'Roboto Slab', serif; font-size: 2.8rem; text-transform: uppercase; color: #f4f4f5; text-align: center; border-bottom: 4px solid #3f3f46; padding-bottom: 10px; margin: 0 0 35px 0; letter-spacing: 2px; }
+.card { background: #18181b; border: 1px solid #3f3f46; border-radius: 4px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); position: relative; border-left: 6px solid #f4f4f5; }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #f4f4f5; margin: 0 0 15px 0; line-height: 1.4; text-transform: uppercase; letter-spacing: 1px; }
+.divider { border: none; border-top: 1px solid #3f3f46; margin: 0 0 20px 0; }
+.text-box { font-size: 1.1rem; line-height: 1.7; font-weight: 300; margin-bottom: 25px; color: #d4d4d8; }
+.math-box { font-size: 1.3rem; margin: 25px 0; text-align: center; color: #f4f4f5; background: #000; padding: 15px; border-radius: 4px; font-family: 'Space Mono', monospace; border-left: 4px solid #ef4444; }
+ul { font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; padding-left: 20px; color: #a1a1aa; }
+li { margin-bottom: 8px; }
+.strong-text { font-weight: 700; color: #f4f4f5; font-family: 'Space Mono', monospace; font-size: 1.1rem; }
+
+/* Widget Specific */
+.widget { background: #13081e; border: 1px solid #3f3f46; border-radius: 6px; padding: 0; position: relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.8); display: flex; }
+.scroll-track { width: 50px; background: #000; border-right: 1px solid #27272a; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 15px 0; }
+.scroll-fill { position: absolute; top: 0; left: 0; width: 100%; background: #ef4444; height: 0%; z-index: 1; transition: height 0.1s; }
+.scroll-track span { z-index: 2; font-family: 'Space Mono', monospace; color: #fff; font-size: 0.8rem; font-weight: bold; transform: rotate(-90deg); white-space: nowrap; margin-top: 40px;}
+
+.canvas-wrapper { flex: 1; height: 350px; background: #09090b; position: relative; overflow: hidden; }
+canvas { display: block; width: 100%; height: 100%; }
+
+.drag-prompt { position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 0.85rem; color: #f4f4f5; font-weight: bold; border: 1px solid #3f3f46; pointer-events: none; text-transform: uppercase; }
+.entropy-disp { position: absolute; top: 20px; left: 20px; font-family: 'Space Mono', monospace; color: #ef4444; font-size: 1.4rem; font-weight: bold; }
 </style>
 </head>
 <body>
-<div class="header">
-  <h2>Julia Set — Scroll to Explore</h2>
-  <p>Scroll down to progress through the narrative. The visualization updates with your scroll position.</p>
+<div class="wrapper">
+    <h1 class="main-title">What is The Arrow of Time?</h1>
+    <div class="card">
+        <h2 class="section-title">Thermodynamic Entropy and the Irreversible March Towards Disorder.</h2>
+        <hr class="divider">
+        
+        <div class="text-box">
+            A broken egg never reassembles itself. Hot coffee always cools to room temperature, never the reverse. These everyday observations point to an asymmetry baked into the universe itself. Time flows in one direction because disorder—entropy—can only ever increase. The Second Law is not merely a physical rule; it is the arrow that gives time its direction.
+        </div>
+        
+        <div class="math-box">$$ \Delta S \ge 0 \quad \text{where} \quad S = k_B \ln \Omega $$</div>
+        
+        <ul>
+            <li><span class="strong-text">S</span>: Total macroscopic entropy evaluating disorder.</li>
+            <li><span class="strong-text">k_B</span>: The Boltzmann universal constant.</li>
+            <li><span class="strong-text">Ω (Omega)</span>: The quantity of valid microscopic internal microstates.</li>
+        </ul>
+        
+        <div class="widget">
+            <div class="scroll-track" id="wheel-zone">
+                <div class="scroll-fill" id="s-fill"></div>
+                <span style="margin-top:20px;">SCROLL</span>
+                <span style="margin-bottom:20px;">TIME &rarr;</span>
+            </div>
+            <div class="canvas-wrapper">
+                <canvas id="gas-canvas"></canvas>
+                <div class="entropy-disp">S = <span id="s-val">0.00</span></div>
+                <div class="drag-prompt">ROLL MOUSE WHEEL TO ADVANCE TIME</div>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="scroll-container">
-  <div class="sticky-viz"><canvas id="c" width="400" height="400"></canvas></div>
-</div>
-<div class="step-label" id="label">Step 1/4 — The Complex Plane</div>
-<div class="footer">End of narrative</div>
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const W = 400, H = 400;
+    const canvas = document.getElementById('gas-canvas');
+    const ctx = canvas.getContext('2d');
+    const wheelZone = document.querySelector('.widget');
+    const sFill = document.getElementById('s-fill');
+    const sVal = document.getElementById('s-val');
 
-const steps = [
-  { title: 'The Complex Plane', desc: 'Each pixel maps to a complex number c = x + yi' },
-  { title: 'Iteration: z → z² + c', desc: 'Starting from z₀ = 0, we repeatedly apply the function' },
-  { title: 'Escape or Stay', desc: 'If |z| > 2, the point escapes; color by iteration count' },
-  { title: 'The Julia Set Emerges', desc: 'Fixed c = -0.7 + 0.27i reveals the fractal boundary' },
-];
-
-const cReal = -0.7, cImag = 0.27;
-
-function mandelbrotIter(cr, ci, maxIter) {
-  let zr = 0, zi = 0;
-  for (let i = 0; i < maxIter; i++) {
-    const zr2 = zr * zr - zi * zi + cr;
-    const zi2 = 2 * zr * zi + ci;
-    zr = zr2; zi = zi2;
-    if (zr * zr + zi * zi > 4) return i;
-  }
-  return maxIter;
-}
-
-function juliaIter(zr, zi, maxIter) {
-  for (let i = 0; i < maxIter; i++) {
-    const zr2 = zr * zr - zi * zi + cReal;
-    const zi2 = 2 * zr * zi + cImag;
-    zr = zr2; zi = zi2;
-    if (zr * zr + zi * zi > 4) return i;
-  }
-  return maxIter;
-}
-
-function hsl(h, s, l) {
-  return `hsl(${h}, ${s}%, ${l}%)`;
-}
-
-function drawStep(stepIdx, t) {
-  const img = ctx.createImageData(W, H);
-  const maxIter = stepIdx < 2 ? Math.max(2, Math.floor(t * 30) + 2) : 50;
-  const zoom = stepIdx === 3 ? 1.5 : 2;
-  const cx = stepIdx === 3 ? -0.1 : 0;
-  const cy = 0;
-
-  for (let py = 0; py < H; py++) {
-    for (let px = 0; px < W; px++) {
-      const x = (px - W / 2) / (W / 2) * zoom + cx;
-      const y = (py - H / 2) / (H / 2) * zoom + cy;
-      let iter;
-
-      if (stepIdx <= 1) {
-        // Show Mandelbrot with increasing iterations
-        iter = mandelbrotIter(x, y, maxIter);
-      } else {
-        // Show Julia set
-        iter = juliaIter(x, y, maxIter);
-      }
-
-      const idx = (py * W + px) * 4;
-      if (iter === maxIter) {
-        img.data[idx] = 20; img.data[idx+1] = 20; img.data[idx+2] = 40;
-      } else {
-        const h = (iter / maxIter) * 360;
-        // Convert HSL to RGB inline
-        const s = 0.8, l = 0.5;
-        const c = (1 - Math.abs(2 * l - 1)) * s;
-        const hh = h / 60;
-        const x2 = c * (1 - Math.abs(hh % 2 - 1));
-        let r1 = 0, g1 = 0, b1 = 0;
-        if (hh < 1) { r1 = c; g1 = x2; }
-        else if (hh < 2) { r1 = x2; g1 = c; }
-        else if (hh < 3) { g1 = c; b1 = x2; }
-        else if (hh < 4) { g1 = x2; b1 = c; }
-        else if (hh < 5) { r1 = x2; b1 = c; }
-        else { r1 = c; b1 = x2; }
-        const m = l - c / 2;
-        img.data[idx] = Math.round((r1 + m) * 255);
-        img.data[idx+1] = Math.round((g1 + m) * 255);
-        img.data[idx+2] = Math.round((b1 + m) * 255);
-      }
-      img.data[idx+3] = 255;
+    function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * 2;
+        canvas.height = rect.height * 2;
+        ctx.scale(2, 2);
     }
-  }
-  ctx.putImageData(img, 0, 0);
+    resize();
 
-  // Step 0: draw grid lines for "complex plane"
-  if (stepIdx === 0) {
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = 1;
-    for (let i = -2; i <= 2; i++) {
-      const px = W / 2 + (i / zoom) * (W / 2);
-      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
-      const py2 = H / 2 + (i / zoom) * (H / 2);
-      ctx.beginPath(); ctx.moveTo(0, py2); ctx.lineTo(W, py2); ctx.stroke();
+    let timeProgress = 0; // 0 to 1
+
+    wheelZone.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        timeProgress += e.deltaY * 0.002;
+        if(timeProgress < 0) timeProgress = 0;
+        if(timeProgress > 1) timeProgress = 1;
+        sFill.style.height = `${timeProgress * 100}%`;
+    });
+
+    const particles = [];
+    const num = 150;
+    for(let i=0; i<num; i++) {
+        // Red on left
+        particles.push({
+            x: Math.random() * 150 + 20, y: Math.random() * 310 + 20,
+            vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
+            t: 'A'
+        });
+        // Blue on right
+        particles.push({
+            x: Math.random() * 150 + 400, y: Math.random() * 310 + 20,
+            vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
+            t: 'B'
+        });
     }
-    ctx.fillStyle = '#fff'; ctx.font = '14px system-ui';
-    ctx.fillText('Re', W - 30, H / 2 - 8);
-    ctx.fillText('Im', W / 2 + 8, 20);
-  }
-}
 
-function onScroll() {
-  const container = document.querySelector('.scroll-container');
-  const rect = container.getBoundingClientRect();
-  const progress = Math.max(0, Math.min(1, -rect.top / (rect.height - window.innerHeight)));
-  const totalSteps = steps.length;
-  const raw = progress * totalSteps;
-  const stepIdx = Math.min(Math.floor(raw), totalSteps - 1);
-  const t = raw - stepIdx;
+    function draw() {
+        const w = canvas.width/2;
+        const h = canvas.height/2;
+        ctx.clearRect(0,0,w,h);
 
-  drawStep(stepIdx, t);
-  document.getElementById('label').textContent = `Step ${stepIdx + 1}/${totalSteps} — ${steps[stepIdx].title}: ${steps[stepIdx].desc}`;
-}
+        const partitionY = h * timeProgress; // Wall lowers as time progresses
 
-window.addEventListener('scroll', onScroll);
-onScroll();
+        // Wall
+        ctx.fillStyle = '#3f3f46';
+        ctx.fillRect(w/2 - 2, partitionY, 4, h - partitionY);
+
+        let mixCount = 0;
+
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            
+            // Bounds collision
+            if(p.x < 5 || p.x > w-5) p.vx *= -1;
+            if(p.y < 5 || p.y > h-5) p.vy *= -1;
+
+            // Wall collision
+            if (p.y > partitionY) {
+                if (p.x > w/2 - 5 && p.x < w/2 + 5) {
+                    p.vx *= -1; // Bounce off wall
+                    // correct pos
+                    p.x = p.x < w/2 ? w/2 - 5 : w/2 + 5;
+                }
+            }
+
+            // Measurement
+            if (p.t === 'A' && p.x > w/2) mixCount++;
+            if (p.t === 'B' && p.x < w/2) mixCount++;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+            ctx.fillStyle = p.t === 'A' ? '#ef4444' : '#3b82f6';
+            ctx.fill();
+        });
+
+        // Entropy metric roughly based on mixing
+        const maxMix = num; // Half on left, half on right
+        const entropy = (mixCount / maxMix) * 100;
+        sVal.textContent = entropy.toFixed(2);
+
+        requestAnimationFrame(draw);
+    }
+    draw();
 </script>
 </body>
 </html>

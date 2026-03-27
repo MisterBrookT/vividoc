@@ -1,104 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Direct Manipulation — OLS Regression</title>
+<meta charset="utf-8"/>
+<title>Interactive Ray Tracing</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&family=Merriweather:ital,wght@0,300;0,700;1,300&family=Space+Mono:wght@400;700&family=Inter:wght@700;900&display=swap" rel="stylesheet"/>
 <style>
-  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
-  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: grab; }
-  .eq { margin-top: 1rem; font-size: 1.1rem; }
-  .eq span { font-weight: 600; color: #2563eb; }
-  p { color: #555; }
+body { background: #020617; color: #94a3b8; font-family: 'Merriweather', serif; margin:0; padding:40px; display:flex; justify-content:center; }
+.wrapper { max-width: 900px; width: 100%; position: relative; }
+.main-title { font-family: 'Roboto Slab', serif; font-size: 2.8rem; text-transform: uppercase; color: #10b981; text-align: center; border-bottom: 4px double #10b981; padding-bottom: 10px; margin: 0 0 35px 0; letter-spacing: 2px; }
+.card { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); position: relative; border-top: 4px solid #10b981; }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #f8fafc; margin: 0 0 15px 0; line-height: 1.4; text-transform: uppercase; letter-spacing: 1px; }
+.divider { border: none; border-top: 1px solid #1e293b; margin: 0 0 20px 0; }
+.text-box { font-size: 1.1rem; line-height: 1.7; font-weight: 300; margin-bottom: 25px; color: #cbd5e1; }
+
+.dashboard { display: flex; justify-content: space-between; align-items: stretch; background: #020617; padding: 20px; border-radius: 6px; border: 1px solid #1e293b; margin-bottom: 25px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+.dash-item { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.dash-item .lbl { font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: bold; letter-spacing: 1px; font-family: 'Inter', sans-serif;}
+.dash-item .val { font-size: 1.5rem; color: #10b981; font-family: 'Space Mono', monospace; font-weight: bold; margin-top: 5px; }
+.dash-item .val span { font-size: 1rem; color: #475569; }
+.tag-item { background: #10b981; color: #020617; font-weight: 900; padding: 0 20px; border-radius: 4px; font-size: 0.95rem; letter-spacing: 1px; font-family: 'Inter', sans-serif; text-align: center; line-height: 1.2;}
+
+.widget { background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 15px; position: relative; }
+.canvas-wrapper { width: 100%; height: 380px; background: #020617; background-image: linear-gradient(rgba(16,185,129,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.05) 1px, transparent 1px); background-size: 20px 20px; position: relative; overflow: hidden; border: 1px solid #10b981; border-radius: 4px; cursor: crosshair; }
+canvas { display: block; width: 100%; height: 100%; }
+.drag-prompt { position: absolute; bottom: 15px; left: 15px; background: rgba(2,6,23,0.8); padding: 5px 15px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 0.85rem; color: #10b981; font-weight: bold; border: 1px dashed #10b981; pointer-events: none; text-transform: uppercase; }
 </style>
 </head>
 <body>
-<h2>Ordinary Least Squares Regression</h2>
-<p>Drag any data point to see the regression line and residual squares update.</p>
-<canvas id="c" width="500" height="400"></canvas>
-<div class="eq">y = <span id="slope"></span>x + <span id="intercept"></span> &nbsp; (Σ residuals² = <span id="sse"></span>)</div>
+<div class="wrapper">
+    <h1 class="main-title">Direct Optical Manipulation</h1>
+    <div class="card">
+        <h2 class="section-title">Geometric Optics and Real-Time Refraction Tracing.</h2>
+        <hr class="divider">
+        
+        <div class="text-box">
+            Unlike static mathematical diagramming, discovering the properties of light requires active intervention. By directly manipulating the spatial position of the illuminated object or physically bending the curvature of the lens, the resulting projected image is instantaneously recalculated across the optical axis.
+        </div>
+        
+        <div class="dashboard">
+            <div class="dash-item"><span class="lbl">Focal Length (f)</span><span class="val" id="val-f">100<span>mm</span></span></div>
+            <div class="dash-item"><span class="lbl">Object Dist (u)</span><span class="val" id="val-u">200<span>mm</span></span></div>
+            <div class="dash-item"><span class="lbl">Image Dist (v)</span><span class="val" id="val-v">200<span>mm</span></span></div>
+            <div class="dash-item"><span class="lbl">Magnification </span><span class="val" id="val-m">-1.00<span>x</span></span></div>
+            <div class="dash-item tag-item" id="tag-type">REAL<br>INVERTED</div>
+        </div>
+        
+        <div class="widget">
+            <div class="canvas-wrapper" id="viewport">
+                <canvas id="optics-canvas"></canvas>
+                <div class="drag-prompt">DRAG Orange Object &amp; Green Focal Nodes (F)</div>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const W = 500, H = 400, pad = 50;
-let points = [[1,1.8],[2,3.2],[3,2.5],[4,4.2],[5,3.8],[6,5.5],[7,5.0]];
-let dragging = -1;
+    const canvas = document.getElementById('optics-canvas');
+    const ctx = canvas.getContext('2d');
+    const vp = document.getElementById('viewport');
 
-function toCanvas(x, y) {
-  return [pad + (x / 8) * (W - 2 * pad), H - pad - (y / 7) * (H - 2 * pad)];
-}
-function fromCanvas(cx, cy) {
-  return [(cx - pad) / (W - 2 * pad) * 8, (H - pad - cy) / (H - 2 * pad) * 7];
-}
+    function resize() {
+        const rect = vp.getBoundingClientRect();
+        canvas.width = rect.width * 2;
+        canvas.height = rect.height * 2;
+        ctx.scale(2, 2);
+    }
+    resize();
 
-function ols(pts) {
-  const n = pts.length;
-  let sx = 0, sy = 0, sxy = 0, sx2 = 0;
-  for (const [x, y] of pts) { sx += x; sy += y; sxy += x * y; sx2 += x * x; }
-  const slope = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
-  const intercept = (sy - slope * sx) / n;
-  return { slope, intercept };
-}
+    const L = 400; // Center X of Lens
+    const C = 190; // Center Y of Axis
+    
+    let ox = 200, oy = 90; // Object tip
+    let f = 100; // Focal length
 
-function draw() {
-  ctx.clearRect(0, 0, W, H);
-  const { slope, intercept } = ols(points);
+    let dragTarget = null;
 
-  // Axes
-  ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(pad, pad); ctx.lineTo(pad, H - pad); ctx.lineTo(W - pad, H - pad); ctx.stroke();
+    function draw() {
+        // Compute Logic
+        let u = L - ox;
+        if (u < 10) { ox = L - 10; u = 10; } // limit
+        
+        let v, M, ix, iy;
+        if (Math.abs(u - f) < 0.1) {
+            v = Infinity; M = Infinity;
+        } else {
+            v = (u * f) / (u - f);
+            M = v / u;
+            ix = L + v;
+            iy = C + (oy - C) * -M;
+        }
 
-  // Regression line
-  const [lx0, ly0] = toCanvas(0, intercept);
-  const [lx1, ly1] = toCanvas(8, slope * 8 + intercept);
-  ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.lineTo(lx1, ly1);
-  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2; ctx.stroke();
+        // Update Dashboard
+        document.getElementById('val-f').innerHTML = `${Math.round(f)}<span>mm</span>`;
+        document.getElementById('val-u').innerHTML = `${Math.round(u)}<span>mm</span>`;
+        document.getElementById('val-v').innerHTML = `${v === Infinity ? '∞' : Math.round(v)}<span>mm</span>`;
+        document.getElementById('val-m').innerHTML = `${M === Infinity ? '∞' : M.toFixed(2)}<span>x</span>`;
+        
+        const tag = document.getElementById('tag-type');
+        if (v === Infinity) {
+            tag.innerHTML = 'UNDEFINED<br>INFINITY';
+            tag.style.background = '#64748b';
+            tag.style.color = '#fff';
+        } else if (v > 0) {
+            tag.innerHTML = 'REAL<br>INVERTED';
+            tag.style.background = '#10b981';
+            tag.style.color = '#020617';
+        } else {
+            tag.innerHTML = 'VIRTUAL<br>UPRIGHT';
+            tag.style.background = '#0ea5e9';
+            tag.style.color = '#020617';
+        }
 
-  // Residual squares + points
-  let sse = 0;
-  for (const [x, y] of points) {
-    const pred = slope * x + intercept;
-    const res = y - pred;
-    sse += res * res;
-    const [px, py] = toCanvas(x, y);
-    const [, predy] = toCanvas(x, pred);
-    const side = Math.abs(py - predy);
+        const w = 800;
+        const h = 380;
+        ctx.clearRect(0,0, canvas.width, canvas.height);
 
-    // Residual square
-    ctx.fillStyle = 'rgba(220,38,38,0.12)';
-    ctx.strokeStyle = 'rgba(220,38,38,0.4)';
-    ctx.lineWidth = 1;
-    const top = Math.min(py, predy);
-    ctx.fillRect(px, top, side, side);
-    ctx.strokeRect(px, top, side, side);
+        // Axis
+        ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, C); ctx.lineTo(w, C); ctx.stroke();
 
-    // Point
-    ctx.beginPath(); ctx.arc(px, py, 6, 0, 2 * Math.PI);
-    ctx.fillStyle = '#dc2626'; ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-  }
+        // Lens
+        const bulge = Math.min(60, 4000 / f);
+        ctx.beginPath();
+        ctx.moveTo(L, C-140);
+        ctx.quadraticCurveTo(L - bulge, C, L, C+140);
+        ctx.quadraticCurveTo(L + bulge, C, L, C-140);
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.15)'; ctx.fill();
+        ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2; ctx.stroke();
+        
+        // Focal Points
+        ctx.beginPath(); ctx.arc(L-f, C, 6, 0, Math.PI*2); ctx.arc(L+f, C, 6, 0, Math.PI*2);
+        ctx.fillStyle = '#10b981'; ctx.fill();
+        ctx.font = '12px "Space Mono"'; ctx.fillText('F', L-f-4, C+20); ctx.fillText("F'", L+f-4, C+20);
 
-  document.getElementById('slope').textContent = slope.toFixed(3);
-  document.getElementById('intercept').textContent = intercept.toFixed(3);
-  document.getElementById('sse').textContent = sse.toFixed(2);
-}
+        // Rays
+        ctx.lineWidth = 2;
+        // Ray 1: Parallel to Focal
+        ctx.strokeStyle = 'rgba(52, 211, 153, 0.8)';
+        ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(L, oy); ctx.stroke();
+        
+        ctx.beginPath(); ctx.moveTo(L, oy);
+        let dy1 = C - oy, dx1 = f;
+        let endY1 = oy + (dy1/dx1) * (w - L);
+        ctx.lineTo(w, endY1); ctx.stroke();
 
-canvas.addEventListener('mousedown', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  for (let i = 0; i < points.length; i++) {
-    const [px, py] = toCanvas(points[i][0], points[i][1]);
-    if (Math.hypot(mx - px, my - py) < 12) { dragging = i; canvas.style.cursor = 'grabbing'; break; }
-  }
-});
-canvas.addEventListener('mousemove', e => {
-  if (dragging < 0) return;
-  const rect = canvas.getBoundingClientRect();
-  const [x, y] = fromCanvas(e.clientX - rect.left, e.clientY - rect.top);
-  points[dragging] = [Math.max(0.2, Math.min(7.8, x)), Math.max(0.2, Math.min(6.8, y))];
-  draw();
-});
-canvas.addEventListener('mouseup', () => { dragging = -1; canvas.style.cursor = 'grab'; });
-draw();
+        // Ray 2: Center
+        ctx.strokeStyle = 'rgba(52, 211, 153, 0.4)';
+        ctx.beginPath(); ctx.moveTo(ox, oy);
+        let dy2 = C - oy, dx2 = L - ox;
+        let endY2 = C + (dy2/dx2) * (w - L);
+        ctx.lineTo(w, endY2); ctx.stroke();
+
+        // Virtual extensions
+        if (v < 0 && v !== Infinity) {
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = '#0ea5e9';
+            ctx.beginPath(); ctx.moveTo(L, oy); ctx.lineTo(ix, iy); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(L, C); ctx.lineTo(ix, iy); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Object Arrow
+        ctx.beginPath(); ctx.moveTo(ox, C); ctx.lineTo(ox, oy);
+        ctx.strokeStyle = '#f97316'; ctx.lineWidth = 4; ctx.stroke();
+        ctx.beginPath(); ctx.arc(ox, oy, 8, 0, Math.PI*2); ctx.fillStyle = '#f97316'; ctx.fill();
+        ctx.strokeStyle = '#020617'; ctx.lineWidth = 2; ctx.stroke();
+
+        // Image Arrow
+        if (v !== Infinity) {
+            let imgColor = v > 0 ? '#10b981' : '#0ea5e9';
+            ctx.beginPath(); ctx.moveTo(ix, C); ctx.lineTo(ix, iy);
+            ctx.strokeStyle = imgColor; ctx.lineWidth = 4; ctx.stroke();
+            ctx.beginPath(); ctx.arc(ix, iy, 8, 0, Math.PI*2); ctx.fillStyle = imgColor; ctx.fill();
+        }
+    }
+
+    vp.addEventListener('mousedown', (e) => {
+        const rect = vp.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        if (Math.hypot(mx - ox, my - oy) < 25) dragTarget = 'obj';
+        else if (Math.hypot(mx - (L-f), my - C) < 25) dragTarget = 'f1';
+        else if (Math.hypot(mx - (L+f), my - C) < 25) dragTarget = 'f2';
+    });
+
+    window.addEventListener('mouseup', () => dragTarget = null);
+
+    vp.addEventListener('mousemove', (e) => {
+        const rect = vp.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        
+        if (dragTarget === 'obj') {
+            ox = Math.max(20, Math.min(L - 10, mx));
+            oy = my;
+            draw();
+        } else if (dragTarget === 'f1') {
+            f = Math.max(40, Math.min(300, L - mx));
+            draw();
+        } else if (dragTarget === 'f2') {
+            f = Math.max(40, Math.min(300, mx - L));
+            draw();
+        } else {
+            let closeObj = Math.hypot(mx - ox, my - oy) < 25;
+            let closeF = Math.hypot(mx - (L-f), my - C) < 25 || Math.hypot(mx - (L+f), my - C) < 25;
+            vp.style.cursor = (closeObj || closeF) ? 'grab' : 'crosshair';
+        }
+    });
+
+    draw();
 </script>
 </body>
 </html>

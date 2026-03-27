@@ -1,16 +1,15 @@
 {
   "category": "Parameter Exploration",
-  "topic": "The definition of Pi as the ratio of circumference to diameter",
-  "source_url": "http://setosa.io/ev/pi/",
+  "topic": "The Lorenz Attractor and Chaos Theory",
   "srtc": {
     "S": {
-      "r": { "type": "slider", "range": [0.5, 5], "step": 0.1, "default": 1.5, "label": "Radius" },
-      "C": { "type": "derived", "formula": "2 * π * r" },
-      "D": { "type": "derived", "formula": "2 * r" },
-      "ratio": { "type": "derived", "formula": "C / D" }
+      "sigma": { "control": "slider", "range": [1, 30], "default": 10, "label": "σ (Prandtl Number)" },
+      "rho":   { "control": "slider", "range": [10, 60], "default": 28, "label": "ρ (Rayleigh Number)" },
+      "beta":  { "control": "constant", "value": 2.667, "label": "β (Aspect Ratio)" },
+      "trajectory": { "derived": "numerical integration of dx/dt=σ(y−x), dy/dt=x(ρ−z)−y, dz/dt=xy−βz" }
     },
-    "R": "A circle whose size reflects r; labels showing C, D, and ratio ≈ π",
-    "T": "Dragging the slider changes r; C, D, ratio update automatically",
-    "C": "ratio ≈ 3.14159 regardless of r"
+    "R": "A continuously growing 3D phase-space trajectory projected onto a 2D canvas, slowly rotating. The trail fades over time to emphasize recent motion. Color is cyan on a deep-black background.",
+    "T": "Adjusting σ or ρ sliders resets the trajectory and restarts integration from the same initial point, causing the attractor shape to deform or collapse into a stable orbit.",
+    "C": "For classical values (σ=10, ρ=28, β=8/3), the trajectory never repeats and draws a distinctive butterfly-shape—demonstrating sensitive dependence on initial conditions."
   }
 }

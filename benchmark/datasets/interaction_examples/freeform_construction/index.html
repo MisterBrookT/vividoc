@@ -1,112 +1,337 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Freeform Construction — Fourier Drawing</title>
+<meta charset="utf-8"/>
+<title>Neural Networks</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&family=Merriweather:ital,wght@0,300;0,700;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 <style>
-  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
-  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: crosshair; }
-  .controls { margin: 1rem 0; display: flex; gap: 1rem; align-items: center; }
-  .controls button { padding: 0.4rem 1rem; border: 2px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; }
-  .note { color: #666; font-size: 0.9rem; }
+body { background: #fdf07e; color: #000; font-family: 'Merriweather', serif; margin:0; padding:40px; display:flex; justify-content:center; }
+.wrapper { max-width: 880px; width: 100%; }
+.main-title { font-family: 'Roboto Slab', serif; font-size: 2.8rem; text-transform: uppercase; color: #000; text-align: center; border-bottom: 6px solid #000; padding-bottom: 10px; margin: 0 0 35px 0; letter-spacing: 2px; }
+.card { background: #fff; border: 4px solid #000; padding: 40px; box-shadow: 12px 12px 0 #000; }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #000; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px; }
+.divider { border: none; border-top: 3px solid #000; margin: 0 0 20px 0; }
+.text-box { font-size: 1.1rem; line-height: 1.7; font-weight: 300; margin-bottom: 25px; }
+.math-box { font-size: 1.3rem; margin: 20px 0 30px 0; text-align: center; color: #fff; background: #000; padding: 15px; font-family: 'Space Mono', monospace; }
+ul { font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; padding-left: 20px; }
+li { margin-bottom: 8px; }
+.strong-text { font-weight: 700; font-family: 'Space Mono', monospace; background: #4ade80; padding: 0 5px; }
+
+/* Widget */
+.widget { background: #fff; border: 4px solid #000; padding: 20px; box-shadow: 6px 6px 0 #000; }
+.canvas-wrapper { width: 100%; height: 360px;
+    background: #f5f5f0; 
+    background-image: radial-gradient(#000 1.5px, transparent 1.5px);
+    background-size: 20px 20px; 
+    cursor: crosshair; position: relative; overflow: hidden; border: 4px solid #000; }
+canvas { display: block; width: 100%; height: 100%; position: absolute; top:0; left:0; pointer-events: none; }
+
+.controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+.ctrl-left { display: flex; gap: 12px; align-items: center; }
+button { font-family: 'Space Mono', monospace; font-size: 0.9rem; padding: 10px 18px; background: #000; color: #fdf07e; border: 3px solid #000; cursor: pointer; font-weight: bold; text-transform: uppercase; box-shadow: 4px 4px 0 #666; transition: transform 0.1s, box-shadow 0.1s; }
+button:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #666; }
+#btn-pulse { background: #4ade80; color: #000; }
+#btn-clear { background: #f87171; color: #000; }
+.output-bar { display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 0.9rem; font-weight: bold; }
+.output-fill { width: 140px; height: 20px; border: 2px solid #000; background: #eee; position: relative; }
+.output-fill-inner { height: 100%; background: #4ade80; width: 50%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.hint-box { position: absolute; top: 10px; left: 10px; background: #fdf07e; border: 3px solid #000; padding: 5px 12px; font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; pointer-events: none; box-shadow: 3px 3px 0 #000; }
 </style>
 </head>
 <body>
-<h2>Fourier Decomposition</h2>
-<p>Draw a signal on the canvas, then adjust the number of Fourier terms.</p>
-<canvas id="c" width="600" height="300"></canvas>
-<div class="controls">
-  <button id="clearBtn">Clear</button>
-  <label>Terms: <strong id="nVal">5</strong></label>
-  <input type="range" id="terms" min="1" max="30" value="5" style="width:200px">
+<div class="wrapper">
+    <h1 class="main-title">What is an Artificial Neural Network?</h1>
+    <div class="card">
+        <h2 class="section-title">Connectionist Architectures and Forward-Propagating Activation Signals.</h2>
+        <hr class="divider"/>
+        
+        <div class="text-box">
+            Artificial sentience relies on staggering parallel connectivity. By chaining hundreds of simple perceptrons into dense hidden layers, simplistic linear algebra transforms into a robust, non-linear predictive engine—capable of carving profound, multidimensional decision boundaries from raw data.
+        </div>
+        
+        <div class="math-box">$$ a_k^{(L)} = \sigma \left( \sum_{j} w_{kj} \cdot a_j^{(L-1)} + b_k \right) $$</div>
+        
+        <ul>
+            <li><span class="strong-text">w_kj</span>: The explicit synaptic connection weighting between neurons.</li>
+            <li><span class="strong-text">σ (Sigma)</span>: The non-linear threshold activation function.</li>
+            <li><span class="strong-text">a_k</span>: The resulting excitatory output of the k-th neuron.</li>
+        </ul>
+        
+        <div class="widget">
+            <div class="canvas-wrapper" id="zone">
+                <canvas id="net-canvas"></canvas>
+                <div class="hint-box">CLICK MIDDLE AREA → ADD NEURON → PULSE SIGNAL</div>
+            </div>
+            <div class="controls">
+                <div class="ctrl-left">
+                    <button id="btn-pulse">▶ Send Signal</button>
+                    <button id="btn-clear">✕ Clear Network</button>
+                </div>
+                <div class="output-bar">
+                    OUTPUT ACTIVATION:
+                    <div class="output-fill"><div class="output-fill-inner" id="out-bar"></div></div>
+                    <span id="out-val">50%</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="note" id="note">Draw a waveform by clicking and dragging on the canvas</div>
+
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const W = 600, H = 300;
-let userSignal = [];
-let drawing = false;
+    const canvas = document.getElementById('net-canvas');
+    const ctx = canvas.getContext('2d');
+    const zone = document.getElementById('zone');
 
-canvas.addEventListener('mousedown', () => { drawing = true; userSignal = []; });
-canvas.addEventListener('mousemove', e => {
-  if (!drawing) return;
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left, y = e.clientY - rect.top;
-  userSignal.push({ x, y: (H / 2 - y) / (H / 2) }); // normalize to [-1, 1]
-  render();
-});
-canvas.addEventListener('mouseup', () => { drawing = false; render(); });
-document.getElementById('clearBtn').addEventListener('click', () => { userSignal = []; render(); });
-document.getElementById('terms').addEventListener('input', () => { render(); });
+    // Fixed Input & Output Layers — declared first so resize() can reference them
+    const inputNodes  = [{y:90},{y:180},{y:270}];
+    const outputNodes = [{y:135},{y:225}];
+    let hiddenNodes = []; // {x, y, activation: 0..1}
 
-function dft(signal, nTerms) {
-  const N = signal.length;
-  if (N === 0) return [];
-  const coeffs = [];
-  for (let k = 0; k < nTerms; k++) {
-    let re = 0, im = 0;
-    for (let n = 0; n < N; n++) {
-      const angle = (2 * Math.PI * k * n) / N;
-      re += signal[n] * Math.cos(angle);
-      im -= signal[n] * Math.sin(angle);
+    const W = () => zone.getBoundingClientRect().width;
+    const H = () => zone.getBoundingClientRect().height;
+
+    let dpr = 2;
+    function resize() {
+        const r = zone.getBoundingClientRect();
+        if (r.width === 0) return;
+        dpr = window.devicePixelRatio || 2;
+        canvas.width = r.width * dpr;
+        canvas.height = r.height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const ch = r.height;
+        inputNodes[0].y = ch * 0.25;
+        inputNodes[1].y = ch * 0.50;
+        inputNodes[2].y = ch * 0.75;
+        outputNodes[0].y = ch * 0.37;
+        outputNodes[1].y = ch * 0.63;
+        draw();
     }
-    coeffs.push({ re: re / N, im: im / N, freq: k });
-  }
-  return coeffs;
-}
+    window.addEventListener('load', resize);
+    window.addEventListener('resize', resize);
+    
+    // Pulse animation state
+    let pulsePhase = null; // null | 'input' | 'hidden' | 'output' | 'done'
+    let pulseProgress = 0; // 0→1 within a phase
+    let lastTime = null;
+    let animId = null;
 
-function reconstruct(coeffs, N) {
-  const result = [];
-  for (let n = 0; n < N; n++) {
-    let val = 0;
-    for (const c of coeffs) {
-      const angle = (2 * Math.PI * c.freq * n) / N;
-      val += c.re * Math.cos(angle) - c.im * Math.sin(angle);
+    function sigmoid(x) { return 1 / (1 + Math.exp(-x)); }
+
+    // Compute a fake forward pass activation
+    function computeActivations() {
+        const inputActs = inputNodes.map(() => Math.random() * 0.5 + 0.5);
+        hiddenNodes.forEach(h => {
+            let sum = inputActs.reduce((s, a) => s + a * (Math.random() * 2 - 1), 0);
+            h.activation = sigmoid(sum / Math.max(1, inputNodes.length));
+        });
+        const outputActs = outputNodes.map(() => {
+            let sum = hiddenNodes.length > 0
+                ? hiddenNodes.reduce((s, h) => s + h.activation * (Math.random() * 2 - 1), 0)
+                : inputActs.reduce((s, a) => s + a * (Math.random() * 2 - 1), 0);
+            return sigmoid(sum / Math.max(1, hiddenNodes.length || inputNodes.length));
+        });
+        const avgOutput = outputActs.reduce((a,b)=>a+b,0)/outputActs.length;
+        return { inputActs, outputActs, avgOutput };
     }
-    result.push(val);
-  }
-  return result;
-}
+    
+    let currentActivations = null;
 
-function render() {
-  const nTerms = parseInt(document.getElementById('terms').value);
-  document.getElementById('nVal').textContent = nTerms;
-  ctx.clearRect(0, 0, W, H);
+    function getInX() { return W() * 0.1; }
+    function getOutX() { return W() * 0.9; }
 
-  // Center line
-  ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+    function drawArrow(x0, y0, x1, y1, color='#000', alpha=1, width=2) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = color; ctx.fillStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
+        const angle = Math.atan2(y1-y0, x1-x0);
+        const hl = 8;
+        ctx.beginPath();
+        ctx.moveTo(x1,y1);
+        ctx.lineTo(x1-hl*Math.cos(angle-Math.PI/6), y1-hl*Math.sin(angle-Math.PI/6));
+        ctx.lineTo(x1-hl*Math.cos(angle+Math.PI/6), y1-hl*Math.sin(angle+Math.PI/6));
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+    }
 
-  if (userSignal.length < 2) return;
+    function drawNode(x, y, r, fill, stroke='#000', glow=false) {
+        if (glow) {
+            ctx.save();
+            ctx.shadowColor = fill; ctx.shadowBlur = 20;
+        }
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+        ctx.fillStyle = fill; ctx.fill();
+        ctx.strokeStyle = stroke; ctx.lineWidth = 3; ctx.stroke();
+        if (glow) ctx.restore();
+    }
 
-  // Draw user signal (blue)
-  ctx.beginPath();
-  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2;
-  for (let i = 0; i < userSignal.length; i++) {
-    const x = (i / userSignal.length) * W;
-    const y = H / 2 - userSignal[i].y * (H / 2 - 10);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  }
-  ctx.stroke();
+    function getEdgeColor(activated) {
+        if (!activated) return '#ccc';
+        return '#4ade80';
+    }
 
-  // Fourier reconstruction (red)
-  const signal = userSignal.map(p => p.y);
-  const coeffs = dft(signal, Math.min(nTerms, signal.length));
-  const recon = reconstruct(coeffs, signal.length);
+    function draw(tNorm) {
+        const w = W(), h = H();
+        ctx.clearRect(0,0,w,h);
+        
+        const inX  = getInX();
+        const outX = getOutX();
 
-  ctx.beginPath();
-  ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 2;
-  for (let i = 0; i < recon.length; i++) {
-    const x = (i / recon.length) * W;
-    const y = H / 2 - recon[i] * (H / 2 - 10);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  }
-  ctx.stroke();
+        const active = currentActivations;
 
-  document.getElementById('note').textContent = `Blue: your signal (${signal.length} samples) | Red: ${nTerms}-term Fourier reconstruction`;
-}
-render();
+        // -- Draw Edges --
+        // Input → Hidden
+        inputNodes.forEach(iN => {
+            hiddenNodes.forEach((hN) => {
+                const edgeActive = active && pulsePhase !== 'input';
+                const prog = (pulsePhase === 'hidden' && tNorm != null) ? tNorm : (edgeActive ? 1 : 0);
+                const alpha = 0.15 + prog * 0.7;
+                const col = edgeActive ? '#4ade80' : '#000';
+                drawArrow(inX, iN.y, hN.x, hN.y, col, alpha, edgeActive ? 3 : 1);
+            });
+        });
+
+        // Hidden → Output (or Input → Output if no hidden)
+        const prevLayer = hiddenNodes.length > 0
+            ? hiddenNodes.map(h => ({x: h.x, y: h.y}))
+            : inputNodes.map(n => ({x: inX, y: n.y}));
+        
+        prevLayer.forEach(src => {
+            outputNodes.forEach(oN => {
+                const edgeActive = active && (pulsePhase === 'output' || pulsePhase === 'done');
+                const prog = (pulsePhase === 'output' && tNorm != null) ? tNorm : (edgeActive ? 1 : 0);
+                const alpha = 0.15 + prog * 0.7;
+                const col = edgeActive ? '#f97316' : '#000';
+                drawArrow(src.x, src.y, outX, oN.y, col, alpha, edgeActive ? 3 : 1);
+            });
+        });
+
+        // Input → Output direct if no hidden
+        if (hiddenNodes.length === 0) {
+            inputNodes.forEach(iN => {
+                outputNodes.forEach(oN => {
+                    const edgeActive = active && (pulsePhase === 'output' || pulsePhase === 'done');
+                    const alpha = 0.15 + (edgeActive ? 0.5 : 0);
+                    drawArrow(inX, iN.y, outX, oN.y, edgeActive ? '#f97316' : '#000', alpha, edgeActive ? 3 : 1);
+                });
+            });
+        }
+
+        // -- Input Nodes --
+        inputNodes.forEach((n, i) => {
+            const activated = active && (pulsePhase !== null);
+            const brightness = activated ? active.inputActs[i] : 0.5;
+            const fill = activated
+                ? `hsl(${100 + brightness*60},90%,${40 + brightness*20}%)`
+                : '#f87171';
+            drawNode(inX, n.y, 14, fill, '#000', activated);
+            ctx.fillStyle='#000'; ctx.font='bold 13px "Space Mono"';
+            ctx.fillText(`x${i+1}`, inX-6, n.y+5);
+        });
+
+        // -- Hidden Nodes --
+        hiddenNodes.forEach((hN, i) => {
+            const activated = active && (pulsePhase === 'hidden' || pulsePhase === 'output' || pulsePhase === 'done');
+            const a = activated ? hN.activation : 0;
+            const fill = activated
+                ? `hsl(${140},${80+a*20}%,${30+a*30}%)`
+                : '#fde047';
+            drawNode(hN.x, hN.y, 14, fill, '#000', activated);
+            ctx.fillStyle='#000'; ctx.font='bold 11px "Space Mono"';
+            ctx.fillText(activated ? (hN.activation).toFixed(2) : `h${i+1}`, hN.x-12, hN.y+4);
+        });
+
+        // -- Output Nodes --
+        outputNodes.forEach((n, i) => {
+            const activated = active && (pulsePhase === 'output' || pulsePhase === 'done');
+            const a = activated ? active.outputActs[i] : 0.5;
+            const fill = activated
+                ? `hsl(${25},${80+a*20}%,${40+a*20}%)`
+                : '#60a5fa';
+            drawNode(outX, n.y, 14, fill, '#000', activated);
+            ctx.fillStyle='#fff'; ctx.font='bold 11px "Space Mono"';
+            ctx.fillText(activated ? (active.outputActs[i]).toFixed(2) : `y${i+1}`, outX-12, n.y+4);
+        });
+
+        // Labels
+        ctx.fillStyle='#000'; ctx.font='bold 12px "Space Mono"';
+        ctx.fillText('INPUT', inX-16, 55);
+        ctx.fillText('OUTPUT', outX-22, 55);
+        if (hiddenNodes.length > 0) {
+            const midX = hiddenNodes.reduce((s,h)=>s+h.x,0)/hiddenNodes.length;
+            ctx.fillText('HIDDEN', midX-22, 30);
+        }
+    }
+
+    // Animation phases: input(0.4s) → hidden(0.5s) → output(0.5s) → done
+    const phases = ['input','hidden','output','done'];
+    const durations = { input: 400, hidden: 500, output: 500 };
+
+    function startPulse() {
+        currentActivations = computeActivations();
+        pulsePhase = 'input';
+        pulseProgress = 0;
+        lastTime = null;
+        if (animId) cancelAnimationFrame(animId);
+        animId = requestAnimationFrame(animLoop); // always start via rAF for valid timestamp
+
+        // Smoothly update bar
+        const pct = Math.round(currentActivations.avgOutput * 100);
+        document.getElementById('out-bar').style.width = pct + '%';
+        document.getElementById('out-val').textContent = pct + '%';
+    }
+
+    function animLoop(ts) {
+        if (lastTime === null) { lastTime = ts; } // first frame: zero delta
+        const dt = ts - lastTime;
+        lastTime = ts;
+        if (pulsePhase === 'done' || !durations[pulsePhase]) { draw(1); return; }
+        pulseProgress += dt / durations[pulsePhase];
+        if (pulseProgress >= 1) {
+            pulseProgress = 0;
+            const idx = phases.indexOf(pulsePhase);
+            if (idx < phases.length - 2) { // advance to next real phase
+                pulsePhase = phases[idx + 1];
+            } else {
+                pulsePhase = 'done';
+                draw(1);
+                return;
+            }
+        }
+        draw(pulseProgress);
+        animId = requestAnimationFrame(animLoop);
+    }
+
+    zone.addEventListener('click', (e) => {
+        const r = zone.getBoundingClientRect();
+        const mx = e.clientX - r.left;
+        const my = e.clientY - r.top;
+        const inX = getInX(), outX = getOutX();
+        // Only allow in the hidden layer zone
+        if (mx > inX + 30 && mx < outX - 30) {
+            hiddenNodes.push({ x: mx, y: my, activation: 0.5 });
+            draw();
+            // Auto-pulse so user sees immediate effect
+            startPulse();
+        }
+    });
+
+    document.getElementById('btn-pulse').addEventListener('click', startPulse);
+    document.getElementById('btn-clear').addEventListener('click', () => {
+        hiddenNodes = [];
+        currentActivations = null;
+        pulsePhase = null;
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        document.getElementById('out-bar').style.width = '50%';
+        document.getElementById('out-val').textContent = '50%';
+        draw();
+    });
+
+    draw();
 </script>
 </body>
 </html>

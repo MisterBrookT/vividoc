@@ -1,107 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>State Switching — Dimensionality Reduction</title>
+<meta charset="utf-8"/>
+<title>Electron Orbitals</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&family=Merriweather:ital,wght@0,300;0,700;1,300&family=Space+Mono&display=swap" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 <style>
-  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
-  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; }
-  .controls { margin: 1rem 0; display: flex; gap: 0.5rem; }
-  .controls button { padding: 0.5rem 1.2rem; border: 2px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.95rem; }
-  .controls button.active { border-color: #2563eb; background: #eff6ff; color: #2563eb; font-weight: 600; }
-  .note { color: #666; font-size: 0.9rem; margin-top: 0.5rem; }
+body { background: #fdfbf7; color: #1e293b; font-family: 'Merriweather', serif; margin:0; padding:40px; display:flex; justify-content:center; }
+.wrapper { max-width: 850px; width: 100%; position: relative; }
+.main-title { font-family: 'Roboto Slab', serif; font-size: 2.8rem; text-transform: uppercase; color: #1e3a8a; text-align: center; border-bottom: 4px double #1e3a8a; padding-bottom: 10px; margin: 0 0 35px 0; letter-spacing: 2px; }
+.card { background: #f5f0e6; border: 1px solid #1e3a8a; border-radius: 4px; padding: 40px; box-shadow: 0 10px 20px rgba(30,58,138,0.05); position: relative; border-top: 4px solid #991b1b; }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #991b1b; margin: 0 0 15px 0; line-height: 1.4; text-transform: uppercase; letter-spacing: 1px; }
+.divider { border: none; border-top: 1px solid #1e3a8a; margin: 0 0 20px 0; }
+.text-box { font-size: 1.1rem; line-height: 1.7; font-weight: 300; margin-bottom: 25px; color: #475569; }
+.math-box { font-size: 1.3rem; margin: 25px 0; text-align: center; color: #1e3a8a; background: rgba(30,58,138, 0.05); padding: 15px; border-radius: 4px; font-family: 'Space Mono', monospace; border-left: 4px solid #1e3a8a; }
+ul { font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; padding-left: 20px; color: #334155; }
+li { margin-bottom: 8px; }
+.strong-text { font-weight: 700; color: #991b1b; font-family: 'Space Mono', monospace; font-size: 1.1rem; }
+
+/* Widget Specific */
+.widget { background: #fffcf8; border: 2px solid #1e3a8a; border-radius: 4px; padding: 25px; position: relative; }
+.canvas-wrapper { width: 100%; height: 280px; position: relative; border: 1px dashed #1e3a8a; background-image: radial-gradient(circle at center, rgba(30,58,138,0.05) 0%, transparent 70%); }
+canvas { display: block; width: 100%; height: 100%; }
+
+.controls { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+.segment { font-family: 'Space Mono', monospace; padding: 8px 20px; font-size: 1rem; font-weight: bold; text-transform: uppercase; color: #1e3a8a; border: 1px solid #1e3a8a; border-radius: 2px; cursor: pointer; transition: all 0.2s; background: transparent; }
+.segment.active { background: #1e3a8a; color: #fdfbf7; box-shadow: 0 4px 6px rgba(30,58,138,0.2); }
 </style>
 </head>
 <body>
-<h2>Dimensionality Reduction</h2>
-<p>Switch between algorithms to see how the same data projects differently.</p>
-<div class="controls">
-  <button class="active" data-algo="pca">PCA</button>
-  <button data-algo="tsne">t-SNE</button>
-  <button data-algo="umap">UMAP</button>
+<div class="wrapper">
+    <h1 class="main-title">What are Electron Orbitals?</h1>
+    <div class="card">
+        <h2 class="section-title">Quantum Superposition and Atomic Probability Densities.</h2>
+        <hr class="divider">
+        
+        <div class="text-box">
+            The planetary model of atoms circling nuclei like predictable moons is a classical illusion. In the quantum realm, electrons blur into probabilistic smears. By evaluating Hamiltonian wavefunctions, we don't find a precise particle bullet, but rather beautiful, ethereal clouds of spatial statistical likelihood.
+        </div>
+        
+        <div class="math-box">$$ \hat{H}\Psi = E\Psi \implies |\Psi_{n,l,m}(\mathbf{r})|^2 = \text{Probability Density} $$</div>
+        
+        <ul>
+            <li><span class="strong-text">1s (Spherical)</span>: The fundamental, boundary-less symmetrical cloud anchoring the nucleus.</li>
+            <li><span class="strong-text">2p (Dumbbell)</span>: Introducing angular momentum forces electron density away from the planar node.</li>
+            <li><span class="strong-text">3d (Clover)</span>: High energy subshells producing intricate, multi-lobar spatial distributions.</li>
+        </ul>
+        
+        <div class="widget">
+            <div class="canvas-wrapper">
+                <canvas id="cloud-canvas"></canvas>
+            </div>
+            <div class="controls">
+                <div class="segment active" data-type="1s">1s State</div>
+                <div class="segment" data-type="2p">2p State</div>
+                <div class="segment" data-type="3d">3d State</div>
+            </div>
+        </div>
+    </div>
 </div>
-<canvas id="c" width="500" height="400"></canvas>
-<div class="note" id="note"></div>
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const W = 500, H = 400;
-const colors = ['#2563eb','#dc2626','#059669','#d97706'];
-
-// Generate synthetic clustered data (4 clusters in 5D)
-function genData() {
-  const centers = [[2,3,1,0,1],[6,1,4,2,3],[1,7,2,5,1],[5,6,3,1,4]];
-  const pts = [];
-  for (let c = 0; c < 4; c++) {
-    for (let i = 0; i < 25; i++) {
-      const p = centers[c].map(v => v + (Math.random() - 0.5) * 2);
-      pts.push({ d: p, cluster: c });
+    const canvas = document.getElementById('cloud-canvas');
+    const ctx = canvas.getContext('2d');
+    const segments = document.querySelectorAll('.segment');
+    
+    function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * 2;
+        canvas.height = rect.height * 2;
+        ctx.scale(2, 2);
     }
-  }
-  return pts;
-}
-const data = genData();
+    resize();
+    
+    let state = '1s';
+    
+    segments.forEach(seg => {
+        seg.addEventListener('click', (e) => {
+            segments.forEach(s => s.classList.remove('active'));
+            e.target.classList.add('active');
+            state = e.target.getAttribute('data-type');
+            resetCloud();
+        });
+    });
 
-// Simple "projections" (deterministic pseudo-algorithms for demo)
-function projectPCA(pts) {
-  return pts.map(p => ({ x: p.d[0] * 0.6 + p.d[1] * 0.3 + p.d[2] * 0.1, y: p.d[1] * 0.5 + p.d[3] * 0.4 + p.d[4] * 0.1, c: p.cluster }));
-}
-function projectTSNE(pts) {
-  // Simulate t-SNE: tighter clusters, more separated
-  const cx = [[1,1],[8,1],[1,8],[8,8]];
-  return pts.map((p, i) => {
-    const ci = p.cluster;
-    return { x: cx[ci][0] + (Math.random() - 0.5) * 1.5, y: cx[ci][1] + (Math.random() - 0.5) * 1.5, c: p.cluster };
-  });
-}
-function projectUMAP(pts) {
-  const cx = [[2,2],[7,3],[3,7],[6,7]];
-  return pts.map(p => {
-    const ci = p.cluster;
-    return { x: cx[ci][0] + (Math.random() - 0.5) * 1.8, y: cx[ci][1] + (Math.random() - 0.5) * 1.8, c: p.cluster };
-  });
-}
+    const w = canvas.width/2;
+    const h = canvas.height/2;
+    const cx = w/2;
+    const cy = h/2;
 
-const projections = { pca: projectPCA, tsne: projectTSNE, umap: projectUMAP };
-const notes = {
-  pca: 'PCA: linear projection preserving global variance',
-  tsne: 't-SNE: nonlinear, preserves local neighborhood structure',
-  umap: 'UMAP: nonlinear, balances local and global structure'
-};
+    let pointsDrawn = 0;
+    
+    function resetCloud() {
+        ctx.clearRect(0, 0, w, h);
+        
+        // Nucleus
+        ctx.beginPath();
+        ctx.arc(cx, cy, 3, 0, Math.PI*2);
+        ctx.fillStyle = '#991b1b';
+        ctx.fill();
 
-// Cache t-SNE and UMAP so they don't re-randomize on every click
-const cache = {};
+        // Axes
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2,4]);
+        ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+        ctx.setLineDash([]);
+        
+        pointsDrawn = 0;
+    }
 
-function draw(algo) {
-  if (!cache[algo]) cache[algo] = projections[algo](data);
-  const pts = cache[algo];
-  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const pad = 40;
-  const sx = v => pad + (v - minX) / (maxX - minX) * (W - 2 * pad);
-  const sy = v => pad + (v - minY) / (maxY - minY) * (H - 2 * pad);
+    function getProbability(x, y, state) {
+        const r2 = x*x + y*y;
+        const r = Math.sqrt(r2);
+        if (state === '1s') {
+            return Math.exp(-r / 30);
+        } else if (state === '2p') {
+            // p_x orbital dumbbell shape (x * exp(-r))
+            const theta = Math.atan2(y, x);
+            const angular = Math.cos(theta);
+            return Math.abs(angular) * Math.pow(r/30, 1) * Math.exp(-r / 30);
+        } else if (state === '3d') {
+            // d_xy clover shape (x*y * exp(-r))
+            const theta = Math.atan2(y, x);
+            const angular = Math.sin(2 * theta);
+            return Math.abs(angular) * Math.pow(r/30, 2) * Math.exp(-r/30);
+        }
+    }
 
-  ctx.clearRect(0, 0, W, H);
-  pts.forEach(p => {
-    ctx.beginPath();
-    ctx.arc(sx(p.x), sy(p.y), 5, 0, 2 * Math.PI);
-    ctx.fillStyle = colors[p.c];
-    ctx.globalAlpha = 0.7;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  });
-  document.getElementById('note').textContent = notes[algo];
-}
+    // Use Monte-Carlo rejection sampling for particle cloud
+    function strokeCloud() {
+        if (pointsDrawn > 15000) return; // Cap points
+        ctx.fillStyle = '#1e3a8a';
+        ctx.globalAlpha = 0.5;
 
-document.querySelectorAll('.controls button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    draw(btn.dataset.algo);
-  });
-});
-draw('pca');
+        for(let i=0; i<100; i++) {
+            const rx = (Math.random() - 0.5) * 300;
+            const ry = (Math.random() - 0.5) * 300;
+            const p = getProbability(rx, ry, state);
+            
+            if (Math.random() < p * 0.8) {
+                ctx.beginPath();
+                ctx.fillRect(cx + rx, cy + ry, 1.5, 1.5);
+                pointsDrawn++;
+            }
+        }
+        ctx.globalAlpha = 1.0;
+        requestAnimationFrame(strokeCloud);
+    }
+    
+    resetCloud();
+    function animLoop() { strokeCloud(); requestAnimationFrame(animLoop); }
+    animLoop();
 </script>
 </body>
 </html>

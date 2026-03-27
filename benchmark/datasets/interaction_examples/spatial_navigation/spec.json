@@ -1,16 +1,14 @@
 {
   "category": "Spatial Navigation",
-  "topic": "Parametric and implicit 3D surfaces",
-  "source_url": "https://marimo.io/@public/surfaces",
+  "topic": "The Möbius Strip as a Non-Orientable Topological Surface",
   "srtc": {
     "S": {
-      "surface": { "type": "select", "options": ["paraboloid", "saddle", "sphere", "torus"], "default": "paraboloid" },
-      "camera_theta": { "type": "draggable", "range": [0, 360], "default": 45 },
-      "camera_phi": { "type": "draggable", "range": [0, 180], "default": 60 },
-      "mesh": { "type": "derived", "formula": "compute_surface(surface)" }
+      "rotX": { "control": "drag-y", "range": "[-3.14, 3.14]", "default": 0.5, "label": "Pitch angle" },
+      "rotY": { "control": "drag-x", "range": "[-3.14, 3.14]", "default": -0.5, "label": "Yaw angle" },
+      "surface": { "derived": "parametric mesh: x(u,v)=(R+v*cos(u/2))*cos(u), y(u,v)=v*sin(u/2), z(u,v)=(R+v*cos(u/2))*sin(u)" }
     },
-    "R": "3D wireframe/surface plot rendered from (camera_theta, camera_phi) viewpoint",
-    "T": "Click-and-drag rotates the camera; scroll zooms in/out",
-    "C": "Rotating reveals the full 3D geometry that a single viewpoint cannot convey"
+    "R": "A 3D polygon mesh of the Möbius strip rendered using the Painter's Algorithm. Faces are colored with a teal-to-sky-blue gradient mapped to the u parameter. Depth shading simulates a diffuse light source. The current viewing angles are displayed as numeric overlays.",
+    "T": "Clicking and dragging on the canvas rotates the surface in 3D by updating rotX and rotY. Releasing the mouse locks the current orientation.",
+    "C": "No matter how the strip is rotated, a continuous path along its surface always returns to the starting point in a mirrored orientation, demonstrating the strip's single-sidedness."
   }
 }

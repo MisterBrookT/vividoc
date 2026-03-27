@@ -1,117 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Spatial Navigation — 3D Surface</title>
+<meta charset="utf-8"/>
+<title>The Möbius Strip</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&family=Merriweather:ital,wght@0,300;0,700;1,300&family=Space+Mono&display=swap" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 <style>
-  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
-  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: grab; }
-  .controls { margin: 1rem 0; display: flex; gap: 1rem; align-items: center; }
-  .controls select { padding: 0.4rem; border-radius: 4px; border: 1px solid #ddd; }
-  .note { color: #666; font-size: 0.9rem; }
+body { background: #f1f5f9; color: #334155; font-family: 'Merriweather', serif; margin:0; padding:40px; display:flex; justify-content:center; }
+.wrapper { max-width: 850px; width: 100%; position: relative; }
+.main-title { font-family: 'Roboto Slab', serif; font-size: 2.5rem; text-transform: uppercase; color: #0284c7; text-align: center; border-bottom: 4px double #0284c7; padding-bottom: 10px; margin: 0 0 35px 0; letter-spacing: 2px; }
+.card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,1); border-radius: 8px; padding: 40px; box-shadow: 0 20px 40px rgba(14,165,233,0.1); position: relative; border-top: 4px solid #0284c7; }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #0f172a; margin: 0 0 15px 0; line-height: 1.4; text-transform: uppercase; letter-spacing: 1px; }
+.divider { border: none; border-top: 1px solid #cbd5e1; margin: 0 0 20px 0; }
+.text-box { font-size: 1.1rem; line-height: 1.7; font-weight: 300; margin-bottom: 25px; color: #475569; }
+.math-box { font-size: 1.3rem; margin: 25px 0; text-align: center; color: #0369a1; background: rgba(56, 189, 248, 0.1); padding: 15px; border-radius: 4px; border-left: 4px solid #0284c7; font-family: 'Space Mono', monospace; }
+ul { font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; padding-left: 20px; color: #475569; }
+li { margin-bottom: 8px; }
+.strong-text { font-weight: 700; color: #0284c7; font-family: 'Space Mono', monospace; }
+
+/* Widget Specific */
+.widget { background: rgba(255,255,255,0.8); border: 1px solid #e2e8f0; border-radius: 6px; padding: 25px; position: relative; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+.canvas-wrapper { width: 100%; height: 350px; background: radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%); cursor: grab; position: relative; overflow: hidden; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: inset 0 0 20px rgba(0,0,0,0.05); }
+.canvas-wrapper:active { cursor: grabbing; }
+canvas { display: block; width: 100%; height: 100%; }
+
+.drag-prompt { position: absolute; bottom: 20px; left: 20px; background: rgba(255,255,255,0.9); padding: 10px 15px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-family: 'Space Mono', monospace; font-size: 0.85rem; color: #0369a1; font-weight: bold; border-left: 3px solid #0284c7; pointer-events: none; }
 </style>
 </head>
 <body>
-<h2>3D Parametric Surfaces</h2>
-<p>Click and drag to rotate the view. Select a surface type.</p>
-<canvas id="c" width="500" height="400"></canvas>
-<div class="controls">
-  <select id="surface">
-    <option value="paraboloid">Paraboloid</option>
-    <option value="saddle">Saddle</option>
-    <option value="sphere">Sphere</option>
-  </select>
+<div class="wrapper">
+    <h1 class="main-title">What is a Möbius Strip?</h1>
+    <div class="card">
+        <h2 class="section-title">Non-Orientable Surfaces and Topological Manifolds.</h2>
+        <hr class="divider">
+        
+        <div class="text-box">
+            In the rigid world of Euclidean geometry, every surface possesses absolute coordinates. Topology shatters this rule by caring only about continuous deformation. The Möbius strip introduces a radical twist—a bizarre, non-orientable surface where the concepts of "inside" and "outside" collapse into a singular continuous path.
+        </div>
+        
+        <div class="math-box">$$ x(u,v) = \left( R + v\cos\frac{u}{2} \right)\cos u, \quad z(u,v) = \left( R + v\cos\frac{u}{2} \right)\sin u $$</div>
+        
+        <ul>
+            <li><span class="strong-text">u</span>: Longitudinal angular progression spanning $[0, 2\pi]$.</li>
+            <li><span class="strong-text">v</span>: Transverse span controlling the twisted width bandwidth.</li>
+            <li><span class="strong-text">R</span>: The macroscopic radius generating the non-euclidean loop.</li>
+        </ul>
+        
+        <div class="widget">
+            <div class="canvas-wrapper" id="viewport">
+                <canvas id="mobius-canvas"></canvas>
+                <div class="drag-prompt">
+                    <div style="text-transform:uppercase;">Drag to Rotate Topology</div>
+                    <div style="margin-top:5px; color:#10b981; font-size:0.75rem;">Viewing Angles: <span id="v-ang">0, 0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="note">θ = <span id="theta">30</span>° φ = <span id="phi">25</span>°</div>
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const W = 500, H = 400;
-let theta = 30, phi = 25, dragging = false, lastX, lastY;
+    const canvas = document.getElementById('mobius-canvas');
+    const ctx = canvas.getContext('2d');
+    const vp = document.getElementById('viewport');
+    
+    let isDragging = false;
+    let lastMouse = {x:0, y:0};
+    let rotX = 0.5, rotY = -0.5;
 
-const surfaces = {
-  paraboloid: (u, v) => [u, v, (u * u + v * v) * 0.3],
-  saddle: (u, v) => [u, v, (u * u - v * v) * 0.3],
-  sphere: (u, v) => {
-    const r = 1.8;
-    return [r * Math.cos(u) * Math.cos(v), r * Math.sin(u) * Math.cos(v), r * Math.sin(v)];
-  }
-};
-const ranges = {
-  paraboloid: { u: [-2, 2], v: [-2, 2] },
-  saddle: { u: [-2, 2], v: [-2, 2] },
-  sphere: { u: [0, 2 * Math.PI], v: [-Math.PI / 2, Math.PI / 2] }
-};
-
-function project(x, y, z) {
-  const rad = Math.PI / 180;
-  const ct = Math.cos(theta * rad), st = Math.sin(theta * rad);
-  const cp = Math.cos(phi * rad), sp = Math.sin(phi * rad);
-  const rx = ct * x + st * z;
-  const ry = sp * st * x + cp * y - sp * ct * z;
-  const rz = -cp * st * x + sp * y + cp * ct * z;
-  const scale = 80;
-  return [W / 2 + rx * scale, H / 2 - ry * scale, rz];
-}
-
-function draw() {
-  ctx.clearRect(0, 0, W, H);
-  const type = document.getElementById('surface').value;
-  const fn = surfaces[type];
-  const rng = ranges[type];
-  const N = 20;
-
-  // Draw wireframe
-  const lines = [];
-  for (let i = 0; i <= N; i++) {
-    for (let j = 0; j <= N; j++) {
-      const u = rng.u[0] + (rng.u[1] - rng.u[0]) * i / N;
-      const v = rng.v[0] + (rng.v[1] - rng.v[0]) * j / N;
-      const [x, y, z] = fn(u, v);
-      const [px, py, pz] = project(x, y, z);
-      if (j < N) {
-        const v2 = rng.v[0] + (rng.v[1] - rng.v[0]) * (j + 1) / N;
-        const [x2, y2, z2] = fn(u, v2);
-        const [px2, py2] = project(x2, y2, z2);
-        lines.push({ x1: px, y1: py, x2: px2, y2: py2, z: (pz + project(x2, y2, z2)[2]) / 2 });
-      }
-      if (i < N) {
-        const u2 = rng.u[0] + (rng.u[1] - rng.u[0]) * (i + 1) / N;
-        const [x2, y2, z2] = fn(u2, v);
-        const [px2, py2] = project(x2, y2, z2);
-        lines.push({ x1: px, y1: py, x2: px2, y2: py2, z: (pz + project(x2, y2, z2)[2]) / 2 });
-      }
+    function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * 2;
+        canvas.height = rect.height * 2;
+        ctx.scale(2, 2);
     }
-  }
+    resize();
 
-  // Sort by depth (painter's algorithm)
-  lines.sort((a, b) => a.z - b.z);
-  for (const l of lines) {
-    const t = (l.z + 3) / 6; // normalize depth for color
-    ctx.beginPath();
-    ctx.moveTo(l.x1, l.y1);
-    ctx.lineTo(l.x2, l.y2);
-    ctx.strokeStyle = `rgba(37,99,235,${0.3 + t * 0.5})`;
-    ctx.lineWidth = 0.8;
-    ctx.stroke();
-  }
+    const R = 90;
+    const segmentsU = 60;
+    const segmentsV = 8;
+    const width = 45;
 
-  document.getElementById('theta').textContent = Math.round(theta);
-  document.getElementById('phi').textContent = Math.round(phi);
-}
+    function getPt(u, v) {
+        const r_mod = R + v * Math.cos(u/2);
+        const x = r_mod * Math.cos(u);
+        const z = r_mod * Math.sin(u);
+        const y = v * Math.sin(u/2);
+        return {x, y, z};
+    }
 
-canvas.addEventListener('mousedown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.style.cursor = 'grabbing'; });
-canvas.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  theta += (e.clientX - lastX) * 0.5;
-  phi += (e.clientY - lastY) * 0.5;
-  phi = Math.max(-89, Math.min(89, phi));
-  lastX = e.clientX; lastY = e.clientY;
-  draw();
-});
-canvas.addEventListener('mouseup', () => { dragging = false; canvas.style.cursor = 'grab'; });
-document.getElementById('surface').addEventListener('change', draw);
-draw();
+    function project(p) {
+        // Rotate Y
+        let px1 = p.x * Math.cos(rotY) - p.z * Math.sin(rotY);
+        let pz1 = p.x * Math.sin(rotY) + p.z * Math.cos(rotY);
+        // Rotate X
+        let py1 = p.y * Math.cos(rotX) - pz1 * Math.sin(rotX);
+        let pz2 = p.y * Math.sin(rotX) + pz1 * Math.cos(rotX);
+        
+        const scale = 800 / (800 + pz2);
+        const w = canvas.width/2;
+        const h = canvas.height/2;
+        return { x: w/2 + px1 * scale, y: h/2 + py1 * scale, z: pz2, scale };
+    }
+
+    let time = 0;
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        
+        const polygons = [];
+
+        for(let i=0; i<segmentsU; i++) {
+            const u1 = (i/segmentsU) * Math.PI * 2;
+            const u2 = ((i+1)/segmentsU) * Math.PI * 2;
+            
+            for(let j=0; j<segmentsV; j++) {
+                const v1 = -width + (j/segmentsV) * 2*width;
+                const v2 = -width + ((j+1)/segmentsV) * 2*width;
+
+                const p1 = project(getPt(u1, v1));
+                const p2 = project(getPt(u2, v1));
+                const p3 = project(getPt(u2, v2));
+                const p4 = project(getPt(u1, v2));
+
+                const zCtr = (p1.z + p2.z + p3.z + p4.z)/4;
+                polygons.push({p1, p2, p3, p4, zCtr, u: i/segmentsU});
+            }
+        }
+
+        // Painter's Algorithm
+        polygons.sort((a,b) => b.zCtr - a.zCtr);
+
+        polygons.forEach(poly => {
+            ctx.beginPath();
+            ctx.moveTo(poly.p1.x, poly.p1.y);
+            ctx.lineTo(poly.p2.x, poly.p2.y);
+            ctx.lineTo(poly.p3.x, poly.p3.y);
+            ctx.lineTo(poly.p4.x, poly.p4.y);
+            ctx.closePath();
+            
+            // Emerald to Sky Blue gradient map
+            const uVal = poly.u;
+            const r = Math.floor(2 + (14-2)*uVal);
+            const g = Math.floor(132 + (165-132)*uVal);
+            const b = Math.floor(199 + (233-199)*uVal);
+            
+            // Depth shading
+            const depth = Math.max(0, Math.min(1, (poly.zCtr + 150)/300));
+            const shade = 1 - (depth * 0.4);
+
+            ctx.fillStyle = `rgba(${r*shade}, ${g*shade}, ${b*shade}, 0.8)`;
+            ctx.fill();
+            ctx.strokeStyle = `rgba(2, 132, 199, 0.4)`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+        });
+
+        requestAnimationFrame(draw);
+    }
+
+    vp.addEventListener('mousedown', (e) => { isDragging = true; lastMouse = {x:e.clientX, y:e.clientY}; });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mousemove', (e) => {
+        if(!isDragging) return;
+        const dx = e.clientX - lastMouse.x;
+        const dy = e.clientY - lastMouse.y;
+        rotY += dx * 0.01;
+        rotX -= dy * 0.01; // Invert for natural drag
+        lastMouse = {x:e.clientX, y:e.clientY};
+        document.getElementById('v-ang').textContent = `${(rotX).toFixed(2)}, ${(rotY).toFixed(2)}`;
+    });
+
+    draw();
 </script>
 </body>
 </html>

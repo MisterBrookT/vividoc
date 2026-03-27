@@ -1,86 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Temporal Control — Bubble Sort</title>
+<meta charset="utf-8"/>
+<title>Fourier Series</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&family=Merriweather:ital,wght@0,300;0,700;1,300&family=VT323&display=swap" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 <style>
-  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
-  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; }
-  .controls { margin: 1rem 0; display: flex; gap: 0.8rem; align-items: center; }
-  .controls button { padding: 0.4rem 1rem; border: 2px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.95rem; }
-  .controls button:hover { border-color: #2563eb; }
-  .info { color: #555; font-size: 0.9rem; }
+body { background: #2a1b38; color: #fdf2f8; font-family: 'Merriweather', serif; margin:0; padding:40px; display:flex; justify-content:center; }
+.wrapper { max-width: 850px; width: 100%; position: relative; }
+.main-title { font-family: 'Roboto Slab', serif; font-size: 2.8rem; text-transform: uppercase; color: #f472b6; text-align: center; border-bottom: 4px double #f472b6; padding-bottom: 10px; margin: 0 0 35px 0; letter-spacing: 2px; text-shadow: 2px 2px 10px rgba(244,114,182,0.3); }
+.card { background: #3b284d; border: 1px solid #5b3e75; border-radius: 8px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); position: relative; border-top: 4px solid #f472b6; }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #fbcfe8; margin: 0 0 15px 0; line-height: 1.4; text-transform: uppercase; letter-spacing: 1px; }
+.divider { border: none; border-top: 1px dashed #704b90; margin: 0 0 20px 0; }
+.text-box { font-size: 1.1rem; line-height: 1.7; font-weight: 300; margin-bottom: 25px; color: #e2e8f0; }
+.math-box { font-size: 1.3rem; margin: 25px 0; text-align: center; color: #c084fc; background: rgba(192, 132, 252, 0.05); padding: 15px; border-radius: 4px; border-left: 4px solid #c084fc; }
+ul { font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; padding-left: 20px; color: #cbd5e1; }
+li { margin-bottom: 8px; }
+.strong-text { font-weight: 700; color: #f472b6; font-family: 'VT323', monospace; font-size: 1.2rem; }
+
+/* Widget Specific */
+.widget { background: #231630; border: 2px solid #704b90; border-radius: 6px; padding: 25px; position: relative; }
+.canvas-wrapper { width: 100%; height: 350px; background: #1a1024; background-image: linear-gradient(rgba(192,132,252,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(192,132,252,0.1) 1px, transparent 1px); background-size: 20px 20px; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); position: relative; border-radius: 4px; overflow: hidden; border: 1px solid #5b3e75; }
+canvas { display: block; width: 100%; height: 100%; }
+
+.controls { display: flex; align-items: center; justify-content: space-between; gap: 20px; background: rgba(112,75,144,0.1); padding: 15px; border-radius: 4px; margin-top: 20px; border: 1px solid #5b3e75; }
+button { font-family: 'VT323', monospace; font-size: 1.3rem; padding: 5px 20px; background: #db2777; color: #fff; border: 2px solid #f472b6; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 10px rgba(219,39,119,0.5); }
+.scrubber-zone { flex: 1; display: flex; flex-direction: column; align-items: stretch; gap: 5px; }
+.scrubber-zone label { font-family: 'VT323', monospace; font-size: 1.1rem; color: #c084fc; text-transform: uppercase; display: flex; justify-content: space-between; }
+input[type="range"] { -webkit-appearance: none; width: 100%; background: #3b284d; height: 8px; border-radius: 4px; border: 1px solid #704b90; outline: none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #f472b6; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 10px #f472b6; }
 </style>
 </head>
 <body>
-<h2>Bubble Sort — Step Through</h2>
-<p>Use Play, Step, or the slider to control the sorting animation.</p>
-<canvas id="c" width="500" height="300"></canvas>
-<div class="controls">
-  <button id="playBtn">▶ Play</button>
-  <button id="stepBtn">Step →</button>
-  <button id="resetBtn">Reset</button>
-  <label>Step <span id="stepNum">0</span>/<span id="totalSteps"></span></label>
-  <input type="range" id="slider" min="0" value="0" style="width:180px">
+<div class="wrapper">
+    <h1 class="main-title">What is a Fourier Series?</h1>
+    <div class="card">
+        <h2 class="section-title">Deconstructing Periodic Waveforms into Infinite Sinusoidal Epicycles.</h2>
+        <hr class="divider">
+        
+        <div class="text-box">
+            Jean-Baptiste Joseph Fourier proved a profound mathematical truth: the most rigid, jagged, and discontinuous signals in the universe are merely illusions. Beneath their sharp edges lies an infinite chorus of perfectly smooth, continuous sinusoidal waves oscillating together in intricate harmonic resonance.
+        </div>
+        
+        <div class="math-box">$$ f(t) = \frac{4}{\pi} \sum_{n=1,3,5\dots}^{\infty} \frac{1}{n} \sin(n \omega t) $$</div>
+        
+        <ul>
+            <li><span class="strong-text">n</span>: The odd harmonic scaling integer defining the epicycle tier.</li>
+            <li><span class="strong-text">ω (Omega)</span>: The fundamental rotational velocity.</li>
+            <li><span class="strong-text">T (Time)</span>: Scrubbing the temporal parameter sweeps the drawing vector.</li>
+        </ul>
+        
+        <div class="widget">
+            <div class="canvas-wrapper">
+                <canvas id="fourier-canvas"></canvas>
+            </div>
+            <div class="controls">
+                <button id="btn-play">Pause</button>
+                <div class="scrubber-zone">
+                    <label><span>Timeline Scrub</span><span id="n-val">Harmonic Nodes: 5</span></label>
+                    <input type="range" id="sl-n" min="1" max="15" value="5" step="2"/>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="info" id="info"></div>
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const W = 500, H = 300, N = 15;
-let original, history, step, playing, timer;
+    const canvas = document.getElementById('fourier-canvas');
+    const ctx = canvas.getContext('2d');
+    const btn = document.getElementById('btn-play');
+    const slN = document.getElementById('sl-n');
+    const nVal = document.getElementById('n-val');
 
-function init() {
-  original = Array.from({length: N}, (_, i) => i + 1);
-  // Shuffle
-  for (let i = N - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [original[i], original[j]] = [original[j], original[i]]; }
-  // Record all steps of bubble sort
-  history = [];
-  const arr = [...original];
-  history.push({ arr: [...arr], comparing: [-1, -1] });
-  for (let i = 0; i < N; i++) {
-    for (let j = 0; j < N - 1 - i; j++) {
-      history.push({ arr: [...arr], comparing: [j, j + 1] });
-      if (arr[j] > arr[j + 1]) { [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]]; }
-      history.push({ arr: [...arr], comparing: [j, j + 1] });
+    function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * 2;
+        canvas.height = rect.height * 2;
+        ctx.scale(2, 2);
     }
-  }
-  step = 0; playing = false;
-  document.getElementById('slider').max = history.length - 1;
-  document.getElementById('totalSteps').textContent = history.length - 1;
-  draw();
-}
+    resize();
 
-function draw() {
-  const s = history[step];
-  const barW = (W - 40) / N;
-  ctx.clearRect(0, 0, W, H);
-  for (let i = 0; i < N; i++) {
-    const h = (s.arr[i] / N) * (H - 40);
-    const x = 20 + i * barW;
-    const y = H - 20 - h;
-    if (s.comparing.includes(i)) ctx.fillStyle = '#dc2626';
-    else if (s.arr[i] === i + 1) ctx.fillStyle = '#059669';
-    else ctx.fillStyle = '#2563eb';
-    ctx.fillRect(x + 1, y, barW - 2, h);
-  }
-  document.getElementById('stepNum').textContent = step;
-  document.getElementById('slider').value = step;
-  // Check if sorted
-  const sorted = s.arr.every((v, i) => v === i + 1);
-  document.getElementById('info').textContent = sorted ? '✓ Array is sorted!' : `Comparing indices ${s.comparing[0]} and ${s.comparing[1]}`;
-}
+    let time = 0;
+    let wave = [];
+    let isPlaying = true;
+    
+    slN.addEventListener('input', () => { nVal.textContent = `Harmonic Nodes: ${slN.value}`; wave = []; });
 
-document.getElementById('stepBtn').addEventListener('click', () => {
-  if (step < history.length - 1) { step++; draw(); }
-});
-document.getElementById('playBtn').addEventListener('click', () => {
-  if (playing) { clearInterval(timer); playing = false; document.getElementById('playBtn').textContent = '▶ Play'; }
-  else { playing = true; document.getElementById('playBtn').textContent = '⏸ Pause'; timer = setInterval(() => { if (step < history.length - 1) { step++; draw(); } else { clearInterval(timer); playing = false; document.getElementById('playBtn').textContent = '▶ Play'; } }, 50); }
-});
-document.getElementById('resetBtn').addEventListener('click', () => { clearInterval(timer); playing = false; document.getElementById('playBtn').textContent = '▶ Play'; init(); });
-document.getElementById('slider').addEventListener('input', e => { step = parseInt(e.target.value); draw(); });
-init();
+    function draw() {
+        const w = canvas.width/2;
+        const h = canvas.height/2;
+        ctx.clearRect(0, 0, w, h);
+        
+        let x = w * 0.25;
+        let y = h/2;
+        const radiusMultiplier = 50;
+
+        const maxN = parseInt(slN.value);
+
+        for(let i=1; i<=maxN; i+=2) {
+            let prevx = x; let prevy = y;
+            let radius = radiusMultiplier * (4 / (i * Math.PI));
+            x += radius * Math.cos(i * time);
+            y += radius * Math.sin(i * time);
+            
+            // Draw Circle
+            ctx.beginPath();
+            ctx.arc(prevx, prevy, radius, 0, Math.PI*2);
+            ctx.strokeStyle = 'rgba(192, 132, 252, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Draw Line
+            ctx.beginPath();
+            ctx.moveTo(prevx, prevy);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = '#c084fc';
+            ctx.stroke();
+        }
+        
+        // Connect to wave
+        ctx.beginPath();
+        const startX = w * 0.55;
+        ctx.moveTo(x, y);
+        ctx.lineTo(startX, wave[0] !== undefined ? wave[0] : y);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.setLineDash([5,5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Draw Output Point
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI*2);
+        ctx.fillStyle = '#f472b6';
+        ctx.fill();
+
+        if (isPlaying) wave.unshift(y);
+        if (wave.length > 500) wave.pop();
+
+        ctx.beginPath();
+        for(let i=0; i<wave.length; i++) {
+            if(i===0) ctx.moveTo(startX, wave[i]);
+            else ctx.lineTo(startX + i*2, wave[i]);
+        }
+        ctx.strokeStyle = '#db2777';
+        ctx.lineWidth = 3;
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+        
+        if (isPlaying) time -= 0.05;
+        requestAnimationFrame(draw);
+    }
+
+    btn.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        btn.textContent = isPlaying ? 'Pause' : 'Play';
+    });
+
+    draw();
 </script>
 </body>
 </html>

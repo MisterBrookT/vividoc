@@ -1,15 +1,15 @@
 {
   "category": "Scroll-driven Narrative",
-  "topic": "Generation of Julia set fractals through the iteration of complex functions",
-  "source_url": "http://acko.net/blog/how-to-fold-a-julia-fractal/",
+  "topic": "Thermodynamic Entropy and the Irreversibility of Time",
   "srtc": {
     "S": {
-      "scroll_progress": { "type": "scroll", "range": [0, 1], "label": "Page scroll position" },
-      "current_step": { "type": "derived", "formula": "floor(scroll_progress * total_steps)" },
-      "animation_t": { "type": "derived", "formula": "fract(scroll_progress * total_steps)" }
+      "scroll_progress": { "control": "scroll-wheel", "range": [0, 1], "default": 0, "label": "Time progression (via scroll)" },
+      "partition_y":     { "derived": "scroll_progress × canvas_height — the height of the central dividing wall" },
+      "particles":       { "value": "150 red particles (left side) + 150 blue particles (right side), each with random velocities", "derived_update": "bounce off canvas edges; bounce off wall if above partition_y" },
+      "entropy_S":       { "derived": "fraction of red particles that have crossed to the right side (or blue to left) × 100" }
     },
-    "R": "A fixed-position visualization that morphs between narrative steps: from complex multiplication to Julia set generation, synchronized with scroll position",
-    "T": "Scrolling the page advances current_step and interpolates animation_t within each step",
-    "C": "The Julia set emerges from repeatedly applying z → z² + c, which is a folding of the complex plane"
+    "R": "A dark split-canvas with 300 bouncing particles (red on left, blue on right). A central vertical wall separates the two halves—but only from partition_y downward. A red entropy counter (S = ...) updates live. A scroll track on the left fills red proportional to scroll_progress.",
+    "T": "Scrolling the mouse wheel inside the widget increases scroll_progress, which raises partition_y (shortens the wall from the top), allowing particles to mix across the boundary. Scrolling back down lowers partition_y, re-blocking the passage.",
+    "C": "As the wall is removed (scroll_progress → 1), particles irreversibly mix—entropy S increases monotonically. The constraint ΔS ≥ 0 maps directly to the unidirectional scroll interaction, visualizing time's arrow."
   }
 }

@@ -1,16 +1,18 @@
 {
   "category": "Direct Manipulation",
-  "topic": "Ordinary Least Squares regression",
-  "source_url": "http://setosa.io/ev/ordinary-least-squares-regression/",
+  "topic": "Geometric Optics and Real-Time Refraction Tracing",
   "srtc": {
     "S": {
-      "points": { "type": "draggable", "default": [[1,2],[2,3],[3,2.5],[4,4.5],[5,4]], "label": "Data points" },
-      "slope": { "type": "derived", "formula": "OLS_slope(points)" },
-      "intercept": { "type": "derived", "formula": "OLS_intercept(points)" },
-      "residuals": { "type": "derived", "formula": "points[i].y - (slope * points[i].x + intercept)" }
+      "object_x":  { "control": "drag-x", "range": [20, "lens_x - 10"], "derived_constraint": "object must stay left of lens", "label": "Object horizontal position" },
+      "object_y":  { "control": "drag-y", "range": [0, "canvas_height"], "label": "Object vertical position (height)" },
+      "f":         { "control": "drag-x", "range": [40, 300], "label": "Focal length (distance between lens center and focal points F, F')" },
+      "u":         { "derived": "lens_x - object_x" },
+      "v":         { "derived": "(u * f) / (u - f)  [thin lens equation]" },
+      "M":         { "derived": "v / u  [magnification]" },
+      "image_type":{ "derived": "if v > 0: Real Inverted; if v < 0: Virtual Upright; if v = ∞: Undefined" }
     },
-    "R": "Scatter plot with draggable points; regression line y = slope·x + intercept; residual squares drawn at each point",
-    "T": "Dragging any data point recalculates slope, intercept, and residuals in real time",
-    "C": "The OLS line minimizes the total area of the residual squares"
+    "R": "A canvas with a central convex lens (thickness scales with focal length), an orange object arrow on the left, two green focal points F and F' draggable on the optical axis. Three principal rays are drawn from the object tip through the lens. A colored image arrow appears on the right (green for real, blue for virtual). An instrument dashboard shows live values of f, u, v, and M. A status tag shows the image type and orientation.",
+    "T": "Dragging the orange object arrow moves it horizontally and vertically, changing u and object height. Dragging a focal point (F or F') changes f, reshaping both the lens bowing and all derived optical values simultaneously.",
+    "C": "The thin lens equation 1/u + 1/v = 1/f is always satisfied. When u < f, the image distance v becomes negative (virtual image). When u = f, the image forms at infinity."
   }
 }

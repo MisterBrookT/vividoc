@@ -1,16 +1,16 @@
 {
   "category": "Inspection",
-  "topic": "Image processing with convolution kernels",
-  "source_url": "http://setosa.io/ev/image-kernels/",
+  "topic": "Voronoi Tessellation and Spatial Proximity Partitioning",
   "srtc": {
     "S": {
-      "hover_pos": { "type": "cursor", "default": null, "label": "Pixel position under cursor" },
-      "kernel": { "type": "constant", "value": "sharpen_3x3" },
-      "input_block": { "type": "derived", "formula": "image[hover_pos ± 1]" },
-      "output_value": { "type": "derived", "formula": "dot(input_block, kernel)" }
+      "seeds":    { "control": "none", "value": "15 points initialized at random positions, each moving with a slow random velocity", "label": "Voronoi seed points" },
+      "mouse_pos":{ "control": "hover", "label": "Current cursor position" },
+      "nearest":  { "derived": "argmin_k d(mouse_pos, seeds[k]) — the seed closest to the mouse" },
+      "min_dist": { "derived": "d(mouse_pos, seeds[nearest])" },
+      "cell_region":{ "derived": "all canvas pixels closest to seeds[nearest], within a radius of 150px from mouse_pos" }
     },
-    "R": "Input image and output image side by side; on hover, the 3×3 block in the input is highlighted and the kernel multiplication is shown",
-    "T": "Moving the cursor over either image updates hover_pos; the highlighted block and calculation follow the cursor",
-    "C": "Each output pixel is the weighted sum of its 3×3 neighborhood in the input"
+    "R": "An animated canvas of 15 slowly drifting seed points on a dark background. On hover: the hovered cell is illuminated with a purple radial gradient; a dashed gold line connects the mouse to its nearest seed; a transparent circle of radius min_dist visualizes the nearest-neighbor envelope. The nearest seed turns gold while all others remain purple.",
+    "T": "Moving the mouse over the canvas updates mouse_pos continuously. The nearest seed is recalculated each frame, and the illuminated cell, connecting line, and envelope circle all update in real-time.",
+    "C": "The illuminated region always corresponds exactly to the Voronoi cell of the nearest seed. Every point within the highlighted region is provably closer to that seed than to any other—demonstrating the core definition of Voronoi partitioning."
   }
 }

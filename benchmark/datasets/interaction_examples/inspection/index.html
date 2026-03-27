@@ -1,138 +1,298 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Inspection — Image Kernel Convolution</title>
-<style>
-  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
-  .grid-container { display: flex; gap: 2rem; align-items: flex-start; }
-  .grid-box { text-align: center; }
-  .grid-box h3 { margin-bottom: 0.5rem; }
-  table { border-collapse: collapse; }
-  td { width: 36px; height: 36px; text-align: center; font-size: 12px; border: 1px solid #ddd; transition: background 0.1s; }
-  td.highlight { background: #fef3c7 !important; outline: 2px solid #d97706; }
-  .kernel-display { margin-top: 1rem; }
-  .kernel-display td { background: #f1f5f9; font-weight: 600; }
-  .result { margin-top: 1rem; font-size: 1.1rem; color: #2563eb; font-weight: 600; min-height: 1.5em; }
-  p { color: #555; }
-</style>
+    <meta charset="utf-8" />
+    <title>Voronoi Diagrams</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&family=Merriweather:ital,wght@0,300;0,700;1,300&family=Space+Mono&display=swap"
+        rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+    <style>
+        body {
+            background: #170a24;
+            color: #dac6e3;
+            font-family: 'Merriweather', serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .wrapper {
+            max-width: 850px;
+            width: 100%;
+            position: relative;
+        }
+
+        .main-title {
+            font-family: 'Roboto Slab', serif;
+            font-size: 2.8rem;
+            text-transform: uppercase;
+            color: #facc15;
+            text-align: center;
+            border-bottom: 4px double #facc15;
+            padding-bottom: 10px;
+            margin: 0 0 35px 0;
+            letter-spacing: 2px;
+        }
+
+        .card {
+            background: #28143d;
+            border: 1px solid #7e22ce;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            position: relative;
+            border-top: 4px solid #facc15;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fdf4ff;
+            margin: 0 0 15px 0;
+            line-height: 1.4;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #581c87;
+            margin: 0 0 20px 0;
+        }
+
+        .text-box {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            font-weight: 300;
+            margin-bottom: 25px;
+            color: #e9d5ff;
+        }
+
+        .math-box {
+            font-size: 1.3rem;
+            margin: 25px 0;
+            text-align: center;
+            color: #facc15;
+            background: rgba(250, 204, 21, 0.05);
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            border-left: 4px solid #facc15;
+        }
+
+        ul {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            padding-left: 20px;
+            color: #d8b4fe;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .strong-text {
+            font-weight: 700;
+            color: #facc15;
+            font-family: 'Space Mono', monospace;
+            font-size: 1.1rem;
+        }
+
+        /* Widget Specific */
+        .widget {
+            background: #13081e;
+            border: 1px solid #7e22ce;
+            border-radius: 6px;
+            padding: 25px;
+            position: relative;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .canvas-wrapper {
+            width: 100%;
+            height: 350px;
+            background: #0c0512;
+            cursor: crosshair;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #9333ea;
+            border-radius: 4px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .drag-prompt {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(60, 20, 90, 0.8);
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: #facc15;
+            font-weight: bold;
+            border: 1px dashed #d8b4fe;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+    </style>
 </head>
+
 <body>
-<h2>Image Kernel Convolution</h2>
-<p>Hover over any cell in the input grid to see the 3×3 convolution calculation.</p>
-<div class="grid-container">
-  <div class="grid-box">
-    <h3>Input</h3>
-    <table id="input"></table>
-  </div>
-  <div class="grid-box">
-    <h3>Kernel (Sharpen)</h3>
-    <table class="kernel-display" id="kernel"></table>
-  </div>
-  <div class="grid-box">
-    <h3>Output</h3>
-    <table id="output"></table>
-  </div>
-</div>
-<div class="result" id="result"></div>
-<script>
-const SIZE = 8;
-const kernel = [[0, -1, 0], [-1, 5, -1], [0, -1, 0]];
+    <div class="wrapper">
+        <h1 class="main-title">What are Voronoi Diagrams?</h1>
+        <div class="card">
+            <h2 class="section-title">Spatial Partitioning and the Geometry of Nearest Intersecting Neighbors.</h2>
+            <hr class="divider">
 
-// Generate a smooth gradient-like input
-const input = [];
-for (let r = 0; r < SIZE; r++) {
-  input[r] = [];
-  for (let c = 0; c < SIZE; c++) {
-    input[r][c] = Math.round(30 + (r + c) * 12 + Math.sin(r * 0.8) * 15 + Math.cos(c * 0.6) * 10);
-  }
-}
+            <div class="text-box">
+                Scatter a random collection of seed points across any flat surface, and the plane will silently carve
+                itself into territories. Every region's boundary is defined by exactly one rule: this is the terrain
+                closest to me. From cellular biology to urban planning, Voronoi tessellations emerge wherever nature
+                partitions resources by proximity.
+            </div>
 
-// Compute output via convolution
-const output = [];
-for (let r = 0; r < SIZE; r++) {
-  output[r] = [];
-  for (let c = 0; c < SIZE; c++) {
-    let sum = 0;
-    for (let kr = -1; kr <= 1; kr++) {
-      for (let kc = -1; kc <= 1; kc++) {
-        const ir = Math.min(Math.max(r + kr, 0), SIZE - 1);
-        const ic = Math.min(Math.max(c + kc, 0), SIZE - 1);
-        sum += input[ir][ic] * kernel[kr + 1][kc + 1];
-      }
-    }
-    output[r][c] = Math.min(255, Math.max(0, Math.round(sum)));
-  }
-}
+            <div class="math-box">$$ R_k = \{ x \in X \mid d(x, P_k) \le d(x, P_j) \text{ for all } j \neq k \} $$</div>
 
-function buildTable(id, data) {
-  const table = document.getElementById(id);
-  for (let r = 0; r < SIZE; r++) {
-    const tr = document.createElement('tr');
-    for (let c = 0; c < SIZE; c++) {
-      const td = document.createElement('td');
-      td.textContent = data[r][c];
-      const gray = data[r][c];
-      td.style.background = `rgb(${gray},${gray},${gray})`;
-      td.style.color = gray > 128 ? '#000' : '#fff';
-      td.dataset.row = r; td.dataset.col = c;
-      tr.appendChild(td);
-    }
-    table.appendChild(tr);
-  }
-}
+            <ul>
+                <li><span class="strong-text">P_k</span>: The designated origin point producing a regional nucleus.</li>
+                <li><span class="strong-text">R_k</span>: The resulting convex spatial tessellation boundary.</li>
+                <li><span class="strong-text">Distance metric</span>: Euclidean triangulation isolating the absolute
+                    minimal trajectory.</li>
+            </ul>
 
-function buildKernel() {
-  const table = document.getElementById('kernel');
-  for (let r = 0; r < 3; r++) {
-    const tr = document.createElement('tr');
-    for (let c = 0; c < 3; c++) {
-      const td = document.createElement('td');
-      td.textContent = kernel[r][c];
-      td.id = `k${r}${c}`;
-      tr.appendChild(td);
-    }
-    table.appendChild(tr);
-  }
-}
+            <div class="widget">
+                <div class="canvas-wrapper" id="viewport">
+                    <canvas id="voronoi-canvas"></canvas>
+                    <div class="drag-prompt">HOVER TO EXPOSE CELLULAR DOMAIN ZONES</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('voronoi-canvas');
+        const ctx = canvas.getContext('2d');
+        const vp = document.getElementById('viewport');
 
-buildTable('input', input);
-buildTable('output', output);
-buildKernel();
+        function resize() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * 2;
+            canvas.height = rect.height * 2;
+            ctx.scale(2, 2);
+        }
+        resize();
 
-// Hover interaction
-const inputTable = document.getElementById('input');
-const outputTable = document.getElementById('output');
+        let seeds = [];
+        for (let i = 0; i < 15; i++) {
+            seeds.push({
+                x: Math.random() * 800, y: Math.random() * 400,
+                vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5
+            });
+        }
 
-function clearHighlights() {
-  inputTable.querySelectorAll('td').forEach(td => td.classList.remove('highlight'));
-  outputTable.querySelectorAll('td').forEach(td => td.classList.remove('highlight'));
-  document.querySelectorAll('.kernel-display td').forEach(td => td.style.background = '#f1f5f9');
-  document.getElementById('result').textContent = '';
-}
+        let mouseX = -100, mouseY = -100;
 
-inputTable.addEventListener('mouseover', e => {
-  if (e.target.tagName !== 'TD') return;
-  clearHighlights();
-  const r = parseInt(e.target.dataset.row), c = parseInt(e.target.dataset.col);
-  // Highlight 3x3 block in input
-  let terms = [];
-  for (let kr = -1; kr <= 1; kr++) {
-    for (let kc = -1; kc <= 1; kc++) {
-      const ir = Math.min(Math.max(r + kr, 0), SIZE - 1);
-      const ic = Math.min(Math.max(c + kc, 0), SIZE - 1);
-      const cell = inputTable.rows[ir].cells[ic];
-      cell.classList.add('highlight');
-      const kv = kernel[kr + 1][kc + 1];
-      if (kv !== 0) terms.push(`${input[ir][ic]}×${kv}`);
-      document.getElementById(`k${kr+1}${kc+1}`).style.background = '#fef3c7';
-    }
-  }
-  // Highlight output cell
-  outputTable.rows[r].cells[c].classList.add('highlight');
-  document.getElementById('result').textContent = `Output[${r},${c}] = ${terms.join(' + ')} = ${output[r][c]}`;
-});
-inputTable.addEventListener('mouseleave', clearHighlights);
-</script>
+        function draw() {
+            const w = canvas.width / 2; const h = canvas.height / 2;
+            ctx.fillStyle = '#13081e';
+            ctx.fillRect(0, 0, w, h);
+
+            // Animate
+            seeds.forEach(s => {
+                s.x += s.vx; s.y += s.vy;
+                if (s.x < 0 || s.x > w) s.vx *= -1;
+                if (s.y < 0 || s.y > h) s.vy *= -1;
+            });
+
+            // Slow but accurate pixel-by-pixel Voronoi coloring near mouse to save CPU
+            // We will just draw the cell the mouse is currently over precisely via pixel radius
+            let minD = Infinity; let nearest = -1;
+            if (mouseX > 0) {
+                for (let i = 0; i < seeds.length; i++) {
+                    const d = Math.hypot(seeds[i].x - mouseX, seeds[i].y - mouseY);
+                    if (d < minD) { minD = d; nearest = i; }
+                }
+            }
+
+            if (nearest > -1) {
+                // Render the specific cell by scanning around the mouse
+                const imageData = ctx.createImageData(w, h);
+                const data = imageData.data;
+
+                // To be performant, we only evaluate bounding box around mouse
+                const range = 150;
+                const sx = Math.max(0, mouseX - range); const ex = Math.min(w, mouseX + range);
+                const sy = Math.max(0, mouseY - range); const ey = Math.min(h, mouseY + range);
+
+                for (let x = Math.floor(sx); x < ex; x++) {
+                    for (let y = Math.floor(sy); y < ey; y++) {
+                        let md = Infinity; let nid = -1;
+                        for (let i = 0; i < seeds.length; i++) {
+                            const d = (seeds[i].x - x) * (seeds[i].x - x) + (seeds[i].y - y) * (seeds[i].y - y);
+                            if (d < md) { md = d; nid = i; }
+                        }
+                        if (nid === nearest) {
+                            const distToMouse = Math.hypot(x - mouseX, y - mouseY);
+                            if (distToMouse < range) {
+                                const val = Math.max(0, 1 - (distToMouse / range));
+                                const idx = (y * w + x) * 4;
+                                data[idx] = 126 * val;   // R (purple)
+                                data[idx + 1] = 34 * val;  // G
+                                data[idx + 2] = 206 * val; // B
+                                data[idx + 3] = 255;
+                            }
+                        }
+                    }
+                }
+                // Need to put data back but scaled
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = w; tempCanvas.height = h;
+                tempCanvas.getContext('2d').putImageData(imageData, 0, 0);
+                ctx.drawImage(tempCanvas, 0, 0);
+            }
+
+            // Draw Seeds
+            seeds.forEach((s, idx) => {
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = idx === nearest ? '#facc15' : '#7e22ce';
+                ctx.fill();
+            });
+
+            // Draw Mouse lines
+            if (nearest > -1) {
+                ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1; ctx.setLineDash([2, 2]);
+                ctx.beginPath(); ctx.moveTo(mouseX, mouseY); ctx.lineTo(seeds[nearest].x, seeds[nearest].y); ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Halo
+                ctx.beginPath(); ctx.arc(mouseX, mouseY, minD, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(250, 204, 21, 0.4)'; ctx.stroke();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        vp.addEventListener('mousemove', (e) => {
+            const rect = vp.getBoundingClientRect();
+            mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top;
+        });
+        vp.addEventListener('mouseleave', () => { mouseX = -100; });
+
+        draw();
+    </script>
 </body>
+
 </html>

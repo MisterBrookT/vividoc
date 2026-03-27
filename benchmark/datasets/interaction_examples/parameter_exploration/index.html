@@ -1,85 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Parameter Exploration — π</title>
+<meta charset="utf-8"/>
+<title>The Lorenz Attractor</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&family=Merriweather:ital,wght@0,300;0,700;1,300&family=Space+Mono&display=swap" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 <style>
-  body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f8f9fa; }
-  h2 { margin-bottom: 0.5rem; }
-  .viz { position: relative; width: 400px; height: 400px; }
-  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; }
-  .controls { margin-top: 1rem; display: flex; align-items: center; gap: 1rem; }
-  .stats { margin-top: 1rem; font-size: 1.1rem; }
-  .stats span { font-weight: 600; color: #2563eb; }
-  label { font-size: 0.95rem; color: #555; }
+body { background: #0b0f19; color: #cbd5e1; font-family: 'Merriweather', serif; margin:0; padding:40px; display:flex; justify-content:center; }
+.wrapper { max-width: 850px; width: 100%; position: relative; }
+.main-title { font-family: 'Roboto Slab', serif; font-size: 2.5rem; text-transform: uppercase; color: #22d3ee; text-align: center; border-bottom: 4px double #22d3ee; padding-bottom: 10px; margin: 0 0 35px 0; letter-spacing: 2px; }
+.card { background: #161e2e; border: 1px solid #334155; border-radius: 8px; padding: 40px; box-shadow: 0 20px 40px rgba(0,243,255,0.05); position: relative; border-top: 4px solid #22d3ee; }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #f8fafc; margin: 0 0 15px 0; line-height: 1.4; text-transform: uppercase; letter-spacing: 1px; }
+.divider { border: none; border-top: 1px solid #334155; margin: 0 0 20px 0; }
+.text-box { font-size: 1.1rem; line-height: 1.7; font-weight: 300; margin-bottom: 25px; }
+.math-box { font-size: 1.3rem; margin: 25px 0; text-align: center; color: #38bdf8; background: rgba(56, 189, 248, 0.05); padding: 15px; border-radius: 4px; font-family: 'Space Mono', monospace; }
+ul { font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; padding-left: 20px; list-style-type: square; color: #94a3b8; }
+li { margin-bottom: 8px; }
+.strong-text { font-weight: 700; color: #22d3ee; font-family: 'Space Mono', monospace; }
+
+/* Widget Specific */
+.widget { background: #0b0f19; border: 1px solid #334155; border-radius: 6px; padding: 20px; position: relative; }
+.canvas-wrapper { width: 100%; height: 350px; background: #030712; border-radius: 4px; box-shadow: inset 0 0 30px rgba(0,0,0,1); position: relative; overflow: hidden; border: 1px solid #1e293b; }
+canvas { display: block; width: 100%; height: 100%; }
+
+.controls { display: flex; justify-content: space-around; margin-top: 20px; background: #1e293b; padding: 15px; border-radius: 4px; }
+.slider-group { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 45%; }
+.slider-group label { font-family: 'Space Mono', monospace; font-size: 0.85rem; text-transform: uppercase; color: #7dd3fc; letter-spacing: 1px; }
+input[type="range"] { -webkit-appearance: none; width: 100%; background: #0f172a; height: 6px; border-radius: 3px; border: 1px solid #38bdf8; outline: none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #22d3ee; cursor: pointer; box-shadow: 0 0 10px #22d3ee; }
 </style>
 </head>
 <body>
-<h2>The Definition of π</h2>
-<p>Drag the slider to change the radius and observe that C/D ≈ π always holds.</p>
-<div class="viz"><canvas id="c" width="400" height="400"></canvas></div>
-<div class="controls">
-  <label>Radius r = <strong id="rVal">1.5</strong></label>
-  <input type="range" id="slider" min="0.5" max="5" step="0.1" value="1.5" style="width:220px">
-</div>
-<div class="stats">
-  C = <span id="cVal"></span> &nbsp; D = <span id="dVal"></span> &nbsp; C / D = <span id="ratioVal"></span>
+<div class="wrapper">
+    <h1 class="main-title">What is the Lorenz Attractor?</h1>
+    <div class="card">
+        <h2 class="section-title">Chaos Theory and the Butterfly Effect in Deterministic Nonlinear Systems.</h2>
+        <hr class="divider">
+        
+        <div class="text-box">
+            At the heart of chaos theory lies profound sensitivity. Even the most rigorous, deterministic systems can become wildly unpredictable. A microscopic breeze from a butterfly's wing compounds exponentially over time, forcing atmospheric equations to trace out strange, infinitely complex topological attractors instead of stable orbits.
+        </div>
+        
+        <div class="math-box">$$ \frac{dx}{dt} = \sigma(y - x), \quad \frac{dy}{dt} = x(\rho - z) - y, \quad \frac{dz}{dt} = xy - \beta z $$</div>
+        
+        <ul>
+            <li><span class="strong-text">σ (Sigma)</span>: The Prandtl number governing momentum vs. thermal diffusivity.</li>
+            <li><span class="strong-text">ρ (Rho)</span>: The Rayleigh number determining heat transfer mechanics.</li>
+            <li><span class="strong-text">β (Beta)</span>: The physical aspect ratio of convective rolls.</li>
+        </ul>
+        
+        <div class="widget">
+            <div class="canvas-wrapper">
+                <canvas id="lorenz-canvas"></canvas>
+            </div>
+            <div class="controls">
+                <div class="slider-group">
+                    <label>σ: Diffusivity (<span id="val-s">10.0</span>)</label>
+                    <input type="range" id="sl-s" min="1" max="30" value="10" step="0.1"/>
+                </div>
+                <div class="slider-group">
+                    <label>ρ: Rayleigh (<span id="val-r">28.0</span>)</label>
+                    <input type="range" id="sl-r" min="10" max="60" value="28" step="0.1"/>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const slider = document.getElementById('slider');
+    const canvas = document.getElementById('lorenz-canvas');
+    const ctx = canvas.getContext('2d');
+    const slS = document.getElementById('sl-s');
+    const slR = document.getElementById('sl-r');
+    const vS = document.getElementById('val-s');
+    const vR = document.getElementById('val-r');
 
-function draw() {
-  const r = parseFloat(slider.value);
-  const C = 2 * Math.PI * r;
-  const D = 2 * r;
-  const ratio = C / D;
-  document.getElementById('rVal').textContent = r.toFixed(1);
-  document.getElementById('cVal').textContent = C.toFixed(3);
-  document.getElementById('dVal').textContent = D.toFixed(1);
-  document.getElementById('ratioVal').textContent = ratio.toFixed(5);
+    function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * 2;
+        canvas.height = rect.height * 2;
+        ctx.scale(2, 2);
+    }
+    resize();
 
-  const cx = 200, cy = 200;
-  const scale = 35;
-  const pr = r * scale;
+    let points = [];
+    let x = 0.1, y = 0, z = 0;
+    const beta = 8/3;
+    const dt = 0.01;
 
-  ctx.clearRect(0, 0, 400, 400);
+    function reset() {
+        points = [];
+        x = 0.1; y = 0; z = 0;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
-  // Circle
-  ctx.beginPath();
-  ctx.arc(cx, cy, pr, 0, 2 * Math.PI);
-  ctx.strokeStyle = '#2563eb';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = 'rgba(37,99,235,0.08)';
-  ctx.fill();
+    slS.addEventListener('input', () => { vS.textContent = parseFloat(slS.value).toFixed(1); reset(); });
+    slR.addEventListener('input', () => { vR.textContent = parseFloat(slR.value).toFixed(1); reset(); });
 
-  // Diameter line
-  ctx.beginPath();
-  ctx.moveTo(cx - pr, cy);
-  ctx.lineTo(cx + pr, cy);
-  ctx.strokeStyle = '#dc2626';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([6, 4]);
-  ctx.stroke();
-  ctx.setLineDash([]);
+    let angle = 0;
 
-  // Labels
-  ctx.font = '14px system-ui';
-  ctx.fillStyle = '#2563eb';
-  ctx.fillText(`C = ${C.toFixed(2)}`, cx + pr + 8, cy - pr / 2);
-  ctx.fillStyle = '#dc2626';
-  ctx.fillText(`D = ${D.toFixed(2)}`, cx - 30, cy + 20);
+    function draw() {
+        const w = canvas.width/2;
+        const h = canvas.height/2;
+        
+        const sigma = parseFloat(slS.value);
+        const rho = parseFloat(slR.value);
 
-  // Ratio badge
-  ctx.fillStyle = '#059669';
-  ctx.font = 'bold 16px system-ui';
-  ctx.fillText(`C/D = ${ratio.toFixed(5)}`, cx - 55, cy + pr + 30);
-}
+        // Generate 5 points per frame for speed
+        for(let i=0; i<5; i++) {
+            const dx = sigma * (y - x) * dt;
+            const dy = (x * (rho - z) - y) * dt;
+            const dz = (x * y - beta * z) * dt;
+            x += dx; y += dy; z += dz;
+            points.push({x, y, z});
+            if (points.length > 2500) points.shift(); // Trail length
+        }
 
-slider.addEventListener('input', draw);
-draw();
+        ctx.fillStyle = 'rgba(3, 7, 18, 0.3)'; // Trail fade
+        ctx.fillRect(0,0,w,h);
+
+        angle += 0.01;
+        const cosA = Math.cos(angle);
+        const sinA = Math.sin(angle);
+
+        ctx.beginPath();
+        for (let i=0; i<points.length; i++) {
+            const p = points[i];
+            
+            // Rotate around Y axis
+            const px = p.x * cosA - p.z * sinA;
+            const pz = p.x * sinA + p.z * cosA;
+            const py = p.y;
+            
+            const scale = 5;
+            const sx = w/2 + px * scale;
+            const sy = h/2 + (py - 25) * scale; // Offset Z visually mapped to Y
+            
+            if (i===0) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+        }
+        
+        ctx.strokeStyle = '#22d3ee';
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        requestAnimationFrame(draw);
+    }
+    
+    draw();
 </script>
 </body>
 </html>
