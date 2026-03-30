@@ -3,14 +3,23 @@
   "topic": "Voronoi Tessellation and Spatial Proximity Partitioning",
   "srtc": {
     "S": {
-      "seeds":    { "control": "none", "value": "15 points initialized at random positions, each moving with a slow random velocity", "label": "Voronoi seed points" },
-      "mouse_pos":{ "control": "hover", "label": "Current cursor position" },
-      "nearest":  { "derived": "argmin_k d(mouse_pos, seeds[k]) — the seed closest to the mouse" },
-      "min_dist": { "derived": "d(mouse_pos, seeds[nearest])" },
+      "seeds":     { "control": "none", "value": "15 points initialized at random positions, each moving with a slow random velocity", "label": "Voronoi seed points" },
+      "mouse_pos": { "control": "hover", "label": "Current cursor position" },
+      "nearest":   { "derived": "argmin_k d(mouse_pos, seeds[k]) — the seed closest to the mouse" },
+      "min_dist":  { "derived": "d(mouse_pos, seeds[nearest])" },
       "cell_region":{ "derived": "all canvas pixels closest to seeds[nearest], within a radius of 150px from mouse_pos" }
     },
-    "R": "An animated canvas of 15 slowly drifting seed points on a dark background. On hover: the hovered cell is illuminated with a purple radial gradient; a dashed gold line connects the mouse to its nearest seed; a transparent circle of radius min_dist visualizes the nearest-neighbor envelope. The nearest seed turns gold while all others remain purple.",
-    "T": "Moving the mouse over the canvas updates mouse_pos continuously. The nearest seed is recalculated each frame, and the illuminated cell, connecting line, and envelope circle all update in real-time.",
+    "R": [
+      "An animated canvas of 15 slowly drifting seed points on a dark background",
+      "On hover: the hovered Voronoi cell illuminated with a purple radial gradient",
+      "On hover: a dashed gold line connecting the cursor to its nearest seed",
+      "On hover: a transparent circle of radius min_dist visualizing the nearest-neighbor envelope",
+      "The nearest seed highlighted in gold; all others remain purple"
+    ],
+    "T": [
+      "Moving the mouse over the canvas updates mouse_pos continuously",
+      "Each frame recalculates the nearest seed and updates the illuminated cell, connecting line, and envelope circle in real-time"
+    ],
     "C": "The illuminated region always corresponds exactly to the Voronoi cell of the nearest seed. Every point within the highlighted region is provably closer to that seed than to any other—demonstrating the core definition of Voronoi partitioning."
   }
 }

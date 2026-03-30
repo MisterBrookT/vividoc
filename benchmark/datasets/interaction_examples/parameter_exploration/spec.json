@@ -8,8 +8,16 @@
       "beta":  { "control": "constant", "value": 2.667, "label": "β (Aspect Ratio)" },
       "trajectory": { "derived": "numerical integration of dx/dt=σ(y−x), dy/dt=x(ρ−z)−y, dz/dt=xy−βz" }
     },
-    "R": "A continuously growing 3D phase-space trajectory projected onto a 2D canvas, slowly rotating. The trail fades over time to emphasize recent motion. Color is cyan on a deep-black background.",
-    "T": "Adjusting σ or ρ sliders resets the trajectory and restarts integration from the same initial point, causing the attractor shape to deform or collapse into a stable orbit.",
+    "R": [
+      "A continuously growing 3D phase-space trajectory projected onto a 2D canvas",
+      "The trail fades over time to emphasize recent motion",
+      "A slow auto-rotation of the view around the vertical axis",
+      "Two sliders for σ and ρ displayed below the canvas"
+    ],
+    "T": [
+      "Adjusting the σ slider resets the trajectory and restarts integration from the same initial point",
+      "Adjusting the ρ slider resets the trajectory, causing the attractor shape to deform or collapse into a stable orbit"
+    ],
     "C": "For classical values (σ=10, ρ=28, β=8/3), the trajectory never repeats and draws a distinctive butterfly-shape—demonstrating sensitive dependence on initial conditions."
   }
 }

@@ -34,7 +34,7 @@ const CenterPanel: React.FC<CenterPanelProps> = ({
   onSpecGenerationStart,
   onSpecUpdated,
   onGenerateDocument,
-  theme = 'default',
+  theme = 'warm',
 }) => {
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -316,7 +316,7 @@ interface TopicViewProps {
   theme?: 'default' | 'warm';
 }
 
-const TopicView: React.FC<TopicViewProps> = ({ topic, onTopicChange, onGenerate, isGenerating, theme = 'default' }) => {
+const TopicView: React.FC<TopicViewProps> = ({ topic, onTopicChange, onGenerate, isGenerating, theme = 'warm' }) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();

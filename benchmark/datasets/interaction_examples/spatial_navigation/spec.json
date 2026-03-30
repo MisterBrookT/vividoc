@@ -7,8 +7,17 @@
       "rotY": { "control": "drag-x", "range": "[-3.14, 3.14]", "default": -0.5, "label": "Yaw angle" },
       "surface": { "derived": "parametric mesh: x(u,v)=(R+v*cos(u/2))*cos(u), y(u,v)=v*sin(u/2), z(u,v)=(R+v*cos(u/2))*sin(u)" }
     },
-    "R": "A 3D polygon mesh of the Möbius strip rendered using the Painter's Algorithm. Faces are colored with a teal-to-sky-blue gradient mapped to the u parameter. Depth shading simulates a diffuse light source. The current viewing angles are displayed as numeric overlays.",
-    "T": "Clicking and dragging on the canvas rotates the surface in 3D by updating rotX and rotY. Releasing the mouse locks the current orientation.",
+    "R": [
+      "A 3D polygon mesh of the Möbius strip rendered using the Painter's Algorithm",
+      "Faces colored with a teal-to-sky-blue gradient mapped to the u parameter",
+      "Depth shading simulating a diffuse light source",
+      "Numeric overlays showing the current rotX and rotY viewing angles"
+    ],
+    "T": [
+      "Clicking and dragging horizontally on the canvas updates rotY, rotating the strip around the vertical axis",
+      "Clicking and dragging vertically updates rotX, tilting the strip forward or backward",
+      "Releasing the mouse locks the current orientation"
+    ],
     "C": "No matter how the strip is rotated, a continuous path along its surface always returns to the starting point in a mirrored orientation, demonstrating the strip's single-sidedness."
   }
 }

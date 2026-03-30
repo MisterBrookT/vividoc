@@ -8,8 +8,17 @@
       "n_harmonics":{ "control": "slider", "range": [1, 15], "step": 2, "default": 5, "label": "Harmonic Nodes (odd)" },
       "wave":       { "derived": "last 500 y-values of the epicycle tip, forming the output waveform" }
     },
-    "R": "A chain of rotating circles (epicycles), each at a frequency proportional to its harmonic index. A dot traces the tip, and its y-position is recorded to draw the reconstructed square wave on the right. A dashed line connects the tip to the wave.",
-    "T": "Play/Pause button starts or freezes the rotation. The harmonic slider adds or removes outer epicycles in odd increments, immediately reshaping the output wave and its sharpness.",
+    "R": [
+      "A chain of rotating circles (epicycles), each at a frequency proportional to its harmonic index",
+      "A dot tracing the tip of the outermost epicycle",
+      "A reconstructed square wave drawn on the right by recording the tip's y-position over time",
+      "A dashed line connecting the epicycle tip to the leading edge of the wave",
+      "A Play/Pause button and a harmonic count slider"
+    ],
+    "T": [
+      "Pressing Play/Pause starts or freezes the rotation of all epicycles",
+      "Dragging the harmonic slider adds or removes outer epicycles in odd increments, immediately reshaping the output wave and its sharpness"
+    ],
     "C": "As n_harmonics increases toward infinity, the reconstructed wave converges to a perfect square wave, demonstrating Fourier's theorem that any periodic signal decomposes into sinusoids."
   }
 }

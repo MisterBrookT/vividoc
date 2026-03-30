@@ -16,7 +16,7 @@ function App() {
   const [liveHtml, setLiveHtml] = useState<string | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [isSpecGenerating, setIsSpecGenerating] = useState(false);
-  const [theme, setTheme] = useState<'default' | 'warm'>('default');
+  const [theme, setTheme] = useState<'default' | 'warm'>('warm');
   // Track whether spec was freshly generated (not loaded from history)
   const [specJustGenerated, setSpecJustGenerated] = useState(false);
 
@@ -88,7 +88,7 @@ function App() {
   };
 
   const toggleTheme = () => {
-    const newTheme = theme === 'default' ? 'warm' : 'default';
+    const newTheme = theme === 'warm' ? 'default' : 'warm';
     setTheme(newTheme);
     if (newTheme === 'warm') {
       document.documentElement.setAttribute('data-theme', 'warm');

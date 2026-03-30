@@ -7,8 +7,16 @@
       "wavefunction":  { "derived": "ψ(r,θ) = radial_part(n,l) × angular_part(l,m)" },
       "density_cloud": { "derived": "Monte Carlo sampling: accept point (x,y) with probability ∝ |ψ(x,y)|²" }
     },
-    "R": "A 2D canvas with coordinate axes and a nucleus dot at the origin. Points are progressively sampled and plotted, accumulating into a density cloud. The cloud color is navy blue. Switching states clears the canvas and begins resampling. An equation updates to reflect the active wavefunction.",
-    "T": "Clicking a segment button (1s / 2p / 3d) sets orbital_state, clears all existing sample points, and triggers a new Monte Carlo sampling run using the corresponding wavefunction's acceptance probability.",
+    "R": [
+      "A 2D canvas with coordinate axes and a nucleus dot at the origin",
+      "Points progressively sampled and plotted, accumulating into a probability density cloud",
+      "A wavefunction equation display that updates to reflect the active orbital state",
+      "A segmented button control with options 1s, 2p, and 3d"
+    ],
+    "T": [
+      "Clicking a segment button sets orbital_state to the selected orbital",
+      "Switching state clears all existing sample points and triggers a new Monte Carlo sampling run using the new wavefunction's acceptance probability"
+    ],
     "C": "Each orbital state produces a distinct, characteristic spatial density pattern: 1s is spherically symmetric, 2p is a dumbbell shape with a nodal plane, and 3d forms a four-lobed clover pattern—matching theoretical quantum mechanics predictions."
   }
 }

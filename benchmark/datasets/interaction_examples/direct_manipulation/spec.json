@@ -11,8 +11,20 @@
       "M":         { "derived": "v / u  [magnification]" },
       "image_type":{ "derived": "if v > 0: Real Inverted; if v < 0: Virtual Upright; if v = ∞: Undefined" }
     },
-    "R": "A canvas with a central convex lens (thickness scales with focal length), an orange object arrow on the left, two green focal points F and F' draggable on the optical axis. Three principal rays are drawn from the object tip through the lens. A colored image arrow appears on the right (green for real, blue for virtual). An instrument dashboard shows live values of f, u, v, and M. A status tag shows the image type and orientation.",
-    "T": "Dragging the orange object arrow moves it horizontally and vertically, changing u and object height. Dragging a focal point (F or F') changes f, reshaping both the lens bowing and all derived optical values simultaneously.",
+    "R": [
+      "A central convex lens whose thickness scales with focal length",
+      "An orange draggable object arrow on the left of the lens",
+      "Two green draggable focal points F and F' on the optical axis",
+      "Three principal rays drawn from the object tip through the lens",
+      "A colored image arrow on the right (green for real, blue for virtual)",
+      "An instrument dashboard showing live values of f, u, v, and M",
+      "A status tag indicating image type and orientation (Real Inverted / Virtual Upright)"
+    ],
+    "T": [
+      "Dragging the orange object arrow horizontally changes u and updates all derived optical values",
+      "Dragging the orange object arrow vertically changes the object height and redraws the ray diagram",
+      "Dragging a focal point (F or F') changes f, reshaping both the lens and all derived values simultaneously"
+    ],
     "C": "The thin lens equation 1/u + 1/v = 1/f is always satisfied. When u < f, the image distance v becomes negative (virtual image). When u = f, the image forms at infinity."
   }
 }

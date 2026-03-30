@@ -8,8 +8,16 @@
       "particles":       { "value": "150 red particles (left side) + 150 blue particles (right side), each with random velocities", "derived_update": "bounce off canvas edges; bounce off wall if above partition_y" },
       "entropy_S":       { "derived": "fraction of red particles that have crossed to the right side (or blue to left) × 100" }
     },
-    "R": "A dark split-canvas with 300 bouncing particles (red on left, blue on right). A central vertical wall separates the two halves—but only from partition_y downward. A red entropy counter (S = ...) updates live. A scroll track on the left fills red proportional to scroll_progress.",
-    "T": "Scrolling the mouse wheel inside the widget increases scroll_progress, which raises partition_y (shortens the wall from the top), allowing particles to mix across the boundary. Scrolling back down lowers partition_y, re-blocking the passage.",
+    "R": [
+      "A dark split-canvas with 300 bouncing particles: red on the left, blue on the right",
+      "A central vertical wall separating the two halves, present only from partition_y downward",
+      "A live entropy counter (S = ...) displayed in red in the top-left corner",
+      "A scroll-progress fill bar on the left edge, filling red proportional to scroll_progress"
+    ],
+    "T": [
+      "Scrolling the mouse wheel downward increases scroll_progress, raising partition_y and shortening the wall from the top, allowing particles to mix",
+      "Scrolling upward decreases scroll_progress, lowering partition_y and re-blocking particle passage"
+    ],
     "C": "As the wall is removed (scroll_progress → 1), particles irreversibly mix—entropy S increases monotonically. The constraint ΔS ≥ 0 maps directly to the unidirectional scroll interaction, visualizing time's arrow."
   }
 }

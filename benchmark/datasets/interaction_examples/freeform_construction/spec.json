@@ -8,8 +8,20 @@
       "activations":  { "derived": "forward pass: input → hidden (sigmoid) → output (sigmoid)" },
       "output_val":   { "derived": "average of output neuron activations" }
     },
-    "R": "A canvas with three fixed red input nodes (x₁, x₂, x₃) on the left and two fixed blue output nodes (y₁, y₂) on the right. User-placed yellow hidden nodes appear in the middle region. Directed arrows connect all layers. During a forward pass, arrows animate with green (input→hidden) then orange (hidden→output) flow, and each node displays its activation value. A progress bar and percentage show the network's averaged output activation.",
-    "T": "Clicking in the central canvas zone places a new hidden neuron and immediately triggers an animated forward pass signal. Pressing 'Send Signal' replays the pass with newly randomized weights. Pressing 'Clear' removes all hidden nodes and resets the output bar to 50%.",
+    "R": [
+      "Three fixed red input nodes (x₁, x₂, x₃) on the left of the canvas",
+      "Two fixed blue output nodes (y₁, y₂) on the right of the canvas",
+      "User-placed yellow hidden nodes in the central region",
+      "Directed arrows connecting all layers; animate green (input→hidden) then orange (hidden→output) during a forward pass",
+      "Activation values displayed on each node after a forward pass",
+      "An output activation progress bar and percentage readout at the bottom",
+      "A 'Send Signal' button and a 'Clear' button"
+    ],
+    "T": [
+      "Clicking in the central canvas zone places a new hidden neuron and immediately triggers an animated forward pass",
+      "Pressing 'Send Signal' replays the forward pass with newly randomized weights",
+      "Pressing 'Clear' removes all hidden nodes and resets the output bar to 50%"
+    ],
     "C": "Adding more hidden neurons generally introduces more non-linearity. The output activation always falls in (0, 1) due to the sigmoid function, regardless of network topology."
   }
 }

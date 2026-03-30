@@ -5,7 +5,7 @@ import type { JobStatus, DocumentSpec } from '../types/models';
 import { streamChat, getChatHistory, saveChatHistory, getConfig, updateConfig } from '../api/services';
 
 /* Cute Vivi avatar SVG — a lazy purple cat lounging, full body */
-const ViviAvatar: React.FC<{ className?: string, theme?: 'default' | 'warm' }> = ({ className, theme = 'default' }) => (
+const ViviAvatar: React.FC<{ className?: string, theme?: 'default' | 'warm' }> = ({ className, theme = 'warm' }) => (
     <img src={theme === 'default' ? "/vivi-cat.png" : "/vivi-cat-warm.png"} alt="Vivi" className={`object-contain mix-blend-multiply ${className || ''}`} />
 );
 
@@ -41,7 +41,7 @@ const RightChatPanel: React.FC<RightChatPanelProps> = ({
     onHtmlUpdated,
     onSpecUpdated,
     activeStage = 'doc',
-    theme = 'default',
+    theme = 'warm',
 }) => {
     const [messages, setMessages] = useState<Message[]>([
         {
