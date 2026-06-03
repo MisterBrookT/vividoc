@@ -46,13 +46,22 @@ If multiple, identify the primary and secondary.
 From the CSS and HTML, extract:
 
 1. **Color palette** — background, text, accent(s), interactive element colors
-2. **Typography** — font families, sizes, weights used for headings vs. body
+2. **Typography** — font families, sizes, weights for headings vs. body vs. values
 3. **Layout** — card-based? full-bleed? sidebar? centered column width?
 4. **Decoration style** — minimal / geometric / data-rich / editorial
 5. **Animation aesthetic** — snappy / smooth / physics-based / none
-6. **Key CSS patterns** — extract 5–10 characteristic CSS rules that define the style
+6. **Key CSS patterns** — 5–10 characteristic rules that define the aesthetic
 
-Write a `style_notes.md` summarizing the above in plain language.
+**Most important — Design rationale:**
+Answer: *Why does this visual style fit this specific topic?*
+- What is the concept's emotional register? (cold/precise, playful, grave, abstract…)
+- What natural color or aesthetic is associated with this domain?
+- What "mental model" should the learner have while using this? (lab bench, textbook, game…)
+- How does the visual design reinforce the pedagogical point?
+
+This reasoning is more valuable than any specific CSS value.
+
+Write a `style_notes.md` with all of the above, ending with the **Design rationale** paragraph.
 
 ---
 

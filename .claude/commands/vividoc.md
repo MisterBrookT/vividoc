@@ -1,180 +1,135 @@
 ---
-description: Generate an interactive educational document (explorable explanation) from any topic. Designs a custom visual style from topic character, plans with SRTC specs, then writes a self-contained HTML file directly — no external API needed.
+description: Generate an interactive educational document from any topic. Derives a custom visual style from the topic's character, designs SRTC-based interactions, then writes a self-contained HTML file directly.
 ---
-
-You are generating an interactive educational document using the ViviDoc pipeline.
-You are the model — no external API calls are needed. Work directly.
 
 ## Input
-`$ARGUMENTS`: optional topic string. If empty, ask the user.
+`$ARGUMENTS`: topic string. If empty, ask the user.
 
 ---
 
-## Step 1 — Get the topic
+## 1 — Style Design
 
-If `$ARGUMENTS` is empty, ask:
-> "What topic should I generate an interactive document for?"
+Reason through these questions to synthesize a custom CSS palette.
+Do not load any files yet — use the reasoning framework below.
 
----
+**Emotional register → background choice**
+- Precise / cold / rigorous (physics, formal math, systems) → dark background
+- Elegant / abstract / spatial (topology, geometry) → light or glass
+- Playful / constructive / agentic (algorithms, ML) → vivid or high-contrast
+- Narrative / grave / inevitable (entropy, history, ethics) → near-black or muted
 
-## Step 2 — Load design vocabulary
+**Domain → typography**
+- Physics/engineering → monospace readouts (Space Mono) signal instrument output
+- Formal math/history → serif body (Merriweather) signals scholarship
+- CS/interactive → sans-serif or mixed; bold sans for buttons
+- Music/waves/time → retro bitmap (VT323) if the aesthetic fits
 
-Read ALL of these files before designing anything:
-
-```
-benchmark/datasets/interaction_examples/parameter_exploration/style_notes.md
-benchmark/datasets/interaction_examples/state_switching/style_notes.md
-benchmark/datasets/interaction_examples/direct_manipulation/style_notes.md
-benchmark/datasets/interaction_examples/freeform_construction/style_notes.md
-benchmark/datasets/interaction_examples/inspection/style_notes.md
-benchmark/datasets/interaction_examples/spatial_navigation/style_notes.md
-benchmark/datasets/interaction_examples/temporal_control/style_notes.md
-benchmark/datasets/interaction_examples/scroll_driven_narrative/style_notes.md
-```
-
-These are not options to pick from — they are examples of how visual design should be
-*derived from the character of a topic*. Read the "When to use" and "Design rationale"
-sections carefully. Your goal is to design something new that fits this specific topic,
-drawing from this vocabulary.
-
----
-
-## Step 3 — Design the visual style
-
-Reason about the topic's character across these dimensions:
-
-**Emotional register**
-- Cold / precise / rigorous → dark backgrounds, monochrome, technical fonts
-- Warm / exploratory / playful → light or vivid backgrounds, rounded forms
-- Mysterious / spatial / abstract → deep colors, dramatic contrast
-
-**Domain character**
-- Physics / engineering → instrument aesthetic (dark + single accent = oscilloscope/terminal)
-- Formal mathematics → scholarly serif, structured, possibly academic antiquarian
-- CS / algorithms → constructive, can be bold (neo-brutalist) or dark+precise
-- Natural / emergent phenomena → organic palette, gradients, particle textures
-- Time / dynamics / waves → retro/synthwave OR dark grid — anything that evokes motion
-- Geometry / topology → clean and spatial, light or dark, no clutter
-
-**Accent color logic**
-What color is intrinsically associated with this concept?
-- Optics / light → green (like a laser)
+**Concept → accent color**
+Choose a color that has a natural semantic tie to the concept:
+- Light / optics → green (laser, phosphor)
 - Quantum / probability → purple or gold
-- Heat / entropy / irreversibility → red
-- Chaos / nonlinear → cyan / teal
-- Biology / growth → green-yellow
-- Networks / social systems → warm orange or amber
-- Information / data → blue
+- Heat / irreversibility → red
+- Chaos / nonlinear dynamics → cyan
+- Waves / music / signal → pink or magenta
+- Data / information / networks → blue
+- Construction / growth → lime or amber
+- Space / geometry → sky blue or gold
 
-**Tone decision**
-Will the learner feel like they're: in a lab? reading a textbook? playing a game? gazing at space?
-This should drive font choice, border style, and spacing.
+**One-accent rule**: pick one accent color and use it for everything interactive.
+Multiple accent colors dilute focus — the accent IS the concept's color.
 
----
+After reasoning, write down:
+- `bg`: background hex, `card`: card/surface hex, `accent`: accent hex
+- Font pair: heading font + body font
+- 1-line description: "Dark laboratory — emerald on near-black, instrument readouts"
 
-After reasoning, synthesize a **custom CSS spec** with:
-1. Background + card colors
-2. Primary accent hex
-3. Font pairing (headings + body + monospace if needed)
-4. 2–3 characteristic CSS rules that define the aesthetic
-
-Then briefly show the user the proposed style and ask for confirmation before proceeding:
-
-> "**Proposed style:** [2-sentence description]. Palette: bg `#...`, accent `#...`.  
-> Continue with this, or adjust?"
-
-If the user suggests changes, revise and confirm again. If they approve, proceed.
+Show the user this proposal in 2 sentences and ask: "Continue, or adjust?"
 
 ---
 
-## Step 4 — Plan the document (generate spec.json)
+## 2 — Interaction Design
 
-Read `CLAUDE.md` for SRTC format and interaction taxonomy.
+For each knowledge unit, choose the interaction type that serves the concept.
+Ask: **"What is the single most important thing for the learner to discover?"**
+That's the `constraint` — design every element to make it unmissable.
 
-Create a DocumentSpec with **3–4 knowledge units**. For each unit, design the interaction:
+**Choosing interaction type:**
 
-**Interaction design principles:**
-- Match the interaction type to the concept's nature (see CLAUDE.md taxonomy)
-- Ask: "what is the single most important thing for the learner to discover here?"
-  That's the `constraint` — design the interaction to make it unmissable
-- `transition: []` is correct when static is genuinely better than forced interaction
-- Don't add controls just to have controls
+| Concept character | Use |
+|---|---|
+| A continuous variable has a nonlinear effect | Parameter Exploration (slider) |
+| Discrete modes produce qualitatively different states | State Switching (segmented button) |
+| Spatial relationships are the concept | Direct Manipulation (drag on canvas) |
+| The learner needs to build something to see emergence | Freeform Construction (click-to-place) |
+| Time is the core dimension | Temporal Control (play/pause + slider) |
+| The structure is already there; learner reveals it | Inspection (hover) |
+| The concept is inherently 3D | Spatial Navigation (drag-rotate) |
+| A linear progression must unfold in order | Scroll-driven Narrative |
+| None of the above, or the concept is clearest as a diagram | Static (transition: []) |
 
-Compute the output directory: `outputs/<topic_slug>/` (lowercase, spaces → underscores).
+**Static is not a fallback — it is sometimes the right answer.**
+A well-designed static visualization beats a contrived interactive one.
 
-Save: `outputs/<topic_slug>/spec.json`
-
-Show the user a 3-line summary of planned knowledge units. Ask if they want to adjust
-any knowledge unit or interaction type before generating.
+**For each knowledge unit**, write the SRTC spec:
+- `state`: name each variable, specify control type or "derived"
+- `render`: list every visible element as a concrete description
+- `transition`: one rule per user action ("dragging X changes Y")
+- `constraint`: the invariant stated precisely and measurably
 
 ---
 
-## Step 5 — Create HTML skeleton
+## 3 — Plan (spec.json)
+
+Generate 3–4 knowledge units applying the above. Save to `outputs/<slug>/spec.json`.
+Show a 3-line summary and ask if the user wants to adjust before generating.
+
+---
+
+## 4 — Scaffold
 
 ```bash
 python -c "
-import json, sys
-sys.path.insert(0, '.')
+import json, sys; sys.path.insert(0, '.')
 from vividoc.core.models import DocumentSpec
 from vividoc.utils.html.template import create_document_skeleton
-spec = DocumentSpec.model_validate(json.load(open('outputs/SLUG/spec.json')))
-create_document_skeleton(spec, 'outputs/SLUG/document.html')
+spec = DocumentSpec.model_validate(json.load(open('outputs/<slug>/spec.json')))
+create_document_skeleton(spec, 'outputs/<slug>/document.html')
 "
 ```
 
-Then **replace the `<style>` block** in `document.html` with the custom CSS you designed in Step 3.
-The template's default indigo theme is a starting point — override all colors, fonts, and
-characteristic patterns with your custom design.
+Then replace the `<style>` block with the custom CSS from Step 1.
 
 ---
 
-## Step 6 — Generate each knowledge unit
+## 5 — Generate each section
 
-For each knowledge unit (ku1, ku2, …), in order:
+For each knowledge unit, in order:
 
-### Stage 1: Text content
+**Stage 1 (text):** Write `<p>` / `<strong>` / KaTeX HTML matching the text_description.
+Tone should match the visual register (dark/precise → formal language; vivid → analogies).
 
-Write HTML for `<div class="text-content">`:
-- `<p>` tags, `<strong>`, `<em>`
-- KaTeX math: `$formula$` inline, `$$formula$$` display
-- Tone should match the visual style (dark/technical → precise language; playful → analogies)
-- Follow the `text_description` from spec
+**Stage 2 (interaction):** Write `<style>` + HTML + `<script>` (IIFE).
+- All IDs: `ku{n}-` prefix. All CSS selectors: `#ku{n}` scoped.
+- Style controls (sliders, buttons, readouts) consistently with the document palette.
+- If you need a code reference for the interaction pattern, read the matching example:
+  `benchmark/datasets/interaction_examples/<category>/` — look at the HTML for patterns,
+  not the CSS (you already have a custom palette).
+- Make the constraint visible: display its value as a live label, use color change on
+  satisfied/violated state, annotate directly on the canvas.
 
-Insert: find `<section id="ku{n}">` → find `<div class="text-content">` → replace contents.
-
-### Stage 2: Interactive content
-
-Write the complete fragment for `<div class="interactive-content">`:
-
-```
-<style>  /* scoped with #ku{n} prefix */
-<html>   /* controls + canvas — all IDs prefixed ku{n}- */
-<script> /* IIFE */
-```
-
-**Style the interaction to match the document's visual design:**
-- Sliders, buttons, and readouts should use the same palette/fonts as the rest of the document
-- Don't use generic gray/blue browser defaults — style them consistently
-
-Reference `benchmark/datasets/interaction_examples/<matching-category>/` for code patterns.
-The matching category's HTML is the closest reference for implementation patterns —
-but adapt the CSS to your custom design, don't copy it verbatim.
-
-Log: `"[{n}/{total}] {unit_content} ✓"`
+Log each completed unit.
 
 ---
 
-## Step 7 — Report
+## 6 — Report
 
 ```
-✅ Document generated: outputs/<topic_slug>/document.html
+✅ outputs/<slug>/document.html
 
-Open: open outputs/<topic_slug>/document.html
+Style: <1-line description>
+  ku1: <title>  [<type>]
+  ku2: <title>  [<type>]
+  ...
 
-Style: <your 1-line style description>
-Sections:
-  • ku1: <unit_content>  [<interaction type>]
-  • ku2: ...
-
-To regenerate a section: edit spec.json and say "regenerate ku{n}"
+open outputs/<slug>/document.html
 ```
