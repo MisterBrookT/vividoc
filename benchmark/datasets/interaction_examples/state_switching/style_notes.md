@@ -43,3 +43,11 @@ body { background: #fdfbf7; color: #1e293b; font-family: 'Merriweather', serif; 
 Topics in physics, quantum mechanics, formal mathematics, or any subject that benefits from an
 "old textbook" authority feel. The cream-and-navy palette conveys scholarship and precision.
 Works well for State Switching interactions where discrete configurations need clear visual distinction.
+
+## Design rationale
+Quantum mechanics is an *academic subject* — the learner is reading about something with centuries
+of scientific history. Ivory/cream background + navy blue + serif fonts → old physics textbook,
+academic journal. The double-rule title border is an editorial convention from classic print.
+
+The deep red accent for section titles adds warmth and distinction from pure navy. The warm paper
+background signals "this is a formal document worth reading carefully, not a game."

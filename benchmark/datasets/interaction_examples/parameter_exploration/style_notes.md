@@ -36,3 +36,12 @@ input[type="range"]::-webkit-slider-thumb { background: #22d3ee; box-shadow: 0 0
 ## When to use
 Scientific / mathematical topics where precision and "lab instrument" aesthetic fits.
 Works especially well for physics, signal processing, dynamical systems.
+
+## Design rationale
+The Lorenz Attractor is a *physics simulation* — the mental model is "watching a system evolve
+on an instrument." Dark backgrounds + monochrome + cyan single accent → oscilloscope / physics
+terminal. Space Mono everywhere signals "this is numerical output." The trail-fading animation
+technique is borrowed from real particle physics visualization software.
+
+Chaos theory has no "warm" emotional tone — it's precise, cold, and slightly unsettling.
+The darkness is appropriate.

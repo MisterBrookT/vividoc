@@ -52,3 +52,13 @@ Geometry, topology, or any subject where the concept is physically "in space."
 The light/glassmorphic aesthetic feels clean and modern without distracting from the 3D object.
 Avoids the "dark lab" cliché when the topic is more about elegance than precision instruments.
 Best for Spatial Navigation interactions.
+
+## Design rationale
+The Möbius strip is about *topology* — a mathematical object that exists in pure space.
+Topology is elegant, abstract, and somewhat ethereal. Light background + glassmorphism →
+the surface is transparent, you can look through it, which is exactly what topology does
+(it ignores surface properties and looks at underlying structure).
+
+Sky blue is the color of open space and mathematical clarity. The card's frosted glass effect
+(backdrop-filter: blur) mirrors the Möbius strip's quality of having no clear "inside" or "outside."
+The soft radial gradient canvas evokes the feeling of looking at something floating in space.

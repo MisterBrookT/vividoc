@@ -49,3 +49,13 @@ button:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #666; }
 CS / engineering / technology topics where bold, assertive design signals agency and construction.
 The yellow + black palette is energetic and confident. Works especially well for
 Freeform Construction interactions where the user is building something. Polarizing but memorable.
+
+## Design rationale
+Neural networks are about *construction* — you build something and watch it come alive.
+The loud yellow background is energetic and assertive, like a warning sign or a sticky note.
+This is not a passive observation exercise; the user is actively creating.
+
+Neo-brutalism's thick black borders and offset shadows signal "this is made of parts,"
+which metaphorically fits a network of nodes. The lime green "pulse" button vs. red "clear"
+button uses traffic light logic — go vs. reset. The polka-dot canvas grid evokes graph paper,
+which is where engineers sketch circuits and networks. The aesthetic is confident, even aggressive.

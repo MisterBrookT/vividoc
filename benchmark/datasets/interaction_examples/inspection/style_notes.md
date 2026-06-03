@@ -50,3 +50,13 @@ body { background: #170a24; color: #dac6e3; }
 Math/CS topics with a sense of wonder or mystery: topology, spatial algorithms, set theory,
 probability. The deep purple + gold palette evokes "seeing the hidden structure of space."
 Best for Inspection interactions where hovering reveals something that was already there.
+
+## Design rationale
+Voronoi tessellation divides *space into invisible territories* — a hidden geometric structure
+beneath a random point cloud. This calls for a sense of mystery and discovery: you hover to
+"reveal" what was already there. Deep purple + gold → mystical, spatial, like stargazing or
+reading a celestial map.
+
+Gold is the color of "highlighted" — things being revealed from darkness. The deep purple-black
+creates maximum contrast for the glowing cell illumination effect. The three-layer depth
+(background → card → widget → canvas, each darker) reinforces the "peering into depth" feeling.

@@ -56,3 +56,14 @@ Topics in signal processing, wave physics, time-series analysis, music theory, o
 where the "flow of time" is core to understanding. The synthwave aesthetic makes mathematics
 feel exciting and aesthetic rather than dry. Best for Temporal Control interactions with
 real-time animation.
+
+## Design rationale
+Fourier series is about *decomposing waves* — a concept from signal processing, music, and
+physics that has a strong visual and auditory character. Rotating circles, building up harmonics,
+approaching a perfect square wave — this is inherently beautiful and has an aesthetic quality.
+
+Synthwave/retro is chosen because: (1) signal processing has strong ties to music/audio culture;
+(2) the epicycle animation looks like something from a 1980s computer science textbook come to life;
+(3) hot pink + purple against dark evokes CRT phosphor glow, which is literally how early
+oscilloscopes displayed Fourier analysis. VT323 for buttons adds the arcade/terminal feel.
+The grid canvas pattern suggests the coordinate system where waves are drawn.

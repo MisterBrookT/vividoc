@@ -51,3 +51,12 @@ body { background: #020617; color: #94a3b8; }
 Science topics where the "precision instrument / lab bench" aesthetic fits: optics, physics,
 engineering. The emerald-on-black palette evokes oscilloscope screens and scientific equipment.
 Best for Direct Manipulation interactions where readouts update in real-time.
+
+## Design rationale
+Geometric optics is about *tracing light paths through instruments*. The mental model is a
+laboratory bench with real equipment. Emerald green on near-black → the green phosphor glow of
+old oscilloscopes, lab instruments, fiber optic systems. Green is the color of light in optics.
+
+The dashboard readout panel (big Space Mono numbers, dark background) directly references
+scientific instrument displays (oscilloscopes, spectrometers). The canvas grid pattern suggests
+graph paper used for ray diagrams. Everything signals "precision measurement."

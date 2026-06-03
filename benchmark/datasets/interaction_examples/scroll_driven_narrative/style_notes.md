@@ -49,3 +49,13 @@ Topics in thermodynamics, statistical mechanics, information theory, or any conc
 **irreversibility** and **time's arrow** are the point. The minimal color use means
 the red accent on the entropy counter carries maximum visual weight — it IS the concept.
 Best for Scroll-driven Narrative interactions where scroll = time.
+
+## Design rationale
+Entropy and the Second Law of Thermodynamics is about *irreversibility* — the arrow of time.
+The visual design must feel like the concept: stark, inevitable, no-nonsense.
+
+Near-pure black zinc palette with a single red accent → the red entropy counter is the ONLY
+thing with color in the entire piece. When something is the only colored element, it has
+maximum visual weight. The learner's eye goes directly to it. The scroll interaction maps
+exactly to time's arrow (you can scroll forward but the concept is about irreversibility).
+The minimal design says: "this is serious; pay attention to what's happening."
