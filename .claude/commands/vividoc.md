@@ -17,11 +17,18 @@ If `$ARGUMENTS` is empty, ask:
 
 Then use AskUserQuestion with two questions:
 
-**Visual style** (pick one):
-- `default` — Clean white background, indigo/purple accents, Poppins + Inter typography (see `vividoc/utils/html/template.py`)
-- `dark-scientific` — Dark navy/black background, cyan/teal accents, monospace code aesthetic (see `benchmark/datasets/interaction_examples/parameter_exploration/`)
-- `minimal` — White background, muted grays, generous whitespace, no decorative elements
+**Visual style** — choose from the 8 built-in styles or custom:
+- `dark-scientific` — Dark navy, cyan accents, monospace values (`parameter_exploration/`)
+- `academic-antiquarian` — Ivory/cream, navy blue + deep red, textbook serif (`state_switching/`)
+- `dark-laboratory` — Near-black, emerald green, instrument readouts (`direct_manipulation/`)
+- `neo-brutalist` — Loud yellow, thick black borders, offset shadows, arcade buttons (`freeform_construction/`)
+- `mystic-observatory` — Deep purple-black, gold accents, lavender text (`inspection/`)
+- `airy-glass` — Light slate, sky blue, glassmorphism card (`spatial_navigation/`)
+- `synthwave` — Dark purple, hot pink/magenta, neon glows, VT323 font, grid canvas (`temporal_control/`)
+- `stark-monochrome` — Near-black zinc palette, single red accent only (`scroll_driven_narrative/`)
 - `custom` — Describe your own preference
+
+Each built-in style has a `style_notes.md` in its directory — read it for exact CSS patterns.
 
 **Tone** (pick one):
 - `conversational` — Friendly, uses "you", concrete real-world analogies
