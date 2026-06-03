@@ -41,6 +41,56 @@ FRAGMENT_STAGE2_PROMPT = """You are an expert at creating interactive educationa
 
 {style_instructions}
 
+=== INTERACTION TAXONOMY — match your implementation to the spec's pattern ===
+
+**Parameter Exploration** (slider → derived update)
+  Pattern: read slider value → recompute derived state → redraw canvas or update DOM on 'input' event.
+  Example spec: Lorenz Attractor — σ/ρ sliders reset and restart trajectory integration.
+
+**State Switching** (segmented button / dropdown → discrete reconfiguration)
+  Pattern: on click, set active state → clear previous render → trigger new render for the chosen config.
+  Example spec: Quantum Orbitals — switching 1s/2p/3d clears point cloud and restarts Monte Carlo sampling.
+
+**Direct Manipulation** (drag object on canvas → real-time derived update)
+  Pattern: mousedown → track mousemove → update state.x/y → recompute all derived values → redraw.
+  Constrain drag to valid region. Show live numeric readouts.
+  Example spec: Geometric Optics — dragging object arrow updates u, v, M via thin lens equation in real-time.
+
+**Freeform Construction** (click to place / draw → emergent behavior)
+  Pattern: canvas click → add item to collection → run simulation/forward-pass → redraw.
+  Provide Clear button to reset collection.
+  Example spec: Neural Network — click places hidden neuron, triggers animated forward pass.
+
+**Temporal Control** (play/pause + optional scrub)
+  Pattern: requestAnimationFrame loop with is_playing flag. Advance time each frame. Slider for speed or parameter.
+  Example spec: Fourier Epicycles — play/pause button + harmonic slider controlling epicycle chain.
+
+**Inspection** (hover / cursor tracking → highlight nearest)
+  Pattern: mousemove → find nearest element → update highlighted cell/tooltip. No state mutation on hover.
+  Example spec: Voronoi — hover illuminates nearest cell with radial gradient and shows distance line.
+
+**Spatial Navigation** (click-drag to rotate/pan → redraw 3D projection)
+  Pattern: mousedown+mousemove → update rotX/rotY → project 3D mesh → sort faces (Painter's Algorithm) → draw.
+  Example spec: Möbius Strip — drag updates pitch/yaw angles, mesh redraws with depth shading.
+
+**Scroll-driven Narrative** (scroll → advance narrative variable)
+  Pattern: wheel event → clamp scroll_progress [0,1] → update derived state → redraw.
+  Example spec: Entropy — scroll raises partition wall, allowing particles to mix.
+
+**STATIC VISUALIZATION** (transition: [] in spec)
+  If the spec's "transition" list is empty, do NOT add controls. Create a beautiful static or auto-animated
+  visualization using requestAnimationFrame. The goal is clarity, not interactivity.
+
+---
+
+=== THE CONSTRAINT IS THE PEDAGOGICAL CORE ===
+The spec's "constraint" field is the key insight the learner should discover. Design for it:
+  - Display the constraint's formula or value as a live label/badge
+  - Use a color change, annotation, or callout to make it unmissable
+  - For static visualizations, the render should directly demonstrate the constraint
+
+---
+
 === COMPLETED SECTIONS (for style reference only, DO NOT modify) ===
 {completed_sections}
 
@@ -50,33 +100,25 @@ FRAGMENT_STAGE2_PROMPT = """You are an expert at creating interactive educationa
 === CURRENT TASK ===
 Section ID: {scope_id}
 
-Interaction Specification:
+Interaction Specification (SRTC):
 {interaction_spec_text}
 
-=== REQUIREMENTS ===
-1. Create an interactive visualization that implements the specification above
-2. The "state" defines what variables exist and how they relate
-3. The "render" defines what visual elements to create
-4. The "transition" defines what user interactions to support and their effects
-5. The "constraint" (if present) is the key insight — make sure the visualization clearly demonstrates it
-6. Maintain consistent interaction design style with previous sections
-7. Include three parts in order:
-   a) <style> tag: CSS styles (all selectors prefixed with #{scope_id})
-   b) HTML structure: controls, visualization containers
-   c) <script> tag: JavaScript logic (wrapped in IIFE)
-8. All DOM IDs must use {scope_id}- prefix (e.g., {scope_id}-slider)
-9. You can use D3.js, Chart.js (already loaded in document)
-10. ONLY return the HTML fragment for the interactive content
-11. DO NOT include <div class="interactive-content"> tags
-12. DO NOT include any other sections
-
-=== IMPORTANT NOTES ===
-- When using Chart.js with maintainAspectRatio: false, the canvas container MUST have explicit height
-- All JavaScript must be wrapped in IIFE: (function() {{ ... }})()
-- Use {scope_id}- prefix for all IDs to avoid conflicts
+=== IMPLEMENTATION REQUIREMENTS ===
+1. Implement the spec faithfully: all state variables, all render elements, all transitions
+2. Identify the interaction type and follow the pattern described above
+3. Highlight the constraint prominently in the visualization
+4. Maintain consistent visual design with previous sections
+5. Structure:
+   a) <style> tag: CSS (all selectors prefixed with #{scope_id})
+   b) HTML: controls and visualization containers
+   c) <script> tag: JavaScript (IIFE)
+6. All DOM IDs must use {scope_id}- prefix (e.g., {scope_id}-slider, {scope_id}-canvas)
+7. Available libraries: D3.js, Chart.js (already loaded in document)
+8. Canvas containers with Chart.js + maintainAspectRatio:false MUST have explicit CSS height
+9. ONLY return the HTML fragment — no <div class="interactive-content"> wrapper
 
 === OUTPUT FORMAT ===
-Return ONLY the HTML fragment (no div wrapper):
+Return ONLY the HTML fragment:
 
 <style>
     #{scope_id} .controls {{ margin: 20px 0; }}
@@ -94,12 +136,11 @@ Return ONLY the HTML fragment (no div wrapper):
     (function() {{
         const slider = document.getElementById('{scope_id}-slider');
         const valueSpan = document.getElementById('{scope_id}-value');
-        
+
         function update() {{
             valueSpan.textContent = slider.value;
-            // Update visualization
         }}
-        
+
         slider.addEventListener('input', update);
         update();
     }})();

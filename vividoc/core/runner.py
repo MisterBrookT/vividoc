@@ -22,7 +22,11 @@ class Runner:
         Path(config.output_dir).mkdir(parents=True, exist_ok=True)
 
         self.planner = Planner(config)
-        self.executor = Executor(config)
+        self.executor = Executor(
+            config,
+            text_style_instructions=config.text_style_instructions,
+            interaction_style_instructions=config.interaction_style_instructions,
+        )
         self.evaluator = Evaluator(config)
 
     def _get_topic_dir(self, topic: str) -> Path:
