@@ -74,6 +74,8 @@ def exec(
         ..., help="LLM model in format provider/model-name"
     ),
     output: str = typer.Option("output/generated_doc.json", help="Output file path"),
+    text_style: str = typer.Option("", "--text-style", help="Style instructions for text generation"),
+    interaction_style: str = typer.Option("", "--interaction-style", help="Style instructions for interaction generation"),
 ):
     """Execute execution phase - Generate text and code."""
     typer.echo(f"🚀 Executing document generation from: {spec_file}")
@@ -82,8 +84,17 @@ def exec(
     # Load spec
     doc_spec = load_json(spec_file, DocumentSpec)
 
-    config = RunnerConfig(llm_model=llm_model, output_dir="output")
-    executor = Executor(config=config)
+    config = RunnerConfig(
+        llm_model=llm_model,
+        output_dir="output",
+        text_style_instructions=text_style,
+        interaction_style_instructions=interaction_style,
+    )
+    executor = Executor(
+        config=config,
+        text_style_instructions=text_style,
+        interaction_style_instructions=interaction_style,
+    )
 
     generated_doc = executor.run(doc_spec)
     save_json(generated_doc, output)
@@ -133,6 +144,8 @@ def run(
     resume: bool = typer.Option(
         False, "--resume", help="Resume from existing files if available"
     ),
+    text_style: str = typer.Option("", "--text-style", help="Style instructions for text generation (e.g. 'Use a playful, conversational tone with concrete analogies')"),
+    interaction_style: str = typer.Option("", "--interaction-style", help="Style instructions for interaction generation (e.g. 'Prefer dark backgrounds with bright accent colors, smooth transitions')"),
 ):
     """Run complete pipeline: plan → exec → eval."""
     typer.echo(f"🔄 Running complete pipeline for topic: {topic}")
@@ -140,7 +153,13 @@ def run(
     if resume:
         typer.echo("📂 Resume mode: will skip existing files")
 
-    config = RunnerConfig(output_dir=output_dir, resume=resume, llm_model=llm_model)
+    config = RunnerConfig(
+        output_dir=output_dir,
+        resume=resume,
+        llm_model=llm_model,
+        text_style_instructions=text_style,
+        interaction_style_instructions=interaction_style,
+    )
     runner = Runner(config=config)
 
     _ = runner.run(topic)
