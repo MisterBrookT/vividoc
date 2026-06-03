@@ -37,25 +37,43 @@ export OPENROUTER_API_KEY="sk-or-..."
 
 ## Usage
 
-### CLI (recommended)
+### With Claude Code (recommended — no API key needed)
+
+ViviDoc ships as two Claude Code skills. Claude Code is the model — no external API calls.
+
+```
+/vividoc Fourier Transform
+```
+
+Claude Code will ask about style preferences, plan the document, then write the HTML directly.
+Output: `outputs/fourier_transform/document.html`
+
+```
+/vividoc-learn https://ncase.me/trust/ social-game
+```
+
+Fetches the page, distills its interaction patterns and visual style into a reusable template,
+and saves it to `benchmark/datasets/interaction_examples/social-game/`.
+
+### CLI (batch / research mode, requires API key)
 
 ```bash
-# Generate a complete interactive document
+export OPENROUTER_API_KEY="sk-or-..."
+
+# Full pipeline
 vividoc run "Fourier Transform" openrouter/google/gemini-2.5-pro
 
-# With style preferences
+# With style instructions
 vividoc run "Fourier Transform" openrouter/google/gemini-2.5-pro \
-  --text-style "Use a conversational tone with concrete analogies" \
-  --interaction-style "Dark background, bright accent colors, smooth animations"
+  --text-style "Conversational, concrete analogies" \
+  --interaction-style "Dark background, bright accent colors"
 
-# Run stages individually
+# Stage by stage
 vividoc plan "Fourier Transform" openrouter/google/gemini-2.5-pro -o spec.json
 vividoc exec spec.json openrouter/google/gemini-2.5-pro
 ```
 
-Output is saved to `outputs/<topic>/vividoc_<model>/document.html`.
-
-### Web UI (optional)
+### Web UI (optional demo interface)
 
 ```bash
 vividoc serve                                  # backend at http://localhost:8000

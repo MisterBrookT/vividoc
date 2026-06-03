@@ -118,41 +118,61 @@ Read the full specs: `benchmark/datasets/interaction_examples/*/spec.json`
 
 ---
 
-## Running the Pipeline as a Harness
+## Running as a Harness (Recommended)
 
-You are Claude Code — you ARE the harness. Suggested workflow:
+You are Claude Code — you ARE the model. No external API calls are needed.
 
-### 1. Get the topic
-Ask the user what topic they want, or take it from their message.
+### Skills (primary workflow)
 
-### 2. (Optional) Gather style preferences
-Run `vividoc plan` first to see the document spec, then use `vividoc serve` +
-`Styler.generate_options()` to suggest style dimensions. Or ask the user directly:
+Two Claude Code skills are provided in `.claude/commands/`:
 
-> "What tone do you prefer — conversational, academic, or playful?"
-> "Any visual style preferences? (dark theme, minimal, data-rich…)"
+| Command | What it does |
+|---------|-------------|
+| `/vividoc [topic]` | Interactive document generation: ask style → plan → write HTML directly |
+| `/vividoc-learn <url> [name]` | Distill a real interactive page into a reusable template |
 
-Pass collected preferences as `--text-style` and `--interaction-style` flags.
+**`/vividoc` workflow:**
+1. Ask for topic (if not provided) and style preferences
+2. Read `CLAUDE.md` + relevant templates for context
+3. Generate `spec.json` (SRTC-formatted knowledge units)
+4. Create HTML skeleton via `vividoc/utils/html/template.py`
+5. For each section: write text (Stage 1) + interactive JS (Stage 2) directly
+6. Output: `outputs/<topic_slug>/document.html`
 
-### 3. Generate
+**`/vividoc-learn` workflow:**
+1. Fetch the URL
+2. Analyze interaction type, state variables, visual style
+3. Write a minimal reference HTML + SRTC spec + style notes
+4. Save to `benchmark/datasets/interaction_examples/<name>/`
+5. Template is immediately available for future `/vividoc` runs
+
+### Template library
+
+`benchmark/datasets/interaction_examples/` contains reference cases, each with:
+- `spec.json` — SRTC spec + optional `"style"` key describing the visual aesthetic
+- `*.html` or `reference.html` — runnable HTML demonstrating the pattern
+- `style_notes.md` — visual style guide (added by `/vividoc-learn`)
+
+The 8 built-in cases cover the full interaction taxonomy. Add more with `/vividoc-learn`.
+
+### Batch / research mode (CLI with external LLM)
+
+The Python pipeline still works for benchmarking and batch generation:
+
 ```bash
 vividoc run "<topic>" openrouter/google/gemini-2.5-pro \
   --output-dir outputs \
-  --text-style "Use a conversational tone with concrete analogies" \
-  --interaction-style "Prefer dark backgrounds with bright accent colors"
+  --text-style "Use a conversational tone" \
+  --interaction-style "Dark background, bright accents"
 ```
 
-### 4. Inspect the output
-The generated HTML is at:
+Individual stages:
+```bash
+vividoc plan "<topic>" openrouter/google/gemini-2.5-pro -o spec.json
+vividoc exec spec.json openrouter/google/gemini-2.5-pro --text-style "..."
 ```
-outputs/<topic_slug>/vividoc_<model_suffix>/document.html
-```
-Open it in a browser. The spec is at `spec.json` in the same directory.
 
-### 5. Iterate
-- To regenerate just a specific section, edit `spec.json` and re-run with `--resume`
-- To change style only, delete the `states/` directory and re-run exec stage
-- To see what the planner produced: `cat outputs/.../spec.json | python -m json.tool`
+Resume partial runs: `--resume` skips already-completed sections.
 
 ---
 
