@@ -1,16 +1,20 @@
 # ViviDoc
 
-**ViviDoc** generates interactive educational documents — explorable explanations — from a single topic input. It introduces the **Document Specification (DocSpec)**, a structured intermediate representation that bridges the gap between pedagogical intent and executable code.
+**ViviDoc** generates interactive educational documents — explorable explanations — from a single topic input through human-agent collaboration.
 
-**[Demo](https://vividoc.vercel.app/)** · **[Paper](assets/paper.pdf)** · **[Video](https://www.youtube.com/watch?v=rJrnPJLyHUI)**
+**[Demo](https://vividoc.vercel.app/)** · **[Paper](assets/paper.pdf)** · **[Video](https://www.youtube.com/watch?v=rJrnPJLyHUI)** · **[arXiv](https://arxiv.org/abs/2603.27991)**
 
 ---
 
 ## The Problem
 
-Creating interactive articles requires both domain expertise and web development skills. Fully automatic generation with LLMs is uncontrollable — there is a fundamental gap between what an educator wants the learner to *experience* and the code that realizes that experience.
+Creating interactive articles requires both domain expertise and web development skills. Fully automatic LLM generation is uncontrollable — there is a fundamental gap between what an educator wants the learner to *experience* and the code that realizes it.
 
-ViviDoc solves this with **human-agent collaboration through DocSpec**: a structured plan the educator can review and edit *before* any code is produced.
+ViviDoc solves this with **three human control levels** that let non-programmers guide the generation process:
+
+1. **DocSpec editing** — review and modify the structured plan before any code is produced
+2. **Style Palette** — customize writing tone and visual style through LLM-generated options  
+3. **Chat-based editing** — natural language refinement of spec and generated document
 
 ---
 
@@ -20,55 +24,60 @@ ViviDoc solves this with **human-agent collaboration through DocSpec**: a struct
 Topic
   │
   ▼ Planner
-DocSpec  ← human review & edit
-  │
-  ▼ Executor (Stage 1: text · Stage 2: interactive JS)
-document.html
+DocSpec  ◄── human review & edit (level 1)
+  │       ◄── style preferences  (level 2)
+  ▼ Executor  (Stage 1: text · Stage 2: interactive JS)
+document.html  ◄── chat refinement (level 3)
   │
   ▼ Evaluator
 validated output
 ```
 
-The **DocSpec** decomposes each section into a knowledge unit with:
-- A text description (guides writing)
-- An **SRTC Interaction Spec** — State · Render · Transition · Constraint
-
-The SRTC spec is the key abstraction: it expresses *what the learner should discover* (Constraint) and *how interaction reveals it* (State + Transition), independently from any code.
+The **Document Specification (DocSpec)** decomposes each section into a knowledge unit with a text description and an **SRTC Interaction Spec** — State · Render · Transition · Constraint — that expresses *what the learner should discover* independently from any code.
 
 ---
 
 ## Evaluation
 
-Expert blind evaluation on 10 topics, scored on a 5-point Likert scale:
+Benchmarked on **ViviBench** — 101 topics from 63 real-world interactive documents across 11 domains.
 
-| Dimension | ViviDoc | Naive Agent |
+**Automated evaluation** (4 dimensions, LLM-judge aligned with human ratings at Pearson r > 0.84):
+
+| Method | Content Richness | Interaction Quality |
 |---|---|---|
-| Content Richness | **4.17** | 2.07 |
-| Interaction Quality | **4.00** | 2.40 |
-| Visual Quality | **3.73** | 2.37 |
+| **ViviDoc** | **1.00** | **0.92** |
+| AutoGen (best baseline) | 0.53 | 0.64 |
 
-User study (n=3): Easy to learn 5.0 · Easy to use 5.0 · DocSpec editing intuitive 4.33.
+Generation efficiency: **505 chars/s** (3.3× faster than AutoGen).
 
-*"DocSpec was the first time I could actually decide how the interaction works without writing any code."* — P1
+**User study** (n=12, 5-point Likert scale):
+
+| Dimension | Score |
+|---|---|
+| Usability | 5.00 |
+| DocSpec control | 4.50 |
+| Chat editing | 4.67 |
+| Output satisfaction | 4.58 |
+| Intent to reuse | 4.75 |
 
 ---
 
-## Interaction Taxonomy
+## Interaction Taxonomy (ViviBench)
 
-ViviDoc's interaction design is grounded in 482 interactions across 101 real-world explorable explanations from 60+ websites and 11 domains. Eight categories emerged:
+Grounded in **482 interaction instances** across 101 real-world explorable explanations from 63 websites and 11 domains:
 
 | Type | When to use |
 |---|---|
-| Parameter Exploration | Slider adjusts continuous variable → effect updates |
-| State Switching | Discrete configs produce qualitatively different results |
+| Parameter Exploration | Slider → continuous variable effect |
+| State Switching | Discrete modes → qualitatively different results |
 | Direct Manipulation | Drag objects; spatial relationships are the concept |
-| Freeform Construction | User builds structure to observe emergent behavior |
-| Temporal Control | Concept has a time dimension; play/pause/scrub |
-| Inspection | Spatial structure explored by hovering |
+| Freeform Construction | Build structure to observe emergent behavior |
+| Temporal Control | Play/pause/scrub through a time-indexed concept |
+| Inspection | Hover to reveal spatial structure |
 | Spatial Navigation | Inherently 3D; rotate/pan/zoom |
-| Scroll-driven Narrative | Linear progression reveals concept |
+| Scroll-driven Narrative | Linear progression reveals the concept |
 
-Reference implementations (HTML + SRTC spec + style guide) for all 8 types:
+Reference implementations (HTML + SRTC spec + style guide) for all 8:
 `benchmark/datasets/interaction_examples/`
 
 ---
@@ -76,8 +85,6 @@ Reference implementations (HTML + SRTC spec + style guide) for all 8 types:
 ## Usage
 
 ### With Claude Code — no API key needed
-
-ViviDoc ships as two Claude Code skills. Claude Code is the model.
 
 ```
 /vividoc Fourier Transform
@@ -89,27 +96,18 @@ Claude Code reasons about the topic's character, designs a custom visual style, 
 /vividoc-learn https://example.com/some-explorable
 ```
 
-Fetches the page, distills its interaction patterns and visual style into a new template, saves to `benchmark/datasets/interaction_examples/`.
+Fetches the page, distills its interaction patterns and visual style, saves to the template library.
 
 ### CLI — batch / research mode
 
 ```bash
+pip install uv && uv sync --dev
 export OPENROUTER_API_KEY="sk-or-..."
 
 vividoc run "Fourier Transform" openrouter/google/gemini-2.5-pro
 vividoc run "Fourier Transform" openrouter/google/gemini-2.5-pro \
   --text-style "Conversational, concrete analogies" \
   --interaction-style "Dark background, bright accents"
-
-# Stage by stage
-vividoc plan "Fourier Transform" openrouter/google/gemini-2.5-pro -o spec.json
-vividoc exec spec.json openrouter/google/gemini-2.5-pro
-```
-
-### Setup
-
-```bash
-pip install uv && uv sync --dev
 ```
 
 ---
@@ -118,15 +116,15 @@ pip install uv && uv sync --dev
 
 ```
 .claude/commands/        # Claude Code skills (vividoc, vividoc-learn)
-prompts/                 # LLM prompt templates
-vividoc/core/            # Pipeline: planner, executor, evaluator, runner
+prompts/                 # LLM prompt templates (planner, executor, evaluator, styler)
+vividoc/core/            # Pipeline: planner, executor, evaluator, runner, styler
 vividoc/utils/llm/       # LLM client + provider adapters
 benchmark/
 ├── datasets/
 │   ├── interaction_examples/   # 8 reference cases (HTML + SRTC spec + style guide)
-│   └── prepped/                # 101-topic dataset (paper evaluation)
-├── baselines/                  # Naive agent + AutoGen + CAMEL + MetaGPT baselines
-└── evals/                      # Expert evaluation + LLM-judge scripts
+│   └── prepped/                # ViviBench — 101-topic evaluation dataset
+├── baselines/                  # Naive agent + AutoGen + CAMEL + MetaGPT
+└── evals/                      # Automated evaluation (4-dimensional framework)
 frontend/                # React web UI (optional demo interface)
 ```
 
@@ -135,10 +133,11 @@ frontend/                # React web UI (optional demo interface)
 ## Citation
 
 ```bibtex
-@inproceedings{vividoc2025,
-  title     = {Demonstrating ViviDoc: Generating Interactive Documents through Human-Agent Collaboration},
-  booktitle = {},
-  year      = {2025}
+@article{tang2026vividoc,
+  title   = {ViviDoc: Generating Interactive Documents through Human-Agent Collaboration},
+  author  = {Tang, Yinghao and Xie, Yupeng and Feng, Yingchaojie and Lan, Tingfeng and Lao, Jiale and Cheng, Yue and Chen, Wei},
+  journal = {arXiv preprint arXiv:2603.27991},
+  year    = {2026}
 }
 ```
 
