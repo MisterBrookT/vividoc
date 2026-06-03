@@ -1,147 +1,146 @@
 # ViviDoc
 
-ViviDoc turns any topic into an **interactive educational document** — a self-contained HTML file
-combining explanatory text, math (KaTeX), and interactive visualizations.
+**ViviDoc** generates interactive educational documents — explorable explanations — from a single topic input through human-agent collaboration.
 
-**[Live Demo](https://vividoc.vercel.app/)** · **[Paper](assets/paper.pdf)**
+**[Demo](https://vividoc.vercel.app/)** · **[Paper](assets/paper.pdf)** · **[Video](https://www.youtube.com/watch?v=rJrnPJLyHUI)** · **[arXiv](https://arxiv.org/abs/2603.27991)**
 
-![screenshot](assets/demo-screenshot.png)
+---
+
+## The Problem
+
+Creating interactive articles requires both domain expertise and web development skills. Fully automatic LLM generation is uncontrollable — there is a fundamental gap between what an educator wants the learner to *experience* and the code that realizes it.
+
+ViviDoc solves this with **three human control levels** that let non-programmers guide the generation process:
+
+1. **DocSpec editing** — review and modify the structured plan before any code is produced
+2. **Style Palette** — customize writing tone and visual style through LLM-generated options  
+3. **Chat-based editing** — natural language refinement of spec and generated document
 
 ---
 
 ## How It Works
 
-ViviDoc uses a three-stage pipeline:
+```
+Topic
+  │
+  ▼ Planner
+DocSpec  ◄── human review & edit (level 1)
+  │       ◄── style preferences  (level 2)
+  ▼ Executor  (Stage 1: text · Stage 2: interactive JS)
+document.html  ◄── chat refinement (level 3)
+  │
+  ▼ Evaluator
+validated output
+```
 
-1. **Planner** — decomposes the topic into knowledge units, each with a structured interaction spec
-   using the *SRTC framework* (State · Render · Transition · Constraint)
-2. **Executor** — generates text and interactive JavaScript/HTML for each unit, fragment by fragment
-3. **Evaluator** — checks coherence and rendering correctness
-
-The output is a single `document.html` that runs entirely in the browser with no build step.
+The **Document Specification (DocSpec)** decomposes each section into a knowledge unit with a text description and an **SRTC Interaction Spec** — State · Render · Transition · Constraint — that expresses *what the learner should discover* independently from any code.
 
 ---
 
-## Setup
+## Evaluation
 
-```bash
-# Python 3.11+ required
-pip install uv
-uv sync --dev
+Benchmarked on **ViviBench** — 101 topics from 63 real-world interactive documents across 11 domains.
 
-# Set your API key (OpenRouter gives access to many models)
-export OPENROUTER_API_KEY="sk-or-..."
-```
+**Automated evaluation** (4 dimensions, LLM-judge aligned with human ratings at Pearson r > 0.84):
+
+| Method | Content Richness | Interaction Quality |
+|---|---|---|
+| **ViviDoc** | **1.00** | **0.92** |
+| AutoGen (best baseline) | 0.53 | 0.64 |
+
+Generation efficiency: **505 chars/s** (3.3× faster than AutoGen).
+
+**User study** (n=12, 5-point Likert scale):
+
+| Dimension | Score |
+|---|---|
+| Usability | 5.00 |
+| DocSpec control | 4.50 |
+| Chat editing | 4.67 |
+| Output satisfaction | 4.58 |
+| Intent to reuse | 4.75 |
+
+---
+
+## Interaction Taxonomy (ViviBench)
+
+Grounded in **482 interaction instances** across 101 real-world explorable explanations from 63 websites and 11 domains:
+
+| Type | When to use |
+|---|---|
+| Parameter Exploration | Slider → continuous variable effect |
+| State Switching | Discrete modes → qualitatively different results |
+| Direct Manipulation | Drag objects; spatial relationships are the concept |
+| Freeform Construction | Build structure to observe emergent behavior |
+| Temporal Control | Play/pause/scrub through a time-indexed concept |
+| Inspection | Hover to reveal spatial structure |
+| Spatial Navigation | Inherently 3D; rotate/pan/zoom |
+| Scroll-driven Narrative | Linear progression reveals the concept |
+
+Reference implementations (HTML + SRTC spec + style guide) for all 8:
+`benchmark/datasets/interaction_examples/`
 
 ---
 
 ## Usage
 
-### With Claude Code (recommended — no API key needed)
-
-ViviDoc ships as two Claude Code skills. Claude Code is the model — no external API calls.
+### With Claude Code — no API key needed
 
 ```
 /vividoc Fourier Transform
 ```
 
-Claude Code will ask about style preferences, plan the document, then write the HTML directly.
-Output: `outputs/fourier_transform/document.html`
+Claude Code reasons about the topic's character, designs a custom visual style, plans the DocSpec, then writes the HTML directly. Output: `outputs/fourier_transform/document.html`
 
 ```
-/vividoc-learn https://ncase.me/trust/ social-game
+/vividoc-learn https://example.com/some-explorable
 ```
 
-Fetches the page, distills its interaction patterns and visual style into a reusable template,
-and saves it to `benchmark/datasets/interaction_examples/social-game/`.
+Fetches the page, distills its interaction patterns and visual style, saves to the template library.
 
-### CLI (batch / research mode, requires API key)
+### CLI — batch / research mode
 
 ```bash
+pip install uv && uv sync --dev
 export OPENROUTER_API_KEY="sk-or-..."
 
-# Full pipeline
 vividoc run "Fourier Transform" openrouter/google/gemini-2.5-pro
-
-# With style instructions
 vividoc run "Fourier Transform" openrouter/google/gemini-2.5-pro \
   --text-style "Conversational, concrete analogies" \
-  --interaction-style "Dark background, bright accent colors"
-
-# Stage by stage
-vividoc plan "Fourier Transform" openrouter/google/gemini-2.5-pro -o spec.json
-vividoc exec spec.json openrouter/google/gemini-2.5-pro
-```
-
-### Web UI (optional demo interface)
-
-```bash
-vividoc serve                                  # backend at http://localhost:8000
-cd frontend && npm install && npm run dev      # frontend at http://localhost:5173
+  --interaction-style "Dark background, bright accents"
 ```
 
 ---
 
-## 8 Interaction Types
-
-ViviDoc's interaction taxonomy is derived from 482 interactions across 101 real-world explorable
-explanations. Every generated visualization belongs to one of these categories:
-
-| Type | Description | Reference Example |
-|------|-------------|-------------------|
-| **Parameter Exploration** | Sliders expose how a continuous variable shapes the system | Lorenz Attractor — σ/ρ sliders reshape the butterfly |
-| **State Switching** | Discrete modes produce qualitatively different outcomes | Quantum Orbitals — switch between 1s, 2p, 3d clouds |
-| **Direct Manipulation** | Drag objects whose spatial relations encode the concept | Geometric Optics — drag lens/object, watch rays update |
-| **Freeform Construction** | Build a structure to observe emergent behavior | Neural Network — click to place neurons, see forward pass |
-| **Temporal Control** | Play, pause, scrub through a time-dependent process | Fourier Epicycles — add harmonics, watch square wave emerge |
-| **Inspection** | Hover to probe spatial structure without changing it | Voronoi — hover illuminates nearest cell and shows distance |
-| **Spatial Navigation** | Rotate or pan an inherently 3D concept | Möbius Strip — drag to rotate, observe single-sided surface |
-| **Scroll-driven Narrative** | Scroll advances a narrative variable linearly | Entropy — scroll removes wall, particles irreversibly mix |
-
-Reference implementations (HTML + SRTC spec) for all 8 types are in
-`benchmark/datasets/interaction_examples/`.
-
----
-
-## Supported Models
-
-Any model accessible via OpenRouter or directly via Anthropic:
-
-```bash
-openrouter/google/gemini-2.5-pro
-openrouter/google/gemini-2.5-flash
-openrouter/anthropic/claude-sonnet-4-5
-openrouter/qwen/qwen3-235b-a22b
-anthropic/claude-sonnet-4-5          # requires ANTHROPIC_API_KEY
-```
-
----
-
-## Using with Claude Code
-
-See [CLAUDE.md](CLAUDE.md) for a complete guide on using Claude Code as an interactive harness
-for ViviDoc — including style elicitation, iterative generation, and evaluation workflows.
-
----
-
-## Project Structure
+## Structure
 
 ```
-prompts/                 # LLM prompt templates
-vividoc/core/            # Pipeline: planner, executor, evaluator, styler, runner
+.claude/commands/        # Claude Code skills (vividoc, vividoc-learn)
+prompts/                 # LLM prompt templates (planner, executor, evaluator, styler)
+vividoc/core/            # Pipeline: planner, executor, evaluator, runner, styler
 vividoc/utils/llm/       # LLM client + provider adapters
 benchmark/
 ├── datasets/
-│   ├── interaction_examples/   # 8 reference cases (HTML + SRTC spec)
-│   └── prepped/                # 101-topic dataset used in the paper
-├── baselines/                  # Comparison baselines
-└── evals/                      # Evaluation scripts
-frontend/                # Optional React web UI
-homepage/                # Project homepage (vividoc.vercel.app)
+│   ├── interaction_examples/   # 8 reference cases (HTML + SRTC spec + style guide)
+│   └── prepped/                # ViviBench — 101-topic evaluation dataset
+├── baselines/                  # Naive agent + AutoGen + CAMEL + MetaGPT
+└── evals/                      # Automated evaluation (4-dimensional framework)
+frontend/                # React web UI (optional demo interface)
 ```
 
 ---
 
-## License
+## Citation
 
-MIT
+```bibtex
+@article{tang2026vividoc,
+  title   = {ViviDoc: Generating Interactive Documents through Human-Agent Collaboration},
+  author  = {Tang, Yinghao and Xie, Yupeng and Feng, Yingchaojie and Lan, Tingfeng and Lao, Jiale and Cheng, Yue and Chen, Wei},
+  journal = {arXiv preprint arXiv:2603.27991},
+  year    = {2026}
+}
+```
+
+---
+
+MIT License
