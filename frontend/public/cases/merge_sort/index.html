@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0e0e12;
+            --card: #141418;
+            --surface: #1c1c22;
+            --accent: #f59e0b;
+            --accent2: #fbbf24;
+            --blue: #60a5fa;
+            --green: #34d399;
+            --red: #f87171;
+            --purple: #a78bfa;
+            --text: #f1f0eb;
+            --muted: #9ca3af;
+            --dim: #4b5563;
+            --border: #1f1f28;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.75;
+            padding: 0 0 80px;
+        }
+        header {
+            text-align: center;
+            padding: 60px 40px 48px;
+            background: linear-gradient(180deg,#18180e 0%,var(--bg) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+        header .tag {
+            display: inline-block;
+            font-size: 10px;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+            text-transform: uppercase;
+            border: 1px solid rgba(245,158,11,0.3);
+            padding: 3px 12px;
+            border-radius: 2px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+        h1 span { color: var(--accent); }
+        header p { color: var(--muted); font-size: 13px; max-width: 480px; margin: 0 auto; }
+        section { max-width: 900px; margin: 60px auto 0; padding: 0 32px; }
+        .section-label {
+            font-size: 10px; letter-spacing: 0.18em; color: var(--dim);
+            text-transform: uppercase; margin-bottom: 20px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        h2 { font-family: 'Syne', sans-serif; font-size: 1.75rem; font-weight: 700; margin-bottom: 14px; }
+        .prose { font-size: 13px; color: var(--muted); line-height: 1.9; margin-bottom: 18px; }
+        .math-block {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); padding: 14px 20px;
+            border-radius: 4px; margin: 18px 0; font-size: 13px;
+        }
+        .canvas-wrap {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden; margin: 24px 0;
+        }
+        canvas { display: block; }
+        .controls {
+            display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+            padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border);
+        }
+        .btn {
+            padding: 6px 14px; border: 1px solid var(--dim); background: transparent;
+            color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            border-radius: 3px; cursor: pointer; transition: all 0.15s;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.accent { background: var(--accent); color: #0e0e12; border-color: var(--accent); font-weight: 600; }
+        label { font-size: 11px; color: var(--dim); }
+        input[type=range] { width: 90px; accent-color: var(--accent); }
+        .val { font-size: 12px; color: var(--accent); min-width: 28px; }
+        .status-bar {
+            font-size: 11px; color: var(--dim); padding: 6px 16px;
+            border-top: 1px solid var(--border); background: var(--card);
+            display: flex; gap: 20px;
+        }
+        .stat { display: flex; gap: 6px; align-items: center; }
+        .stat-val { color: var(--accent); font-weight: 600; }
+        .legend {
+            display: flex; gap: 16px; flex-wrap: wrap;
+            padding: 8px 16px; border-top: 1px solid var(--border);
+            font-size: 11px;
+        }
+        .li { display: flex; align-items: center; gap: 6px; color: var(--dim); }
+        .sq { width: 10px; height: 10px; border-radius: 2px; }
+        .complexity-table {
+            width: 100%; border-collapse: collapse; font-size: 12px; margin: 16px 0;
+        }
+        .complexity-table th, .complexity-table td {
+            border: 1px solid var(--border); padding: 8px 14px; text-align: left;
+        }
+        .complexity-table th { background: var(--card); color: var(--muted); }
+        .complexity-table td { color: var(--text); }
+        .complexity-table .highlight { color: var(--accent); }
+        .infobox {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 16px 20px; margin: 16px 0;
+            font-size: 12px; color: var(--dim); line-height: 1.8;
+        }
+        .infobox strong { color: var(--text); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="tag">Temporal Control · Algorithms</div>
+    <h1>Merge <span>Sort</span></h1>
+    <p>Watch divide-and-conquer in action. Step through each comparison and merge to understand why O(n log n) is optimal for comparison-based sorting.</p>
+</header>
+
+<!-- Section 1: The Algorithm -->
+<section>
+    <div class="section-label">01 — The Algorithm</div>
+    <h2>Divide, Conquer, Merge</h2>
+    <div class="prose">
+        Merge sort splits the array in half recursively until each sub-array has one element
+        (trivially sorted), then merges pairs back in sorted order. The insight: merging two
+        sorted arrays takes O(n) time, and we do O(log n) levels of merging.
+    </div>
+    <div class="math-block">
+        Recurrence: \(T(n) = 2T\!\left(\dfrac{n}{2}\right) + \Theta(n)\)
+        &nbsp;⟹&nbsp; \(T(n) = \Theta(n \log n)\) &nbsp;(Master Theorem, Case 2)
+    </div>
+    <div class="prose">
+        Use the controls below to run the sort step by step. Each frame shows either a
+        <strong style="color:var(--blue)">split</strong> (dividing a subarray) or a
+        <strong style="color:var(--green)">merge</strong> (combining two sorted subarrays).
+        Elements actively being compared are highlighted in <strong style="color:var(--accent)">amber</strong>.
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="c1" width="836" height="340"></canvas>
+        <div class="controls">
+            <button class="btn accent" id="btnPlay" onclick="togglePlay()">▶ Play</button>
+            <button class="btn" onclick="stepBack()">◀ Step</button>
+            <button class="btn" onclick="stepFwd()">Step ▶</button>
+            <button class="btn" onclick="resetSort()">↺ New array</button>
+            <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+                <label>speed</label>
+                <input type="range" id="speed" min="1" max="10" value="5">
+                <span class="val" id="speedVal">5</span>
+                <label>size</label>
+                <input type="range" id="arrSize" min="6" max="20" value="12" oninput="changeSize()">
+                <span class="val" id="sizeVal">12</span>
+            </div>
+        </div>
+        <div class="status-bar">
+            <div class="stat">step <span class="stat-val" id="stepNum">0</span></div>
+            <div class="stat">comparisons <span class="stat-val" id="compCount">0</span></div>
+            <div class="stat">phase <span class="stat-val" id="phase">—</span></div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="sq" style="background:#60a5fa44;border:1px solid #60a5fa"></div> splitting</div>
+            <div class="li"><div class="sq" style="background:#34d39944;border:1px solid #34d399"></div> merging</div>
+            <div class="li"><div class="sq" style="background:var(--accent)"></div> comparing</div>
+            <div class="li"><div class="sq" style="background:#a78bfa"></div> sorted</div>
+        </div>
+    </div>
+</section>
+
+<!-- Section 2: Recursion Tree -->
+<section>
+    <div class="section-label">02 — Recursion Tree</div>
+    <h2>The Log n Levels</h2>
+    <div class="prose">
+        Every level of the recursion tree does exactly <strong>n</strong> total work for merging.
+        Since the tree has ⌈log₂ n⌉ + 1 levels, the total is Θ(n log n).
+        The tree below highlights which node is active at each step.
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c2" width="836" height="280"></canvas>
+    </div>
+    <div class="math-block">
+        Level 0: 1 merge of n elements &nbsp;=&nbsp; n work<br>
+        Level 1: 2 merges of n/2 elements &nbsp;=&nbsp; n work<br>
+        Level k: \(2^k\) merges of \(n/2^k\) elements &nbsp;=&nbsp; n work<br>
+        Total: \(\log_2 n\) levels × n work &nbsp;=&nbsp; \(\Theta(n \log n)\)
+    </div>
+</section>
+
+<!-- Section 3: Complexity comparison -->
+<section>
+    <div class="section-label">03 — Why n log n?</div>
+    <h2>The Information-Theoretic Lower Bound</h2>
+    <div class="prose">
+        Any comparison-based sorting algorithm must distinguish between all n! possible
+        orderings of the input. Each comparison provides at most 1 bit of information,
+        so we need at least ⌈log₂(n!)⌉ comparisons.
+    </div>
+    <div class="math-block">
+        By Stirling's approximation: \(\log_2(n!) = \Theta(n \log n)\)
+        <br>Therefore, <strong>no comparison sort can beat Θ(n log n)</strong> in the worst case.
+        Merge sort achieves this bound.
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c3" width="836" height="260"></canvas>
+        <div class="controls">
+            <label>n</label>
+            <input type="range" id="nSlider" min="2" max="100" value="20" oninput="drawComplexity()">
+            <span class="val" id="nVal">20</span>
+        </div>
+    </div>
+    <table class="complexity-table">
+        <tr><th>Algorithm</th><th>Best</th><th>Average</th><th>Worst</th><th>Space</th></tr>
+        <tr><td>Merge Sort</td><td class="highlight">Θ(n log n)</td><td class="highlight">Θ(n log n)</td><td class="highlight">Θ(n log n)</td><td>O(n)</td></tr>
+        <tr><td>Quick Sort</td><td>Θ(n log n)</td><td>Θ(n log n)</td><td>O(n²)</td><td>O(log n)</td></tr>
+        <tr><td>Heap Sort</td><td>Θ(n log n)</td><td>Θ(n log n)</td><td>Θ(n log n)</td><td>O(1)</td></tr>
+        <tr><td>Bubble Sort</td><td>Θ(n)</td><td>O(n²)</td><td>O(n²)</td><td>O(1)</td></tr>
+    </table>
+    <div class="infobox">
+        <strong>Merge sort's stability</strong> makes it the algorithm of choice when the relative order
+        of equal elements must be preserved — critical for multi-key sorts (sort by last name,
+        then by first name). Java's <code>Arrays.sort</code> for objects and Python's
+        <code>sorted()</code>/<code>list.sort()</code> (Timsort) are both based on merge sort.
+    </div>
+</section>
+
+<script>
+// ── Merge Sort Step Recorder ─────────────────────────────────────────────────
+let arr = [], steps = [], stepIdx = 0, comparisons = 0;
+let playing = false, playTimer = null;
+
+function genArray(n) {
+    let a = Array.from({length:n},()=>Math.floor(Math.random()*90)+8);
+    return a;
+}
+
+function recordMergeSort(a) {
+    steps = [];
+    comparisons = 0;
+    let b = [...a];
+    function ms(arr, lo, hi) {
+        if (lo >= hi) return;
+        let mid = (lo+hi)>>1;
+        steps.push({type:'split', lo, hi, mid, arr:[...arr]});
+        ms(arr, lo, mid);
+        ms(arr, mid+1, hi);
+        merge(arr, lo, mid, hi);
+    }
+    function merge(arr, lo, mid, hi) {
+        let L=arr.slice(lo,mid+1), R=arr.slice(mid+1,hi+1);
+        let i=0,j=0,k=lo;
+        while(i<L.length&&j<R.length){
+            steps.push({type:'compare', lo, hi, left:lo+i, right:mid+1+j, arr:[...arr]});
+            comparisons++;
+            if(L[i]<=R[j]) { arr[k++]=L[i++]; }
+            else { arr[k++]=R[j++]; }
+            steps.push({type:'merge', lo, hi, arr:[...arr], k:k-1});
+        }
+        while(i<L.length){arr[k++]=L[i++]; steps.push({type:'merge',lo,hi,arr:[...arr],k:k-1});}
+        while(j<R.length){arr[k++]=R[j++]; steps.push({type:'merge',lo,hi,arr:[...arr],k:k-1});}
+        steps.push({type:'merged', lo, hi, arr:[...arr]});
+    }
+    ms(b, 0, b.length-1);
+    steps.push({type:'done', arr:[...b]});
+    return b;
+}
+
+function resetSort() {
+    let n = parseInt(document.getElementById('arrSize').value);
+    arr = genArray(n);
+    recordMergeSort([...arr]);
+    stepIdx = 0; comparisons = 0;
+    if (playing) { clearInterval(playTimer); playing = false; document.getElementById('btnPlay').textContent='▶ Play'; }
+    draw1(); draw2();
+    document.getElementById('stepNum').textContent = 0;
+    document.getElementById('compCount').textContent = 0;
+    document.getElementById('phase').textContent = '—';
+}
+
+function changeSize() {
+    let n = parseInt(document.getElementById('arrSize').value);
+    document.getElementById('sizeVal').textContent = n;
+    resetSort();
+}
+document.getElementById('speed').addEventListener('input', e=>{
+    document.getElementById('speedVal').textContent = e.target.value;
+});
+
+function stepFwd() {
+    if (stepIdx < steps.length) { stepIdx++; }
+    updateDisplay();
+}
+function stepBack() {
+    if (stepIdx > 0) { stepIdx--; }
+    updateDisplay();
+}
+
+function togglePlay() {
+    playing = !playing;
+    if (playing) {
+        document.getElementById('btnPlay').textContent = '⏸ Pause';
+        playTimer = setInterval(()=>{
+            let spd = parseInt(document.getElementById('speed').value);
+            stepIdx++;
+            if (stepIdx >= steps.length) { clearInterval(playTimer); playing=false; document.getElementById('btnPlay').textContent='▶ Play'; }
+            updateDisplay();
+        }, 800 - spd*70);
+    } else {
+        clearInterval(playTimer);
+        document.getElementById('btnPlay').textContent = '▶ Play';
+    }
+}
+
+function updateDisplay() {
+    let s = steps[Math.min(stepIdx, steps.length-1)];
+    if (!s) { draw1(); draw2(); return; }
+    document.getElementById('stepNum').textContent = stepIdx;
+    let comps = steps.slice(0,stepIdx).filter(x=>x.type==='compare').length;
+    document.getElementById('compCount').textContent = comps;
+    let labels = {split:'splitting',compare:'comparing',merge:'merging',merged:'merged!',done:'done!'};
+    document.getElementById('phase').textContent = labels[s.type] || s.type;
+    draw1(s);
+    draw2(s);
+}
+
+// ── Canvas 1: Bar visualization ──────────────────────────────────────────────
+const c1 = document.getElementById('c1');
+const ctx1 = c1.getContext('2d');
+
+function draw1(step) {
+    const W=c1.width, H=c1.height, pad=20;
+    ctx1.clearRect(0,0,W,H);
+    ctx1.fillStyle='#141418'; ctx1.fillRect(0,0,W,H);
+
+    let a = step ? step.arr : arr;
+    if (!a || a.length===0) return;
+    let n=a.length, maxV=100;
+    let barW = (W-2*pad)/n - 2;
+
+    a.forEach((v,i)=>{
+        let x = pad + i*(barW+2);
+        let bh = ((H-60)*v/maxV);
+        let y = H-30-bh;
+
+        // Determine color
+        let col = '#1c1c22';
+        if (step) {
+            if (step.type==='done') col='#a78bfa';
+            else if (step.type==='merged' && i>=step.lo && i<=step.hi) col='#a78bfa88';
+            else if (step.type==='merge' && i>=step.lo && i<=step.hi) col='#34d39966';
+            else if ((step.type==='compare')&&(i===step.left||i===step.right)) col=i===step.left?'#f59e0b':'#fbbf24';
+            else if (step.type==='split' && i>=step.lo && i<=step.hi) col='#60a5fa33';
+        }
+
+        ctx1.fillStyle = col;
+        ctx1.fillRect(x, y, barW, bh);
+        ctx1.strokeStyle = col==='#1c1c22' ? '#2a2a35' : col;
+        ctx1.lineWidth=1;
+        ctx1.strokeRect(x,y,barW,bh);
+
+        // Value label
+        if (barW > 16) {
+            ctx1.fillStyle='#4b5563';
+            ctx1.font='9px JetBrains Mono';
+            ctx1.textAlign='center';
+            ctx1.fillText(v, x+barW/2, H-14);
+        }
+    });
+
+    // Range indicator
+    if (step && step.lo !== undefined && step.hi !== undefined && step.type!=='done') {
+        let x1 = pad + step.lo*(barW+2);
+        let x2 = pad + (step.hi+1)*(barW+2) - 2;
+        ctx1.strokeStyle = step.type==='split'?'#60a5fa':step.type.includes('merg')?'#34d399':'#f59e0b';
+        ctx1.lineWidth=2;
+        ctx1.setLineDash([3,3]);
+        ctx1.strokeRect(x1-2, 8, x2-x1+4, H-50);
+        ctx1.setLineDash([]);
+    }
+
+    // Midpoint line for split
+    if (step && step.type==='split' && step.mid !== undefined) {
+        let xm = pad + (step.mid+1)*(barW+2) - 3;
+        ctx1.strokeStyle='rgba(245,158,11,0.5)';
+        ctx1.lineWidth=1.5;
+        ctx1.setLineDash([4,4]);
+        ctx1.beginPath(); ctx1.moveTo(xm,8); ctx1.lineTo(xm,H-40); ctx1.stroke();
+        ctx1.setLineDash([]);
+        ctx1.fillStyle='rgba(245,158,11,0.7)';
+        ctx1.font='10px JetBrains Mono';
+        ctx1.textAlign='left';
+        ctx1.fillText('mid', xm+4, 20);
+    }
+}
+
+// ── Canvas 2: Recursion Tree ──────────────────────────────────────────────────
+const c2 = document.getElementById('c2');
+const ctx2 = c2.getContext('2d');
+
+function buildTree(n) {
+    // Build tree nodes: {lo, hi, children}
+    let nodes = [];
+    function rec(lo, hi, depth) {
+        let id = nodes.length;
+        nodes.push({lo, hi, depth, children:[]});
+        if (lo < hi) {
+            let mid = (lo+hi)>>1;
+            nodes[id].children.push(rec(lo, mid, depth+1));
+            nodes[id].children.push(rec(mid+1, hi, depth+1));
+        }
+        return id;
+    }
+    rec(0, n-1, 0);
+    return nodes;
+}
+
+function draw2(step) {
+    const W=c2.width, H=c2.height;
+    ctx2.clearRect(0,0,W,H);
+    ctx2.fillStyle='#141418'; ctx2.fillRect(0,0,W,H);
+
+    if (!arr || arr.length===0) return;
+    let n=arr.length;
+    let nodes = buildTree(n);
+
+    // Compute positions
+    let maxDepth = Math.max(...nodes.map(nd=>nd.depth));
+    let levelH = (H-30)/(maxDepth+1);
+
+    // Group by depth
+    let byDepth = {};
+    nodes.forEach((nd,id)=>{
+        if(!byDepth[nd.depth]) byDepth[nd.depth]=[];
+        byDepth[nd.depth].push({...nd,id});
+    });
+
+    let pos = {};
+    Object.entries(byDepth).forEach(([depth,nds])=>{
+        let cnt=nds.length;
+        nds.forEach((nd,i)=>{
+            pos[nd.id]={x:W*(i+1)/(cnt+1), y:20+parseInt(depth)*levelH};
+        });
+    });
+
+    // Active node
+    let activeLo=-1, activeHi=-1;
+    if (step) { activeLo=step.lo||0; activeHi=step.hi||0; }
+
+    // Draw edges then nodes
+    nodes.forEach((nd,id)=>{
+        nd.children.forEach(cid=>{
+            ctx2.strokeStyle='#1f1f28';
+            ctx2.lineWidth=1;
+            ctx2.beginPath();
+            ctx2.moveTo(pos[id].x, pos[id].y);
+            ctx2.lineTo(pos[cid].x, pos[cid].y);
+            ctx2.stroke();
+        });
+    });
+
+    nodes.forEach((nd,id)=>{
+        let isActive = nd.lo===activeLo&&nd.hi===activeHi;
+        let size=nd.hi-nd.lo+1;
+        let r=Math.max(8, Math.min(14, 8+size));
+        ctx2.beginPath();
+        ctx2.arc(pos[id].x, pos[id].y, r, 0, Math.PI*2);
+        ctx2.fillStyle = isActive ? '#f59e0b' : (nd.lo===nd.hi?'#a78bfa33':'#1f1f28');
+        ctx2.fill();
+        ctx2.strokeStyle = isActive ? '#f59e0b' : '#2a2a35';
+        ctx2.lineWidth=1.5;
+        ctx2.stroke();
+        if (isActive) {
+            ctx2.shadowBlur=12; ctx2.shadowColor='#f59e0b'; ctx2.stroke(); ctx2.shadowBlur=0;
+        }
+
+        ctx2.fillStyle='#6b7280';
+        ctx2.font=`${Math.max(7,Math.min(10, 5+size))}px JetBrains Mono`;
+        ctx2.textAlign='center';
+        ctx2.textBaseline='middle';
+        if (nd.lo===nd.hi) ctx2.fillText(nd.lo, pos[id].x, pos[id].y);
+        else ctx2.fillText(`${nd.lo}–${nd.hi}`, pos[id].x, pos[id].y);
+        ctx2.textBaseline='alphabetic';
+    });
+}
+
+// ── Canvas 3: Complexity chart ──────────────────────────────────────────────
+const c3 = document.getElementById('c3');
+const ctx3 = c3.getContext('2d');
+
+function drawComplexity() {
+    let nMax = parseInt(document.getElementById('nSlider').value);
+    document.getElementById('nVal').textContent = nMax;
+    const W=c3.width, H=c3.height;
+    const pad={l:50,r:20,t:20,b:36};
+    const W2=W-pad.l-pad.r, H2=H-pad.t-pad.b;
+
+    ctx3.clearRect(0,0,W,H);
+    ctx3.fillStyle='#141418'; ctx3.fillRect(0,0,W,H);
+
+    let maxY = nMax*nMax; // worst case for n²
+
+    function toX(n) { return pad.l + (n/nMax)*W2; }
+    function toY(v) { return pad.t + H2 - Math.min(v/maxY,1)*H2; }
+
+    // Axes
+    ctx3.strokeStyle='#2a2a35'; ctx3.lineWidth=1;
+    ctx3.beginPath(); ctx3.moveTo(pad.l,pad.t); ctx3.lineTo(pad.l,pad.t+H2); ctx3.lineTo(pad.l+W2,pad.t+H2); ctx3.stroke();
+    ctx3.fillStyle='#4b5563'; ctx3.font='10px JetBrains Mono';
+    ctx3.fillText('n',pad.l+W2+4,pad.t+H2+4);
+    ctx3.fillText('0',pad.l-18,pad.t+H2+4);
+
+    let curves = [
+        {label:'n²', fn:n=>n*n, col:'#f87171'},
+        {label:'n log n', fn:n=>n*Math.log2(n||1), col:'#f59e0b'},
+        {label:'n', fn:n=>n, col:'#34d399'},
+    ];
+
+    curves.forEach(({fn,col,label})=>{
+        ctx3.strokeStyle=col; ctx3.lineWidth=2;
+        ctx3.beginPath();
+        for(let i=1;i<=nMax;i++) {
+            let x=toX(i), y=toY(fn(i));
+            i===1?ctx3.moveTo(x,y):ctx3.lineTo(x,y);
+        }
+        ctx3.stroke();
+        // Label at right
+        let yEnd=toY(fn(nMax));
+        ctx3.fillStyle=col; ctx3.font='11px JetBrains Mono';
+        ctx3.fillText(label, pad.l+W2+4, Math.max(pad.t+10, Math.min(pad.t+H2-4, yEnd)));
+    });
+
+    // Vertical line at current n
+    ctx3.strokeStyle='rgba(255,255,255,0.15)';
+    ctx3.lineWidth=1; ctx3.setLineDash([3,4]);
+    ctx3.beginPath(); ctx3.moveTo(toX(nMax),pad.t); ctx3.lineTo(toX(nMax),pad.t+H2); ctx3.stroke();
+    ctx3.setLineDash([]);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+resetSort();
+drawComplexity();
+document.getElementById('nSlider').addEventListener('input', drawComplexity);
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    if (window.renderMathInElement) {
+        renderMathInElement(document.body,{delimiters:[
+            {left:'\\[',right:'\\]',display:true},
+            {left:'\\(',right:'\\)',display:false}
+        ]});
+    }
+});
+</script>
+</body>
+</html>

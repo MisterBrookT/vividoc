@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bézier Curves</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0c0e14;
+            --card: #12141c;
+            --surface: #1a1d28;
+            --accent: #64b5f6;
+            --accent2: #ce93d8;
+            --green: #80cbc4;
+            --orange: #ffb74d;
+            --text: #e8eaf6;
+            --muted: #7986cb;
+            --dim: #4a5180;
+            --border: #1e2235;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            line-height: 1.75;
+            padding: 0 0 80px;
+        }
+        header {
+            text-align: center;
+            padding: 60px 40px 48px;
+            background: linear-gradient(160deg, #0f1220 0%, var(--bg) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+        header .tag {
+            display: inline-block;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--muted);
+            text-transform: uppercase;
+            border: 1px solid var(--dim);
+            padding: 3px 10px;
+            border-radius: 2px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.02em;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        h1 em { color: var(--accent); font-style: italic; }
+        header p {
+            color: var(--muted);
+            font-size: 13px;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+        section {
+            max-width: 900px;
+            margin: 60px auto 0;
+            padding: 0 32px;
+        }
+        .section-label {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--dim);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+        .prose {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.9;
+            margin-bottom: 20px;
+        }
+        .math-block {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        .canvas-wrap {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: crosshair;
+            margin: 24px 0;
+        }
+        canvas { display: block; }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+        }
+        .ctrl-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        label { font-size: 11px; color: var(--dim); }
+        input[type=range] {
+            width: 100px;
+            accent-color: var(--accent);
+        }
+        .btn {
+            padding: 6px 14px;
+            border: 1px solid var(--dim);
+            background: transparent;
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+        .value-display {
+            font-size: 12px;
+            color: var(--accent);
+            min-width: 30px;
+        }
+        .hint {
+            font-size: 11px;
+            color: var(--dim);
+            font-style: italic;
+            margin-top: 8px;
+        }
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 10px 16px;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; color: var(--dim); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .infobox {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin: 20px 0;
+            font-size: 12px;
+            color: var(--dim);
+            line-height: 1.8;
+        }
+        .infobox strong { color: var(--text); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="tag">Direct Manipulation · Computational Geometry</div>
+    <h1>Bézier <em>Curves</em></h1>
+    <p>Drag control points to sculpt smooth curves. Watch the De Casteljau construction unfold in real time.</p>
+</header>
+
+<!-- Section 1: De Casteljau -->
+<section>
+    <div class="section-label">01 — The Construction</div>
+    <h2>De Casteljau's Algorithm</h2>
+    <div class="prose">
+        A Bézier curve of degree <em>n</em> is defined by <em>n+1</em> control points
+        \(P_0, P_1, \ldots, P_n\). The curve itself is never drawn by connecting these
+        points — instead, a recursive linear-interpolation process called
+        <strong>De Casteljau's algorithm</strong> computes every point on the curve.
+    </div>
+    <div class="math-block">
+        For parameter \(t \in [0,1]\), define recursively:
+        \[P_i^{(0)} = P_i \qquad P_i^{(r)} = (1-t)\,P_i^{(r-1)} + t\,P_{i+1}^{(r-1)}\]
+        The point on the curve at parameter \(t\) is \(P_0^{(n)}\).
+    </div>
+    <div class="prose">
+        Drag the <strong style="color:var(--accent)">blue control points</strong> to reshape the curve.
+        Use the <strong>t slider</strong> to scrub through the construction — the intermediate
+        interpolation points are shown in successive colours, terminating at the curve point (white dot).
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="c1" width="836" height="400"></canvas>
+        <div class="controls">
+            <div class="ctrl-group">
+                <label>t =</label>
+                <input type="range" id="t1" min="0" max="100" value="50">
+                <span class="value-display" id="tv1">0.50</span>
+            </div>
+            <div class="ctrl-group">
+                <label>degree</label>
+                <button class="btn" id="deg2" onclick="setDegree(2)">quadratic</button>
+                <button class="btn active" id="deg3" onclick="setDegree(3)">cubic</button>
+                <button class="btn" id="deg4" onclick="setDegree(4)">quartic</button>
+            </div>
+            <div class="ctrl-group" style="margin-left:auto">
+                <button class="btn" onclick="resetPts()">reset</button>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="legend-item"><div class="dot" style="background:var(--accent)"></div> control points</div>
+            <div class="legend-item"><div class="dot" style="background:var(--accent2)"></div> level 1 lerp</div>
+            <div class="legend-item"><div class="dot" style="background:var(--green)"></div> level 2 lerp</div>
+            <div class="legend-item"><div class="dot" style="background:var(--orange)"></div> level 3 lerp</div>
+            <div class="legend-item"><div class="dot" style="background:#fff"></div> curve point</div>
+        </div>
+    </div>
+    <p class="hint">Drag any blue point. The coloured network shows the recursive lerp at the current t.</p>
+</section>
+
+<!-- Section 2: Bernstein Polynomial form -->
+<section>
+    <div class="section-label">02 — Polynomial Form</div>
+    <h2>Bernstein Basis</h2>
+    <div class="prose">
+        De Casteljau's algorithm is equivalent to evaluating the <strong>Bernstein polynomial</strong>
+        representation of the curve. Each control point contributes a weighted "bump" function
+        that is always non-negative and sums to 1 — guaranteeing the curve stays within the
+        <em>convex hull</em> of the control points.
+    </div>
+    <div class="math-block">
+        \[B(t) = \sum_{i=0}^{n} \binom{n}{i}(1-t)^{n-i}\,t^i\; P_i, \qquad t\in[0,1]\]
+        where \(\displaystyle b_{i,n}(t) = \binom{n}{i}(1-t)^{n-i}t^i\) are the <em>Bernstein basis polynomials</em>.
+    </div>
+    <div class="prose">
+        The chart below plots the Bernstein basis functions for the current degree.
+        Notice how each \(b_{i,n}(t)\) peaks at \(t = i/n\), meaning control point \(P_i\)
+        has maximum influence at that parameter value. This gives designers intuitive control.
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c2" width="836" height="260"></canvas>
+        <div class="controls">
+            <div class="ctrl-group">
+                <label>t =</label>
+                <input type="range" id="t2" min="0" max="100" value="50" oninput="syncT(this)">
+                <span class="value-display" id="tv2">0.50</span>
+            </div>
+        </div>
+    </div>
+    <p class="hint">The vertical line marks the current t; the dots show each basis value — matching the weight of each control point.</p>
+</section>
+
+<!-- Section 3: Continuity -->
+<section>
+    <div class="section-label">03 — C¹ Continuity</div>
+    <h2>Joining Curves Smoothly</h2>
+    <div class="prose">
+        Single cubic segments are expressive but limited. Complex shapes require multiple segments
+        joined together. <strong>G¹ continuity</strong> (visual smoothness) requires the end tangent
+        of one segment to be <em>collinear</em> with the start tangent of the next.
+        <strong>C¹ continuity</strong> is stronger: not just direction, but also magnitude must match.
+    </div>
+    <div class="math-block">
+        For two cubics \(B_1\) and \(B_2\) joined at \(t=1\) and \(t=0\):<br>
+        \(\text{G}^1:\; P_3^{(1)},\; P_0^{(2)},\; P_1^{(2)}\) are collinear<br>
+        \(\text{C}^1:\; P_3^{(1)} - P_2^{(1)} = P_1^{(2)} - P_0^{(2)}\)
+    </div>
+    <div class="prose">
+        The interactive below enforces C¹: dragging either <strong>orange handle</strong>
+        automatically mirrors its counterpart through the junction point. Toggle the constraint
+        to see what happens without it.
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c3" width="836" height="380"></canvas>
+        <div class="controls">
+            <div class="ctrl-group">
+                <button class="btn active" id="btnC1" onclick="toggleC1()">C¹ ON</button>
+            </div>
+            <div class="ctrl-group">
+                <label style="color:var(--dim); font-size:11px;">Drag the orange handles or the orange junction</label>
+            </div>
+        </div>
+    </div>
+    <div class="infobox">
+        <strong>Why it matters:</strong> Font outlines (TrueType, PostScript), vector graphics, and motion paths
+        all rely on Bézier continuity. Adobe Illustrator's "smooth" anchor is exactly a G¹ constraint.
+        Smooth animations require C¹ or higher to avoid velocity discontinuities.
+    </div>
+</section>
+
+<script>
+// ── Utilities ──────────────────────────────────────────────────────────────
+function lerp(a, b, t) { return { x: a.x*(1-t)+b.x*t, y: a.y*(1-t)+b.y*t }; }
+function dist(a, b) { return Math.hypot(a.x-b.x, a.y-b.y); }
+
+function deCasteljau(pts, t) {
+    let levels = [pts.map(p=>({x:p.x,y:p.y}))];
+    while (levels[levels.length-1].length > 1) {
+        let prev = levels[levels.length-1];
+        levels.push(prev.slice(0,-1).map((p,i)=>lerp(p,prev[i+1],t)));
+    }
+    return levels;
+}
+
+function bezierPath(ctx, pts, steps=200) {
+    ctx.beginPath();
+    for (let i=0; i<=steps; i++) {
+        let t = i/steps;
+        let lvls = deCasteljau(pts, t);
+        let p = lvls[lvls.length-1][0];
+        i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y);
+    }
+    ctx.stroke();
+}
+
+// ── Canvas 1: De Casteljau ─────────────────────────────────────────────────
+const c1 = document.getElementById('c1');
+const ctx1 = c1.getContext('2d');
+const COLORS = ['#64b5f6','#ce93d8','#80cbc4','#ffb74d','#ef9a9a'];
+
+let degree = 3;
+let defaultSets = {
+    2: [{x:100,y:300},{x:418,y:80},{x:736,y:300}],
+    3: [{x:100,y:320},{x:250,y:80},{x:586,y:80},{x:736,y:320}],
+    4: [{x:80,y:320},{x:200,y:80},{x:418,y:300},{x:636,y:80},{x:756,y:320}],
+};
+let pts1 = defaultSets[3].map(p=>({...p}));
+let t1val = 0.5;
+let drag1 = -1;
+
+function setDegree(d) {
+    degree = d;
+    pts1 = defaultSets[d].map(p=>({...p}));
+    ['deg2','deg3','deg4'].forEach(id => document.getElementById(id).classList.remove('active'));
+    document.getElementById('deg'+d).classList.add('active');
+    draw1();
+}
+function resetPts() { pts1 = defaultSets[degree].map(p=>({...p})); draw1(); }
+
+function draw1() {
+    const W=c1.width, H=c1.height;
+    ctx1.clearRect(0,0,W,H);
+    ctx1.fillStyle='#12141c';
+    ctx1.fillRect(0,0,W,H);
+
+    // Draw convex hull suggestion
+    ctx1.setLineDash([2,5]);
+    ctx1.strokeStyle='#1e2235';
+    ctx1.lineWidth=1;
+    ctx1.beginPath();
+    pts1.forEach((p,i)=>i===0?ctx1.moveTo(p.x,p.y):ctx1.lineTo(p.x,p.y));
+    ctx1.stroke();
+    ctx1.setLineDash([]);
+
+    // Draw the curve
+    ctx1.strokeStyle='rgba(100,181,246,0.8)';
+    ctx1.lineWidth=2.5;
+    bezierPath(ctx1, pts1);
+
+    // De Casteljau at t
+    let t = t1val;
+    let levels = deCasteljau(pts1, t);
+
+    // Draw lerp segments and points per level
+    for (let r=1; r<levels.length; r++) {
+        let col = COLORS[r] || '#888';
+        ctx1.strokeStyle = col + '99';
+        ctx1.lineWidth = 1.5;
+        ctx1.beginPath();
+        levels[r].forEach((p,i)=>i===0?ctx1.moveTo(p.x,p.y):ctx1.lineTo(p.x,p.y));
+        ctx1.stroke();
+        levels[r].forEach(p=>{
+            ctx1.beginPath();
+            ctx1.arc(p.x,p.y,4,0,Math.PI*2);
+            ctx1.fillStyle = col;
+            ctx1.fill();
+        });
+    }
+
+    // Control points
+    pts1.forEach((p,i)=>{
+        ctx1.beginPath();
+        ctx1.arc(p.x,p.y,7,0,Math.PI*2);
+        ctx1.fillStyle = i===drag1 ? '#fff' : COLORS[0];
+        ctx1.fill();
+        ctx1.strokeStyle='rgba(255,255,255,0.3)';
+        ctx1.lineWidth=1;
+        ctx1.stroke();
+    });
+
+    // Curve point
+    let cp = levels[levels.length-1][0];
+    ctx1.beginPath();
+    ctx1.arc(cp.x,cp.y,6,0,Math.PI*2);
+    ctx1.fillStyle='#fff';
+    ctx1.fill();
+    ctx1.shadowBlur=12;
+    ctx1.shadowColor='#fff';
+    ctx1.fill();
+    ctx1.shadowBlur=0;
+}
+
+document.getElementById('t1').addEventListener('input', e=>{
+    t1val = e.target.value/100;
+    document.getElementById('tv1').textContent = t1val.toFixed(2);
+    syncBernstein(t1val);
+    draw1();
+});
+
+c1.addEventListener('mousedown', e=>{
+    let r = c1.getBoundingClientRect();
+    let mx = e.clientX-r.left, my = e.clientY-r.top;
+    drag1 = pts1.findIndex(p=>dist(p,{x:mx,y:my})<12);
+});
+c1.addEventListener('mousemove', e=>{
+    if (drag1<0) return;
+    let r = c1.getBoundingClientRect();
+    pts1[drag1] = {x:e.clientX-r.left, y:e.clientY-r.top};
+    draw1();
+});
+c1.addEventListener('mouseup', ()=>{ drag1=-1; draw1(); });
+
+// ── Canvas 2: Bernstein ─────────────────────────────────────────────────────
+const c2 = document.getElementById('c2');
+const ctx2 = c2.getContext('2d');
+let tBern = 0.5;
+
+function binom(n,k) {
+    if(k<0||k>n) return 0;
+    if(k===0||k===n) return 1;
+    let v=1;
+    for(let i=0;i<k;i++) v=v*(n-i)/(i+1);
+    return v;
+}
+function bernstein(n,i,t) { return binom(n,i)*Math.pow(t,i)*Math.pow(1-t,n-i); }
+
+function syncBernstein(t) { tBern=t; drawBernstein(); }
+function syncT(el) {
+    let t = el.value/100;
+    document.getElementById('tv2').textContent = t.toFixed(2);
+    tBern = t;
+    // also sync c1 slider
+    document.getElementById('t1').value = el.value;
+    document.getElementById('tv1').textContent = t.toFixed(2);
+    t1val = t;
+    draw1();
+    drawBernstein();
+}
+
+function drawBernstein() {
+    const W=c2.width, H=c2.height;
+    const pad={l:40,r:20,t:20,b:30};
+    const W2=W-pad.l-pad.r, H2=H-pad.t-pad.b;
+    ctx2.clearRect(0,0,W,H);
+    ctx2.fillStyle='#12141c';
+    ctx2.fillRect(0,0,W,H);
+
+    let n = degree;
+    const colors = ['#64b5f6','#ce93d8','#80cbc4','#ffb74d','#ef9a9a'];
+
+    // Axes
+    ctx2.strokeStyle='#1e2235';
+    ctx2.lineWidth=1;
+    ctx2.beginPath();
+    ctx2.moveTo(pad.l, pad.t);
+    ctx2.lineTo(pad.l, pad.t+H2);
+    ctx2.lineTo(pad.l+W2, pad.t+H2);
+    ctx2.stroke();
+
+    // Labels
+    ctx2.fillStyle='#4a5180';
+    ctx2.font='10px DM Mono, monospace';
+    ctx2.fillText('0',pad.l-12,pad.t+H2+4);
+    ctx2.fillText('1',pad.l+W2-4,pad.t+H2+14);
+    ctx2.fillText('1',pad.l-16,pad.t+8);
+
+    // Plot each basis
+    for (let i=0;i<=n;i++) {
+        ctx2.strokeStyle=colors[i%colors.length];
+        ctx2.lineWidth=2;
+        ctx2.beginPath();
+        for(let s=0;s<=200;s++) {
+            let t=s/200;
+            let bv=bernstein(n,i,t);
+            let x=pad.l+t*W2, y=pad.t+H2-bv*H2;
+            s===0?ctx2.moveTo(x,y):ctx2.lineTo(x,y);
+        }
+        ctx2.stroke();
+
+        // Dot at tBern
+        let bv=bernstein(n,i,tBern);
+        let x=pad.l+tBern*W2, y=pad.t+H2-bv*H2;
+        ctx2.beginPath();
+        ctx2.arc(x,y,5,0,Math.PI*2);
+        ctx2.fillStyle=colors[i%colors.length];
+        ctx2.fill();
+
+        // Label
+        ctx2.fillStyle=colors[i%colors.length]+'bb';
+        ctx2.font='10px DM Mono';
+        let lx=pad.l+(i/n)*W2, ly=pad.t+H2-bernstein(n,i,i/n)*H2-8;
+        ctx2.fillText('b'+i+','+n, lx-10, ly-4);
+    }
+
+    // Vertical line at t
+    ctx2.strokeStyle='rgba(255,255,255,0.25)';
+    ctx2.setLineDash([3,4]);
+    ctx2.lineWidth=1;
+    ctx2.beginPath();
+    ctx2.moveTo(pad.l+tBern*W2, pad.t);
+    ctx2.lineTo(pad.l+tBern*W2, pad.t+H2);
+    ctx2.stroke();
+    ctx2.setLineDash([]);
+
+    // Note: sum = 1
+    ctx2.fillStyle='#4a5180';
+    ctx2.font='10px DM Mono';
+    ctx2.fillText('Σ b_i,n(t) = 1  (partition of unity)', pad.l+8, pad.t+14);
+}
+
+// ── Canvas 3: C¹ Continuity ─────────────────────────────────────────────────
+const c3 = document.getElementById('c3');
+const ctx3 = c3.getContext('2d');
+let c1on = true;
+
+// Two cubic segments sharing junction at jx,jy
+// Seg1: p0,h1,h2,J  Seg2: J,h3,h4,p5
+let J = {x:418, y:200};
+let h2 = {x:320,y:120};   // seg1 end handle
+let h3 = {x:516,y:120};   // seg2 start handle (mirrored of h2 when C1 on)
+let p0 = {x:80, y:300};
+let h1 = {x:160,y:100};
+let h4 = {x:680,y:100};
+let p5 = {x:756,y:300};
+
+function mirrorH3() { h3 = {x:2*J.x-h2.x, y:2*J.y-h2.y}; }
+function mirrorH2() { h2 = {x:2*J.x-h3.x, y:2*J.y-h3.y}; }
+
+let drag3 = null;
+
+function toggleC1() {
+    c1on = !c1on;
+    document.getElementById('btnC1').textContent = c1on ? 'C¹ ON' : 'C¹ OFF';
+    document.getElementById('btnC1').classList.toggle('active', c1on);
+    if (c1on) mirrorH3();
+    draw3();
+}
+
+function draw3() {
+    const W=c3.width, H=c3.height;
+    ctx3.clearRect(0,0,W,H);
+    ctx3.fillStyle='#12141c';
+    ctx3.fillRect(0,0,W,H);
+
+    let seg1 = [p0,h1,h2,J];
+    let seg2 = [J,h3,h4,p5];
+
+    // Draw curves
+    ctx3.strokeStyle='rgba(100,181,246,0.9)';
+    ctx3.lineWidth=2.5;
+    bezierPath(ctx3, seg1);
+
+    // If C1 off, check if there's a kink — show in red
+    if (!c1on) {
+        // Check collinearity
+        let dh = {x:J.x-h2.x, y:J.y-h2.y};
+        let dh2 = {x:h3.x-J.x, y:h3.y-J.y};
+        let cross = dh.x*dh2.y - dh.y*dh2.x;
+        ctx3.strokeStyle = Math.abs(cross) > 50 ? 'rgba(239,83,80,0.9)' : 'rgba(128,203,196,0.9)';
+    } else {
+        ctx3.strokeStyle='rgba(128,203,196,0.9)';
+    }
+    ctx3.lineWidth=2.5;
+    bezierPath(ctx3, seg2);
+
+    // Control polygon lines
+    ctx3.strokeStyle='#1e2235';
+    ctx3.lineWidth=1;
+    ctx3.setLineDash([2,4]);
+    ctx3.beginPath();
+    [p0,h1,h2,J,h3,h4,p5].forEach((p,i)=>i===0?ctx3.moveTo(p.x,p.y):ctx3.lineTo(p.x,p.y));
+    ctx3.stroke();
+    ctx3.setLineDash([]);
+
+    // Handle lines (orange style)
+    [[h2,J],[J,h3]].forEach(([a,b])=>{
+        ctx3.strokeStyle='rgba(255,183,77,0.4)';
+        ctx3.lineWidth=1.5;
+        ctx3.beginPath();
+        ctx3.moveTo(a.x,a.y); ctx3.lineTo(b.x,b.y);
+        ctx3.stroke();
+    });
+
+    // Points
+    [[p0,'#64b5f6'],[h1,'#4a5180'],[h2,'#ffb74d'],[J,'#fff'],
+     [h3,'#ffb74d'],[h4,'#4a5180'],[p5,'#64b5f6']].forEach(([p,col])=>{
+        ctx3.beginPath();
+        ctx3.arc(p.x,p.y,6,0,Math.PI*2);
+        ctx3.fillStyle=col;
+        ctx3.fill();
+        if(col==='#ffb74d' || col==='#fff') {
+            ctx3.strokeStyle='rgba(255,255,255,0.4)';
+            ctx3.lineWidth=1.5;
+            ctx3.stroke();
+        }
+    });
+
+    // Label junction
+    ctx3.fillStyle='#fff';
+    ctx3.font='10px DM Mono';
+    ctx3.fillText('junction', J.x+10, J.y-8);
+}
+
+c3.addEventListener('mousedown', e=>{
+    let r=c3.getBoundingClientRect();
+    let m={x:e.clientX-r.left, y:e.clientY-r.top};
+    let targets = [
+        ['p0',p0],['h1',h1],['h2',h2],['J',J],
+        ['h3',h3],['h4',h4],['p5',p5]
+    ];
+    let hit = targets.find(([,p])=>dist(p,m)<12);
+    drag3 = hit ? hit[0] : null;
+});
+c3.addEventListener('mousemove', e=>{
+    if(!drag3) return;
+    let r=c3.getBoundingClientRect();
+    let m={x:e.clientX-r.left, y:e.clientY-r.top};
+    if(drag3==='p0') p0=m;
+    else if(drag3==='h1') h1=m;
+    else if(drag3==='h2') { h2=m; if(c1on) mirrorH3(); }
+    else if(drag3==='J') {
+        let dhx=m.x-J.x, dhy=m.y-J.y;
+        J=m; h2={x:h2.x+dhx,y:h2.y+dhy}; h3={x:h3.x+dhx,y:h3.y+dhy};
+    }
+    else if(drag3==='h3') { h3=m; if(c1on) mirrorH2(); }
+    else if(drag3==='h4') h4=m;
+    else if(drag3==='p5') p5=m;
+    draw3();
+});
+c3.addEventListener('mouseup',()=>{ drag3=null; });
+
+// ── Init ────────────────────────────────────────────────────────────────────
+draw1();
+drawBernstein();
+draw3();
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    renderMathInElement(document.body, {
+        delimiters:[
+            {left:'\\[',right:'\\]',display:true},
+            {left:'\\(',right:'\\)',display:false}
+        ]
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+    if(window.renderMathInElement) {
+        renderMathInElement(document.body,{delimiters:[
+            {left:'\\[',right:'\\]',display:true},
+            {left:'\\(',right:'\\)',display:false}
+        ]});
+    }
+});
+</script>
+</body>
+</html>
