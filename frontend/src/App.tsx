@@ -48,6 +48,7 @@ const DOMAINS = [
     name: 'Biology & Medicine',
     cases: [
       { slug: 'action_potential',     title: 'Action Potential',      category: 'Temporal Control',      desc: 'Ion channels, threshold dynamics, and the all-or-nothing law.' },
+      { slug: 'dna_replication',      title: 'DNA Replication',       category: 'Temporal Control',      desc: 'Helicase unwinds, polymerase copies — fidelity down to one error per billion bases.' },
       { slug: 'geometric_optics',     title: 'Geometric Optics',      category: 'Direct Manipulation',   desc: 'Drag lenses and sources to trace real-time refraction paths.' },
     ],
   },
@@ -58,6 +59,24 @@ const DOMAINS = [
       { slug: 'central_limit_theorem', title: 'Central Limit Theorem', category: 'Parameter Exploration', desc: 'Any distribution converges to normal as sample size grows.' },
       { slug: 'quantum_orbitals',      title: 'Quantum Orbitals',      category: 'State Switching',       desc: 'Switch between 1s, 2p, 3d electron probability clouds.' },
       { slug: 'entropy',               title: 'Entropy',               category: 'Scroll-driven Narrative', desc: 'Scroll through thermodynamic irreversibility as particles mix.' },
+    ],
+  },
+  {
+    id: 'economics',
+    name: 'Economics & Game Theory',
+    cases: [
+      { slug: 'supply_demand',        title: 'Supply & Demand',       category: 'Direct Manipulation',   desc: 'Drag curves to shift equilibrium; add price ceilings and floors to reveal surplus and deadweight loss.' },
+      { slug: 'black_scholes',        title: 'Black–Scholes',         category: 'Parameter Exploration', desc: 'Five sliders reveal how volatility, time, and strike price determine option value and the Greeks.' },
+      { slug: 'prisoners_dilemma',    title: "Prisoner's Dilemma",    category: 'State Switching',       desc: 'From dominant defection to evolved cooperation — why rational actors can trap themselves.' },
+    ],
+  },
+  {
+    id: 'mechanics',
+    name: 'Mechanics & Waves',
+    cases: [
+      { slug: 'double_pendulum',      title: 'Double Pendulum',       category: 'Direct Manipulation',   desc: 'Drag the initial angles and watch deterministic chaos erase predictability within seconds.' },
+      { slug: 'wave_interference',    title: 'Wave Interference',     category: 'Parameter Exploration', desc: 'Superpose two waves, drag point sources, and explore beats and standing wave harmonics.' },
+      { slug: 'spring_mass',          title: 'Spring–Mass System',    category: 'Parameter Exploration', desc: 'Tune stiffness, mass, and damping to see underdamped oscillation, critical damping, and resonance.' },
     ],
   },
 ];
