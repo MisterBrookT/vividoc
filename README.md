@@ -2,6 +2,8 @@
 
 **ViviDoc** generates interactive educational documents — explorable explanations — from a single topic input. Given a topic, it produces a self-contained HTML file with text, math (KaTeX), and interactive visualizations.
 
+[![ACL 2026 Demo](https://img.shields.io/badge/ACL_2026-System_Demonstrations-blue?style=flat-square)](https://arxiv.org/abs/2603.27991)
+
 **[Demo](https://vividoc.vercel.app/)** · **[Paper](assets/paper.pdf)** · **[arXiv](https://arxiv.org/abs/2603.27991)**
 
 ---

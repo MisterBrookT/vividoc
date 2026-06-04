@@ -36,13 +36,18 @@ export default function Home() {
     <main className="max-w-[900px] mx-auto px-6 font-[Inter,sans-serif] antialiased text-slate-800">
       {/* Hero */}
       <section className="pt-20 pb-10 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-5 leading-tight">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 leading-tight">
           {parts[0]}
           <span className="bg-gradient-to-r from-indigo-600 to-indigo-400 bg-clip-text text-transparent">
             {paper.highlightWord}
           </span>
           {parts[1]}
         </h1>
+        <div className="flex justify-center mb-4">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 tracking-wide">
+            {paper.venue}
+          </span>
+        </div>
         <p className="text-slate-500 text-base mb-1.5">
           {paper.authors.map((a, i) => (
             <span key={i}>
