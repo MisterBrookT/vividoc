@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Lorentz Transformation — Special Relativity</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#06060c;color:#f0ead0;font-family:'Crimson Pro',serif;line-height:1.75;padding:48px 20px 80px;}
+.wrapper{max-width:920px;margin:0 auto;}
+.main-title{font-family:'Space Mono',monospace;font-size:2.5rem;color:#6366f1;text-align:center;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;}
+.subtitle{text-align:center;font-size:1.15rem;color:#3a3a70;font-style:italic;margin-bottom:56px;}
+.section{background:#0a0a18;border:1px solid #1a1a35;border-left:5px solid #6366f1;border-radius:6px;padding:44px 48px;margin-bottom:56px;box-shadow:0 16px 48px rgba(0,0,0,0.75);}
+.section-number{font-family:'Space Mono',monospace;font-size:0.75rem;color:#3a3a70;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;}
+.section-title{font-family:'Space Mono',monospace;font-size:1.4rem;color:#6366f1;margin-bottom:24px;letter-spacing:1px;}
+.text{font-size:1.12rem;line-height:1.8;color:#ccc8e8;margin-bottom:18px;}
+.text strong{color:#f0ead0;font-weight:600;}
+.math-block{background:#02020a;border:1px solid #1e1e40;border-left:3px solid #6366f1;border-radius:4px;padding:18px 24px;margin:24px 0;text-align:center;font-size:1.15rem;color:#f0ead0;}
+.widget{background:#02020a;border:1px solid #14143a;border-radius:8px;margin-top:32px;overflow:hidden;}
+.widget-header{background:#06061a;padding:14px 20px;font-family:'Space Mono',monospace;font-size:0.75rem;color:#3a3a70;letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid #14143a;}
+.widget-body{padding:24px;}
+.slider-row{display:flex;align-items:center;gap:16px;margin-bottom:12px;}
+.slider-label{font-family:'Space Mono',monospace;font-size:0.8rem;color:#3a3a70;min-width:90px;}
+input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:#14143a;border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#6366f1;cursor:pointer;box-shadow:0 0 8px rgba(99,102,241,0.6);}
+.slider-val{font-family:'Space Mono',monospace;font-size:0.85rem;color:#6366f1;min-width:70px;text-align:right;}
+canvas{display:block;}
+.readout-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;}
+.readout{background:#06061a;border:1px solid #14143a;border-radius:6px;padding:12px;text-align:center;}
+.readout-label{font-family:'Space Mono',monospace;font-size:0.6rem;color:#3a3a70;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.readout-val{font-family:'Space Mono',monospace;font-size:1.1rem;color:#6366f1;font-weight:700;}
+.btn-row{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+button{font-family:'Space Mono',monospace;font-size:0.75rem;padding:8px 16px;background:transparent;border:1px solid #6366f1;color:#6366f1;border-radius:4px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:all 0.2s;}
+button:hover{background:#6366f1;color:#06060c;}
+button.active{background:#6366f1;color:#06060c;}
+.toggle-group{display:flex;gap:0;}
+.toggle-group button{border-radius:0;border-right-width:0;}
+.toggle-group button:first-child{border-radius:4px 0 0 4px;}
+.toggle-group button:last-child{border-radius:0 4px 4px 0;border-right-width:1px;}
+.hint{font-family:'Space Mono',monospace;font-size:0.7rem;color:#3a3a70;text-align:center;margin-top:8px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <h1 class="main-title">Lorentz Transformation</h1>
+  <p class="subtitle">The geometry of spacetime mixing revealed</p>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-number">Section 01</div>
+    <h2 class="section-title">The Minkowski Spacetime Diagram</h2>
+
+    <p class="text">
+      In 1908, three years after Einstein published special relativity, the mathematician Hermann Minkowski proposed a stunning geometric reinterpretation. Space and time, he declared, are not separate entities — they are two aspects of a single four-dimensional manifold, now called <strong>Minkowski spacetime</strong>. "Henceforth space by itself, and time by itself, are doomed to fade away into mere shadows, and only a kind of union of the two will preserve an independent reality." Minkowski's framework turned the Lorentz transformation — a set of equations — into a geometric rotation in spacetime.
+    </p>
+    <p class="text">
+      The spacetime diagram is our window into this geometry. The vertical axis represents the coordinate time $ct$ (multiplied by $c$ so both axes have units of length); the horizontal axis represents the spatial coordinate $x$. Every point on the diagram is an <em>event</em> — a specific location at a specific moment. The trajectory of any object through spacetime is its <em>worldline</em>. A stationary object traces a vertical line (moving through time, not space). A moving object traces a tilted line. A photon, traveling at $c$, traces a 45° line — the universal speed limit inscribed geometrically.
+    </p>
+    <div class="math-block">$$t' = \gamma\!\left(t - \frac{vx}{c^2}\right) \qquad x' = \gamma(x - vt)$$</div>
+    <p class="text">
+      When a second frame $S'$ moves at velocity $v$ relative to frame $S$, its axes on the Minkowski diagram are <em>both</em> tilted — not in opposite directions as Euclidean intuition suggests, but both toward the light cone. The $ct'$ axis tilts with slope $c/v$ from vertical; the $x'$ axis tilts with slope $v/c$ from horizontal. Both axes close in on the 45° light cone as $v \to c$, and they can never cross it. This tilt is the geometric manifestation of the Lorentz transformation. The spacetime interval $ds^2 = -c^2 dt^2 + dx^2$ is the Minkowski analog of Pythagorean distance — and crucially, it is invariant under Lorentz boosts, just as Euclidean distance is invariant under rotations.
+    </p>
+    <p class="text">
+      The diagram makes visible what the equations only hint at: <strong>a Lorentz boost is a rotation — but in hyperbolic geometry, not Euclidean geometry</strong>. Circles of constant radius in Euclidean space become hyperbolas of constant interval in Minkowski space. The rapidity $\phi = \tanh^{-1}(v/c)$ is the "angle" of this hyperbolic rotation, and the transformation $\cosh\phi, \sinh\phi$ replaces the Euclidean $\cos\theta, \sin\theta$. Time dilation and length contraction are geometric projections onto tilted axes — as natural as the foreshortening of a rod held at an angle.
+    </p>
+
+    <div class="widget">
+      <div class="widget-header">Interactive — Minkowski Diagram: Click to Place Events, Drag to Change Frame</div>
+      <div class="widget-body">
+        <div class="slider-row">
+          <span class="slider-label">Frame v/c</span>
+          <input type="range" id="s1-v-slider" min="-80" max="80" value="0" step="1"/>
+          <span class="slider-val" id="s1-v-disp">0.00</span>
+        </div>
+        <canvas id="s1-canvas" width="860" height="420" style="width:100%;max-width:860px;border-radius:4px;cursor:crosshair;"></canvas>
+        <div class="readout-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="readout"><div class="readout-label">ct (S frame)</div><div class="readout-val" id="s1-r-ct">—</div></div>
+          <div class="readout"><div class="readout-label">x (S frame)</div><div class="readout-val" id="s1-r-x">—</div></div>
+          <div class="readout"><div class="readout-label">ct' (S' frame)</div><div class="readout-val" id="s1-r-ctp">—</div></div>
+          <div class="readout"><div class="readout-label">x' (S' frame)</div><div class="readout-val" id="s1-r-xp">—</div></div>
+        </div>
+        <p class="hint">Click anywhere on the diagram to place an event. Move the slider to change the velocity of frame S'.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-number">Section 02</div>
+    <h2 class="section-title">Simultaneity and Length Contraction</h2>
+
+    <p class="text">
+      Of all the conceptual shifts demanded by special relativity, the <strong>relativity of simultaneity</strong> is perhaps the deepest. In Newtonian physics, "now" is a universal cut through the history of the universe — every observer agrees on which events happen simultaneously. Einstein showed that this is false. Two events that are simultaneous in one inertial frame are not simultaneous in a frame moving relative to it (unless they occur at the same location). There is no universal "now."
+    </p>
+    <p class="text">
+      Einstein's original illustration — later called the <em>train and lightning thought experiment</em> — makes this vivid. A train moves at speed $v$ along a track. Lightning strikes both ends simultaneously in the ground frame $S$. A passenger at the center of the train (in frame $S'$) is equidistant from the two strikes. Since light from the front strike reaches the passenger first (she's moving toward it), she concludes the front lightning struck <em>earlier</em> than the rear. Both observers are right — in their respective frames.
+    </p>
+    <div class="math-block">$$\Delta t' = \gamma\!\left(\Delta t - \frac{v\,\Delta x}{c^2}\right) \qquad \text{if } \Delta t=0: \quad \Delta t' = -\frac{\gamma v\,\Delta x}{c^2}$$</div>
+    <p class="text">
+      Length contraction follows directly from the relativity of simultaneity. To measure the length of a moving rod, you must note the positions of its two ends <em>simultaneously</em> — but simultaneity depends on your frame. In the rod's rest frame, its proper length is $L_0$. In a frame where the rod moves at speed $v$, its measured length is contracted to $L = L_0/\gamma$. This is not an optical illusion, not a force compressing the rod — it is a geometric consequence of the spacetime structure. The rod is "really" shorter in the moving frame, in the only operationally meaningful sense of "really."
+    </p>
+    <p class="text">
+      Before Einstein, Lorentz and Fitzgerald had proposed that moving objects physically contract due to compression by the "ether wind." Einstein's breakthrough was recognizing that no ether is needed — and that the contraction is frame-dependent, not absolute. In the rod's own rest frame, it is not compressed at all. The asymmetry between Lorentz's ether interpretation and Einstein's geometric one was not just philosophical; it led to different predictions about whether the effect is real for both observers (it is) or only for the one moving relative to the ether (it isn't — the ether doesn't exist).
+    </p>
+
+    <div class="widget">
+      <div class="widget-header">Interactive — Train Simultaneity and Length Contraction</div>
+      <div class="widget-body">
+        <div class="slider-row">
+          <span class="slider-label">Train speed β</span>
+          <input type="range" id="s2-v-slider" min="0" max="95" value="60" step="1"/>
+          <span class="slider-val" id="s2-v-disp">0.60c</span>
+        </div>
+        <div class="btn-row">
+          <button id="s2-play-btn">▶ Animate</button>
+          <button id="s2-reset-btn">↺ Reset</button>
+        </div>
+        <canvas id="s2-canvas" width="860" height="340" style="width:100%;max-width:860px;border-radius:4px;"></canvas>
+        <div class="readout-grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="readout"><div class="readout-label">β = v/c</div><div class="readout-val" id="s2-r-beta">0.60</div></div>
+          <div class="readout"><div class="readout-label">γ (Lorentz)</div><div class="readout-val" id="s2-r-gamma">1.250</div></div>
+          <div class="readout"><div class="readout-label">L/L₀ contraction</div><div class="readout-val" id="s2-r-L">0.800</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-number">Section 03</div>
+    <h2 class="section-title">Velocity Addition and the Speed of Light</h2>
+
+    <p class="text">
+      Imagine a rocket traveling at 0.99c relative to Earth. The rocket fires a projectile forward at 0.99c relative to the rocket. Common sense (Galilean mechanics) says the projectile moves at $0.99 + 0.99 = 1.98c$ relative to Earth — faster than light. But the Michelson-Morley experiment of 1887 had already shown that light's speed is the same for all observers. Einstein's velocity addition formula preserves this, no matter how velocities are combined.
+    </p>
+    <p class="text">
+      The relativistic velocity addition formula is derived directly from two consecutive Lorentz boosts. If object $A$ moves at velocity $u$ in frame $S'$, and $S'$ moves at velocity $v$ relative to $S$, then the velocity of $A$ in $S$ is not $u + v$ but rather:
+    </p>
+    <div class="math-block">$$u_{\text{rel}} = \frac{u + v}{1 + \dfrac{uv}{c^2}}$$</div>
+    <p class="text">
+      Notice what happens in two special cases. When $u, v \ll c$, the denominator $1 + uv/c^2 \approx 1$ and we recover the classical result $u + v$. When either $u = c$ (photon), we get $u_{\text{rel}} = (c+v)/(1+v/c) = c(c+v)/(c+v) = c$ — the speed of light is the same in every frame, as required. The formula ensures that no composition of subluminal velocities ever produces a speed equal to or exceeding $c$.
+    </p>
+    <p class="text">
+      This has profound consequences. It means there is no way to "build up" to the speed of light by successive boosts. Every boost gets you closer — but the denominator always conspires to keep $u_{\text{rel}} < c$. Physically, a particle of finite rest mass would require infinite energy to reach $c$. The energy is $E = \gamma mc^2$: as $v \to c$, $\gamma \to \infty$ and the energy diverges. Only massless particles — photons, gravitons — can travel at exactly $c$. Faster-than-light travel (FTL) would not merely require large energies; it would require imaginary mass and would allow signals to propagate backwards in time in some reference frames, violating causality.
+    </p>
+
+    <div class="widget">
+      <div class="widget-header">Interactive — Relativistic Velocity Addition</div>
+      <div class="widget-body">
+        <div class="slider-row">
+          <span class="slider-label">u (in S')</span>
+          <input type="range" id="s3-u-slider" min="0" max="999" value="700" step="1"/>
+          <span class="slider-val" id="s3-u-disp">0.700c</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">v (S' vs S)</span>
+          <input type="range" id="s3-v-slider" min="0" max="999" value="700" step="1"/>
+          <span class="slider-val" id="s3-v-disp">0.700c</span>
+        </div>
+        <canvas id="s3-canvas" width="860" height="360" style="width:100%;max-width:860px;border-radius:4px;"></canvas>
+        <div class="readout-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="readout"><div class="readout-label">u (in S')</div><div class="readout-val" id="s3-r-u">0.700c</div></div>
+          <div class="readout"><div class="readout-label">v (S'→S)</div><div class="readout-val" id="s3-r-v">0.700c</div></div>
+          <div class="readout"><div class="readout-label">Newtonian u+v</div><div class="readout-val" id="s3-r-newt" style="color:#c08080;">1.400c</div></div>
+          <div class="readout"><div class="readout-label">Relativistic</div><div class="readout-val" id="s3-r-rel" style="color:#a0d8a0;">0.940c</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ========== SECTION 1: Minkowski Diagram ==========
+(function(){
+  const vSlider = document.getElementById('s1-v-slider');
+  const vDisp = document.getElementById('s1-v-disp');
+  const rCt = document.getElementById('s1-r-ct');
+  const rX = document.getElementById('s1-r-x');
+  const rCtp = document.getElementById('s1-r-ctp');
+  const rXp = document.getElementById('s1-r-xp');
+  const canvas = document.getElementById('s1-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = 860 * DPR;
+  canvas.height = 420 * DPR;
+  canvas.style.width = '100%';
+  canvas.style.maxWidth = '860px';
+  ctx.scale(DPR, DPR);
+  const W = 860, H = 420;
+
+  let beta = 0;
+  let eventX = null, eventY = null; // in diagram coords (units)
+
+  function gamma(b){ return b===0 ? 1 : 1/Math.sqrt(1-b*b); }
+
+  // Canvas coordinate system: origin at center
+  const OX = W/2, OY = H/2;
+  const SCALE = 80; // px per unit
+
+  function diagToCanvas(x, ct){ return [OX + x*SCALE, OY - ct*SCALE]; }
+  function canvasToDiag(cx, cy){ return [(cx-OX)/SCALE, (OY-cy)/SCALE]; }
+
+  vSlider.addEventListener('input', ()=>{
+    beta = vSlider.value / 100;
+    vDisp.textContent = beta.toFixed(2);
+    draw();
+  });
+
+  canvas.addEventListener('click', (e)=>{
+    const rect = canvas.getBoundingClientRect();
+    const cx = (e.clientX - rect.left) * (canvas.width / rect.width) / DPR;
+    const cy = (e.clientY - rect.top) * (canvas.height / rect.height) / DPR;
+    const [dx, dct] = canvasToDiag(cx, cy);
+    eventX = dx; eventY = dct;
+    updateReadouts();
+    draw();
+  });
+
+  function updateReadouts(){
+    if(eventX === null){ rCt.textContent = '—'; rX.textContent = '—'; rCtp.textContent = '—'; rXp.textContent = '—'; return; }
+    const g = gamma(beta);
+    const ctp = g * (eventY - beta * eventX);
+    const xp = g * (eventX - beta * eventY);
+    rCt.textContent = eventY.toFixed(2);
+    rX.textContent = eventX.toFixed(2);
+    rCtp.textContent = ctp.toFixed(2);
+    rXp.textContent = xp.toFixed(2);
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#02020a';
+    ctx.fillRect(0, 0, W, H);
+
+    const g = gamma(beta);
+
+    // Grid lines — S frame (orthogonal)
+    ctx.strokeStyle = '#0e0e2a';
+    ctx.lineWidth = 1;
+    for(let i=-5; i<=5; i++){
+      const [x0,y0] = diagToCanvas(i,-5);
+      const [x1,y1] = diagToCanvas(i, 5);
+      ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
+      const [x2,y2] = diagToCanvas(-5,i);
+      const [x3,y3] = diagToCanvas( 5,i);
+      ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x3,y3); ctx.stroke();
+    }
+
+    // S' frame grid lines — tilted
+    if(Math.abs(beta) > 0.02){
+      ctx.strokeStyle = '#14143a88';
+      ctx.lineWidth = 0.8;
+      // x' = const lines (ct' axis direction): slope in ct vs x = 1/beta
+      // ct' = const lines (x' axis direction): slope in ct vs x = beta
+      for(let i=-5; i<=5; i++){
+        // Lines of constant x' (parallel to ct' axis)
+        // x' = γ(x - β·ct) = i → x = x'/γ + β·ct
+        // parametric: (t=param, x=i/g + beta*param)
+        const ctMin = -5, ctMax = 5;
+        const x0p = i/g + beta*ctMin, x1p = i/g + beta*ctMax;
+        const [cx0,cy0] = diagToCanvas(x0p, ctMin);
+        const [cx1,cy1] = diagToCanvas(x1p, ctMax);
+        ctx.beginPath(); ctx.moveTo(cx0,cy0); ctx.lineTo(cx1,cy1); ctx.stroke();
+
+        // Lines of constant ct' (parallel to x' axis)
+        // ct' = γ(ct - β·x) = i → ct = i/g + β·x
+        const xMin2 = -5, xMax2 = 5;
+        const ct0p = i/g + beta*xMin2, ct1p = i/g + beta*xMax2;
+        const [cx2,cy2] = diagToCanvas(xMin2, ct0p);
+        const [cx3,cy3] = diagToCanvas(xMax2, ct1p);
+        ctx.beginPath(); ctx.moveTo(cx2,cy2); ctx.lineTo(cx3,cy3); ctx.stroke();
+      }
+    }
+
+    // Light cone (45° lines)
+    ctx.strokeStyle = '#ffffff44';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5,5]);
+    const [lc1x0,lc1y0] = diagToCanvas(-5,-5);
+    const [lc1x1,lc1y1] = diagToCanvas( 5, 5);
+    ctx.beginPath(); ctx.moveTo(lc1x0,lc1y0); ctx.lineTo(lc1x1,lc1y1); ctx.stroke();
+    const [lc2x0,lc2y0] = diagToCanvas( 5,-5);
+    const [lc2x1,lc2y1] = diagToCanvas(-5, 5);
+    ctx.beginPath(); ctx.moveTo(lc2x0,lc2y0); ctx.lineTo(lc2x1,lc2y1); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // S frame axes (main)
+    ctx.strokeStyle = '#5a5aaa';
+    ctx.lineWidth = 2;
+    const [ax0,ay0] = diagToCanvas(0,-5), [ax1,ay1] = diagToCanvas(0,5);
+    ctx.beginPath(); ctx.moveTo(ax0,ay0); ctx.lineTo(ax1,ay1); ctx.stroke();
+    const [bx0,by0] = diagToCanvas(-5,0), [bx1,by1] = diagToCanvas(5,0);
+    ctx.beginPath(); ctx.moveTo(bx0,by0); ctx.lineTo(bx1,by1); ctx.stroke();
+
+    // S frame labels
+    ctx.fillStyle = '#5a5aaa';
+    ctx.font = 'bold 12px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    const [ctLx, ctLy] = diagToCanvas(0, 5.2);
+    ctx.fillText('ct', ctLx, ctLy);
+    const [xLx, xLy] = diagToCanvas(5.2, 0);
+    ctx.textAlign = 'left';
+    ctx.fillText('x', xLx, xLy+4);
+
+    // S' frame axes — tilted
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 2;
+    // ct' axis: x' = 0, so x = β·ct → direction vector (β, 1) in (x,ct) space
+    const ctpExtent = 5;
+    const [ctp0x,ctp0y] = diagToCanvas(-beta*ctpExtent, -ctpExtent);
+    const [ctp1x,ctp1y] = diagToCanvas( beta*ctpExtent,  ctpExtent);
+    ctx.beginPath(); ctx.moveTo(ctp0x,ctp0y); ctx.lineTo(ctp1x,ctp1y); ctx.stroke();
+
+    // x' axis: ct' = 0, so ct = β·x → direction vector (1, β)
+    const xpExtent = 5;
+    const [xp0x,xp0y] = diagToCanvas(-xpExtent, -beta*xpExtent);
+    const [xp1x,xp1y] = diagToCanvas( xpExtent,  beta*xpExtent);
+    ctx.beginPath(); ctx.moveTo(xp0x,xp0y); ctx.lineTo(xp1x,xp1y); ctx.stroke();
+
+    // S' labels
+    ctx.fillStyle = '#6366f1cc';
+    ctx.font = '11px Space Mono, monospace';
+    const [cptLx, cptLy] = diagToCanvas(beta*4.8, 4.8);
+    ctx.textAlign = 'center';
+    ctx.fillText("ct'", cptLx, cptLy);
+    const [xpLx, xpLy] = diagToCanvas(4.8, beta*4.8);
+    ctx.textAlign = 'left';
+    ctx.fillText("x'", xpLx, xpLy);
+
+    // Tick marks on S axes
+    ctx.fillStyle = '#4a4a7a';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    for(let i=-4;i<=4;i++){
+      if(i===0) continue;
+      const [tx,ty] = diagToCanvas(i, 0);
+      ctx.fillText(i.toString(), tx, ty+14);
+      const [ty2x,ty2y] = diagToCanvas(0, i);
+      ctx.textAlign = 'right';
+      ctx.fillText(i.toString(), ty2x-6, ty2y+3);
+      ctx.textAlign = 'center';
+    }
+
+    // Placed event
+    if(eventX !== null){
+      const [evCx, evCy] = diagToCanvas(eventX, eventY);
+      // Compute S' coords
+      const gv = gamma(beta);
+      const ctp = gv * (eventY - beta * eventX);
+      const xp = gv * (eventX - beta * eventY);
+
+      // Dashed lines to axes (S frame)
+      ctx.strokeStyle = '#5a5aaa66';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4,4]);
+      const [xAxisX, xAxisY] = diagToCanvas(eventX, 0);
+      const [ctAxisX, ctAxisY] = diagToCanvas(0, eventY);
+      ctx.beginPath(); ctx.moveTo(evCx, evCy); ctx.lineTo(xAxisX, xAxisY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(evCx, evCy); ctx.lineTo(ctAxisX, ctAxisY); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Event dot
+      ctx.beginPath(); ctx.arc(evCx, evCy, 8, 0, Math.PI*2);
+      ctx.fillStyle = '#f5e070';
+      ctx.shadowColor = '#f5e070'; ctx.shadowBlur = 16; ctx.fill(); ctx.shadowBlur = 0;
+
+      // Label
+      ctx.fillStyle = '#f5e070';
+      ctx.font = 'bold 10px Space Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`S: (ct=${eventY.toFixed(1)}, x=${eventX.toFixed(1)})`, evCx+12, evCy-6);
+      ctx.fillStyle = '#6366f1';
+      ctx.fillText(`S': (ct'=${ctp.toFixed(2)}, x'=${xp.toFixed(2)})`, evCx+12, evCy+8);
+    }
+
+    // Legend
+    ctx.fillStyle = '#3a3a70';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('— S frame (rest)', 12, H-40);
+    ctx.fillStyle = '#6366f1';
+    ctx.fillText(`— S' frame (β=${beta.toFixed(2)})`, 12, H-28);
+    ctx.fillStyle = '#ffffff44';
+    ctx.fillText('- - light cone (45°)', 12, H-16);
+  }
+
+  draw();
+})();
+
+// ========== SECTION 2: Train Simultaneity ==========
+(function(){
+  const vSlider = document.getElementById('s2-v-slider');
+  const vDisp = document.getElementById('s2-v-disp');
+  const playBtn = document.getElementById('s2-play-btn');
+  const resetBtn = document.getElementById('s2-reset-btn');
+  const rBeta = document.getElementById('s2-r-beta');
+  const rGamma = document.getElementById('s2-r-gamma');
+  const rL = document.getElementById('s2-r-L');
+  const canvas = document.getElementById('s2-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = 860 * DPR;
+  canvas.height = 340 * DPR;
+  canvas.style.width = '100%';
+  canvas.style.maxWidth = '860px';
+  ctx.scale(DPR, DPR);
+  const W = 860, H = 340;
+
+  let beta = 0.6;
+  let playing = false;
+  let trainX = 0;
+  let rafId = null;
+
+  function gamma(b){ return b===0?1:1/Math.sqrt(1-b*b); }
+
+  vSlider.addEventListener('input', ()=>{
+    beta = vSlider.value / 100;
+    vDisp.textContent = beta.toFixed(2) + 'c';
+    trainX = 0;
+    updateReadouts();
+    draw();
+  });
+
+  playBtn.addEventListener('click', ()=>{
+    if(playing){ playing=false; playBtn.textContent='▶ Animate'; }
+    else { playing=true; playBtn.textContent='⏸ Pause'; if(!rafId) anim(); }
+  });
+  resetBtn.addEventListener('click', ()=>{
+    playing=false; playBtn.textContent='▶ Animate';
+    trainX=0; if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+    draw();
+  });
+
+  function updateReadouts(){
+    const g = gamma(beta);
+    rBeta.textContent = beta.toFixed(2);
+    rGamma.textContent = g.toFixed(3);
+    rL.textContent = (1/g).toFixed(3);
+  }
+
+  function anim(){
+    if(!playing){ rafId=null; return; }
+    trainX += beta * 1.5;
+    if(trainX > W*0.6) trainX -= W*0.6 + 150;
+    draw();
+    rafId = requestAnimationFrame(anim);
+  }
+
+  function drawClock2(ctx, cx, cy, r, timeVal, color, label){
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = '#0a0a20'; ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+    // Hour hand
+    const ha = (timeVal/12)*Math.PI*2 - Math.PI/2;
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(ha)*r*0.6, cy+Math.sin(ha)*r*0.6); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,2,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+    // Label
+    ctx.fillStyle = color; ctx.font = '8px Space Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText(label, cx, cy+r+12);
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#02020a';
+    ctx.fillRect(0, 0, W, H);
+
+    const g = gamma(beta);
+    const L0 = 220; // rest length in px
+    const L = L0 / g; // contracted length
+    const panelH = (H - 40) / 2;
+
+    // ── Ground frame (top half) ──
+    const gY0 = 10, gY1 = gY0 + panelH;
+    ctx.fillStyle = '#05051a';
+    ctx.fillRect(0, gY0, W, panelH);
+    ctx.fillStyle = '#6366f188';
+    ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'left';
+    ctx.fillText('GROUND FRAME (S) — train moves right', 12, gY0 + 14);
+
+    // Track
+    const trackY = gY0 + panelH*0.7;
+    ctx.strokeStyle = '#2a2a5a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, trackY); ctx.lineTo(W, trackY); ctx.stroke();
+
+    // Train body (contracted)
+    const tStartX = trainX;
+    const tEndX = trainX + L;
+    ctx.fillStyle = '#1a1a40';
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(tStartX, trackY - 30, L, 30, 4);
+    ctx.fill(); ctx.stroke();
+
+    // Length label
+    ctx.fillStyle = '#6366f1'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText(`L = L₀/γ = ${(L/L0).toFixed(3)} L₀`, tStartX + L/2, trackY - 34);
+
+    // Arrow showing motion
+    ctx.strokeStyle = '#6366f1aa'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(tEndX+5, trackY-15); ctx.lineTo(tEndX+20, trackY-15); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(tEndX+15, trackY-20); ctx.lineTo(tEndX+20, trackY-15); ctx.lineTo(tEndX+15, trackY-10); ctx.stroke();
+
+    // Front and back clock positions (in ground frame)
+    const frontClockX = Math.min(tEndX - 10, W - 30);
+    const backClockX = Math.max(tStartX + 10, 30);
+    const clockY_g = trackY - 15;
+
+    // Time difference Δt' in ground frame for events simultaneous in train frame
+    // If in train frame Δt'=0, then in ground frame Δt = γ·v·Δx'/c² = γ·β·(L0/c) (in natural units)
+    const deltaT = g * beta * L0; // proportional, in px-time units
+
+    // Back clock shows some time, front clock shows time - deltaT (front event happened LATER in ground frame)
+    const baseTime = trainX / 50; // some time value tracking motion
+    const frontTime = baseTime - deltaT / 200;
+    const backTime = baseTime;
+
+    drawClock2(ctx, backClockX, clockY_g, 14, backTime, '#6366f1', 'back');
+    drawClock2(ctx, frontClockX, clockY_g, 14, frontTime, '#f5605a', 'front');
+
+    ctx.fillStyle = '#f5605a'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText('Not simultaneous in S!', (backClockX + frontClockX)/2, gY0 + panelH - 8);
+
+    // ── Train frame (bottom half) ──
+    const rY0 = gY1 + 20, rY1 = rY0 + panelH;
+    ctx.fillStyle = '#04040f';
+    ctx.fillRect(0, rY0, W, panelH);
+    ctx.fillStyle = '#b0b0ff88';
+    ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'left';
+    ctx.fillText("TRAIN FRAME (S') — train at rest, ground moves left", 12, rY0 + 14);
+
+    // In rest frame, train is full length L0
+    const trainCenterX = W/2;
+    const rTrackY = rY0 + panelH*0.7;
+    ctx.strokeStyle = '#1a1a4a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, rTrackY); ctx.lineTo(W, rTrackY); ctx.stroke();
+
+    ctx.fillStyle = '#12122a';
+    ctx.strokeStyle = '#8888cc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(trainCenterX - L0/2, rTrackY - 30, L0, 30, 4);
+    ctx.fill(); ctx.stroke();
+
+    // Length label
+    ctx.fillStyle = '#8888cc'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText(`L₀ = rest length (${(L0).toFixed(0)} units)`, trainCenterX, rTrackY - 34);
+
+    // Both clocks show same time → simultaneous
+    const rFrontX = trainCenterX + L0/2 - 10;
+    const rBackX  = trainCenterX - L0/2 + 10;
+    const rClockY = rTrackY - 15;
+
+    drawClock2(ctx, rBackX, rClockY, 14, baseTime, '#8888cc', 'back');
+    drawClock2(ctx, rFrontX, rClockY, 14, baseTime, '#8888cc', 'front');
+
+    ctx.fillStyle = '#8888cc'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText("Simultaneous in S' — both clocks agree!", trainCenterX, rY0 + panelH - 8);
+
+    // Moving ground/track in train frame
+    const groundX = W - (trainX % 80);
+    ctx.strokeStyle = '#1a1a4a'; ctx.lineWidth = 1;
+    ctx.setLineDash([8,12]);
+    ctx.beginPath(); ctx.moveTo(0, rTrackY+8); ctx.lineTo(W, rTrackY+8); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  updateReadouts();
+  draw();
+})();
+
+// ========== SECTION 3: Velocity Addition ==========
+(function(){
+  const uSlider = document.getElementById('s3-u-slider');
+  const vSlider = document.getElementById('s3-v-slider');
+  const uDisp = document.getElementById('s3-u-disp');
+  const vDisp = document.getElementById('s3-v-disp');
+  const rU = document.getElementById('s3-r-u');
+  const rV = document.getElementById('s3-r-v');
+  const rNewt = document.getElementById('s3-r-newt');
+  const rRel = document.getElementById('s3-r-rel');
+  const canvas = document.getElementById('s3-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = 860 * DPR;
+  canvas.height = 360 * DPR;
+  canvas.style.width = '100%';
+  canvas.style.maxWidth = '860px';
+  ctx.scale(DPR, DPR);
+  const W = 860, H = 360;
+
+  let u = 0.7, v = 0.7;
+
+  function relAdd(u, v){ return (u+v)/(1+u*v); }
+
+  function update(){
+    u = uSlider.value / 1000;
+    v = vSlider.value / 1000;
+    uDisp.textContent = u.toFixed(3) + 'c';
+    vDisp.textContent = v.toFixed(3) + 'c';
+    const newt = u + v;
+    const rel = relAdd(u, v);
+    rU.textContent = u.toFixed(3) + 'c';
+    rV.textContent = v.toFixed(3) + 'c';
+    rNewt.textContent = newt.toFixed(3) + 'c';
+    rRel.textContent = rel.toFixed(3) + 'c';
+    draw();
+  }
+
+  uSlider.addEventListener('input', update);
+  vSlider.addEventListener('input', update);
+
+  function drawVelocityBar(label, speed, maxSpeed, y, color, capped){
+    const barLeft = 200, barRight = W - 40;
+    const barH = 22;
+    const barW = barRight - barLeft;
+    const fill = Math.min(speed, 1.0) * barW;
+
+    ctx.fillStyle = '#0a0a1a';
+    ctx.strokeStyle = '#1a1a3a';
+    ctx.lineWidth = 1;
+    ctx.fillRect(barLeft, y, barW, barH);
+    ctx.strokeRect(barLeft, y, barW, barH);
+
+    // Speed of light line
+    ctx.strokeStyle = '#ffffff44'; ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(barLeft + barW, y); ctx.lineTo(barLeft + barW, y + barH); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Fill
+    const fillColor = speed > 1.0 ? '#c04040' : color;
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(barLeft, y, fill, barH);
+
+    if(speed > 1.0){
+      // Overflow indicator
+      ctx.fillStyle = '#c04040aa';
+      ctx.fillRect(barLeft + barW, y, 30, barH);
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px Space Mono, monospace'; ctx.textAlign = 'center';
+      ctx.fillText('FTL!', barLeft + barW + 15, y + barH/2 + 3);
+    }
+
+    // Label
+    ctx.fillStyle = '#ccc8e8'; ctx.font = '10px Space Mono, monospace'; ctx.textAlign = 'right';
+    ctx.fillText(label, barLeft - 10, y + barH/2 + 3);
+
+    // Value
+    ctx.fillStyle = speed > 1.0 ? '#c08080' : '#f0ead0';
+    ctx.font = 'bold 10px Space Mono, monospace'; ctx.textAlign = 'left';
+    ctx.fillText(speed.toFixed(4) + 'c', barLeft + fill + 6, y + barH/2 + 3);
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#02020a';
+    ctx.fillRect(0, 0, W, H);
+
+    const newt = u + v;
+    const rel = relAdd(u, v);
+
+    // Title
+    ctx.fillStyle = '#6366f1'; ctx.font = 'bold 11px Space Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText('VELOCITY ADDITION: COMPARING NEWTONIAN vs RELATIVISTIC', W/2, 24);
+
+    // Speed of light marker
+    ctx.fillStyle = '#ffffff44'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText('c = speed of light', W - 40, 36);
+
+    // Bars
+    drawVelocityBar('u (object in S\')', u, 1, 60, '#6366f1', false);
+    drawVelocityBar('v (frame S\'→S)', v, 1, 96, '#8888ff', false);
+    ctx.fillStyle = '#3a3a6a'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'left';
+    ctx.fillText('─────────────────', 200, 130);
+    drawVelocityBar('Newtonian: u+v', newt, 1, 146, '#c08080', newt>1);
+    drawVelocityBar('Relativistic: (u+v)/(1+uv/c²)', rel, 1, 182, '#80c080', false);
+
+    // Comparison graph: u_rel vs u+v as u varies (v fixed)
+    const plotLeft = 60, plotTop = 230, plotW = W - 120, plotH = 100;
+    ctx.fillStyle = '#04041a';
+    ctx.strokeStyle = '#1a1a3a'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(plotLeft, plotTop, plotW, plotH, 4); ctx.fill(); ctx.stroke();
+
+    // Axes
+    ctx.strokeStyle = '#2a2a5a'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(plotLeft, plotTop); ctx.lineTo(plotLeft, plotTop+plotH); ctx.lineTo(plotLeft+plotW, plotTop+plotH); ctx.stroke();
+
+    // Light speed ceiling
+    ctx.strokeStyle = '#ffffff22'; ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(plotLeft, plotTop+2); ctx.lineTo(plotLeft+plotW, plotTop+2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ffffff44'; ctx.font = '8px Space Mono, monospace'; ctx.textAlign = 'left';
+    ctx.fillText('c', plotLeft - 12, plotTop + 4);
+
+    // Newtonian line
+    ctx.strokeStyle = '#c08080'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for(let xi=0; xi<=plotW; xi++){
+      const uv = xi / plotW;
+      const nv = Math.min(uv + v, 1.5);
+      const py = plotTop + plotH - (Math.min(nv, 1) / 1) * plotH;
+      if(xi===0) ctx.moveTo(plotLeft+xi, py); else ctx.lineTo(plotLeft+xi, py);
+    }
+    ctx.stroke();
+
+    // Relativistic curve
+    ctx.strokeStyle = '#80c080'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for(let xi=0; xi<=plotW; xi++){
+      const uv = xi / plotW * 0.9999;
+      const rv = relAdd(uv, v);
+      const py = plotTop + plotH - (rv / 1) * plotH;
+      if(xi===0) ctx.moveTo(plotLeft+xi, py); else ctx.lineTo(plotLeft+xi, py);
+    }
+    ctx.stroke();
+
+    // Current u marker
+    const curX = plotLeft + (u / 1) * plotW;
+    const curYrel = plotTop + plotH - rel * plotH;
+    const curYnewt = plotTop + plotH - Math.min(newt,1)*plotH;
+    ctx.beginPath(); ctx.arc(curX, curYrel, 5, 0, Math.PI*2);
+    ctx.fillStyle = '#80c080'; ctx.shadowColor = '#80c080'; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+    ctx.beginPath(); ctx.arc(curX, curYnewt, 5, 0, Math.PI*2);
+    ctx.fillStyle = '#c08080'; ctx.shadowColor = '#c08080'; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+
+    // Axis labels
+    ctx.fillStyle = '#3a3a6a'; ctx.font = '8px Space Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText('u varies (0→c)', plotLeft + plotW/2, plotTop + plotH + 12);
+    ctx.save(); ctx.translate(plotLeft - 18, plotTop + plotH/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('result (c units)', 0, 0); ctx.restore();
+
+    // Legend
+    ctx.fillStyle = '#c08080'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'right';
+    ctx.fillText('— Newtonian (can exceed c)', plotLeft + plotW, plotTop + plotH - 12);
+    ctx.fillStyle = '#80c080';
+    ctx.fillText('— Relativistic (always < c)', plotLeft + plotW, plotTop + plotH - 24);
+
+    // Special case annotation
+    if(u > 0.98){
+      ctx.fillStyle = '#f5e070'; ctx.font = 'bold 9px Space Mono, monospace'; ctx.textAlign = 'center';
+      ctx.fillText('u → c: result = c regardless of v', W/2, 220);
+    }
+  }
+
+  update();
+})();
+</script>
+</body>
+</html>

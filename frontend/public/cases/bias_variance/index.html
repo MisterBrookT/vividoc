@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Bias–Variance Tradeoff</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: #080c10;
+  color: #e2f4ff;
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0;
+  padding: 40px 20px 80px;
+  display: flex;
+  justify-content: center;
+}
+.wrapper { max-width: 900px; width: 100%; }
+
+h1.main-title {
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  text-align: center;
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #34d399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle {
+  text-align: center;
+  color: #2d5a7a;
+  font-size: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 48px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.section {
+  background: #0d1520;
+  border: 1px solid #1a3050;
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 40px rgba(56,189,248,0.06);
+}
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #38bdf8;
+  margin-bottom: 8px;
+}
+.section-title {
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: #e2f4ff;
+  margin: 0 0 24px;
+  line-height: 1.3;
+}
+.section-divider {
+  border: none;
+  border-top: 1px solid #1a3050;
+  margin: 0 0 28px;
+}
+
+p {
+  font-size: 1.02rem;
+  line-height: 1.8;
+  color: #8bafc9;
+  margin: 0 0 18px;
+  font-weight: 300;
+}
+p strong { color: #e2f4ff; font-weight: 600; }
+p code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  background: #0a1825;
+  color: #38bdf8;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.math-block {
+  background: #0a1825;
+  border: 1px solid #1a3a5c;
+  border-radius: 10px;
+  padding: 18px 24px;
+  margin: 20px 0 28px;
+  text-align: center;
+  font-size: 1.05rem;
+  overflow-x: auto;
+}
+
+.widget {
+  background: #080c10;
+  border: 1px solid #1a3050;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 28px;
+}
+.widget-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 2px;
+  color: #2d5a7a;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+canvas { display: block; border-radius: 8px; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-top: 14px;
+}
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #6d9ab0;
+}
+.ctrl-group label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: #2d5a7a;
+  min-width: 44px;
+}
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 120px;
+  height: 4px;
+  background: #1a3050;
+  border-radius: 2px;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #38bdf8;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(56,189,248,0.6);
+}
+.val-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: #38bdf8;
+  min-width: 38px;
+}
+button {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  background: transparent;
+  color: #38bdf8;
+  border: 1px solid #38bdf8;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+button:hover { background: rgba(56,189,248,0.12); box-shadow: 0 0 10px rgba(56,189,248,0.2); }
+button.primary { background: #38bdf8; color: #080c10; }
+button.primary:hover { background: #7dd3fc; }
+
+.info-strip {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #0a1825;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+.info-item { color: #2d5a7a; }
+.info-item span { color: #38bdf8; }
+
+.hint {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #1a3050;
+  margin-top: 8px;
+}
+
+.canvas-row {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start;
+}
+.canvas-main { flex: 1; min-width: 260px; }
+.canvas-side { flex: 0 0 190px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<h1 class="main-title">Bias–Variance Tradeoff</h1>
+<p class="subtitle">Generalization · Overfitting · Regularization</p>
+
+<!-- ===== SECTION 1 ===== -->
+<div class="section" id="s1">
+  <div class="section-label">Section 01</div>
+  <h2 class="section-title">Polynomial Fitting and the Tradeoff</h2>
+  <hr class="section-divider"/>
+
+  <p>
+    Imagine you are trying to learn a function from noisy data. With a very simple model — say, a straight line —
+    you will systematically miss curves and bumps in the true function. This <strong>systematic error</strong>
+    that persists no matter how much data you have is called <strong>bias</strong>. A line cannot fit a sine wave,
+    regardless of the sample size.
+  </p>
+  <p>
+    With a very complex model — say, a degree-12 polynomial — you can fit any 15 data points exactly. But the
+    model will memorize the noise, producing wild oscillations between data points. Change the random seed and
+    you get a completely different polynomial. This <strong>sensitivity to the choice of training set</strong>
+    is called <strong>variance</strong>. High-variance models are brittle: they generalize poorly to new data.
+  </p>
+  <p>
+    The fundamental decomposition of expected prediction error is: $\mathbb{E}[(y - \hat{f}(x))^2] =
+    \text{Bias}^2 + \text{Variance} + \sigma^2$. The noise term $\sigma^2$ is irreducible — it reflects
+    randomness in the data generating process. But bias and variance can be traded off against each other
+    by choosing model complexity. As you increase degree $d$, bias falls (the model can represent more functions)
+    while variance rises (it becomes more sensitive to the specific data). Total error is U-shaped with a
+    sweet spot at the optimal complexity.
+  </p>
+  <p>
+    This is not just theory — it manifests concretely every time you fit a polynomial, train a decision tree,
+    or choose the number of layers in a neural network. <strong>Increasing the degree from 1 to 4</strong>
+    dramatically reduces the systematic error on $\sin(2\pi x)$. But pushing to degree 10 or 12 causes
+    Runge's phenomenon: extreme oscillations at the boundaries. Watch it happen below.
+  </p>
+
+  <div class="math-block">
+    $$\mathbb{E}\!\left[(y - \hat{f}(x))^2\right] = \underbrace{\left(\mathbb{E}[\hat{f}(x)] - f(x)\right)^2}_{\text{Bias}^2} + \underbrace{\mathbb{E}\!\left[(\hat{f}(x) - \mathbb{E}[\hat{f}(x)])^2\right]}_{\text{Variance}} + \sigma^2$$
+  </div>
+
+  <div class="widget">
+    <div class="widget-title">Interactive — Polynomial Regression on sin(2πx)</div>
+    <div class="canvas-row">
+      <div class="canvas-main">
+        <canvas id="c1-fit" width="480" height="300"></canvas>
+      </div>
+      <div class="canvas-side">
+        <canvas id="c1-bars" width="190" height="120" style="margin-bottom:8px;"></canvas>
+        <canvas id="c1-err" width="190" height="120"></canvas>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>Degree</label>
+        <input type="range" id="s1-deg" min="1" max="12" value="3" step="1"/>
+        <span class="val-display" id="s1-deg-val">3</span>
+      </div>
+      <div class="ctrl-group">
+        <label>Noise σ</label>
+        <input type="range" id="s1-noise" min="5" max="50" value="15" step="1"/>
+        <span class="val-display" id="s1-noise-val">0.15</span>
+      </div>
+      <button id="s1-reseed" class="primary">↺ New Data</button>
+    </div>
+    <div class="info-strip">
+      <div class="info-item">Degree: <span id="s1-deg-info">3</span></div>
+      <div class="info-item">Train MSE: <span id="s1-train-mse">—</span></div>
+      <div class="info-item">Test MSE: <span id="s1-test-mse">—</span></div>
+      <div class="info-item">Bias²: <span id="s1-bias">—</span></div>
+      <div class="info-item">Variance: <span id="s1-var">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 2 ===== -->
+<div class="section" id="s2">
+  <div class="section-label">Section 02</div>
+  <h2 class="section-title">The Bias–Variance Decomposition Plot</h2>
+  <hr class="section-divider"/>
+
+  <p>
+    To truly understand the tradeoff, we need to look across all model complexities simultaneously. By fitting
+    polynomials of degree 1 through 12 on many different random training sets, we can empirically estimate the
+    bias and variance for each degree. Averaging predictions across datasets gives the expected prediction, from
+    which we compute the squared deviation from the true function (bias²). The spread of predictions around
+    their mean gives the variance.
+  </p>
+  <p>
+    The resulting plot reveals a striking structure. <strong>Training error decreases monotonically</strong>
+    with degree — a more complex model always fits the training data better. But <strong>test error forms
+    a U-shape</strong>: it decreases initially as the model learns the true signal, then increases as the model
+    begins fitting noise. The gap between training and test error is the generalization gap, which grows
+    with complexity.
+  </p>
+  <p>
+    Two parameters fundamentally shift the optimal complexity. With <strong>more training data</strong>
+    ($N$ larger), the model has more information to distinguish signal from noise, so more complex models
+    become viable — the optimal degree shifts right. With <strong>less noise</strong> ($\sigma$ smaller),
+    the data is more informative per point, again allowing higher-complexity models to succeed. These
+    intuitions drive practical deep learning decisions: larger models for larger datasets, and more
+    regularization for noisier problems.
+  </p>
+  <p>
+    The <strong>double descent</strong> phenomenon — recently observed in neural networks — complicates
+    this picture. At interpolation threshold (where the model exactly fits all training points), test error
+    can spike dramatically, but then <em>decrease again</em> as the model becomes even more overparameterized.
+    Modern large language models operate in this ultra-high-complexity regime, making the classical bias-variance
+    story an approximation rather than the whole truth.
+  </p>
+
+  <div class="math-block">
+    $$\text{MSE}_{\text{test}} \approx \text{Bias}^2(d) + \text{Var}(d) + \sigma^2 \qquad \text{(decomposed over degree } d \text{)}$$
+  </div>
+
+  <div class="widget">
+    <div class="widget-title">Interactive — MSE Decomposition Across Degrees 1–12</div>
+    <canvas id="c2-main" width="680" height="380" style="width:100%;border-radius:8px;"></canvas>
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>N (train)</label>
+        <input type="range" id="s2-N" min="10" max="100" value="15" step="5"/>
+        <span class="val-display" id="s2-N-val">15</span>
+      </div>
+      <div class="ctrl-group">
+        <label>Noise σ</label>
+        <input type="range" id="s2-noise" min="5" max="50" value="15" step="1"/>
+        <span class="val-display" id="s2-noise-val">0.15</span>
+      </div>
+      <button id="s2-recompute" class="primary">Recompute</button>
+    </div>
+    <div class="info-strip">
+      <div class="info-item">N: <span id="s2-N-info">15</span></div>
+      <div class="info-item">σ: <span id="s2-noise-info">0.15</span></div>
+      <div class="info-item">Optimal degree: <span id="s2-opt-deg">—</span></div>
+      <div class="info-item">Min Test MSE: <span id="s2-min-mse">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 3 ===== -->
+<div class="section" id="s3">
+  <div class="section-label">Section 03</div>
+  <h2 class="section-title">Regularization as Variance Reduction</h2>
+  <hr class="section-divider"/>
+
+  <p>
+    When we cannot control model complexity directly — for instance, in a deep network where reducing depth
+    would be too costly — we can <strong>penalize complexity implicitly</strong> through regularization.
+    Ridge regression adds a term $\lambda \sum_j w_j^2$ to the loss function, discouraging large weights.
+    This shrinks coefficients toward zero, effectively reducing the model's capacity to fit noise.
+  </p>
+  <p>
+    The Bayesian interpretation is elegant: regularization is equivalent to placing a <strong>Gaussian prior</strong>
+    $p(\mathbf{w}) \propto \exp(-\lambda \|\mathbf{w}\|^2 / 2)$ on the weights. The L2 penalty encodes our prior
+    belief that weights should be small. Large $\lambda$ encodes strong belief in small weights (high bias, low
+    variance). Small $\lambda$ lets the data speak (low bias, high variance). The regularization strength
+    $\lambda$ is thus a dial that directly controls the bias-variance tradeoff.
+  </p>
+  <p>
+    <strong>Lasso regression</strong> uses an L1 penalty $\lambda \sum_j |w_j|$ instead, which has a sparsifying
+    effect: it drives many coefficients exactly to zero, effectively performing automatic feature selection.
+    This corresponds to a Laplace prior on weights. In high-dimensional problems where only a few features
+    are relevant, Lasso can dramatically outperform Ridge by eliminating irrelevant features entirely.
+  </p>
+  <p>
+    In neural networks, the equivalent of L2 regularization is called <strong>weight decay</strong>, appearing
+    directly as a hyperparameter in optimizers like AdamW. The optimal $\lambda$ is found by cross-validation:
+    fit the model on a training fold, evaluate on a validation fold, and choose the $\lambda$ that minimizes
+    validation error. The resulting validation MSE curve has a characteristic valley — too little regularization
+    overfits (right side), too much underfits (left side). The sweet spot is the bottom of the valley.
+  </p>
+
+  <div class="math-block">
+    $$\hat{\mathbf{w}}_{\text{ridge}} = \arg\min_{\mathbf{w}} \sum_{i=1}^N \left(y_i - \mathbf{w}^\top \phi(x_i)\right)^2 + \lambda \|\mathbf{w}\|^2$$
+  </div>
+
+  <div class="widget">
+    <div class="widget-title">Interactive — Ridge Regularization on Degree-8 Polynomial</div>
+    <div class="canvas-row">
+      <div class="canvas-main">
+        <canvas id="c3-fit" width="440" height="280"></canvas>
+        <div class="hint">Degree-8 polynomial with N=15 points</div>
+      </div>
+      <div class="canvas-side">
+        <canvas id="c3-val" width="190" height="140" style="margin-bottom:10px;"></canvas>
+        <canvas id="c3-coef" width="190" height="110"></canvas>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>log₁₀(λ)</label>
+        <input type="range" id="s3-lam" min="-5" max="10" value="-2" step="0.2"/>
+        <span class="val-display" id="s3-lam-val">0.01</span>
+      </div>
+      <button id="s3-reseed" class="primary">↺ New Data</button>
+    </div>
+    <div class="info-strip">
+      <div class="info-item">λ: <span id="s3-lam-info">0.01</span></div>
+      <div class="info-item">Train MSE: <span id="s3-train-mse">—</span></div>
+      <div class="info-item">Val MSE: <span id="s3-val-mse">—</span></div>
+      <div class="info-item">Max |w|: <span id="s3-maxw">—</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ==========================================
+// Shared utilities
+// ==========================================
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function trueF(x) { return Math.sin(2 * Math.PI * x); }
+
+function generateData(N, sigma, seed) {
+  const rng = mulberry32(seed);
+  const xs = [], ys = [];
+  for (let i = 0; i < N; i++) {
+    const x = rng();
+    const y = trueF(x) + (rng() * 2 - 1) * sigma * Math.sqrt(3); // uniform noise
+    xs.push(x); ys.push(y);
+  }
+  return {xs, ys};
+}
+
+// Vandermonde matrix column: phi_j(x) = x^j
+function vandermondeCol(xs, degree) {
+  const N = xs.length, D = degree + 1;
+  const A = [];
+  for (let i = 0; i < N; i++) {
+    const row = [];
+    for (let j = 0; j < D; j++) row.push(Math.pow(xs[i], j));
+    A.push(row);
+  }
+  return A;
+}
+
+// Solve ridge regression: (A^T A + lambda I) w = A^T y
+function ridgeSolve(A, y, lambda) {
+  const N = A.length, D = A[0].length;
+  // ATA
+  const ATA = Array.from({length:D}, (_,i) => Array.from({length:D}, (_,j) => {
+    let s = 0; for (let k=0; k<N; k++) s += A[k][i]*A[k][j]; return s;
+  }));
+  // ATA + lambda I
+  for (let i=0; i<D; i++) ATA[i][i] += lambda;
+  // ATy
+  const ATy = Array.from({length:D}, (_,i) => {
+    let s=0; for (let k=0; k<N; k++) s += A[k][i]*y[k]; return s;
+  });
+  // Gaussian elimination
+  return gaussSolve(ATA, ATy);
+}
+
+function gaussSolve(A, b) {
+  const n = b.length;
+  const M = A.map((row,i) => [...row, b[i]]);
+  for (let col=0; col<n; col++) {
+    let maxRow = col;
+    for (let row=col+1; row<n; row++) if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow=row;
+    [M[col], M[maxRow]] = [M[maxRow], M[col]];
+    const pivot = M[col][col];
+    if (Math.abs(pivot) < 1e-14) continue;
+    for (let row=0; row<n; row++) {
+      if (row===col) continue;
+      const f = M[row][col]/pivot;
+      for (let c=col; c<=n; c++) M[row][c] -= f*M[col][c];
+    }
+  }
+  return M.map((row,i) => row[n]/row[i]);
+}
+
+function polyEval(w, x) {
+  let v = 0;
+  for (let j=0; j<w.length; j++) v += w[j]*Math.pow(x, j);
+  return v;
+}
+
+function computeMSE(w, xs, ys) {
+  let s = 0;
+  for (let i=0; i<xs.length; i++) { const r = polyEval(w, xs[i])-ys[i]; s+=r*r; }
+  return s/xs.length;
+}
+
+// ==========================================
+// SECTION 1: Polynomial Fitting
+// ==========================================
+(function() {
+  const fitCanvas = document.getElementById('c1-fit');
+  const barsCanvas = document.getElementById('c1-bars');
+  const errCanvas = document.getElementById('c1-err');
+  const fctx = fitCanvas.getContext('2d');
+  const bctx = barsCanvas.getContext('2d');
+  const ectx = errCanvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  let FW, FH, BW=190, BH=120, EW=190, EH=120;
+  let seed = 12345;
+
+  function resize() {
+    FW = fitCanvas.parentElement.clientWidth || 480;
+    FH = Math.round(FW * 0.625);
+    fitCanvas.width = FW*dpr; fitCanvas.height = FH*dpr;
+    fitCanvas.style.width=FW+'px'; fitCanvas.style.height=FH+'px';
+    fctx.scale(dpr,dpr);
+    barsCanvas.width=BW*dpr; barsCanvas.height=BH*dpr;
+    barsCanvas.style.width=BW+'px'; barsCanvas.style.height=BH+'px';
+    bctx.scale(dpr,dpr);
+    errCanvas.width=EW*dpr; errCanvas.height=EH*dpr;
+    errCanvas.style.width=EW+'px'; errCanvas.style.height=EH+'px';
+    ectx.scale(dpr,dpr);
+    redraw();
+  }
+
+  function getDeg() { return parseInt(document.getElementById('s1-deg').value); }
+  function getNoise() { return parseInt(document.getElementById('s1-noise').value)/100; }
+  const N=15;
+
+  function computeBiasVar(deg, sigma, M=20) {
+    // Average over M datasets
+    const denseX = Array.from({length:100},(_,i)=>i/99);
+    const preds = Array.from({length:100}, ()=>[]);
+    for (let m=0; m<M; m++) {
+      const {xs,ys} = generateData(N, sigma, seed+m*1000);
+      const A = vandermondeCol(xs, deg);
+      const w = ridgeSolve(A, ys, 1e-8);
+      denseX.forEach((x,i) => preds[i].push(polyEval(w,x)));
+    }
+    let bias2=0, variance=0;
+    denseX.forEach((x,i) => {
+      const truef = trueF(x);
+      const mean = preds[i].reduce((a,b)=>a+b,0)/M;
+      const b2 = (mean-truef)**2;
+      const v = preds[i].reduce((a,p)=>a+(p-mean)**2,0)/M;
+      bias2 += b2; variance += v;
+    });
+    return { bias2: bias2/100, variance: variance/100 };
+  }
+
+  function redraw() {
+    if (!FW) return;
+    const deg = getDeg();
+    const sigma = getNoise();
+    const {xs,ys} = generateData(N, sigma, seed);
+    const A = vandermondeCol(xs, deg);
+    const w = ridgeSolve(A, ys, 1e-8);
+
+    // Test data
+    const testData = generateData(50, sigma, seed+9999);
+    const trainMSE = computeMSE(w, xs, ys);
+    const testMSE = computeMSE(w, testData.xs, testData.ys);
+
+    const {bias2, variance} = computeBiasVar(deg, sigma);
+
+    // Update info
+    document.getElementById('s1-deg-info').textContent = deg;
+    document.getElementById('s1-train-mse').textContent = trainMSE.toFixed(4);
+    document.getElementById('s1-test-mse').textContent = testMSE.toFixed(4);
+    document.getElementById('s1-bias').textContent = bias2.toFixed(4);
+    document.getElementById('s1-var').textContent = variance.toFixed(4);
+
+    // --- Draw fit canvas ---
+    fctx.clearRect(0,0,FW,FH);
+    fctx.fillStyle = '#080c10'; fctx.fillRect(0,0,FW,FH);
+    const pad=30;
+    const pw=FW-2*pad, ph=FH-2*pad;
+
+    function toFix(x,y) {
+      return {x: pad+x*pw, y: pad+ph/2 - y*ph/2.2};
+    }
+
+    // Grid
+    fctx.strokeStyle='#1a3050'; fctx.lineWidth=1;
+    fctx.beginPath(); fctx.moveTo(pad,pad); fctx.lineTo(pad,pad+ph); fctx.lineTo(pad+pw,pad+ph); fctx.stroke();
+    fctx.beginPath(); fctx.moveTo(pad,pad+ph/2); fctx.lineTo(pad+pw,pad+ph/2); fctx.setLineDash([4,4]); fctx.strokeStyle='#1a3050'; fctx.stroke();
+    fctx.setLineDash([]);
+
+    // True function
+    fctx.beginPath();
+    for (let i=0; i<=100; i++) {
+      const x = i/100; const y = trueF(x);
+      const p = toFix(x,y);
+      i===0 ? fctx.moveTo(p.x,p.y) : fctx.lineTo(p.x,p.y);
+    }
+    fctx.strokeStyle='rgba(56,189,248,0.5)'; fctx.lineWidth=2; fctx.setLineDash([6,4]); fctx.stroke();
+    fctx.setLineDash([]);
+
+    // Fitted polynomial
+    fctx.beginPath();
+    let anyNaN=false;
+    for (let i=0; i<=200; i++) {
+      const x = i/200;
+      const y = polyEval(w,x);
+      if (!isFinite(y) || Math.abs(y)>4) { anyNaN=true; fctx.stroke(); fctx.beginPath(); continue; }
+      const p = toFix(x,y);
+      i===0||anyNaN ? fctx.moveTo(p.x,p.y) : fctx.lineTo(p.x,p.y);
+      anyNaN=false;
+    }
+    fctx.strokeStyle='#38bdf8'; fctx.lineWidth=2.5; fctx.stroke();
+
+    // Data points
+    xs.forEach((x,i) => {
+      const p = toFix(x,ys[i]);
+      fctx.beginPath(); fctx.arc(p.x,p.y,4,0,Math.PI*2);
+      fctx.fillStyle='rgba(252,211,77,0.85)'; fctx.fill();
+      fctx.strokeStyle='rgba(255,255,255,0.5)'; fctx.lineWidth=1; fctx.stroke();
+    });
+
+    // Labels
+    fctx.font='10px JetBrains Mono, monospace';
+    fctx.fillStyle='rgba(56,189,248,0.5)'; fctx.fillText('true f(x)=sin(2πx)',FW-160,pad+14);
+    fctx.fillStyle='#38bdf8'; fctx.fillText(`degree ${deg} fit`,FW-120,pad+28);
+
+    // --- Draw bars canvas ---
+    bctx.clearRect(0,0,BW,BH);
+    bctx.fillStyle='#080c10'; bctx.fillRect(0,0,BW,BH);
+    const total = bias2+variance+sigma*sigma;
+    const maxV = Math.max(total*1.2, 0.01);
+    const barW=36, barGap=14, bpad=28;
+    const bph=BH-bpad*2;
+
+    const vals=[{v:bias2,c:'#f87171',label:'Bias²'},{v:variance,c:'#38bdf8',label:'Var'},{v:bias2+variance+sigma*sigma,c:'#a78bfa',label:'Total'}];
+    vals.forEach(({v,c,label},i) => {
+      const x=bpad+i*(barW+barGap);
+      const bh=Math.min(v/maxV*bph, bph);
+      bctx.fillStyle=c+'33';
+      bctx.fillRect(x,bpad,barW,bph);
+      bctx.fillStyle=c;
+      bctx.fillRect(x,bpad+bph-bh,barW,bh);
+      bctx.fillStyle='#8bafc9'; bctx.font='9px JetBrains Mono, monospace';
+      bctx.fillText(label,x+2,BH-4);
+      bctx.fillText(v.toFixed(3),x-2,bpad+bph-bh-3);
+    });
+    bctx.fillStyle='#2d5a7a'; bctx.font='9px JetBrains Mono, monospace';
+    bctx.fillText('Bias²/Var/Total',4,14);
+
+    // --- Draw error canvas ---
+    ectx.clearRect(0,0,EW,EH);
+    ectx.fillStyle='#080c10'; ectx.fillRect(0,0,EW,EH);
+    ectx.fillStyle='#2d5a7a'; ectx.font='9px JetBrains Mono, monospace';
+    ectx.fillText('Train vs Test MSE',4,14);
+    const epad=22, epw=EW-epad-8, eph=EH-epad*2;
+    const maxMSE = Math.max(trainMSE, testMSE, 0.02)*1.2;
+    [{v:trainMSE,c:'#6ee7b7',l:'Train'},{v:testMSE,c:'#f59e0b',l:'Test'}].forEach(({v,c,l},i) => {
+      const x = epad + i*(epw/2+4);
+      const bw=epw/2-4;
+      const bh=Math.min(v/maxMSE*eph, eph);
+      ectx.fillStyle=c+'22'; ectx.fillRect(x,epad,bw,eph);
+      ectx.fillStyle=c; ectx.fillRect(x,epad+eph-bh,bw,bh);
+      ectx.fillStyle='#8bafc9'; ectx.font='9px JetBrains Mono, monospace';
+      ectx.fillText(l,x+4,EH-4);
+      ectx.fillText(v.toFixed(3),x,epad+eph-bh-3);
+    });
+  }
+
+  document.getElementById('s1-deg').addEventListener('input', function() {
+    document.getElementById('s1-deg-val').textContent = this.value;
+    redraw();
+  });
+  document.getElementById('s1-noise').addEventListener('input', function() {
+    document.getElementById('s1-noise-val').textContent = (parseInt(this.value)/100).toFixed(2);
+    redraw();
+  });
+  document.getElementById('s1-reseed').addEventListener('click', () => { seed=Math.floor(Math.random()*99999); redraw(); });
+
+  window.addEventListener('load', resize);
+  window.addEventListener('resize', resize);
+  resize();
+})();
+
+// ==========================================
+// SECTION 2: Decomposition Plot
+// ==========================================
+(function() {
+  const canvas = document.getElementById('c2-main');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  let CW, CH;
+  let seed = 77777;
+
+  function resize() {
+    CW = canvas.parentElement.clientWidth || 680;
+    CH = Math.round(CW * 0.56);
+    canvas.width = CW*dpr; canvas.height = CH*dpr;
+    canvas.style.width=CW+'px'; canvas.style.height=CH+'px';
+    ctx.scale(dpr,dpr);
+    redraw();
+  }
+
+  function getN() { return parseInt(document.getElementById('s2-N').value); }
+  function getSigma() { return parseInt(document.getElementById('s2-noise').value)/100; }
+  const M=30, DEGS=Array.from({length:12},(_,i)=>i+1);
+
+  function computeAll() {
+    const N=getN(), sigma=getSigma();
+    const denseX=Array.from({length:80},(_,i)=>i/79);
+    const trainMSEs=[], testMSEs=[], bias2s=[], vars=[];
+    for (const deg of DEGS) {
+      // M random datasets
+      const allPreds=Array.from({length:80},()=>[]);
+      let sumTrainMSE=0, sumTestMSE=0;
+      for (let m=0; m<M; m++) {
+        const {xs,ys}=generateData(N,sigma,seed+m*317+deg*7919);
+        const A=vandermondeCol(xs,deg);
+        const w=ridgeSolve(A,ys,1e-8);
+        sumTrainMSE+=computeMSE(w,xs,ys);
+        const {xs:txs,ys:tys}=generateData(40,sigma,seed+m*317+deg*7919+50000);
+        sumTestMSE+=computeMSE(w,txs,tys);
+        denseX.forEach((x,i)=>allPreds[i].push(polyEval(w,x)));
+      }
+      trainMSEs.push(sumTrainMSE/M);
+      testMSEs.push(sumTestMSE/M);
+      let b2=0,v=0;
+      denseX.forEach((x,i)=>{
+        const truef=trueF(x);
+        const mean=allPreds[i].reduce((a,b)=>a+b,0)/M;
+        b2+=(mean-truef)**2;
+        v+=allPreds[i].reduce((a,p)=>a+(p-mean)**2,0)/M;
+      });
+      bias2s.push(b2/80); vars.push(v/80);
+    }
+    return {trainMSEs, testMSEs, bias2s, vars, sigma};
+  }
+
+  function redraw() {
+    if (!CW) return;
+    const {trainMSEs,testMSEs,bias2s,vars,sigma}=computeAll();
+    const noiseFloor=sigma*sigma;
+    const totals=bias2s.map((b,i)=>b+vars[i]+noiseFloor);
+    const allVals=[...trainMSEs,...testMSEs,...totals].filter(isFinite);
+    const maxY=Math.min(Math.max(...allVals)*1.15,4);
+
+    ctx.clearRect(0,0,CW,CH);
+    ctx.fillStyle='#080c10'; ctx.fillRect(0,0,CW,CH);
+    const pad={l:52,r:20,t:30,b:40};
+    const pw=CW-pad.l-pad.r, ph=CH-pad.t-pad.b;
+
+    function toP(deg,y) {
+      const x=pad.l+(deg-1)/11*pw;
+      const cy=pad.t+ph-Math.min(y,maxY)/maxY*ph;
+      return {x,y:cy};
+    }
+
+    // Stacked area: noise + bias2 + variance
+    const areaY=(deg,part)=>{
+      let v=noiseFloor;
+      if(part>=1) v+=bias2s[deg-1];
+      if(part>=2) v+=vars[deg-1];
+      return v;
+    };
+
+    // noise floor
+    ctx.beginPath();
+    for(let d=1;d<=12;d++){const p=toP(d,noiseFloor);d===1?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);}
+    ctx.lineTo(toP(12,0).x,toP(12,0).y); ctx.lineTo(toP(1,0).x,toP(1,0).y); ctx.closePath();
+    ctx.fillStyle='rgba(100,120,160,0.15)'; ctx.fill();
+
+    // bias area (noise + bias2)
+    ctx.beginPath();
+    for(let d=1;d<=12;d++){const p=toP(d,areaY(d,1));d===1?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);}
+    for(let d=12;d>=1;d--){const p=toP(d,noiseFloor);ctx.lineTo(p.x,p.y);}
+    ctx.closePath(); ctx.fillStyle='rgba(248,113,113,0.22)'; ctx.fill();
+
+    // variance area
+    ctx.beginPath();
+    for(let d=1;d<=12;d++){const p=toP(d,areaY(d,2));d===1?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);}
+    for(let d=12;d>=1;d--){const p=toP(d,areaY(d,1));ctx.lineTo(p.x,p.y);}
+    ctx.closePath(); ctx.fillStyle='rgba(56,189,248,0.2)'; ctx.fill();
+
+    // Grid
+    ctx.strokeStyle='#1a3050'; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    for(let g=0;g<=4;g++){
+      const y=pad.t+g/4*ph;
+      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+pw,y); ctx.stroke();
+      const v=(1-g/4)*maxY;
+      ctx.fillStyle='#2d5a7a'; ctx.font='9px JetBrains Mono, monospace';
+      ctx.fillText(v.toFixed(2),2,y+4);
+    }
+    ctx.setLineDash([]);
+
+    // Train MSE
+    ctx.beginPath();
+    DEGS.forEach((d,i)=>{const p=toP(d,trainMSEs[i]);i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+    ctx.strokeStyle='rgba(110,231,183,0.7)'; ctx.lineWidth=2; ctx.setLineDash([5,4]); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Test MSE
+    ctx.beginPath();
+    DEGS.forEach((d,i)=>{const p=toP(d,testMSEs[i]);i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+    ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2.5; ctx.stroke();
+
+    // Total (Bias2+Var+noise)
+    ctx.beginPath();
+    DEGS.forEach((d,i)=>{const p=toP(d,totals[i]);i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+    ctx.strokeStyle='rgba(167,139,250,0.9)'; ctx.lineWidth=2; ctx.stroke();
+
+    // Optimal degree marker
+    const minTest=Math.min(...testMSEs.filter(isFinite));
+    const optDeg=DEGS[testMSEs.indexOf(minTest)];
+    const optP=toP(optDeg,minTest);
+    ctx.beginPath(); ctx.moveTo(optP.x,pad.t); ctx.lineTo(optP.x,pad.t+ph);
+    ctx.strokeStyle='rgba(248,113,113,0.5)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#f87171'; ctx.font='10px JetBrains Mono, monospace';
+    ctx.fillText(`opt d=${optDeg}`,optP.x+3,pad.t+12);
+
+    // X axis ticks
+    ctx.fillStyle='#2d5a7a'; ctx.font='9px JetBrains Mono, monospace';
+    DEGS.forEach(d=>{
+      const p=toP(d,0);
+      ctx.fillText(d, p.x-3, pad.t+ph+14);
+    });
+    ctx.fillText('degree',pad.l+pw/2-15,CH-5);
+
+    // Legend
+    const lg=[{c:'rgba(248,113,113,0.7)',l:'Bias²'},{c:'rgba(56,189,248,0.7)',l:'Variance'},{c:'rgba(100,120,160,0.7)',l:'Noise'},
+              {c:'rgba(110,231,183,0.7)',l:'Train MSE (dashed)'},{c:'#f59e0b',l:'Test MSE'},{c:'rgba(167,139,250,0.9)',l:'Total'}];
+    lg.forEach(({c,l},i)=>{
+      const lx=pad.l+4+(i%3)*170, ly=pad.t+8+Math.floor(i/3)*14;
+      ctx.fillStyle=c; ctx.fillRect(lx,ly-7,12,8);
+      ctx.fillStyle='#8bafc9'; ctx.font='9px JetBrains Mono, monospace';
+      ctx.fillText(l,lx+15,ly);
+    });
+
+    document.getElementById('s2-opt-deg').textContent=optDeg;
+    document.getElementById('s2-min-mse').textContent=minTest.toFixed(4);
+  }
+
+  document.getElementById('s2-N').addEventListener('input',function(){
+    document.getElementById('s2-N-val').textContent=this.value;
+    document.getElementById('s2-N-info').textContent=this.value;
+  });
+  document.getElementById('s2-noise').addEventListener('input',function(){
+    const v=(parseInt(this.value)/100).toFixed(2);
+    document.getElementById('s2-noise-val').textContent=v;
+    document.getElementById('s2-noise-info').textContent=v;
+  });
+  document.getElementById('s2-recompute').addEventListener('click',()=>{seed=Math.floor(Math.random()*99999);redraw();});
+
+  window.addEventListener('load',resize);
+  window.addEventListener('resize',resize);
+  resize();
+})();
+
+// ==========================================
+// SECTION 3: Ridge Regularization
+// ==========================================
+(function() {
+  const fitCanvas=document.getElementById('c3-fit');
+  const valCanvas=document.getElementById('c3-val');
+  const coefCanvas=document.getElementById('c3-coef');
+  const fctx=fitCanvas.getContext('2d');
+  const vctx=valCanvas.getContext('2d');
+  const cctx=coefCanvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  let FW,FH;
+  const VW=190,VH=140,CW2=190,CH2=110;
+  let seed=55555;
+  const DEG=8, N=15;
+
+  // Precompute validation curve
+  let valCurve=null;
+
+  function resize() {
+    FW=fitCanvas.parentElement.clientWidth||440;
+    FH=Math.round(FW*0.636);
+    fitCanvas.width=FW*dpr; fitCanvas.height=FH*dpr;
+    fitCanvas.style.width=FW+'px'; fitCanvas.style.height=FH+'px';
+    fctx.scale(dpr,dpr);
+    valCanvas.width=VW*dpr; valCanvas.height=VH*dpr;
+    valCanvas.style.width=VW+'px'; valCanvas.style.height=VH+'px';
+    vctx.scale(dpr,dpr);
+    coefCanvas.width=CW2*dpr; coefCanvas.height=CH2*dpr;
+    coefCanvas.style.width=CW2+'px'; coefCanvas.style.height=CH2+'px';
+    cctx.scale(dpr,dpr);
+    computeValCurve();
+    redraw();
+  }
+
+  function getLambda() {
+    return Math.pow(10, parseFloat(document.getElementById('s3-lam').value));
+  }
+
+  function computeValCurve() {
+    const {xs,ys}=generateData(N,0.15,seed);
+    const {xs:vxs,ys:vys}=generateData(40,0.15,seed+4444);
+    const lambdas=[];
+    const trainMSEs=[], valMSEs=[];
+    for(let logL=-5;logL<=2;logL+=0.2) {
+      const lam=Math.pow(10,logL);
+      lambdas.push(lam);
+      const A=vandermondeCol(xs,DEG);
+      const w=ridgeSolve(A,ys,lam);
+      trainMSEs.push(computeMSE(w,xs,ys));
+      valMSEs.push(computeMSE(w,vxs,vys));
+    }
+    valCurve={lambdas,trainMSEs,valMSEs};
+  }
+
+  function redraw() {
+    if(!FW) return;
+    const lam=getLambda();
+    const {xs,ys}=generateData(N,0.15,seed);
+    const {xs:vxs,ys:vys}=generateData(40,0.15,seed+4444);
+    const A=vandermondeCol(xs,DEG);
+    const w=ridgeSolve(A,ys,lam);
+    const trainMSE=computeMSE(w,xs,ys);
+    const valMSE=computeMSE(w,vxs,vys);
+    const maxW=Math.max(...w.map(Math.abs));
+
+    document.getElementById('s3-lam-info').textContent=lam.toExponential(2);
+    document.getElementById('s3-train-mse').textContent=trainMSE.toFixed(4);
+    document.getElementById('s3-val-mse').textContent=valMSE.toFixed(4);
+    document.getElementById('s3-maxw').textContent=maxW.toFixed(2);
+
+    // --- Fit canvas ---
+    fctx.clearRect(0,0,FW,FH);
+    fctx.fillStyle='#080c10'; fctx.fillRect(0,0,FW,FH);
+    const pad=30;
+    const pw=FW-2*pad,ph=FH-2*pad;
+    function toFit(x,y){return {x:pad+x*pw,y:pad+ph/2-y*ph/2.4};}
+
+    fctx.strokeStyle='#1a3050'; fctx.lineWidth=1;
+    fctx.beginPath(); fctx.moveTo(pad,pad); fctx.lineTo(pad,pad+ph); fctx.lineTo(pad+pw,pad+ph); fctx.stroke();
+
+    // True function
+    fctx.beginPath();
+    for(let i=0;i<=100;i++){const x=i/100;const p=toFit(x,trueF(x));i===0?fctx.moveTo(p.x,p.y):fctx.lineTo(p.x,p.y);}
+    fctx.strokeStyle='rgba(56,189,248,0.45)'; fctx.lineWidth=2; fctx.setLineDash([6,4]); fctx.stroke(); fctx.setLineDash([]);
+
+    // Fitted
+    fctx.beginPath();
+    let prev=true;
+    for(let i=0;i<=300;i++){
+      const x=i/300; const y=polyEval(w,x);
+      if(!isFinite(y)||Math.abs(y)>5){prev=false;continue;}
+      const p=toFit(x,y);
+      (i===0||!prev)?fctx.moveTo(p.x,p.y):fctx.lineTo(p.x,p.y);
+      prev=true;
+    }
+    fctx.strokeStyle='#38bdf8'; fctx.lineWidth=2.5; fctx.stroke();
+
+    // Points
+    xs.forEach((x,i)=>{
+      const p=toFit(x,ys[i]);
+      fctx.beginPath(); fctx.arc(p.x,p.y,4,0,Math.PI*2);
+      fctx.fillStyle='rgba(252,211,77,0.8)'; fctx.fill();
+      fctx.strokeStyle='rgba(255,255,255,0.4)'; fctx.lineWidth=1; fctx.stroke();
+    });
+    fctx.fillStyle='#2d5a7a'; fctx.font='10px JetBrains Mono, monospace';
+    fctx.fillText(`λ = ${lam.toExponential(2)}`,pad+4,pad+14);
+
+    // --- Validation curve canvas ---
+    if(valCurve){
+      vctx.clearRect(0,0,VW,VH);
+      vctx.fillStyle='#080c10'; vctx.fillRect(0,0,VW,VH);
+      vctx.fillStyle='#2d5a7a'; vctx.font='9px JetBrains Mono, monospace';
+      vctx.fillText('Val MSE vs log₁₀(λ)',4,12);
+      const vpad={l:28,r:8,t:20,b:18};
+      const vpw=VW-vpad.l-vpad.r, vph=VH-vpad.t-vpad.b;
+      const allV=[...valCurve.valMSEs,...valCurve.trainMSEs].filter(isFinite);
+      const maxV=Math.min(Math.max(...allV)*1.2,3);
+      const minV=0;
+      const N2=valCurve.lambdas.length;
+      function toVP(i,v){
+        return {x:vpad.l+i/(N2-1)*vpw, y:vpad.t+vph-(v-minV)/(maxV-minV)*vph};
+      }
+
+      // Train curve
+      vctx.beginPath();
+      valCurve.trainMSEs.forEach((v,i)=>{
+        if(!isFinite(v)||v>maxV){return;}
+        const p=toVP(i,Math.min(v,maxV));i===0?vctx.moveTo(p.x,p.y):vctx.lineTo(p.x,p.y);
+      });
+      vctx.strokeStyle='rgba(110,231,183,0.6)'; vctx.lineWidth=1.5; vctx.setLineDash([4,3]); vctx.stroke(); vctx.setLineDash([]);
+
+      // Val curve
+      vctx.beginPath();
+      valCurve.valMSEs.forEach((v,i)=>{
+        if(!isFinite(v)||v>maxV){return;}
+        const p=toVP(i,Math.min(v,maxV));i===0?vctx.moveTo(p.x,p.y):vctx.lineTo(p.x,p.y);
+      });
+      vctx.strokeStyle='#f59e0b'; vctx.lineWidth=2; vctx.stroke();
+
+      // Current lambda marker
+      const curLogL=Math.log10(lam);
+      const normX=(curLogL-(-5))/(2-(-5));
+      const curX=vpad.l+normX*vpw;
+      vctx.beginPath(); vctx.moveTo(curX,vpad.t); vctx.lineTo(curX,vpad.t+vph);
+      vctx.strokeStyle='rgba(248,113,113,0.8)'; vctx.lineWidth=1.5; vctx.setLineDash([3,3]); vctx.stroke(); vctx.setLineDash([]);
+
+      // Axis
+      vctx.fillStyle='#2d5a7a'; vctx.font='8px JetBrains Mono, monospace';
+      vctx.fillText('-5',vpad.l-4,VH-4);
+      vctx.fillText('+2',vpad.l+vpw-8,VH-4);
+      vctx.fillText('log λ',vpad.l+vpw/2-10,VH-4);
+    }
+
+    // --- Coefficient bars ---
+    cctx.clearRect(0,0,CW2,CH2);
+    cctx.fillStyle='#080c10'; cctx.fillRect(0,0,CW2,CH2);
+    cctx.fillStyle='#2d5a7a'; cctx.font='9px JetBrains Mono, monospace';
+    cctx.fillText('Coefficient magnitudes',4,12);
+    const cpad={l:8,r:8,t:18,b:18};
+    const cpw=CW2-cpad.l-cpad.r, cph=CH2-cpad.t-cpad.b;
+    const maxCoef=Math.max(...w.slice(1).map(Math.abs),0.01);
+    const barW=Math.floor(cpw/(DEG));
+    w.slice(1).forEach((wj,j)=>{
+      const bh=Math.abs(wj)/maxCoef*cph;
+      const bx=cpad.l+j*barW+1;
+      cctx.fillStyle='rgba(56,189,248,0.2)'; cctx.fillRect(bx,cpad.t,barW-2,cph);
+      cctx.fillStyle='#38bdf8'; cctx.fillRect(bx,cpad.t+cph-bh,barW-2,bh);
+      cctx.fillStyle='#2d5a7a'; cctx.font='7px JetBrains Mono, monospace';
+      cctx.fillText(`w${j+1}`,bx+1,CH2-4);
+    });
+  }
+
+  document.getElementById('s3-lam').addEventListener('input',function(){
+    const lam=Math.pow(10,parseFloat(this.value));
+    document.getElementById('s3-lam-val').textContent=lam.toExponential(2);
+    redraw();
+  });
+  document.getElementById('s3-reseed').addEventListener('click',()=>{seed=Math.floor(Math.random()*99999);computeValCurve();redraw();});
+
+  window.addEventListener('load',resize);
+  window.addEventListener('resize',resize);
+  resize();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecular Orbitals</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Fonts: Space Mono + Lora -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #07040f;
+            --card: #0e0818;
+            --surface: #130c22;
+            --accent: #9333ea;
+            --accent2: #7c3aed;
+            --accent-light: #c084fc;
+            --bonding: #22d3ee;
+            --antibonding: #f87171;
+            --text: #ede9f6;
+            --muted: #6b5a8a;
+            --dim: #2d1f4a;
+            --border: #1a0d30;
+            --yellow: #fbbf24;
+            --green: #4ade80;
+            --orange: #fb923c;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Lora', serif;
+            line-height: 1.8;
+            padding: 0 0 100px;
+        }
+        header {
+            text-align: center;
+            padding: 64px 40px 52px;
+            background: radial-gradient(ellipse at 50% 0%, #1a0a3a 0%, var(--bg) 68%);
+            border-bottom: 1px solid var(--border);
+        }
+        header .tag {
+            display: inline-block;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px; letter-spacing: 0.22em; color: var(--accent-light);
+            text-transform: uppercase; border: 1px solid rgba(147,51,234,0.3);
+            padding: 3px 14px; border-radius: 20px; margin-bottom: 22px;
+        }
+        h1 {
+            font-family: 'Lora', serif;
+            font-size: 3.4rem; font-weight: 600;
+            color: var(--text); line-height: 1.1; margin-bottom: 18px;
+        }
+        h1 em { color: var(--accent-light); font-style: italic; }
+        header p {
+            font-family: 'Space Mono', monospace;
+            color: var(--muted); font-size: 12px; max-width: 560px; margin: 0 auto;
+            line-height: 1.8;
+        }
+        section { max-width: 960px; margin: 70px auto 0; padding: 0 36px; }
+        .section-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px; letter-spacing: 0.22em; color: var(--muted);
+            text-transform: uppercase; margin-bottom: 22px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        h2 {
+            font-family: 'Lora', serif;
+            font-size: 1.85rem; font-weight: 600; margin-bottom: 18px;
+        }
+        .prose {
+            font-family: 'Lora', serif;
+            font-size: 14.5px; color: var(--muted); line-height: 1.9; margin-bottom: 20px;
+        }
+        .prose strong { color: var(--text); }
+        .prose em { color: var(--accent-light); font-style: italic; }
+        .math-block {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); padding: 16px 22px;
+            border-radius: 4px; margin: 20px 0; font-size: 13px; overflow-x: auto;
+            font-family: 'Space Mono', monospace;
+        }
+        .canvas-wrap {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden; margin: 28px 0;
+        }
+        canvas { display: block; }
+        .controls {
+            display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+            padding: 14px 18px; background: var(--surface); border-top: 1px solid var(--border);
+        }
+        .btn {
+            padding: 6px 16px; border: 1px solid var(--dim); background: transparent;
+            color: var(--muted); font-family: 'Space Mono', monospace; font-size: 11px;
+            border-radius: 3px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent-light); }
+        .btn.active {
+            background: var(--accent); color: #07040f;
+            border-color: var(--accent); font-weight: 700;
+        }
+        .btn.bonding-btn.active { background: var(--bonding); border-color: var(--bonding); }
+        .btn.antibonding-btn.active { background: var(--antibonding); border-color: var(--antibonding); }
+        label {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px; color: var(--muted); letter-spacing: 0.04em;
+        }
+        .val {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px; color: var(--accent-light); min-width: 46px;
+        }
+        .readout-bar {
+            padding: 10px 18px; border-top: 1px solid var(--border);
+            background: var(--card);
+            font-family: 'Space Mono', monospace; font-size: 12px;
+            display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+        }
+        .readout-item { display: flex; gap: 8px; align-items: center; }
+        .readout-key { color: var(--muted); }
+        .readout-val { color: var(--accent-light); }
+        .legend {
+            display: flex; gap: 18px; flex-wrap: wrap;
+            padding: 10px 18px; border-top: 1px solid var(--border);
+            font-family: 'Space Mono', monospace; font-size: 11px;
+        }
+        .li { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .swatch { width: 20px; height: 3px; flex-shrink: 0; }
+        .infobox {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 18px 22px; margin: 20px 0;
+            font-family: 'Space Mono', monospace; font-size: 12px;
+            color: var(--muted); line-height: 1.9;
+        }
+        .infobox strong { color: var(--text); }
+        .infobox .hl { color: var(--accent-light); }
+        .infobox .hl-bond { color: var(--bonding); }
+        .infobox .hl-anti { color: var(--antibonding); }
+        .bond-order-display {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 4px; padding: 12px 18px; margin-top: 12px;
+            font-family: 'Space Mono', monospace; font-size: 14px;
+            display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="tag">State Switching · Quantum Chemistry</div>
+    <h1>Molecular <em>Orbitals</em></h1>
+    <p>When atomic orbitals combine, they form molecular orbitals that extend over the entire molecule.
+    Explore bonding, antibonding states, MO diagrams for the second-row diatomics, and the
+    frontier orbital theory that governs chemical reactivity.</p>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 1: Bonding and Antibonding in H₂
+═══════════════════════════════════════════════════════════ -->
+<section>
+    <div class="section-label">01 — LCAO Theory</div>
+    <h2>Bonding and Antibonding in H₂</h2>
+
+    <div class="prose">
+        The simplest quantum mechanical description of a covalent bond starts with
+        <strong>Linear Combination of Atomic Orbitals (LCAO)</strong>. When two hydrogen atoms
+        approach each other, their 1s orbitals — described by wave functions ψ_A and ψ_B — begin
+        to overlap. Since the Schrödinger equation is linear, we can form molecular orbitals by
+        adding or subtracting these atomic orbitals. This is not merely a mathematical convenience:
+        the resulting wave functions describe real, measurable electron distributions.
+    </div>
+
+    <div class="math-block">
+        \[\psi_{\text{bond}} = \frac{1}{\sqrt{2+2S}}(\psi_A + \psi_B) \qquad
+        \psi_{\text{anti}} = \frac{1}{\sqrt{2-2S}}(\psi_A - \psi_B)\]
+    </div>
+
+    <div class="prose">
+        In the <strong>bonding orbital</strong> (σ), the two wave functions add constructively
+        between the nuclei. The electron probability density ψ² is enhanced in the
+        internuclear region — electrons are shared and drawn toward both positive nuclei
+        simultaneously, lowering the overall energy and binding the atoms together.
+        This <em>constructive interference</em> is the quantum mechanical origin of the covalent bond.
+        The bonding MO energy falls below that of either isolated atom.
+    </div>
+
+    <div class="prose">
+        In the <strong>antibonding orbital</strong> (σ*), the wave functions subtract,
+        creating a <em>nodal plane</em> midway between the nuclei where ψ = 0 and therefore
+        the electron probability is zero. Electron density is depleted from the internuclear
+        region and concentrated outside the nuclei. This arrangement is electrostatically
+        unfavorable: the nuclei repel each other with nothing to screen them. The antibonding
+        MO energy rises above that of the isolated atoms. Placing electrons in σ* is
+        <em>destabilizing</em> — a crucial fact that explains why He₂ does not form (2 bonding,
+        2 antibonding → bond order = 0) while H₂ does (2 bonding, 0 antibonding → bond order = 1).
+    </div>
+
+    <div class="prose">
+        The <strong>bond order</strong> — the effective number of bonds — is calculated as
+        (bonding electrons − antibonding electrons) / 2. Bond order directly correlates with
+        bond strength (dissociation energy) and inversely correlates with bond length.
+        A bond order of zero means no stable bond exists; fractional bond orders (as in O₂)
+        are physically meaningful and lead to remarkable magnetic properties.
+    </div>
+
+    <!-- Interactive widget -->
+    <div class="canvas-wrap">
+        <canvas id="mo1-canvas"></canvas>
+        <div class="controls">
+            <label>Orbital type:</label>
+            <button class="btn bonding-btn active" id="mo1-bond" onclick="mo1SetType('bonding')">σ bonding</button>
+            <button class="btn antibonding-btn" id="mo1-anti" onclick="mo1SetType('antibonding')">σ* antibonding</button>
+        </div>
+        <div class="readout-bar">
+            <div class="readout-item">
+                <span class="readout-key">type</span>
+                <span class="readout-val" id="mo1-type-label">σ bonding</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">energy</span>
+                <span class="readout-val" id="mo1-energy-label">lower than atoms</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">interference</span>
+                <span class="readout-val" id="mo1-int-label">constructive</span>
+            </div>
+            <div class="readout-item" style="margin-left:auto">
+                <span class="readout-key">Bond order (H₂)</span>
+                <span class="readout-val">(2−0)/2 = 1</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Why does He₂ not exist?</strong> He has 2 electrons, so He₂ would have 4 electrons total.
+        Filling in order: <span class="hl-bond">σ1s (2 bonding)</span> then <span class="hl-anti">σ*1s (2 antibonding)</span>.
+        Bond order = (2−2)/2 = <span class="hl">0</span>. No net stabilisation — He₂ does not form.
+        Meanwhile H₂ has bond order = 1, and its dissociation energy of 436 kJ/mol represents
+        the energy gained by that single net bonding electron pair.
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 2: MO Diagrams for Homonuclear Diatomics
+═══════════════════════════════════════════════════════════ -->
+<section>
+    <div class="section-label">02 — MO Diagrams</div>
+    <h2>Homonuclear Diatomics: Li₂ through F₂</h2>
+
+    <div class="prose">
+        For the second-row diatomic molecules, we combine the 2s and 2p atomic orbitals
+        of both atoms. The 2s orbitals form σ₂s and σ*₂s molecular orbitals, while
+        the 2p orbitals form three types: a σ₂p orbital along the bond axis, two degenerate
+        π₂p orbitals perpendicular to it, and their antibonding counterparts σ*₂p, π*₂p×2, σ*₂p.
+    </div>
+
+    <div class="prose">
+        There is a subtle but important detail: for Li₂ through N₂, the σ₂p orbital is
+        <em>higher</em> in energy than the π₂p orbitals — a counterintuitive ordering
+        caused by mixing (hybridization) between the 2s and 2p orbitals of the same atom
+        when they are energetically close. For O₂ and F₂, the s-p energy gap is large enough
+        that this mixing is negligible, and the familiar ordering σ₂p < π₂p is restored.
+        This orbital ordering switch is not just academic: it explains why O₂ is paramagnetic
+        (two unpaired electrons) in a way that the incorrect ordering would not.
+    </div>
+
+    <div class="prose">
+        Electrons fill molecular orbitals following the same Aufbau principle as atomic orbitals:
+        lowest energy first, two electrons per orbital (Pauli exclusion), and degenerate
+        orbitals filled singly before pairing (Hund's rule). The resulting electron configurations
+        directly determine bond order, bond length, bond strength, and magnetic properties.
+        <strong>N₂</strong> with bond order 3 has the strongest homonuclear diatomic bond
+        (945 kJ/mol, 1.10 Å). <strong>O₂</strong> with bond order 2 but two unpaired π*
+        electrons is paramagnetic — attracted to a magnetic field. This was a famous failure
+        of valence bond theory until MO theory correctly predicted it.
+    </div>
+
+    <div class="prose">
+        Select a molecule below to see its complete MO diagram with electron filling.
+        Count the electrons in bonding vs antibonding orbitals to verify the bond order shown.
+        Notice how F₂ (bond order 1) is weaker than O₂ (bond order 2) due to antibonding electrons,
+        and how the paramagnetic molecules (O₂, B₂) show unpaired electrons in degenerate MOs.
+    </div>
+
+    <!-- Interactive widget -->
+    <div class="canvas-wrap">
+        <canvas id="mo2-canvas"></canvas>
+        <div class="controls">
+            <label>Molecule:</label>
+            <button class="btn active" id="mo2-Li2" onclick="mo2Set('Li2')">Li₂</button>
+            <button class="btn" id="mo2-B2" onclick="mo2Set('B2')">B₂</button>
+            <button class="btn" id="mo2-C2" onclick="mo2Set('C2')">C₂</button>
+            <button class="btn" id="mo2-N2" onclick="mo2Set('N2')">N₂</button>
+            <button class="btn" id="mo2-O2" onclick="mo2Set('O2')">O₂</button>
+            <button class="btn" id="mo2-F2" onclick="mo2Set('F2')">F₂</button>
+        </div>
+        <div class="bond-order-display">
+            <span style="color:var(--muted)">Bond order =</span>
+            <span id="mo2-bo-formula" style="color:var(--accent-light); font-size:13px"></span>
+            <span style="color:var(--muted)">=</span>
+            <span id="mo2-bo-val" style="color:var(--accent-light); font-size:18px; font-weight:700"></span>
+            <span id="mo2-mag" style="margin-left:auto; font-size:12px"></span>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="swatch" style="background:var(--bonding)"></div>bonding MOs</div>
+            <div class="li"><div class="swatch" style="background:var(--antibonding)"></div>antibonding MOs</div>
+            <div class="li"><div class="dot" style="background:var(--accent-light)"></div>electron (↑ or ↑↓)</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>O₂ paramagnetism — MO theory's triumph:</strong> Valence bond theory draws
+        O₂ with a double bond and all electrons paired. But liquid O₂ is attracted to a
+        magnet — it is paramagnetic, meaning it has unpaired electrons. MO theory reveals why:
+        the two π*₂p orbitals are degenerate, and Hund's rule places one electron in each,
+        both with parallel spin. Bond order = <span class="hl">(8−4)/2 = 2</span>,
+        consistent with the O=O double bond, but with <span class="hl-anti">two unpaired electrons</span>
+        that valence bond theory completely misses.
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 3: HOMO-LUMO Gap and Reactivity
+═══════════════════════════════════════════════════════════ -->
+<section>
+    <div class="section-label">03 — Frontier Molecular Orbital Theory</div>
+    <h2>HOMO–LUMO Gap and Reactivity</h2>
+
+    <div class="prose">
+        Among all molecular orbitals, two are uniquely important for chemical reactivity:
+        the <strong>HOMO</strong> (Highest Occupied Molecular Orbital) and the
+        <strong>LUMO</strong> (Lowest Unoccupied Molecular Orbital). During a chemical
+        reaction, electrons flow from the HOMO of one molecule to the LUMO of another.
+        This is the central insight of <em>Frontier Molecular Orbital (FMO) theory</em>,
+        developed by Kenichi Fukui (Nobel Prize 1981).
+    </div>
+
+    <div class="math-block">
+        \[\Delta E \approx \frac{-(\text{HOMO}_{\text{nucleophile}} \to \text{LUMO}_{\text{electrophile}})^2}{E_{\text{HOMO}} - E_{\text{LUMO}}}\]
+    </div>
+
+    <div class="prose">
+        The <strong>HOMO-LUMO gap</strong> — the energy difference between HOMO and LUMO —
+        determines how easily electrons can be promoted or transferred. A <em>small gap</em>
+        means low-energy photons can excite the molecule (it absorbs visible light, making it
+        colored), it is easily oxidised or reduced (electrochemically reactive), and it can
+        participate in many chemical reactions. A <em>large gap</em> means the molecule is
+        stable, transparent (absorbs only UV), and chemically inert under normal conditions.
+        This is why N₂ is so unreactive despite its triple bond — the gap is enormous.
+    </div>
+
+    <div class="prose">
+        The HOMO-LUMO gap governs the color of organic dyes and pigments. Conjugated systems
+        like beta-carotene (11 conjugated double bonds) have a small gap, absorbing blue light
+        and appearing orange. Extending conjugation further pushes absorption into the red,
+        then infrared. This principle guides the design of organic solar cells (OPV) and
+        organic light-emitting diodes (OLEDs), where tuning the gap controls the absorption
+        spectrum and emission color. Polymer semiconductors like poly(3-hexylthiophene) with
+        gaps around 1.9 eV absorb across much of the visible spectrum.
+    </div>
+
+    <div class="prose">
+        In solid-state physics, the HOMO-LUMO gap corresponds to the <em>band gap</em> between
+        valence band and conduction band. Conductors have zero gap, semiconductors have a small
+        gap (silicon: 1.1 eV, germanium: 0.67 eV), and insulators have a large gap (diamond:
+        5.5 eV). The same quantum mechanical principle — ease of electron promotion — unifies
+        molecular reactivity, photochemistry, and solid-state electronics.
+    </div>
+
+    <!-- Interactive widget -->
+    <div class="canvas-wrap">
+        <canvas id="mo3-canvas"></canvas>
+        <div class="controls">
+            <label>Molecule:</label>
+            <button class="btn active" id="mo3-Li2" onclick="mo3Set('Li2')">Li₂</button>
+            <button class="btn" id="mo3-B2" onclick="mo3Set('B2')">B₂</button>
+            <button class="btn" id="mo3-C2" onclick="mo3Set('C2')">C₂</button>
+            <button class="btn" id="mo3-N2" onclick="mo3Set('N2')">N₂</button>
+            <button class="btn" id="mo3-O2" onclick="mo3Set('O2')">O₂</button>
+            <button class="btn" id="mo3-F2" onclick="mo3Set('F2')">F₂</button>
+        </div>
+        <div class="readout-bar">
+            <div class="readout-item">
+                <span class="readout-key">HOMO-LUMO gap</span>
+                <span class="readout-val" id="mo3-gap">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">reactivity</span>
+                <span class="readout-val" id="mo3-react">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">analogous system</span>
+                <span class="readout-val" id="mo3-analog">—</span>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="dot" style="background:var(--accent-light)"></div>HOMO (highest occupied)</div>
+            <div class="li"><div class="dot" style="background:var(--yellow)"></div>LUMO (lowest unoccupied)</div>
+            <div class="li"><div class="swatch" style="background:linear-gradient(90deg,var(--antibonding),var(--green));height:6px;border-radius:2px"></div>gap → reactivity color</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>FMO in organic synthesis:</strong> The Diels-Alder reaction works because
+        the HOMO of the diene and the LUMO of the dienophile have compatible symmetry and
+        are close in energy. Electron-withdrawing groups on the dienophile lower its LUMO,
+        narrowing the gap and accelerating the reaction. This is why maleic anhydride is
+        a far better dienophile than ethylene — FMO theory quantitatively predicts
+        relative reactivity in <span class="hl">[4+2] cycloadditions</span> without
+        needing transition state calculations.
+    </div>
+</section>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+function setupHDPI(canvas, w, h) {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    return ctx;
+}
+
+const C = {
+    bg: '#0e0818', surface: '#130c22', border: '#1a0d30',
+    accent: '#9333ea', accentL: '#c084fc',
+    bonding: '#22d3ee', antibonding: '#f87171',
+    text: '#ede9f6', muted: '#6b5a8a', dim: '#2d1f4a',
+    yellow: '#fbbf24', green: '#4ade80', orange: '#fb923c'
+};
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 1 — Bonding/Antibonding H₂
+// ═══════════════════════════════════════════════════════════
+const mo1Canvas = document.getElementById('mo1-canvas');
+const W1 = 900, H1 = 380;
+const mo1ctx = setupHDPI(mo1Canvas, W1, H1);
+
+let mo1Type = 'bonding';
+let mo1AnimT = 0;
+let mo1Raf = null;
+
+function mo1SetType(type) {
+    mo1Type = type;
+    document.getElementById('mo1-bond').classList.toggle('active', type === 'bonding');
+    document.getElementById('mo1-anti').classList.toggle('active', type === 'antibonding');
+    document.getElementById('mo1-type-label').textContent = type === 'bonding' ? 'σ bonding' : 'σ* antibonding';
+    document.getElementById('mo1-energy-label').textContent = type === 'bonding' ? 'lower than atoms' : 'higher than atoms';
+    document.getElementById('mo1-int-label').textContent = type === 'bonding' ? 'constructive' : 'destructive';
+    document.getElementById('mo1-int-label').style.color = type === 'bonding' ? C.bonding : C.antibonding;
+}
+
+function mo1Draw() {
+    const W = W1, H = H1;
+    mo1ctx.fillStyle = C.bg;
+    mo1ctx.fillRect(0, 0, W, H);
+
+    const cx1 = W * 0.28, cx2 = W * 0.72;
+    const cy = H * 0.52;
+    const R = 80;
+
+    const isBonding = mo1Type === 'bonding';
+    const t = mo1AnimT;
+
+    // Transition progress (0 = bonding, 1 = antibonding, or smooth lerp)
+    const alpha = isBonding ? 0 : 1;
+
+    // Draw atomic orbital lobes (circles with radial gradient)
+    function drawAtom(cx, cy, phase) {
+        const sign = phase > 0 ? 1 : -1;
+        const col = sign > 0 ? C.bonding : C.antibonding;
+        const grad = mo1ctx.createRadialGradient(cx, cy, 0, cx, cy, R + 20);
+        grad.addColorStop(0, col + 'cc');
+        grad.addColorStop(0.5, col + '66');
+        grad.addColorStop(1, col + '00');
+        mo1ctx.beginPath();
+        mo1ctx.arc(cx, cy, R + 20, 0, Math.PI * 2);
+        mo1ctx.fillStyle = grad;
+        mo1ctx.fill();
+
+        // Phase label
+        mo1ctx.fillStyle = col;
+        mo1ctx.font = 'bold 18px Space Mono';
+        mo1ctx.textAlign = 'center';
+        mo1ctx.fillText(sign > 0 ? '+' : '−', cx, cy + 6);
+    }
+
+    // Nucleus dots
+    function drawNucleus(cx, cy) {
+        mo1ctx.beginPath();
+        mo1ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        mo1ctx.fillStyle = '#fff';
+        mo1ctx.shadowBlur = 10;
+        mo1ctx.shadowColor = '#fff';
+        mo1ctx.fill();
+        mo1ctx.shadowBlur = 0;
+    }
+
+    // MO density between nuclei
+    const midX = (cx1 + cx2) / 2;
+    const spread = (cx2 - cx1) * 0.5;
+
+    if (isBonding) {
+        // Bonding: constructive interference — large density between nuclei
+        const grad = mo1ctx.createRadialGradient(midX, cy, 0, midX, cy, spread * 0.9);
+        grad.addColorStop(0, C.bonding + 'bb');
+        grad.addColorStop(0.4, C.bonding + '55');
+        grad.addColorStop(1, C.bonding + '00');
+        mo1ctx.beginPath();
+        mo1ctx.ellipse(midX, cy, spread * 0.9, R * 0.7, 0, 0, Math.PI * 2);
+        mo1ctx.fillStyle = grad;
+        mo1ctx.fill();
+        drawAtom(cx1, cy, 1);
+        drawAtom(cx2, cy, 1);
+    } else {
+        // Antibonding: nodal plane in middle
+        drawAtom(cx1, cy, 1);
+        drawAtom(cx2, cy, -1);
+        // Nodal plane
+        mo1ctx.strokeStyle = C.antibonding + 'cc';
+        mo1ctx.lineWidth = 2;
+        mo1ctx.setLineDash([6, 5]);
+        mo1ctx.beginPath();
+        mo1ctx.moveTo(midX, cy - R - 30);
+        mo1ctx.lineTo(midX, cy + R + 30);
+        mo1ctx.stroke();
+        mo1ctx.setLineDash([]);
+        mo1ctx.fillStyle = C.antibonding;
+        mo1ctx.font = '11px Space Mono';
+        mo1ctx.textAlign = 'center';
+        mo1ctx.fillText('nodal plane', midX, cy - R - 38);
+    }
+
+    drawNucleus(cx1, cy);
+    drawNucleus(cx2, cy);
+
+    // Labels
+    mo1ctx.fillStyle = C.muted;
+    mo1ctx.font = '11px Space Mono';
+    mo1ctx.textAlign = 'center';
+    mo1ctx.fillText('H atom A', cx1, cy + R + 44);
+    mo1ctx.fillText('H atom B', cx2, cy + R + 44);
+
+    // Energy diagram on right
+    const ex = W * 0.88, eyBase = H * 0.8, eyTop = H * 0.15;
+    const eRange = eyBase - eyTop;
+    // Atom levels
+    const atomY = eyBase - eRange * 0.45;
+    mo1ctx.strokeStyle = C.muted + '88';
+    mo1ctx.lineWidth = 1.5;
+    mo1ctx.beginPath();
+    mo1ctx.moveTo(ex - 22, atomY); mo1ctx.lineTo(ex - 6, atomY);
+    mo1ctx.stroke();
+    mo1ctx.beginPath();
+    mo1ctx.moveTo(ex + 6, atomY); mo1ctx.lineTo(ex + 22, atomY);
+    mo1ctx.stroke();
+    mo1ctx.fillStyle = C.muted;
+    mo1ctx.font = '9px Space Mono';
+    mo1ctx.textAlign = 'center';
+    mo1ctx.fillText('1s', ex - 14, atomY - 5);
+    mo1ctx.fillText('1s', ex + 14, atomY - 5);
+
+    // Bonding MO level
+    const bondY = eyBase - eRange * 0.25;
+    mo1ctx.strokeStyle = isBonding ? C.bonding : C.muted + '66';
+    mo1ctx.lineWidth = isBonding ? 2.5 : 1.5;
+    mo1ctx.beginPath();
+    mo1ctx.moveTo(ex - 18, bondY); mo1ctx.lineTo(ex + 18, bondY);
+    mo1ctx.stroke();
+    mo1ctx.fillStyle = isBonding ? C.bonding : C.muted + '66';
+    mo1ctx.font = '9px Space Mono';
+    mo1ctx.textAlign = 'left';
+    mo1ctx.fillText('σ', ex + 20, bondY + 3);
+    // Electrons in bonding
+    if (true) {
+        mo1ctx.fillStyle = C.accentL;
+        mo1ctx.beginPath(); mo1ctx.arc(ex - 5, bondY - 7, 4, 0, Math.PI*2); mo1ctx.fill();
+        mo1ctx.beginPath(); mo1ctx.arc(ex + 5, bondY - 7, 4, 0, Math.PI*2); mo1ctx.fill();
+        mo1ctx.fillStyle = C.muted; mo1ctx.font = '9px Space Mono';
+        mo1ctx.textAlign = 'center';
+        mo1ctx.fillText('↑↓', ex, bondY - 5);
+    }
+
+    // Antibonding MO level
+    const antiY = eyBase - eRange * 0.72;
+    mo1ctx.strokeStyle = !isBonding ? C.antibonding : C.muted + '66';
+    mo1ctx.lineWidth = !isBonding ? 2.5 : 1.5;
+    mo1ctx.beginPath();
+    mo1ctx.moveTo(ex - 18, antiY); mo1ctx.lineTo(ex + 18, antiY);
+    mo1ctx.stroke();
+    mo1ctx.fillStyle = !isBonding ? C.antibonding : C.muted + '66';
+    mo1ctx.font = '9px Space Mono';
+    mo1ctx.textAlign = 'left';
+    mo1ctx.fillText('σ*', ex + 20, antiY + 3);
+
+    // Connecting lines (dashed)
+    mo1ctx.strokeStyle = C.dim;
+    mo1ctx.lineWidth = 1;
+    mo1ctx.setLineDash([3, 4]);
+    mo1ctx.beginPath();
+    mo1ctx.moveTo(ex - 22, atomY); mo1ctx.lineTo(ex - 18, bondY);
+    mo1ctx.moveTo(ex - 22, atomY); mo1ctx.lineTo(ex - 18, antiY);
+    mo1ctx.moveTo(ex + 22, atomY); mo1ctx.lineTo(ex + 18, bondY);
+    mo1ctx.moveTo(ex + 22, atomY); mo1ctx.lineTo(ex + 18, antiY);
+    mo1ctx.stroke();
+    mo1ctx.setLineDash([]);
+
+    // Highlight current orbital
+    const highlightY = isBonding ? bondY : antiY;
+    mo1ctx.strokeStyle = isBonding ? C.bonding : C.antibonding;
+    mo1ctx.lineWidth = 1;
+    mo1ctx.beginPath();
+    mo1ctx.arc(ex, highlightY, 28, 0, Math.PI * 2);
+    mo1ctx.globalAlpha = 0.2 + 0.1 * Math.sin(Date.now() * 0.003);
+    mo1ctx.stroke();
+    mo1ctx.globalAlpha = 1;
+
+    // Energy axis label
+    mo1ctx.save();
+    mo1ctx.translate(ex - 40, (eyBase + eyTop) / 2);
+    mo1ctx.rotate(-Math.PI / 2);
+    mo1ctx.fillStyle = C.muted;
+    mo1ctx.font = '9px Space Mono';
+    mo1ctx.textAlign = 'center';
+    mo1ctx.fillText('Energy', 0, 0);
+    mo1ctx.restore();
+
+    // Up arrow for energy axis
+    mo1ctx.strokeStyle = C.dim;
+    mo1ctx.lineWidth = 1;
+    mo1ctx.beginPath();
+    mo1ctx.moveTo(ex - 36, eyBase);
+    mo1ctx.lineTo(ex - 36, eyTop + 5);
+    mo1ctx.stroke();
+
+    requestAnimationFrame(() => { mo1AnimT += 0.02; mo1Draw(); });
+}
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 2 — MO Diagrams
+// ═══════════════════════════════════════════════════════════
+const mo2Canvas = document.getElementById('mo2-canvas');
+const W2 = 900, H2 = 480;
+const mo2ctx = setupHDPI(mo2Canvas, W2, H2);
+
+// MO data: molecules with electron configs
+// Orbitals in energy order (for Li2-N2): σ2s, σ*2s, π2p(x), π2p(y), σ2p, π*2p(x), π*2p(y), σ*2p
+// For O2, F2: σ2s, σ*2s, σ2p, π2p(x), π2p(y), π*2p(x), π*2p(y), σ*2p
+// Each molecule: total valence electrons (only 2s+2p), and which orbitals are filled
+
+const MO_DATA = {
+    Li2: { electrons: 2, group: 'early', bo: 1, bonding: 2, antibonding: 0, paramag: false,
+           note: 'σ2s²' },
+    B2:  { electrons: 6, group: 'early', bo: 1, bonding: 4, antibonding: 2, paramag: true,
+           note: 'σ2s² σ*2s² π2p¹π2p¹' },
+    C2:  { electrons: 8, group: 'early', bo: 2, bonding: 6, antibonding: 2, paramag: false,
+           note: 'σ2s² σ*2s² π2p² π2p²' },
+    N2:  { electrons: 10, group: 'early', bo: 3, bonding: 8, antibonding: 2, paramag: false,
+           note: 'σ2s² σ*2s² π2p² π2p² σ2p²' },
+    O2:  { electrons: 12, group: 'late', bo: 2, bonding: 8, antibonding: 4, paramag: true,
+           note: 'σ2s² σ*2s² σ2p² π2p² π2p² π*2p¹ π*2p¹' },
+    F2:  { electrons: 14, group: 'late', bo: 1, bonding: 8, antibonding: 6, paramag: false,
+           note: 'σ2s² σ*2s² σ2p² π2p² π2p² π*2p² π*2p²' }
+};
+
+let mo2Mol = 'Li2';
+
+function mo2Set(mol) {
+    mo2Mol = mol;
+    ['Li2','B2','C2','N2','O2','F2'].forEach(m => {
+        document.getElementById('mo2-' + m).classList.toggle('active', m === mol);
+    });
+    mo2Draw();
+}
+
+function mo2Draw() {
+    const W = W2, H = H2;
+    mo2ctx.fillStyle = C.bg;
+    mo2ctx.fillRect(0, 0, W, H);
+
+    const data = MO_DATA[mo2Mol];
+    const isLate = data.group === 'late';
+
+    // Layout
+    const cx = W / 2;
+    const topY = 50, bottomY = H - 60;
+    const eRange = bottomY - topY;
+
+    // MO levels and their properties
+    // {name, yFrac (0=top/high energy, 1=bottom/low energy), isBonding, isDegenerate}
+    const earlyLevels = [
+        { name: 'σ*₂p',  yFrac: 0.05, isBonding: false, degen: 1 },
+        { name: 'π*₂p',  yFrac: 0.22, isBonding: false, degen: 2 },
+        { name: 'σ₂p',   yFrac: 0.42, isBonding: true,  degen: 1 },
+        { name: 'π₂p',   yFrac: 0.52, isBonding: true,  degen: 2 },
+        { name: 'σ*₂s',  yFrac: 0.72, isBonding: false, degen: 1 },
+        { name: 'σ₂s',   yFrac: 0.88, isBonding: true,  degen: 1 },
+    ];
+    const lateLevels = [
+        { name: 'σ*₂p',  yFrac: 0.05, isBonding: false, degen: 1 },
+        { name: 'π*₂p',  yFrac: 0.18, isBonding: false, degen: 2 },
+        { name: 'π₂p',   yFrac: 0.42, isBonding: true,  degen: 2 },
+        { name: 'σ₂p',   yFrac: 0.52, isBonding: true,  degen: 1 },
+        { name: 'σ*₂s',  yFrac: 0.72, isBonding: false, degen: 1 },
+        { name: 'σ₂s',   yFrac: 0.88, isBonding: true,  degen: 1 },
+    ];
+
+    const levels = isLate ? lateLevels : earlyLevels;
+
+    // Electron filling
+    // For early: fill σ2s,σ*2s first (bottom), then π2p×2, σ2p, π*2p×2, σ*2p
+    // Capacities: each non-degen level: 2 electrons; each degen pair: 4 electrons (2 in each)
+    // Fill order (index into levels array, from bottom up):
+    const earlyFillOrder = [5, 4, 3, 2, 1, 0]; // σ2s, σ*2s, π2p(deg2), σ2p, π*2p(deg2), σ*2p
+    const lateFillOrder =  [5, 4, 3, 2, 1, 0]; // σ2s, σ*2s, σ2p, π2p(deg2), π*2p(deg2), σ*2p
+
+    const fillOrder = isLate ? lateFillOrder : earlyFillOrder;
+
+    // Map level index to electron count per level (capacity)
+    const capacity = levels.map(l => l.degen === 2 ? 4 : 2);
+    let remaining = data.electrons;
+    const fillCounts = new Array(levels.length).fill(0);
+    for (let fi of fillOrder) {
+        if (remaining <= 0) break;
+        const fill = Math.min(capacity[fi], remaining);
+        fillCounts[fi] = fill;
+        remaining -= fill;
+    }
+
+    // Draw AO columns
+    const aoX1 = 100, aoX2 = W - 100;
+    // AO levels: 2s (lower) and 2p (upper group)
+    const ao2sY = topY + eRange * 0.88;
+    const ao2pY = topY + eRange * 0.42;
+
+    // Draw AO lines
+    mo2ctx.strokeStyle = C.muted + '99';
+    mo2ctx.lineWidth = 2;
+    [[aoX1, ao2sY], [aoX2, ao2sY], [aoX1, ao2pY], [aoX2, ao2pY]].forEach(([x, y]) => {
+        mo2ctx.beginPath();
+        mo2ctx.moveTo(x - 22, y); mo2ctx.lineTo(x + 22, y);
+        mo2ctx.stroke();
+    });
+
+    mo2ctx.fillStyle = C.muted;
+    mo2ctx.font = '10px Space Mono';
+    mo2ctx.textAlign = 'center';
+    mo2ctx.fillText('2p', aoX1, ao2pY - 8);
+    mo2ctx.fillText('2s', aoX1, ao2sY - 8);
+    mo2ctx.fillText('2p', aoX2, ao2pY - 8);
+    mo2ctx.fillText('2s', aoX2, ao2sY - 8);
+
+    // Atom labels
+    mo2ctx.fillStyle = C.text;
+    mo2ctx.font = '12px Space Mono';
+    mo2ctx.fillText(mo2Mol[0], aoX1, H - 30);
+    mo2ctx.fillText(mo2Mol[0], aoX2, H - 30);
+
+    // Draw MO levels
+    levels.forEach((lv, i) => {
+        const y = topY + lv.yFrac * eRange;
+        const col = lv.isBonding ? C.bonding : C.antibonding;
+        const levelW = lv.degen === 2 ? 80 : 52;
+
+        if (lv.degen === 2) {
+            // Two side-by-side levels
+            const offsets = [-20, 20];
+            offsets.forEach(dx => {
+                mo2ctx.strokeStyle = col;
+                mo2ctx.lineWidth = 2;
+                mo2ctx.beginPath();
+                mo2ctx.moveTo(cx + dx - levelW * 0.25, y);
+                mo2ctx.lineTo(cx + dx + levelW * 0.25, y);
+                mo2ctx.stroke();
+            });
+        } else {
+            mo2ctx.strokeStyle = col;
+            mo2ctx.lineWidth = 2;
+            mo2ctx.beginPath();
+            mo2ctx.moveTo(cx - levelW / 2, y);
+            mo2ctx.lineTo(cx + levelW / 2, y);
+            mo2ctx.stroke();
+        }
+
+        // Label
+        mo2ctx.fillStyle = col;
+        mo2ctx.font = '10px Space Mono';
+        mo2ctx.textAlign = 'right';
+        mo2ctx.fillText(lv.name, cx - levelW / 2 - 6, y + 4);
+
+        // Draw electrons
+        const fc = fillCounts[i];
+        if (lv.degen === 2) {
+            // Each sub-level holds up to 2
+            const left = Math.min(2, fc);
+            const right = Math.max(0, fc - 2);
+            const drawElec = (x, y2, n, isHund) => {
+                if (n === 0) return;
+                if (n === 1) {
+                    mo2ctx.fillStyle = C.accentL;
+                    mo2ctx.beginPath(); mo2ctx.arc(x, y2 - 9, 4, 0, Math.PI*2); mo2ctx.fill();
+                    mo2ctx.fillStyle = isHund ? C.orange : C.accentL;
+                    mo2ctx.font = '9px Space Mono'; mo2ctx.textAlign = 'center';
+                    mo2ctx.fillText('↑', x, y2 - 6);
+                } else if (n === 2) {
+                    mo2ctx.fillStyle = C.accentL;
+                    mo2ctx.beginPath(); mo2ctx.arc(x - 5, y2 - 9, 4, 0, Math.PI*2); mo2ctx.fill();
+                    mo2ctx.beginPath(); mo2ctx.arc(x + 5, y2 - 9, 4, 0, Math.PI*2); mo2ctx.fill();
+                    mo2ctx.fillStyle = C.accentL;
+                    mo2ctx.font = '9px Space Mono'; mo2ctx.textAlign = 'center';
+                    mo2ctx.fillText('↑↓', x, y2 - 6);
+                }
+            };
+            // Hund's rule: if fc=2 and it's a degenerate pair, each gets 1 (parallel spins)
+            const hund = (fc === 2);
+            drawElec(cx - 20, y, left, hund);
+            drawElec(cx + 20, y, right, hund);
+        } else {
+            if (fc >= 1) {
+                mo2ctx.fillStyle = C.accentL;
+                mo2ctx.beginPath(); mo2ctx.arc(cx, y - 9, 4, 0, Math.PI*2); mo2ctx.fill();
+                mo2ctx.fillStyle = C.accentL;
+                mo2ctx.font = '9px Space Mono'; mo2ctx.textAlign = 'center';
+                if (fc === 2) mo2ctx.fillText('↑↓', cx, y - 6);
+                else mo2ctx.fillText('↑', cx, y - 6);
+            }
+        }
+
+        // Connecting dashed lines to AO columns
+        const aoTargetY = (lv.name.includes('2s')) ? ao2sY : ao2pY;
+        mo2ctx.strokeStyle = C.dim;
+        mo2ctx.lineWidth = 1;
+        mo2ctx.setLineDash([3, 5]);
+        const lvEdgeL = cx - (lv.degen === 2 ? levelW*0.5+20 : levelW/2);
+        const lvEdgeR = cx + (lv.degen === 2 ? levelW*0.5+20 : levelW/2);
+        mo2ctx.beginPath();
+        mo2ctx.moveTo(lvEdgeL, y); mo2ctx.lineTo(aoX1 + 22, aoTargetY);
+        mo2ctx.moveTo(lvEdgeR, y); mo2ctx.lineTo(aoX2 - 22, aoTargetY);
+        mo2ctx.stroke();
+        mo2ctx.setLineDash([]);
+    });
+
+    // Bond order display
+    const bo = data.bo;
+    document.getElementById('mo2-bo-formula').textContent = `(${data.bonding} - ${data.antibonding}) / 2`;
+    document.getElementById('mo2-bo-val').textContent = bo;
+    document.getElementById('mo2-mag').textContent = data.paramag
+        ? '⚡ PARAMAGNETIC — unpaired electrons'
+        : '✓ Diamagnetic';
+    document.getElementById('mo2-mag').style.color = data.paramag ? C.orange : C.muted;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 3 — HOMO-LUMO Gap
+// ═══════════════════════════════════════════════════════════
+const mo3Canvas = document.getElementById('mo3-canvas');
+const W3 = 900, H3 = 360;
+const mo3ctx = setupHDPI(mo3Canvas, W3, H3);
+
+// Approximate HOMO-LUMO gaps (in eV, relative units for display)
+const HOMO_LUMO = {
+    Li2: { gap: 1.8,  homo: 'σ2s',   lumo: 'σ*2s',   react: 'Moderate',    analog: 'alkali metals' },
+    B2:  { gap: 2.1,  homo: 'π2p',   lumo: 'σ2p',    react: 'Reactive',    analog: 'boron compounds' },
+    C2:  { gap: 1.6,  homo: 'π2p',   lumo: 'σ2p',    react: 'Very reactive', analog: 'acetylene-like' },
+    N2:  { gap: 10.8, homo: 'σ2p',   lumo: 'π*2p',   react: 'Very stable',  analog: 'noble gas analog' },
+    O2:  { gap: 1.0,  homo: 'π*2p',  lumo: 'σ*2p',   react: 'Reactive',    analog: 'oxidant, singlet O₂' },
+    F2:  { gap: 3.1,  homo: 'π*2p',  lumo: 'σ*2p',   react: 'Moderate',    analog: 'halogen reactivity' }
+};
+
+let mo3Mol = 'Li2';
+
+function mo3Set(mol) {
+    mo3Mol = mol;
+    ['Li2','B2','C2','N2','O2','F2'].forEach(m => {
+        document.getElementById('mo3-' + m).classList.toggle('active', m === mol);
+    });
+    mo3Draw();
+}
+
+function mo3Draw() {
+    const W = W3, H = H3;
+    mo3ctx.fillStyle = C.bg;
+    mo3ctx.fillRect(0, 0, W, H);
+
+    const d = HOMO_LUMO[mo3Mol];
+    const maxGap = 12;
+    const normGap = Math.min(d.gap / maxGap, 1);
+
+    // Color: small gap = red (reactive), large gap = blue (inert)
+    function gapColor(norm) {
+        // 0 = #f87171 (red), 0.5 = #c084fc (violet), 1 = #22d3ee (cyan/stable)
+        const r = Math.round(248 * (1-norm) + 34 * norm);
+        const g = Math.round(113 * (1-norm) + 211 * norm);
+        const b = Math.round(113 * (1-norm) + 238 * norm);
+        return `rgb(${r},${g},${b})`;
+    }
+    const gCol = gapColor(normGap);
+
+    // Layout: centered energy diagram
+    const cx = W * 0.42;
+    const diagW = 120;
+    const topY = 60, bottomY = H - 60;
+    const eRange = bottomY - topY;
+
+    // Place HOMO and LUMO
+    const homoYFrac = 0.72;
+    const lumoYFrac = homoYFrac - normGap * 0.6 - 0.05;
+    const homoY = topY + homoYFrac * eRange;
+    const lumoY = topY + lumoYFrac * eRange;
+
+    // Gap fill
+    const gapGrad = mo3ctx.createLinearGradient(cx, lumoY, cx, homoY);
+    gapGrad.addColorStop(0, gCol + '33');
+    gapGrad.addColorStop(0.5, gCol + '11');
+    gapGrad.addColorStop(1, gCol + '33');
+    mo3ctx.fillStyle = gapGrad;
+    mo3ctx.fillRect(cx - diagW/2, lumoY, diagW, homoY - lumoY);
+
+    // Gap brace
+    mo3ctx.strokeStyle = gCol + 'aa';
+    mo3ctx.lineWidth = 1;
+    mo3ctx.beginPath();
+    mo3ctx.moveTo(cx + diagW/2 + 10, lumoY);
+    mo3ctx.lineTo(cx + diagW/2 + 18, lumoY);
+    mo3ctx.lineTo(cx + diagW/2 + 18, homoY);
+    mo3ctx.lineTo(cx + diagW/2 + 10, homoY);
+    mo3ctx.stroke();
+
+    // Gap label
+    mo3ctx.fillStyle = gCol;
+    mo3ctx.font = '11px Space Mono';
+    mo3ctx.textAlign = 'left';
+    mo3ctx.fillText(d.gap.toFixed(1) + ' eV', cx + diagW/2 + 24, (lumoY + homoY)/2 + 4);
+
+    // HOMO level
+    mo3ctx.strokeStyle = C.accentL;
+    mo3ctx.lineWidth = 3;
+    mo3ctx.beginPath();
+    mo3ctx.moveTo(cx - diagW/2, homoY); mo3ctx.lineTo(cx + diagW/2, homoY);
+    mo3ctx.stroke();
+    mo3ctx.shadowBlur = 10; mo3ctx.shadowColor = C.accentL;
+    mo3ctx.beginPath();
+    mo3ctx.moveTo(cx - diagW/2, homoY); mo3ctx.lineTo(cx + diagW/2, homoY);
+    mo3ctx.stroke();
+    mo3ctx.shadowBlur = 0;
+
+    // Electrons on HOMO
+    mo3ctx.fillStyle = C.accentL;
+    mo3ctx.font = '13px Space Mono'; mo3ctx.textAlign = 'center';
+    mo3ctx.fillText('↑↓', cx, homoY - 8);
+    mo3ctx.fillStyle = C.accentL;
+    mo3ctx.font = '10px Space Mono';
+    mo3ctx.textAlign = 'right';
+    mo3ctx.fillText('HOMO: ' + d.homo, cx - diagW/2 - 8, homoY + 4);
+
+    // LUMO level
+    mo3ctx.strokeStyle = C.yellow;
+    mo3ctx.lineWidth = 2.5;
+    mo3ctx.setLineDash([8, 5]);
+    mo3ctx.beginPath();
+    mo3ctx.moveTo(cx - diagW/2, lumoY); mo3ctx.lineTo(cx + diagW/2, lumoY);
+    mo3ctx.stroke();
+    mo3ctx.setLineDash([]);
+    mo3ctx.fillStyle = C.yellow;
+    mo3ctx.font = '10px Space Mono';
+    mo3ctx.textAlign = 'right';
+    mo3ctx.fillText('LUMO: ' + d.lumo, cx - diagW/2 - 8, lumoY + 4);
+
+    // Energy axis
+    mo3ctx.strokeStyle = C.dim;
+    mo3ctx.lineWidth = 1;
+    mo3ctx.beginPath();
+    mo3ctx.moveTo(cx - diagW/2 - 48, bottomY);
+    mo3ctx.lineTo(cx - diagW/2 - 48, topY + 10);
+    mo3ctx.stroke();
+    mo3ctx.save();
+    mo3ctx.translate(cx - diagW/2 - 56, (topY + bottomY)/2);
+    mo3ctx.rotate(-Math.PI/2);
+    mo3ctx.fillStyle = C.muted;
+    mo3ctx.font = '10px Space Mono';
+    mo3ctx.textAlign = 'center';
+    mo3ctx.fillText('Energy', 0, 0);
+    mo3ctx.restore();
+
+    // Reactivity bar
+    const barX = W * 0.68, barTop = topY + 20, barH = eRange - 20;
+    const barW = 28;
+
+    // Background bar
+    const barGrad = mo3ctx.createLinearGradient(barX, barTop, barX, barTop + barH);
+    barGrad.addColorStop(0, '#22d3ee33');
+    barGrad.addColorStop(0.5, '#c084fc22');
+    barGrad.addColorStop(1, '#f8717133');
+    mo3ctx.fillStyle = barGrad;
+    mo3ctx.fillRect(barX, barTop, barW, barH);
+    mo3ctx.strokeStyle = C.dim;
+    mo3ctx.lineWidth = 1;
+    mo3ctx.strokeRect(barX, barTop, barW, barH);
+
+    // Fill up to reactivity level (inversely proportional to gap)
+    const fillH = (1 - normGap) * barH;
+    const fillY = barTop + barH - fillH;
+    const fillGrad = mo3ctx.createLinearGradient(barX, fillY, barX, barTop + barH);
+    fillGrad.addColorStop(0, gCol + '99');
+    fillGrad.addColorStop(1, gCol + 'cc');
+    mo3ctx.fillStyle = fillGrad;
+    mo3ctx.fillRect(barX, fillY, barW, fillH);
+
+    // Labels
+    mo3ctx.fillStyle = C.muted;
+    mo3ctx.font = '9px Space Mono';
+    mo3ctx.textAlign = 'center';
+    mo3ctx.fillText('REACTIVE', barX + barW/2, barTop + barH + 14);
+    mo3ctx.fillText('STABLE', barX + barW/2, barTop - 6);
+
+    // Pointer on bar
+    const ptrY = fillY;
+    mo3ctx.strokeStyle = gCol;
+    mo3ctx.lineWidth = 2;
+    mo3ctx.beginPath();
+    mo3ctx.moveTo(barX - 5, ptrY); mo3ctx.lineTo(barX + barW + 5, ptrY);
+    mo3ctx.stroke();
+
+    // Molecule label
+    mo3ctx.fillStyle = C.text;
+    mo3ctx.font = 'bold 22px Space Mono';
+    mo3ctx.textAlign = 'center';
+    const submap = {'2':'₂','*':'*'};
+    mo3ctx.fillText(mo3Mol, cx, H - 22);
+
+    // Readouts
+    document.getElementById('mo3-gap').textContent = d.gap.toFixed(1) + ' eV';
+    document.getElementById('mo3-gap').style.color = gCol;
+    document.getElementById('mo3-react').textContent = d.react;
+    document.getElementById('mo3-react').style.color = gCol;
+    document.getElementById('mo3-analog').textContent = d.analog;
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+    mo1Draw(); // starts its own rAF loop
+    mo2Draw();
+    mo3Draw();
+    setTimeout(() => {
+        if (window.renderMathInElement) {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        }
+    }, 300);
+});
+</script>
+</body>
+</html>

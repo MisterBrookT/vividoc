@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shannon Entropy</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #03080a;
+            --card: #071210;
+            --surface: #0d1f1a;
+            --accent: #22c55e;
+            --accent2: #16a34a;
+            --red: #f87171;
+            --amber: #fbbf24;
+            --text: #e0f0e8;
+            --muted: #4a7a60;
+            --dim: #2a4a38;
+            --border: #0f2820;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.75;
+            padding: 0 0 80px;
+        }
+        header {
+            text-align: center;
+            padding: 60px 40px 48px;
+            background: radial-gradient(ellipse at 50% 0%, #071f14 0%, var(--bg) 70%);
+            border-bottom: 1px solid var(--border);
+        }
+        header .tag {
+            display: inline-block;
+            font-size: 10px; letter-spacing: 0.2em; color: var(--accent);
+            text-transform: uppercase; border: 1px solid rgba(34,197,94,0.25);
+            padding: 3px 12px; border-radius: 20px; margin-bottom: 20px;
+        }
+        h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 3rem; font-weight: 600; color: var(--text);
+            line-height: 1.15; margin-bottom: 16px;
+        }
+        h1 em { color: var(--accent); font-style: italic; }
+        header p { color: var(--muted); font-size: 13px; max-width: 560px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+        section { max-width: 900px; margin: 60px auto 0; padding: 0 32px; }
+        .section-label {
+            font-size: 10px; letter-spacing: 0.2em; color: var(--accent);
+            text-transform: uppercase; margin-bottom: 20px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        h2 { font-family: 'Inter', sans-serif; font-size: 1.65rem; font-weight: 600; margin-bottom: 14px; color: var(--text); }
+        .prose {
+            font-size: 13px; color: var(--muted); line-height: 1.9;
+            margin-bottom: 16px; font-family: 'Inter', sans-serif;
+        }
+        .prose strong { color: var(--text); }
+        .prose em { color: var(--accent); font-style: normal; }
+        .math-block {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); padding: 14px 20px;
+            border-radius: 4px; margin: 18px 0; font-size: 13px; overflow-x: auto;
+        }
+        .canvas-wrap {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden; margin: 24px 0;
+        }
+        canvas { display: block; width: 100%; }
+        .controls {
+            display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+            padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border);
+        }
+        .btn {
+            padding: 6px 14px; border: 1px solid var(--dim); background: transparent;
+            color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            border-radius: 3px; cursor: pointer; transition: all 0.15s;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.accent { background: var(--accent); color: #03080a; border-color: var(--accent); font-weight: 600; }
+        label { font-size: 11px; color: var(--muted); }
+        input[type=range] { width: 140px; accent-color: var(--accent); cursor: pointer; }
+        .val { font-size: 12px; color: var(--accent); min-width: 40px; font-family: 'JetBrains Mono', monospace; }
+        .stats-bar {
+            display: flex; gap: 24px; flex-wrap: wrap;
+            padding: 10px 16px; border-top: 1px solid var(--border);
+            font-size: 11px; color: var(--muted); background: var(--card);
+        }
+        .stat-val { color: var(--accent); }
+        .legend {
+            display: flex; gap: 16px; flex-wrap: wrap;
+            padding: 8px 16px; border-top: 1px solid var(--border); font-size: 11px;
+        }
+        .li { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+        .sq { width: 10px; height: 10px; border-radius: 2px; }
+        .infobox {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 16px 20px; margin: 16px 0;
+            font-size: 12px; color: var(--muted); line-height: 1.8;
+            font-family: 'Inter', sans-serif;
+        }
+        .infobox strong { color: var(--text); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="tag">Information Theory · Shannon 1948</div>
+    <h1>Shannon <em>Entropy</em></h1>
+    <p>A mathematical measure of uncertainty, surprise, and the fundamental limits of information compression. Every bit you transmit or store is governed by this single elegant quantity.</p>
+</header>
+
+<!-- Section 1 -->
+<section>
+    <div class="section-label">01 — Surprise and Information Content</div>
+    <h2>What Does It Mean to Learn Something?</h2>
+
+    <div class="prose">
+        In 1948, Claude Shannon asked a deceptively simple question: how do you measure <strong>information</strong>? His answer reshaped communication, cryptography, and our understanding of computation. The key insight was that information is the same thing as <em>surprise</em>. If you already know something will happen, learning it happens tells you nothing. If an unlikely event occurs, you've learned a great deal.
+    </div>
+    <div class="prose">
+        Formally, if an event has probability \(p\), the <strong>information content</strong> (or self-information) of that event is \(I = -\log_2 p\) bits. This formula is not arbitrary — it's the unique function satisfying three axioms: information should be non-negative, a certain event (\(p=1\)) carries zero information, and information from independent events should add. Logarithms are the only functions satisfying all three.
+    </div>
+    <div class="prose">
+        Consider a fair coin: each outcome has \(p = 0.5\), so \(I = -\log_2(0.5) = 1\) bit. A loaded coin with \(p = 0.99\) for heads carries only \(I = -\log_2(0.99) \approx 0.014\) bits when heads occurs — you expected it! But tails, at \(p = 0.01\), carries \(I = -\log_2(0.01) \approx 6.6\) bits. Rare events are highly informative.
+    </div>
+    <div class="prose">
+        <strong>Entropy</strong> \(H\) is the <em>expected</em> information content — the average surprise across all possible outcomes. For two outcomes with probabilities \(p\) and \(1-p\): \(H = -p\log_2 p - (1-p)\log_2(1-p)\). This is maximized when \(p = 0.5\) (maximum uncertainty) and collapses to zero when \(p=0\) or \(p=1\) (complete certainty, no surprise).
+    </div>
+
+    <div class="math-block">
+        \[I(x) = -\log_2 p(x) \text{ bits} \qquad H(X) = -\sum_x p(x)\log_2 p(x) = \mathbb{E}[-\log_2 p(X)]\]
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="se1-canvas" height="300"></canvas>
+        <div class="controls">
+            <label>P(A) =</label>
+            <input type="range" id="se1-p" min="1" max="99" value="50"
+                oninput="se1Update()">
+            <span class="val" id="se1-pval">0.50</span>
+            <span style="color:var(--dim);font-size:11px;margin-left:8px;">P(B) = <span id="se1-qval" style="color:var(--accent)">0.50</span></span>
+        </div>
+        <div class="stats-bar">
+            <span>I(A) = <span class="stat-val" id="se1-ia">1.000</span> bits</span>
+            <span>I(B) = <span class="stat-val" id="se1-ib">1.000</span> bits</span>
+            <span>H(X) = <span class="stat-val" id="se1-h">1.000</span> bits</span>
+            <span>max H = <span class="stat-val">1.000</span> bit (at p=0.5)</span>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Why bits?</strong> The base-2 logarithm is conventional because the natural unit of communication is a binary choice: yes/no, 0/1, on/off. In natural units (nats, base \(e\)) or trits (base 3) the formula is identical — only the scale changes. Shannon's genius was realizing that entropy doesn't depend on the physical substrate, only on the probability distribution.
+    </div>
+</section>
+
+<!-- Section 2 -->
+<section>
+    <div class="section-label">02 — Entropy of a Discrete Distribution</div>
+    <h2>Six Symbols, Infinite Possibilities</h2>
+
+    <div class="prose">
+        Real communication alphabets have more than two symbols. Consider a source that emits one of six symbols \(\{s_1, s_2, s_3, s_4, s_5, s_6\}\) with probabilities \(p_1, \ldots, p_6\). The entropy generalizes naturally: \(H = -\sum_{i=1}^6 p_i \log_2 p_i\). This measures the average information per symbol emitted — and crucially, it sets a hard lower bound on how compactly the source can be encoded.
+    </div>
+    <div class="prose">
+        Shannon's <strong>source coding theorem</strong> (1948) states that no lossless encoding scheme can compress a source below its entropy rate, but entropy is always achievable in the limit. If a source emits symbols at rate \(H\) bits/symbol, you need at least \(H\) bits per symbol to represent it faithfully — and you can get arbitrarily close to this bound with sufficiently long block codes.
+    </div>
+    <div class="prose">
+        The maximum entropy for \(n\) symbols is \(\log_2 n\), achieved when all symbols are equally probable. This makes intuitive sense: if every symbol is equally likely, each one is maximally surprising. For 6 symbols, \(\log_2 6 \approx 2.585\) bits. The <em>efficiency</em> \(\eta = H / \log_2 n\) measures how close the distribution is to this maximum. English text has roughly 4.1 bits/letter (out of \(\log_2 26 \approx 4.7\) bits max), giving \(\eta \approx 87\%\).
+    </div>
+    <div class="prose">
+        There is a beautiful connection to Boltzmann's statistical mechanics entropy \(S = k_B \ln W\). Both measure the logarithm of the number of equally-likely microstates. Shannon entropy is Boltzmann entropy in disguise, measured in bits rather than joules per kelvin. The Second Law of Thermodynamics and the impossibility of lossless super-compression are the same idea wearing different clothes.
+    </div>
+
+    <div class="math-block">
+        \[H(X) = -\sum_{i=1}^n p_i \log_2 p_i \leq \log_2 n \quad \text{with equality iff } p_i = \tfrac{1}{n} \;\forall i\]
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="se2-canvas" height="340"></canvas>
+        <div class="controls">
+            <span style="font-size:11px;color:var(--muted);">Drag bar tops to adjust probabilities (auto-normalized)</span>
+            <button class="btn" onclick="se2Reset()">↺ Reset equal</button>
+            <button class="btn" onclick="se2Skew()">→ Skew distribution</button>
+        </div>
+        <div class="stats-bar">
+            <span>H = <span class="stat-val" id="se2-h">2.585</span> bits</span>
+            <span>log₂(6) = <span class="stat-val">2.585</span> bits (max)</span>
+            <span>efficiency = <span class="stat-val" id="se2-eff">100.0</span>%</span>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="sq" style="background:rgba(34,197,94,0.7)"></div> probability pᵢ</div>
+            <div class="li"><div class="sq" style="background:rgba(251,191,36,0.7)"></div> information −log₂(pᵢ)</div>
+            <div class="li"><div class="sq" style="background:rgba(248,113,113,0.5)"></div> max entropy reference</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>English letter entropy:</strong> Claude Shannon famously estimated the entropy of written English at roughly 1–1.5 bits per character (using human subjects to predict the next letter), while a first-order letter model gives about 4.1 bits. The gap reflects the enormous predictive power of linguistic context — knowing the previous few letters tells you a lot about the next one. This gap is precisely what LZ-based compressors exploit.
+    </div>
+</section>
+
+<!-- Section 3 -->
+<section>
+    <div class="section-label">03 — Mutual Information and Channel Efficiency</div>
+    <h2>What Can a Noisy Channel Carry?</h2>
+
+    <div class="prose">
+        So far, entropy has measured uncertainty about a single source. But communication is about <em>two</em> random variables: the input \(X\) and the output \(Y\). The fundamental question is: how much information about \(X\) can we recover from \(Y\) after the channel corrupts it? The answer is <strong>mutual information</strong> \(I(X;Y)\).
+    </div>
+    <div class="prose">
+        The simplest noisy channel is the <strong>Binary Symmetric Channel (BSC)</strong>. Input is a single bit (\(X \in \{0,1\}\)). With probability \(\varepsilon\) the bit flips; with probability \(1-\varepsilon\) it passes through intact. If we input bits with equal probability (\(P(X=0)=0.5\)), then \(H(X) = H(Y) = 1\) bit. The noise introduces conditional entropy \(H(Y|X) = H_b(\varepsilon)\) — the remaining uncertainty in \(Y\) even after knowing \(X\).
+    </div>
+    <div class="prose">
+        Mutual information measures the <em>reduction</em> in uncertainty: \(I(X;Y) = H(Y) - H(Y|X) = 1 - H_b(\varepsilon)\). When \(\varepsilon=0\) (perfect channel), \(I(X;Y) = 1\) bit — you learn \(X\) exactly. When \(\varepsilon=0.5\) (random flipping), \(H_b(0.5)=1\), so \(I(X;Y)=0\) — the channel is pure noise and transmits no information whatsoever.
+    </div>
+    <div class="prose">
+        The <strong>channel capacity</strong> \(C = \max_{p(X)} I(X;Y)\) is the maximum mutual information over all possible input distributions. For the BSC with parameter \(\varepsilon\), \(C = 1 - H_b(\varepsilon)\). Shannon's <em>channel coding theorem</em> (the most profound result in information theory) states that reliable communication at rate \(R < C\) is possible — there exist codes that drive the error probability to zero as block length grows. Above \(C\), error-free communication is <em>impossible</em>, regardless of how clever the encoding.
+    </div>
+    <div class="prose">
+        This theorem told engineers something startling: noise is not a fundamental obstacle to reliable communication, only a limit on <em>rate</em>. Error-correcting codes (Hamming codes, LDPC, Turbo codes) approach the Shannon limit. Modern 5G systems operate within fractions of a dB of capacity.
+    </div>
+
+    <div class="math-block">
+        \[I(X;Y) = H(Y) - H(Y|X) \qquad C = \max_{p(X)} I(X;Y) = 1 - H_b(\varepsilon) \text{ bits/use}\]
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="se3-canvas" height="340"></canvas>
+        <div class="controls">
+            <label>crossover ε =</label>
+            <input type="range" id="se3-eps" min="0" max="500" value="100"
+                oninput="se3Update()">
+            <span class="val" id="se3-epsval">0.200</span>
+        </div>
+        <div class="stats-bar">
+            <span>H(Y|X) = H_b(ε) = <span class="stat-val" id="se3-hyx">0.722</span> bits</span>
+            <span>I(X;Y) = C = <span class="stat-val" id="se3-ixy">0.278</span> bits</span>
+            <span>capacity loss = <span class="stat-val" id="se3-loss">72.2</span>%</span>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Why error-correcting codes work:</strong> Shannon's theorem guarantees existence but doesn't tell you how to build good codes. For 45 years after 1948, the best known codes left a large gap to capacity. Turbo codes (Berrou, 1993) and the LDPC revival (Richardson &amp; Urbanke, 2001) finally bridged it. Today, LDPC codes are used in Wi-Fi (802.11n), DVB-S2 satellite TV, and 5G NR — all operating within 0.1–0.5 dB of Shannon capacity.
+    </div>
+</section>
+
+<script>
+// ─── Section 1: Binary entropy visualization ────────────────────────────────
+const se1Canvas = document.getElementById('se1-canvas');
+const se1Ctx = se1Canvas.getContext('2d');
+
+function se1Resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = se1Canvas.offsetWidth;
+    const h = 300;
+    se1Canvas.width = w * dpr;
+    se1Canvas.height = h * dpr;
+    se1Ctx.scale(dpr, dpr);
+    se1Draw();
+}
+
+function hb(p) {
+    if (p <= 0 || p >= 1) return 0;
+    return -p * Math.log2(p) - (1 - p) * Math.log2(1 - p);
+}
+
+function se1Draw() {
+    const p = parseInt(document.getElementById('se1-p').value) / 100;
+    const q = 1 - p;
+    const ia = p <= 0 ? Infinity : -Math.log2(p);
+    const ib = q <= 0 ? Infinity : -Math.log2(q);
+    const H = hb(p);
+
+    document.getElementById('se1-pval').textContent = p.toFixed(2);
+    document.getElementById('se1-qval').textContent = q.toFixed(2);
+    document.getElementById('se1-ia').textContent = isFinite(ia) ? ia.toFixed(3) : '∞';
+    document.getElementById('se1-ib').textContent = isFinite(ib) ? ib.toFixed(3) : '∞';
+    document.getElementById('se1-h').textContent = H.toFixed(3);
+
+    const W = se1Canvas.offsetWidth;
+    const H_px = 300;
+    const ctx = se1Ctx;
+    ctx.clearRect(0, 0, W, H_px);
+
+    const bg = '#071210';
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H_px);
+
+    const panelW = Math.floor(W / 3) - 16;
+    const panelH = H_px - 40;
+    const pad = 12;
+
+    // Panel 1: Probability bar
+    const x1 = 8;
+    drawPanel(ctx, x1, 20, panelW, panelH, 'P(A) vs P(B)');
+    const barH = panelH - 50;
+    const barY = 50;
+    const barW = panelW - 24;
+    const barX = x1 + 12;
+    ctx.fillStyle = '#22c55e';
+    ctx.fillRect(barX, barY, barW * p, barH);
+    ctx.fillStyle = '#f87171';
+    ctx.fillRect(barX + barW * p, barY, barW * q, barH);
+    ctx.strokeStyle = '#0f2820';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(barX, barY, barW, barH);
+
+    ctx.fillStyle = '#22c55e';
+    ctx.font = '11px JetBrains Mono';
+    if (p > 0.1) {
+        ctx.fillText(`A: ${p.toFixed(2)}`, barX + 4, barY + barH / 2 + 4);
+    }
+    ctx.fillStyle = '#f87171';
+    if (q > 0.1) {
+        ctx.fillText(`B: ${q.toFixed(2)}`, barX + barW * p + 4, barY + barH / 2 + 4);
+    }
+
+    // Panel 2: Information content bars
+    const x2 = x1 + panelW + 16;
+    drawPanel(ctx, x2, 20, panelW, panelH, 'Self-Information');
+    const maxI = 7;
+    const bw = (panelW - 36) / 2;
+    const by = 55;
+    const bh = panelH - 65;
+
+    const iaClamp = Math.min(isFinite(ia) ? ia : maxI, maxI);
+    const ibClamp = Math.min(isFinite(ib) ? ib : maxI, maxI);
+
+    ctx.fillStyle = 'rgba(34,197,94,0.8)';
+    const iaBar = bh * (iaClamp / maxI);
+    ctx.fillRect(x2 + 12, by + bh - iaBar, bw, iaBar);
+    ctx.fillStyle = 'rgba(248,113,113,0.8)';
+    const ibBar = bh * (ibClamp / maxI);
+    ctx.fillRect(x2 + 12 + bw + 8, by + bh - ibBar, bw, ibBar);
+
+    ctx.fillStyle = '#e0f0e8';
+    ctx.font = '10px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(`I(A)`, x2 + 12 + bw / 2, by + bh + 14);
+    ctx.fillText(`${ia <= maxI ? ia.toFixed(2) : '>7'} b`, x2 + 12 + bw / 2, by + bh + 26);
+    ctx.fillText(`I(B)`, x2 + 12 + bw + 8 + bw / 2, by + bh + 14);
+    ctx.fillText(`${ib <= maxI ? ib.toFixed(2) : '>7'} b`, x2 + 12 + bw + 8 + bw / 2, by + bh + 26);
+
+    // Dashed max line (7 bits)
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = '#2a4a38';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x2 + 8, by); ctx.lineTo(x2 + panelW - 8, by); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#2a4a38';
+    ctx.font = '9px JetBrains Mono';
+    ctx.textAlign = 'left';
+    ctx.fillText('7 bits', x2 + panelW - 38, by - 2);
+    ctx.textAlign = 'left';
+
+    // Panel 3: Entropy gauge
+    const x3 = x2 + panelW + 16;
+    drawPanel(ctx, x3, 20, panelW, panelH, 'Entropy H(X)');
+    drawGauge(ctx, x3 + panelW / 2, 20 + panelH * 0.55, Math.min(panelW, panelH) * 0.38, H);
+}
+
+function drawPanel(ctx, x, y, w, h, title) {
+    ctx.fillStyle = '#0d1f1a';
+    roundRect(ctx, x, y, w, h, 6);
+    ctx.fill();
+    ctx.strokeStyle = '#0f2820';
+    ctx.lineWidth = 1;
+    roundRect(ctx, x, y, w, h, 6);
+    ctx.stroke();
+    ctx.fillStyle = '#4a7a60';
+    ctx.font = '10px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(title, x + w / 2, y + 16);
+    ctx.textAlign = 'left';
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function drawGauge(ctx, cx, cy, r, H) {
+    // Semicircle gauge: 0 to 1 bit, left = 0, right = 1
+    const startAngle = Math.PI;
+    const endAngle = 0;
+
+    // Background arc
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.strokeStyle = '#1a3028';
+    ctx.lineWidth = 14;
+    ctx.stroke();
+
+    // Value arc
+    const fillEnd = Math.PI + H * Math.PI; // H in [0,1], maps to [π, 2π]
+    if (H > 0) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, startAngle, fillEnd);
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 14;
+        ctx.stroke();
+    }
+
+    // Tick marks
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const a = Math.PI + (i / 4) * Math.PI;
+        const inner = r - 20;
+        const outer = r + 2;
+        ctx.strokeStyle = '#2a4a38';
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
+        ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
+        ctx.stroke();
+        ctx.fillStyle = '#4a7a60';
+        ctx.font = '9px JetBrains Mono';
+        ctx.textAlign = 'center';
+        const labelR = r - 30;
+        ctx.fillText((i / 4).toFixed(2), cx + Math.cos(a) * labelR, cy + Math.sin(a) * labelR + 3);
+    }
+
+    // Needle
+    const needleAngle = Math.PI + H * Math.PI;
+    ctx.strokeStyle = '#e0f0e8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(needleAngle) * (r - 16), cy + Math.sin(needleAngle) * (r - 16));
+    ctx.stroke();
+
+    // Center dot
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = '#e0f0e8';
+    ctx.font = 'bold 14px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(`H = ${H.toFixed(3)} bits`, cx, cy + r * 0.35);
+    ctx.fillStyle = '#4a7a60';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText('0                    1 bit', cx, cy + r * 0.55);
+    ctx.textAlign = 'left';
+}
+
+function se1Update() { se1Draw(); }
+
+// ─── Section 2: 6-symbol draggable bar chart ──────────────────────────────
+const se2Canvas = document.getElementById('se2-canvas');
+const se2Ctx = se2Canvas.getContext('2d');
+let se2Probs = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6];
+let se2Dragging = -1;
+let se2LastY = 0;
+const se2Labels = ['s₁', 's₂', 's₃', 's₄', 's₅', 's₆'];
+const se2Colors = ['#22c55e', '#16a34a', '#15803d', '#166534', '#14532d', '#0f3d22'];
+const se2InfoColors = ['rgba(251,191,36,0.75)', 'rgba(251,191,36,0.65)', 'rgba(251,191,36,0.55)',
+                       'rgba(251,191,36,0.45)', 'rgba(251,191,36,0.35)', 'rgba(251,191,36,0.25)'];
+
+function se2Resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = se2Canvas.offsetWidth;
+    se2Canvas.width = w * dpr;
+    se2Canvas.height = 340 * dpr;
+    se2Ctx.scale(dpr, dpr);
+    se2Draw();
+}
+
+function se2Entropy() {
+    return se2Probs.reduce((acc, p) => acc + (p > 0 ? -p * Math.log2(p) : 0), 0);
+}
+
+function se2Draw() {
+    const W = se2Canvas.offsetWidth;
+    const H = 340;
+    const ctx = se2Ctx;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#071210';
+    ctx.fillRect(0, 0, W, H);
+
+    const n = 6;
+    const rightW = 160;
+    const chartW = W - rightW - 24;
+    const barW = Math.floor((chartW - 20) / n) - 8;
+    const chartH = H - 60;
+    const baseY = chartH + 20;
+    const maxBarH = chartH - 30;
+    const maxInfo = 3.5; // max info content for bar scale
+
+    // Draw the max entropy reference line
+    const maxH = Math.log2(n);
+    const refY = baseY - maxBarH * (1 / 1); // just use full height for probs
+    // Draw horizontal entropy reference line in right panel later
+
+    for (let i = 0; i < n; i++) {
+        const p = se2Probs[i];
+        const info = p > 0 ? -Math.log2(p) : 0;
+        const barX = 12 + i * (barW + 8);
+        const probBarH = maxBarH * p * n; // scaled so uniform = full height (prob = 1/n)
+        const infoBarH = Math.min(maxBarH, maxBarH * (info / maxInfo));
+
+        // Probability bar (green)
+        ctx.fillStyle = se2Colors[i];
+        const probH = Math.max(2, Math.min(maxBarH, maxBarH * p / (1)));
+        // Use max 100% = p=1
+        const scaledProbH = maxBarH * p;
+        ctx.fillRect(barX, baseY - scaledProbH, barW, scaledProbH);
+
+        // Information overlay (amber)
+        ctx.fillStyle = se2InfoColors[i < se2InfoColors.length ? i : 0];
+        const scaledInfoH = Math.min(maxBarH, maxBarH * (info / maxInfo));
+        ctx.fillRect(barX, baseY - scaledInfoH, barW * 0.4, scaledInfoH);
+
+        // Label
+        ctx.fillStyle = '#e0f0e8';
+        ctx.font = '11px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText(se2Labels[i], barX + barW / 2, baseY + 16);
+        ctx.fillStyle = '#4a7a60';
+        ctx.font = '9px JetBrains Mono';
+        ctx.fillText(p.toFixed(3), barX + barW / 2, baseY + 28);
+
+        // Drag handle indicator
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(barX + barW / 2 - 4, baseY - scaledProbH - 4, 8, 4);
+    }
+
+    // Grid lines
+    ctx.setLineDash([3, 4]);
+    ctx.strokeStyle = '#0f2820';
+    ctx.lineWidth = 1;
+    for (let v = 0.1; v <= 0.9; v += 0.1) {
+        const y = baseY - maxBarH * v;
+        ctx.beginPath();
+        ctx.moveTo(12, y); ctx.lineTo(12 + n * (barW + 8), y);
+        ctx.stroke();
+        ctx.fillStyle = '#2a4a38';
+        ctx.font = '8px JetBrains Mono';
+        ctx.textAlign = 'left';
+        ctx.fillText(v.toFixed(1), 12 + n * (barW + 8) + 4, y + 3);
+    }
+    ctx.setLineDash([]);
+
+    // Right panel: entropy display
+    const rx = W - rightW + 8;
+    ctx.fillStyle = '#0d1f1a';
+    roundRect(ctx, rx, 16, rightW - 16, H - 32, 6);
+    ctx.fill();
+    ctx.strokeStyle = '#0f2820';
+    ctx.lineWidth = 1;
+    roundRect(ctx, rx, 16, rightW - 16, H - 32, 6);
+    ctx.stroke();
+
+    const H_val = se2Entropy();
+    const efficiency = (H_val / maxH * 100);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#4a7a60';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText('ENTROPY', rx + (rightW - 16) / 2, 36);
+
+    ctx.fillStyle = '#22c55e';
+    ctx.font = 'bold 22px JetBrains Mono';
+    ctx.fillText(H_val.toFixed(3), rx + (rightW - 16) / 2, 68);
+
+    ctx.fillStyle = '#4a7a60';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText('bits / symbol', rx + (rightW - 16) / 2, 82);
+
+    // Efficiency bar
+    const ebY = 100;
+    const ebH = 14;
+    const ebW = rightW - 36;
+    ctx.fillStyle = '#0f2820';
+    ctx.fillRect(rx + 8, ebY, ebW, ebH);
+    ctx.fillStyle = efficiency > 75 ? '#22c55e' : efficiency > 50 ? '#fbbf24' : '#f87171';
+    ctx.fillRect(rx + 8, ebY, ebW * (efficiency / 100), ebH);
+    ctx.fillStyle = '#e0f0e8';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText(`efficiency: ${efficiency.toFixed(1)}%`, rx + (rightW - 16) / 2, ebY + ebH + 12);
+
+    // Max entropy reference
+    ctx.fillStyle = '#2a4a38';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText(`max = log₂(6)`, rx + (rightW - 16) / 2, ebY + ebH + 28);
+    ctx.fillStyle = '#f87171';
+    ctx.fillText(`= ${maxH.toFixed(3)} bits`, rx + (rightW - 16) / 2, ebY + ebH + 42);
+
+    // Per-symbol info display
+    ctx.fillStyle = '#4a7a60';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText('–log₂(pᵢ):', rx + (rightW - 16) / 2, ebY + ebH + 60);
+    for (let i = 0; i < n; i++) {
+        const info = se2Probs[i] > 0 ? -Math.log2(se2Probs[i]) : Infinity;
+        ctx.fillStyle = '#4a7a60';
+        ctx.font = '9px JetBrains Mono';
+        const row = i < 3 ? i : i - 3;
+        const col = i < 3 ? 0 : 1;
+        const lx = rx + 10 + col * 58;
+        const ly = ebY + ebH + 75 + row * 16;
+        ctx.textAlign = 'left';
+        ctx.fillText(`${se2Labels[i]}: ${isFinite(info) ? info.toFixed(2) : '∞'}`, lx, ly);
+    }
+
+    // Stats update
+    document.getElementById('se2-h').textContent = H_val.toFixed(3);
+    document.getElementById('se2-eff').textContent = efficiency.toFixed(1);
+
+    ctx.textAlign = 'left';
+}
+
+function se2GetBarX(i) {
+    const barW = Math.floor((se2Canvas.offsetWidth - 184) / 6) - 8;
+    return 12 + i * (barW + 8) + barW / 2;
+}
+
+function se2GetBarTop(i) {
+    const maxBarH = 340 - 60 - 30;
+    const baseY = 340 - 40;
+    return baseY - maxBarH * se2Probs[i];
+}
+
+se2Canvas.addEventListener('mousedown', (e) => {
+    const rect = se2Canvas.getBoundingClientRect();
+    const scaleX = se2Canvas.offsetWidth / rect.width;
+    const scaleY = se2Canvas.offsetHeight / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+    const n = 6;
+    const barW = Math.floor((se2Canvas.offsetWidth - 184) / n) - 8;
+    for (let i = 0; i < n; i++) {
+        const bx = 12 + i * (barW + 8);
+        if (mx >= bx && mx <= bx + barW) {
+            se2Dragging = i;
+            se2LastY = my;
+            break;
+        }
+    }
+});
+
+se2Canvas.addEventListener('mousemove', (e) => {
+    if (se2Dragging < 0) return;
+    const rect = se2Canvas.getBoundingClientRect();
+    const scaleY = se2Canvas.offsetHeight / rect.height;
+    const my = (e.clientY - rect.top) * scaleY;
+    const dy = se2LastY - my;
+    se2LastY = my;
+    const maxBarH = 340 - 60 - 30;
+    const delta = dy / maxBarH;
+    se2Probs[se2Dragging] = Math.max(0.005, se2Probs[se2Dragging] + delta);
+    // Normalize
+    const sum = se2Probs.reduce((a, b) => a + b, 0);
+    se2Probs = se2Probs.map(p => p / sum);
+    se2Draw();
+});
+
+se2Canvas.addEventListener('mouseup', () => { se2Dragging = -1; });
+se2Canvas.addEventListener('mouseleave', () => { se2Dragging = -1; });
+
+// Touch support
+se2Canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = se2Canvas.getBoundingClientRect();
+    const mx = touch.clientX - rect.left;
+    const my = touch.clientY - rect.top;
+    const n = 6;
+    const barW = Math.floor((se2Canvas.offsetWidth - 184) / n) - 8;
+    for (let i = 0; i < n; i++) {
+        const bx = 12 + i * (barW + 8);
+        if (mx >= bx && mx <= bx + barW) {
+            se2Dragging = i;
+            se2LastY = my;
+            break;
+        }
+    }
+}, { passive: false });
+
+se2Canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (se2Dragging < 0) return;
+    const touch = e.touches[0];
+    const rect = se2Canvas.getBoundingClientRect();
+    const my = touch.clientY - rect.top;
+    const dy = se2LastY - my;
+    se2LastY = my;
+    const maxBarH = 340 - 60 - 30;
+    const delta = dy / maxBarH;
+    se2Probs[se2Dragging] = Math.max(0.005, se2Probs[se2Dragging] + delta);
+    const sum = se2Probs.reduce((a, b) => a + b, 0);
+    se2Probs = se2Probs.map(p => p / sum);
+    se2Draw();
+}, { passive: false });
+
+se2Canvas.addEventListener('touchend', () => { se2Dragging = -1; });
+
+function se2Reset() {
+    se2Probs = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6];
+    se2Draw();
+}
+
+function se2Skew() {
+    se2Probs = [0.4, 0.25, 0.15, 0.1, 0.07, 0.03];
+    const s = se2Probs.reduce((a, b) => a + b, 0);
+    se2Probs = se2Probs.map(p => p / s);
+    se2Draw();
+}
+
+// ─── Section 3: BSC channel diagram + Venn + capacity bar ─────────────────
+const se3Canvas = document.getElementById('se3-canvas');
+const se3Ctx = se3Canvas.getContext('2d');
+
+function se3Resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = se3Canvas.offsetWidth;
+    se3Canvas.width = w * dpr;
+    se3Canvas.height = 340 * dpr;
+    se3Ctx.scale(dpr, dpr);
+    se3Draw();
+}
+
+function se3Draw() {
+    const eps = parseInt(document.getElementById('se3-eps').value) / 1000;
+    document.getElementById('se3-epsval').textContent = eps.toFixed(3);
+    const Hyx = hb(eps);
+    const Ixy = Math.max(0, 1 - Hyx);
+
+    document.getElementById('se3-hyx').textContent = Hyx.toFixed(3);
+    document.getElementById('se3-ixy').textContent = Ixy.toFixed(3);
+    document.getElementById('se3-loss').textContent = (Hyx * 100).toFixed(1);
+
+    const W = se3Canvas.offsetWidth;
+    const H = 340;
+    const ctx = se3Ctx;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#071210';
+    ctx.fillRect(0, 0, W, H);
+
+    const col1W = Math.floor(W * 0.35);
+    const col2W = Math.floor(W * 0.30);
+    const col3W = W - col1W - col2W;
+
+    // Panel 1: Channel diagram
+    const nodeR = 22;
+    const leftX = col1W * 0.28;
+    const rightX = col1W * 0.72;
+    const y0 = H * 0.3;
+    const y1 = H * 0.7;
+
+    // Draw nodes
+    const nodes = [
+        { x: leftX, y: y0, label: '0', side: 'in' },
+        { x: leftX, y: y1, label: '1', side: 'in' },
+        { x: rightX, y: y0, label: '0', side: 'out' },
+        { x: rightX, y: y1, label: '1', side: 'out' },
+    ];
+
+    // Correct transitions (non-crossing): 0→0, 1→1
+    const alpha = 0.3 + 0.7 * (1 - eps);
+    ctx.strokeStyle = `rgba(34,197,94,${alpha})`;
+    ctx.lineWidth = 2 + 2 * (1 - eps);
+    drawArrow(ctx, leftX + nodeR, y0, rightX - nodeR, y0);
+    drawArrow(ctx, leftX + nodeR, y1, rightX - nodeR, y1);
+
+    // Cross transitions: 0→1, 1→0
+    const alpha2 = 0.1 + 0.8 * eps;
+    ctx.strokeStyle = `rgba(248,113,113,${alpha2})`;
+    ctx.lineWidth = 0.5 + 3 * eps;
+    drawArrow(ctx, leftX + nodeR, y0, rightX - nodeR, y1);
+    drawArrow(ctx, leftX + nodeR, y1, rightX - nodeR, y0);
+
+    // Labels on arrows
+    ctx.fillStyle = '#22c55e';
+    ctx.font = '10px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(`1−ε=${(1 - eps).toFixed(2)}`, (leftX + rightX) / 2, y0 - 10);
+    ctx.fillStyle = '#f87171';
+    ctx.fillText(`ε=${eps.toFixed(3)}`, (leftX + rightX) / 2 - 10, (y0 + y1) / 2);
+
+    // Nodes
+    for (const n of nodes) {
+        ctx.fillStyle = '#0d1f1a';
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, nodeR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = n.side === 'in' ? '#22c55e' : '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = '#e0f0e8';
+        ctx.font = 'bold 14px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.label, n.x, n.y + 5);
+    }
+    ctx.fillStyle = '#4a7a60';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText('X (input)', leftX, y0 - nodeR - 14);
+    ctx.fillText('Y (output)', rightX, y0 - nodeR - 14);
+
+    // Panel 2: Venn diagram
+    const vx = col1W + col2W / 2;
+    const vy = H / 2;
+    const vr = Math.min(col2W, H) * 0.28;
+    const overlap = Ixy * 0.85;
+    const separation = vr * (1 - overlap);
+
+    const cx1 = vx - separation * 0.5;
+    const cx2 = vx + separation * 0.5;
+
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath(); ctx.arc(cx1, vy, vr, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath(); ctx.arc(cx2, vy, vr, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx1, vy, vr, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.beginPath(); ctx.arc(cx2, vy, vr, 0, Math.PI * 2); ctx.stroke();
+
+    ctx.fillStyle = '#e0f0e8'; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'center';
+    ctx.fillText('H(X)', cx1, vy - vr * 0.1);
+    ctx.fillText('1 bit', cx1, vy + 12);
+    ctx.fillText('H(Y)', cx2, vy - vr * 0.1);
+    ctx.fillText('1 bit', cx2, vy + 12);
+    ctx.fillStyle = Ixy > 0.3 ? '#22c55e' : '#f87171';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText('I(X;Y)', vx, vy - 8);
+    ctx.fillText(Ixy.toFixed(3), vx, vy + 6);
+
+    ctx.fillStyle = '#4a7a60'; ctx.font = '9px JetBrains Mono';
+    ctx.fillText('Venn: H(X), H(Y)', vx, H - 20);
+    ctx.fillText('overlap = I(X;Y)', vx, H - 8);
+
+    // Panel 3: Capacity bar + C vs ε plot
+    const px = col1W + col2W;
+    const pw = col3W - 16;
+    const plotH = H - 60;
+    const plotY = 30;
+
+    ctx.fillStyle = '#0d1f1a';
+    roundRect(ctx, px + 8, 12, pw, H - 24, 6);
+    ctx.fill();
+    ctx.strokeStyle = '#0f2820'; ctx.lineWidth = 1;
+    roundRect(ctx, px + 8, 12, pw, H - 24, 6);
+    ctx.stroke();
+
+    ctx.fillStyle = '#4a7a60'; ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'center';
+    ctx.fillText('C = 1 − Hb(ε) vs ε', px + 8 + pw / 2, 26);
+
+    // Plot
+    const plotX = px + 20;
+    const plotW = pw - 24;
+    const plotBottom = plotY + plotH - 10;
+    const plotTop = plotY + 10;
+
+    // Background
+    ctx.fillStyle = '#071210';
+    ctx.fillRect(plotX, plotTop, plotW, plotBottom - plotTop);
+
+    // Curve
+    ctx.beginPath();
+    for (let i = 0; i <= 100; i++) {
+        const e = i / 200; // 0 to 0.5
+        const c = 1 - hb(e);
+        const sx = plotX + (e / 0.5) * plotW;
+        const sy = plotBottom - c * (plotBottom - plotTop);
+        if (i === 0) ctx.moveTo(sx, sy);
+        else ctx.lineTo(sx, sy);
+    }
+    ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.stroke();
+
+    // Fill under curve
+    ctx.beginPath();
+    for (let i = 0; i <= 100; i++) {
+        const e = i / 200;
+        const c = 1 - hb(e);
+        const sx = plotX + (e / 0.5) * plotW;
+        const sy = plotBottom - c * (plotBottom - plotTop);
+        if (i === 0) ctx.moveTo(sx, sy);
+        else ctx.lineTo(sx, sy);
+    }
+    ctx.lineTo(plotX + plotW, plotBottom);
+    ctx.lineTo(plotX, plotBottom);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(34,197,94,0.1)'; ctx.fill();
+
+    // Lost capacity (above curve)
+    ctx.fillStyle = 'rgba(248,113,113,0.06)';
+    ctx.fillRect(plotX, plotTop, plotW, plotBottom - plotTop);
+
+    // Current point
+    const epsDot = eps / 0.5;
+    const capDot = 1 - hb(eps);
+    const dotX = plotX + epsDot * plotW;
+    const dotY = plotBottom - capDot * (plotBottom - plotTop);
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath(); ctx.arc(dotX, dotY, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(34,197,94,0.4)'; ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(dotX, dotY); ctx.lineTo(dotX, plotBottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dotX, dotY); ctx.lineTo(plotX, dotY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Axis labels
+    ctx.fillStyle = '#4a7a60'; ctx.font = '9px JetBrains Mono';
+    ctx.textAlign = 'left'; ctx.fillText('0', plotX - 6, plotBottom + 3);
+    ctx.textAlign = 'right'; ctx.fillText('0.5', plotX + plotW + 2, plotBottom + 3);
+    ctx.fillText('ε', plotX + plotW / 2, plotBottom + 12);
+    ctx.textAlign = 'left';
+    ctx.fillText('0', plotX - 14, plotBottom + 3);
+    ctx.fillText('1', plotX - 14, plotTop + 6);
+
+    // Capacity readout
+    ctx.fillStyle = '#22c55e'; ctx.font = 'bold 13px JetBrains Mono'; ctx.textAlign = 'center';
+    ctx.fillText(`C = ${Ixy.toFixed(3)} bits`, px + 8 + pw / 2, H - 30);
+    ctx.fillStyle = '#4a7a60'; ctx.font = '9px JetBrains Mono';
+    ctx.fillText('per channel use', px + 8 + pw / 2, H - 18);
+
+    ctx.textAlign = 'left';
+}
+
+function drawArrow(ctx, x1, y1, x2, y2) {
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    const aLen = 8;
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - aLen * Math.cos(angle - 0.4), y2 - aLen * Math.sin(angle - 0.4));
+    ctx.lineTo(x2 - aLen * Math.cos(angle + 0.4), y2 - aLen * Math.sin(angle + 0.4));
+    ctx.closePath();
+    ctx.fill();
+}
+
+function se3Update() { se3Draw(); }
+
+// ─── Init & resize ─────────────────────────────────────────────────────────
+function initAll() {
+    se1Resize();
+    se2Resize();
+    se3Resize();
+}
+
+const ro = new ResizeObserver(() => {
+    se1Resize();
+    se2Resize();
+    se3Resize();
+});
+ro.observe(document.body);
+
+window.addEventListener('DOMContentLoaded', initAll);
+window.addEventListener('load', initAll);
+</script>
+</body>
+</html>

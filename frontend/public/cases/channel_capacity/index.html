@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Channel Capacity</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #060c1a;
+            --card: #0a1628;
+            --surface: #0d1e38;
+            --accent: #38bdf8;
+            --accent2: #0ea5e9;
+            --green: #4ade80;
+            --red: #f87171;
+            --amber: #fbbf24;
+            --text: #e0f4ff;
+            --muted: #4a7a9b;
+            --dim: #1e3a55;
+            --border: #112236;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            line-height: 1.75;
+            padding: 0 0 80px;
+        }
+        header {
+            text-align: center;
+            padding: 60px 40px 48px;
+            background: radial-gradient(ellipse at 50% 0%, #0d1e38 0%, var(--bg) 70%);
+            border-bottom: 1px solid var(--border);
+        }
+        header .tag {
+            display: inline-block;
+            font-size: 10px; letter-spacing: 0.2em; color: var(--accent);
+            text-transform: uppercase; border: 1px solid rgba(56,189,248,0.25);
+            padding: 3px 12px; border-radius: 20px; margin-bottom: 20px;
+        }
+        h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 3rem; font-weight: 600; color: var(--text);
+            line-height: 1.15; margin-bottom: 16px;
+        }
+        h1 em { color: var(--accent); font-style: italic; }
+        header p { color: var(--muted); font-size: 13px; max-width: 560px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+        section { max-width: 900px; margin: 60px auto 0; padding: 0 32px; }
+        .section-label {
+            font-size: 10px; letter-spacing: 0.2em; color: var(--accent);
+            text-transform: uppercase; margin-bottom: 20px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        h2 { font-family: 'Inter', sans-serif; font-size: 1.65rem; font-weight: 600; margin-bottom: 14px; color: var(--text); }
+        .prose {
+            font-size: 13px; color: var(--muted); line-height: 1.9;
+            margin-bottom: 16px; font-family: 'Inter', sans-serif;
+        }
+        .prose strong { color: var(--text); }
+        .prose em { color: var(--accent); font-style: normal; }
+        .math-block {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); padding: 14px 20px;
+            border-radius: 4px; margin: 18px 0; font-size: 13px; overflow-x: auto;
+        }
+        .canvas-wrap {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden; margin: 24px 0;
+        }
+        canvas { display: block; width: 100%; }
+        .controls {
+            display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+            padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border);
+        }
+        .btn {
+            padding: 6px 14px; border: 1px solid var(--dim); background: transparent;
+            color: var(--muted); font-family: 'Space Mono', monospace; font-size: 11px;
+            border-radius: 3px; cursor: pointer; transition: all 0.15s;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.accent { background: var(--accent); color: #060c1a; border-color: var(--accent); font-weight: 700; }
+        label { font-size: 11px; color: var(--muted); }
+        input[type=range] { width: 140px; accent-color: var(--accent); cursor: pointer; }
+        .val { font-size: 12px; color: var(--accent); min-width: 48px; font-family: 'Space Mono', monospace; }
+        .stats-bar {
+            display: flex; gap: 20px; flex-wrap: wrap;
+            padding: 10px 16px; border-top: 1px solid var(--border);
+            font-size: 11px; color: var(--muted); background: var(--card);
+        }
+        .stat-val { color: var(--accent); }
+        .legend {
+            display: flex; gap: 16px; flex-wrap: wrap;
+            padding: 8px 16px; border-top: 1px solid var(--border); font-size: 11px;
+        }
+        .li { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+        .sq { width: 10px; height: 10px; border-radius: 2px; }
+        .infobox {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 16px 20px; margin: 16px 0;
+            font-size: 12px; color: var(--muted); line-height: 1.8;
+            font-family: 'Inter', sans-serif;
+        }
+        .infobox strong { color: var(--text); }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="tag">Information Theory · Shannon-Hartley</div>
+    <h1>Channel <em>Capacity</em></h1>
+    <p>The maximum rate at which information can be reliably transmitted over a noisy channel — a mathematical limit as fundamental as the speed of light, governing everything from satellite links to 5G.</p>
+</header>
+
+<!-- Section 1 -->
+<section>
+    <div class="section-label">01 — Binary Symmetric Channel</div>
+    <h2>When Bits Flip: The BSC</h2>
+
+    <div class="prose">
+        The simplest noisy channel is the <strong>Binary Symmetric Channel (BSC)</strong>. A sender transmits a single bit; with probability \(\varepsilon\) (the crossover probability) the bit flips in transit; with probability \(1-\varepsilon\) it arrives intact. The channel is "symmetric" because both 0 and 1 are equally likely to be corrupted. Despite its simplicity, the BSC captures the essential tension between noise and communication.
+    </div>
+    <div class="prose">
+        Shannon's 1948 theorem defines <strong>channel capacity</strong> \(C\) as the maximum mutual information over all possible input distributions: \(C = \max_{p(X)} I(X;Y)\). For the BSC, this maximum is achieved with a uniform input (\(P(X=0)=0.5\)), giving \(C = 1 - H_b(\varepsilon)\) bits per channel use, where \(H_b(\varepsilon) = -\varepsilon\log_2\varepsilon - (1-\varepsilon)\log_2(1-\varepsilon)\) is the binary entropy function.
+    </div>
+    <div class="prose">
+        The result has a beautiful interpretation. At \(\varepsilon=0\), the channel is perfect: every bit gets through, capacity is 1 bit per use. At \(\varepsilon=0.5\), the channel is pure coin-flip noise: the output is completely independent of the input, capacity is 0. Between these extremes, capacity falls as a smooth concave curve — symmetric around \(\varepsilon=0.5\).
+    </div>
+    <div class="prose">
+        Shannon's <em>channel coding theorem</em> is arguably the most important result in communication theory. It says: for any rate \(R < C\) and any \(\varepsilon > 0\), there exists a code with block length \(n\) (possibly large) achieving error probability below \(\varepsilon\). Conversely, no code with rate \(R > C\) can achieve arbitrarily low error probability. The capacity \(C\) is an exact threshold — there is no "almost reliable" communication above capacity.
+    </div>
+    <div class="prose">
+        In practice, USB 2.0 achieves error rates around \(10^{-12}\) per bit using simple CRC codes — the channel's physical error rate is so low (far below \(\varepsilon = 0.5\)) that almost no coding is needed. Deep-space links (Voyager, Mars rovers) operate near capacity because every watt of transmit power is precious.
+    </div>
+
+    <div class="math-block">
+        \[C_{\text{BSC}} = 1 - H_b(\varepsilon) = 1 + \varepsilon\log_2\varepsilon + (1-\varepsilon)\log_2(1-\varepsilon) \text{ bits/use}\]
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="cc1-canvas" height="340"></canvas>
+        <div class="controls">
+            <label>crossover ε =</label>
+            <input type="range" id="cc1-eps" min="0" max="500" value="100" oninput="cc1Update()">
+            <span class="val" id="cc1-epsval">0.100</span>
+        </div>
+        <div class="stats-bar">
+            <span>ε = <span class="stat-val" id="cc1-e">0.100</span></span>
+            <span>H_b(ε) = <span class="stat-val" id="cc1-hb">0.469</span> bits</span>
+            <span>C = <span class="stat-val" id="cc1-cap">0.531</span> bits/use</span>
+            <span>capacity used = <span class="stat-val" id="cc1-pct">53.1</span>%</span>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="sq" style="background:rgba(56,189,248,0.5)"></div> usable capacity C</div>
+            <div class="li"><div class="sq" style="background:rgba(248,113,113,0.4)"></div> capacity lost to noise</div>
+            <div class="li"><div class="sq" style="background:#38bdf8"></div> current operating point</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Reliable communication above capacity is impossible:</strong> This is the converse of Shannon's theorem. If you try to transmit at rate \(R > C\), the error probability cannot be driven below some positive constant, no matter how sophisticated the code. This is not a practical limitation but a mathematical theorem — it follows from the data processing inequality and the chain rule for mutual information.
+    </div>
+</section>
+
+<!-- Section 2 -->
+<section>
+    <div class="section-label">02 — AWGN Channel and the Shannon-Hartley Theorem</div>
+    <h2>Bandwidth, Power, and the Limits of Wireless</h2>
+
+    <div class="prose">
+        Real wireless channels don't flip discrete bits — they add continuous Gaussian noise to analog signals. The <strong>Additive White Gaussian Noise (AWGN)</strong> channel model captures this: the received signal is \(Y = X + Z\) where \(Z \sim \mathcal{N}(0, N_0/2)\) per dimension. The Shannon-Hartley theorem gives the capacity of this channel exactly: \(C = B \log_2(1 + \text{SNR})\) bits per second, where \(B\) is bandwidth in Hz and SNR is the signal-to-noise ratio.
+    </div>
+    <div class="prose">
+        This formula has profound engineering consequences. <strong>Doubling bandwidth doubles capacity</strong> (linear scaling). But <strong>doubling SNR</strong> (equivalently, doubling transmit power) only adds \(B\) bits/s — a logarithmic gain. At high SNR, power has diminishing returns: going from 30 dB to 40 dB SNR gains the same capacity as 20 dB to 30 dB. This is why spectral efficiency (bits/s/Hz) is the primary design metric in 5G, not raw power.
+    </div>
+    <div class="prose">
+        As \(B \to \infty\) with fixed total power \(P\), the noise power also grows (more bandwidth admits more noise). The capacity does not diverge; it approaches a finite limit \(C \to P/(N_0 \ln 2)\). This "wideband limit" means you can't communicate infinitely fast just by spreading over unlimited bandwidth — you need SNR, not just bandwidth.
+    </div>
+    <div class="prose">
+        Wi-Fi 802.11ax (Wi-Fi 6) achieves up to 9.6 Gbps using 160 MHz channels with 1024-QAM modulation at SNR around 35 dB — operating at perhaps 70–80% of Shannon capacity. 5G NR uses up to 400 MHz channels in the mmWave band (28 GHz). Modern fiber optics use wavelength-division multiplexing to achieve >100 Tbps on a single fiber, each wavelength operating near its Shannon limit.
+    </div>
+
+    <div class="math-block">
+        \[C = B \log_2\!\left(1 + \frac{S}{N}\right) = B \log_2\!\left(1 + 10^{\text{SNR}_{\text{dB}}/10}\right) \text{ bits/s}\]
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="cc2-canvas" height="360"></canvas>
+        <div class="controls">
+            <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <label>B (MHz) =</label>
+                    <input type="range" id="cc2-bw" min="1" max="400" value="20" oninput="cc2Update()">
+                    <span class="val" id="cc2-bwval">20</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <label>SNR (dB) =</label>
+                    <input type="range" id="cc2-snr" min="0" max="60" value="20" oninput="cc2Update()">
+                    <span class="val" id="cc2-snrval">20</span>
+                </div>
+            </div>
+        </div>
+        <div class="stats-bar">
+            <span>B = <span class="stat-val" id="cc2-b">20</span> MHz</span>
+            <span>SNR = <span class="stat-val" id="cc2-s">20</span> dB</span>
+            <span>C = <span class="stat-val" id="cc2-c">—</span></span>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="sq" style="background:#38bdf8"></div> C vs SNR (current B)</div>
+            <div class="li"><div class="sq" style="background:#4ade80"></div> C vs B (current SNR)</div>
+            <div class="li"><div class="sq" style="background:#fbbf24"></div> reference systems</div>
+            <div class="li"><div class="sq" style="background:#f87171"></div> current point</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Spectral efficiency:</strong> The ratio C/B = log₂(1 + SNR) bits/s/Hz is the key metric. Shannon capacity sets the upper bound; practical systems fall short due to implementation losses, channel estimation errors, and hardware nonlinearity. 5G NR targets 30 bits/s/Hz in ideal conditions — requiring SNR > 10⁹ in linear scale (i.e., ~90 dB), only achievable in very short-range mmWave links with highly directional antennas.
+    </div>
+</section>
+
+<!-- Section 3 -->
+<section>
+    <div class="section-label">03 — Approaching the Shannon Limit</div>
+    <h2>From Theory to Practice: 70 Years of Coding</h2>
+
+    <div class="prose">
+        Shannon proved in 1948 that capacity-achieving codes <em>exist</em>. He did not say how to build them. For the next 45 years, coding theorists searched for practical codes that could approach the Shannon limit. Simple codes like Hamming (1950) and BCH (1960) offered elegant algebraic structure but operated far from capacity. The gap to Shannon was measured in decibels — a monument to the distance between existence and construction.
+    </div>
+    <div class="prose">
+        The breakthrough came in 1993. Claude Berrou and colleagues at France Télécom invented <strong>Turbo codes</strong> — a concatenated code with iterative "turbo" decoding that could operate within 0.5 dB of capacity. The coding community was stunned. Shortly after, <strong>LDPC codes</strong> (invented by Gallager in 1962 but forgotten) were rediscovered by Richardson and Urbanke (2001), who showed LDPC codes could asymptotically achieve capacity on any memoryless channel.
+    </div>
+    <div class="prose">
+        The metric of choice is <em>bit error rate (BER) vs \(E_b/N_0\)</em> — energy per bit over noise spectral density. The <strong>Shannon limit</strong> for reliable binary communication is \(E_b/N_0 = \ln 2 \approx -1.59\) dB (in the infinite-bandwidth limit). Uncoded systems require ~8–10 dB to achieve BER of \(10^{-5}\). Turbo and LDPC codes can achieve the same BER at 0–1 dB — a gain of ~8 dB, corresponding to 6× less transmit power.
+    </div>
+    <div class="prose">
+        Today, LDPC codes are used in <strong>Wi-Fi (802.11n/ac/ax)</strong>, <strong>5G NR</strong>, <strong>DVB-S2</strong> satellite broadcasting, and <strong>10G Ethernet</strong>. Polar codes (Arıkan, 2009) — the first provably capacity-achieving code with efficient encoding and decoding — are used in the 5G control channel. Deep-space missions use concatenated Reed-Solomon + convolutional codes (Voyager) or Turbo codes (Mars Science Laboratory).
+    </div>
+    <div class="prose">
+        The lesson for information theory and machine learning alike: the existence of an optimal solution (proven by Shannon, or by a convergence theorem in ML) does not tell you how to find it. The constructive problem — building the optimal code, or training the optimal model — often takes decades. But the theoretical limit serves as an invaluable target and sanity check.
+    </div>
+
+    <div class="math-block">
+        \[E_b/N_0 \Big|_{\min} = \frac{\ln 2}{1} \approx -1.59 \text{ dB} \quad \text{(Shannon limit, infinite bandwidth)}\]
+        \[\text{BER} = Q\!\left(\sqrt{2 E_b/N_0}\right) \text{ (uncoded BPSK)}\]
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="cc3-canvas" height="380"></canvas>
+        <div class="controls">
+            <label>Rate R/C =</label>
+            <input type="range" id="cc3-rate" min="10" max="99" value="70" oninput="cc3Update()">
+            <span class="val" id="cc3-rateval">0.70</span>
+            <span style="color:var(--dim);font-size:10px;margin-left:8px;">(rate below capacity → reliable; above → unreliable)</span>
+        </div>
+        <div class="stats-bar">
+            <span>R/C = <span class="stat-val" id="cc3-r">0.70</span></span>
+            <span>gap to capacity = <span class="stat-val" id="cc3-gap">0.30 C</span></span>
+            <span>Turbo/LDPC BER ≈ <span class="stat-val" id="cc3-ber">~10⁻⁵</span></span>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="sq" style="background:#f87171"></div> uncoded BPSK</div>
+            <div class="li"><div class="sq" style="background:#fbbf24"></div> repetition code (rate 1/3)</div>
+            <div class="li"><div class="sq" style="background:#38bdf8"></div> Turbo / LDPC (near-capacity)</div>
+            <div class="li"><div class="sq" style="background:rgba(248,113,113,0.15)"></div> impossible region (R > C)</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Polar codes and the end of the quest:</strong> In 2009, Erdal Arıkan proved that polar codes achieve the Shannon capacity of any binary-input memoryless symmetric channel with encoding and decoding complexity \(O(n \log n)\). This was the first constructive proof that capacity is achievable with polynomial-complexity coding. 3GPP chose polar codes for the 5G control channel (PBCH, PDCCH) in 2016 — the first major standard to use a capacity-achieving code by construction, not just by approximation.
+    </div>
+</section>
+
+<script>
+// ─── Utility ────────────────────────────────────────────────────────────────
+function hb(p) {
+    if (p <= 0 || p >= 1) return 0;
+    return -p * Math.log2(p) - (1 - p) * Math.log2(1 - p);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function formatCapacity(bps) {
+    if (bps >= 1e9) return `${(bps / 1e9).toFixed(2)} Gbps`;
+    if (bps >= 1e6) return `${(bps / 1e6).toFixed(2)} Mbps`;
+    if (bps >= 1e3) return `${(bps / 1e3).toFixed(2)} Kbps`;
+    return `${bps.toFixed(0)} bps`;
+}
+
+// ─── Section 1: BSC ─────────────────────────────────────────────────────────
+const cc1Canvas = document.getElementById('cc1-canvas');
+const cc1Ctx = cc1Canvas.getContext('2d');
+
+function cc1Resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = cc1Canvas.offsetWidth;
+    cc1Canvas.width = W * dpr;
+    cc1Canvas.height = 340 * dpr;
+    cc1Ctx.scale(dpr, dpr);
+    cc1Draw();
+}
+
+function cc1Draw() {
+    const eps = parseInt(document.getElementById('cc1-eps').value) / 1000;
+    const Hb = hb(eps);
+    const cap = Math.max(0, 1 - Hb);
+
+    document.getElementById('cc1-epsval').textContent = eps.toFixed(3);
+    document.getElementById('cc1-e').textContent = eps.toFixed(3);
+    document.getElementById('cc1-hb').textContent = Hb.toFixed(3);
+    document.getElementById('cc1-cap').textContent = cap.toFixed(3);
+    document.getElementById('cc1-pct').textContent = (cap * 100).toFixed(1);
+
+    const W = cc1Canvas.offsetWidth;
+    const H = 340;
+    const ctx = cc1Ctx;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0a1628';
+    ctx.fillRect(0, 0, W, H);
+
+    const diagW = Math.floor(W * 0.38);
+    const plotW = W - diagW - 20;
+    const plotX = diagW + 12;
+    const plotH = H - 60;
+    const plotY = 30;
+    const plotBottom = plotY + plotH - 10;
+    const plotTop = plotY + 10;
+
+    // ── Channel diagram ──────────────────────────────────────────────────────
+    const nodeR = 20;
+    const lx = diagW * 0.25;
+    const rx = diagW * 0.75;
+    const y0 = H * 0.33;
+    const y1 = H * 0.67;
+
+    // Arrows: straight (correct) and crossing (error)
+    function arrow(ctx, x1, y1a, x2, y2a, color, width) {
+        ctx.strokeStyle = color; ctx.lineWidth = width;
+        ctx.beginPath(); ctx.moveTo(x1, y1a); ctx.lineTo(x2, y2a); ctx.stroke();
+        const angle = Math.atan2(y2a - y1a, x2 - x1);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2a);
+        ctx.lineTo(x2 - 9 * Math.cos(angle - 0.4), y2a - 9 * Math.sin(angle - 0.4));
+        ctx.lineTo(x2 - 9 * Math.cos(angle + 0.4), y2a - 9 * Math.sin(angle + 0.4));
+        ctx.closePath(); ctx.fill();
+    }
+
+    const corrAlpha = 0.3 + 0.7 * (1 - eps * 2);
+    const errAlpha = 0.1 + 0.9 * eps * 2;
+    arrow(ctx, lx + nodeR, y0, rx - nodeR, y0, `rgba(56,189,248,${corrAlpha})`, 1.5 + 2 * (1 - eps));
+    arrow(ctx, lx + nodeR, y1, rx - nodeR, y1, `rgba(56,189,248,${corrAlpha})`, 1.5 + 2 * (1 - eps));
+    arrow(ctx, lx + nodeR, y0, rx - nodeR, y1, `rgba(248,113,113,${errAlpha})`, 0.5 + 3 * eps);
+    arrow(ctx, lx + nodeR, y1, rx - nodeR, y0, `rgba(248,113,113,${errAlpha})`, 0.5 + 3 * eps);
+
+    // Labels on arrows
+    ctx.fillStyle = '#38bdf8'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText(`1−ε`, (lx + rx) / 2, y0 - 10);
+    ctx.fillText(`1−ε`, (lx + rx) / 2, y1 + 18);
+    ctx.fillStyle = '#f87171';
+    ctx.fillText(`ε=${eps.toFixed(3)}`, (lx + rx) / 2, (y0 + y1) / 2);
+
+    // Nodes
+    for (const [nx, ny, label, side] of [[lx, y0, '0', 'in'], [lx, y1, '1', 'in'], [rx, y0, '0', 'out'], [rx, y1, '1', 'out']]) {
+        ctx.fillStyle = '#0d1e38';
+        ctx.beginPath(); ctx.arc(nx, ny, nodeR, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = side === 'in' ? '#38bdf8' : '#4ade80'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(nx, ny, nodeR, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = '#e0f4ff'; ctx.font = 'bold 14px Space Mono'; ctx.textAlign = 'center';
+        ctx.fillText(label, nx, ny + 5);
+    }
+    ctx.fillStyle = '#4a7a9b'; ctx.font = '9px Space Mono';
+    ctx.fillText('X', lx, y0 - nodeR - 12);
+    ctx.fillText('input', lx, y0 - nodeR - 0);
+    ctx.fillText('Y', rx, y0 - nodeR - 12);
+    ctx.fillText('output', rx, y0 - nodeR - 0);
+
+    // Capacity display in diagram area
+    ctx.fillStyle = '#1e3a55';
+    roundRect(ctx, 8, H - 48, diagW - 16, 38, 4);
+    ctx.fill();
+    ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 13px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText(`C = ${cap.toFixed(3)} bits/use`, diagW / 2, H - 28);
+    ctx.fillStyle = '#4a7a9b'; ctx.font = '9px Space Mono';
+    ctx.fillText(`${(cap * 100).toFixed(1)}% of max`, diagW / 2, H - 16);
+
+    // ── Capacity vs ε plot ────────────────────────────────────────────────────
+    ctx.fillStyle = '#060c1a'; ctx.fillRect(plotX, plotTop, plotW, plotBottom - plotTop);
+
+    // Fill usable region (under curve)
+    ctx.beginPath();
+    for (let i = 0; i <= 200; i++) {
+        const e = i / 400; // 0 to 0.5
+        const c = Math.max(0, 1 - hb(e));
+        const sx = plotX + (e / 0.5) * plotW;
+        const sy = plotBottom - c * (plotBottom - plotTop);
+        if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    }
+    ctx.lineTo(plotX + plotW, plotBottom);
+    ctx.lineTo(plotX, plotBottom);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(56,189,248,0.1)'; ctx.fill();
+
+    // Fill lost region (above curve)
+    ctx.beginPath();
+    ctx.moveTo(plotX, plotTop);
+    for (let i = 0; i <= 200; i++) {
+        const e = i / 400;
+        const c = Math.max(0, 1 - hb(e));
+        const sx = plotX + (e / 0.5) * plotW;
+        const sy = plotBottom - c * (plotBottom - plotTop);
+        ctx.lineTo(sx, sy);
+    }
+    ctx.lineTo(plotX + plotW, plotTop);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(248,113,113,0.07)'; ctx.fill();
+
+    // Curve
+    ctx.beginPath();
+    for (let i = 0; i <= 200; i++) {
+        const e = i / 400;
+        const c = Math.max(0, 1 - hb(e));
+        const sx = plotX + (e / 0.5) * plotW;
+        const sy = plotBottom - c * (plotBottom - plotTop);
+        if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    }
+    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.stroke();
+
+    // Current point
+    const dotX = plotX + (eps / 0.5) * plotW;
+    const dotY = plotBottom - cap * (plotBottom - plotTop);
+    ctx.strokeStyle = 'rgba(56,189,248,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(dotX, dotY); ctx.lineTo(dotX, plotBottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dotX, dotY); ctx.lineTo(plotX, dotY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath(); ctx.arc(dotX, dotY, 5, 0, Math.PI * 2); ctx.fill();
+
+    // Grid and labels
+    ctx.fillStyle = '#1e3a55'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    const xticks = [0, 0.1, 0.2, 0.3, 0.4, 0.5];
+    xticks.forEach(e => {
+        const sx = plotX + (e / 0.5) * plotW;
+        ctx.strokeStyle = '#112236'; ctx.lineWidth = 1; ctx.setLineDash([2, 4]);
+        ctx.beginPath(); ctx.moveTo(sx, plotTop); ctx.lineTo(sx, plotBottom); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#1e3a55';
+        ctx.fillText(e.toFixed(1), sx, plotBottom + 12);
+    });
+    [0, 0.25, 0.5, 0.75, 1].forEach(c => {
+        const sy = plotBottom - c * (plotBottom - plotTop);
+        ctx.strokeStyle = '#112236'; ctx.lineWidth = 1; ctx.setLineDash([2, 4]);
+        ctx.beginPath(); ctx.moveTo(plotX, sy); ctx.lineTo(plotX + plotW, sy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#1e3a55'; ctx.textAlign = 'right';
+        ctx.fillText(c.toFixed(2), plotX - 4, sy + 3);
+    });
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#4a7a9b'; ctx.font = '9px Space Mono';
+    ctx.fillText('crossover probability ε →', plotX + plotW / 2, plotBottom + 24);
+    ctx.save(); ctx.translate(plotX - 24, (plotTop + plotBottom) / 2);
+    ctx.rotate(-Math.PI / 2); ctx.fillText('capacity C (bits/use)', 0, 0); ctx.restore();
+
+    // Title
+    ctx.fillStyle = '#4a7a9b'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText('C = 1 − H_b(ε)  vs  ε', plotX + plotW / 2, plotTop - 4);
+
+    ctx.textAlign = 'left';
+}
+
+function cc1Update() { cc1Draw(); }
+
+// ─── Section 2: AWGN / Shannon-Hartley ──────────────────────────────────────
+const cc2Canvas = document.getElementById('cc2-canvas');
+const cc2Ctx = cc2Canvas.getContext('2d');
+
+// Reference systems: [label, B_MHz, SNR_dB]
+const cc2Refs = [
+    { label: 'AM radio', B: 0.01, snr: 40, color: '#fbbf24' },
+    { label: 'Wi-Fi 5', B: 80, snr: 30, color: '#fbbf24' },
+    { label: '5G NR', B: 100, snr: 25, color: '#fbbf24' },
+    { label: 'Fiber', B: 50000, snr: 50, color: '#fbbf24' },
+];
+
+function cc2Resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = cc2Canvas.offsetWidth;
+    cc2Canvas.width = W * dpr;
+    cc2Canvas.height = 360 * dpr;
+    cc2Ctx.scale(dpr, dpr);
+    cc2Draw();
+}
+
+function cc2Draw() {
+    const B_MHz = parseInt(document.getElementById('cc2-bw').value);
+    const snr_dB = parseInt(document.getElementById('cc2-snr').value);
+    const B = B_MHz * 1e6;
+    const snr_lin = Math.pow(10, snr_dB / 10);
+    const C = B * Math.log2(1 + snr_lin);
+
+    document.getElementById('cc2-bwval').textContent = B_MHz;
+    document.getElementById('cc2-snrval').textContent = snr_dB;
+    document.getElementById('cc2-b').textContent = B_MHz;
+    document.getElementById('cc2-s').textContent = snr_dB;
+    document.getElementById('cc2-c').textContent = formatCapacity(C);
+
+    const W = cc2Canvas.offsetWidth;
+    const H = 360;
+    const ctx = cc2Ctx;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0a1628';
+    ctx.fillRect(0, 0, W, H);
+
+    const halfW = Math.floor(W / 2) - 8;
+    const plotH = H - 70;
+    const plotTop = 30;
+    const plotBottom = plotTop + plotH;
+
+    // ── Left panel: C vs SNR ─────────────────────────────────────────────────
+    const p1x = 8;
+    const p1w = halfW;
+
+    ctx.fillStyle = '#060c1a'; ctx.fillRect(p1x, plotTop, p1w, plotH);
+
+    // Curve: SNR from 0 to 60 dB
+    const maxC1 = B * Math.log2(1 + Math.pow(10, 6)); // 60 dB
+    ctx.beginPath();
+    for (let s = 0; s <= 120; s++) {
+        const s_dB = s / 2; // 0 to 60
+        const sl = Math.pow(10, s_dB / 10);
+        const c = B * Math.log2(1 + sl);
+        const sx = p1x + (s / 120) * p1w;
+        const sy = plotBottom - (c / maxC1) * plotH;
+        if (s === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    }
+    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.stroke();
+
+    // Reference lines
+    cc2Refs.forEach(ref => {
+        const c_ref = ref.B * 1e6 * Math.log2(1 + Math.pow(10, ref.snr / 10));
+        const sy = plotBottom - (c_ref / maxC1) * plotH;
+        if (sy >= plotTop && sy <= plotBottom) {
+            ctx.strokeStyle = 'rgba(251,191,36,0.2)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(p1x, sy); ctx.lineTo(p1x + p1w, sy); ctx.stroke();
+            if (ref.B * 1e6 === B) { // only show if same bandwidth
+                ctx.fillStyle = '#fbbf24'; ctx.font = '8px Space Mono'; ctx.textAlign = 'left';
+                ctx.fillText(ref.label, p1x + 4, sy - 3);
+            }
+        }
+    });
+
+    // Current point
+    const curr_sx = p1x + (snr_dB / 60) * p1w;
+    const curr_sy = plotBottom - (C / maxC1) * plotH;
+    ctx.strokeStyle = 'rgba(248,113,113,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(curr_sx, plotTop); ctx.lineTo(curr_sx, plotBottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p1x, curr_sy); ctx.lineTo(p1x + p1w, curr_sy); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f87171';
+    ctx.beginPath(); ctx.arc(curr_sx, curr_sy, 5, 0, Math.PI * 2); ctx.fill();
+
+    // Axis labels
+    ctx.fillStyle = '#4a7a9b'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText('SNR (dB) →', p1x + p1w / 2, plotBottom + 16);
+    [0, 20, 40, 60].forEach(s => {
+        ctx.fillStyle = '#1e3a55';
+        ctx.fillText(s, p1x + (s / 60) * p1w, plotBottom + 12);
+    });
+    ctx.save(); ctx.translate(p1x - 14, plotTop + plotH / 2);
+    ctx.rotate(-Math.PI / 2); ctx.fillStyle = '#4a7a9b'; ctx.fillText('C (bps)', 0, 0); ctx.restore();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#4a7a9b'; ctx.font = '9px Space Mono';
+    ctx.fillText(`C vs SNR  (B = ${B_MHz} MHz)`, p1x + p1w / 2, plotTop - 6);
+
+    // ── Right panel: C vs B ──────────────────────────────────────────────────
+    const p2x = halfW + 16;
+    const p2w = W - halfW - 24;
+    ctx.fillStyle = '#060c1a'; ctx.fillRect(p2x, plotTop, p2w, plotH);
+
+    const maxBplot = 400; // MHz
+    const maxC2 = maxBplot * 1e6 * Math.log2(1 + snr_lin);
+    const widebandLimit = (snr_lin / Math.LN2) * snr_lin / (1 + snr_lin) * 1e8; // approx
+    // Wideband limit: as B→∞, C → S/(N_0 ln 2), but here we just show up to 400 MHz
+
+    ctx.beginPath();
+    for (let b = 1; b <= 200; b++) {
+        const b_hz = (b / 200) * maxBplot * 1e6;
+        const c = b_hz * Math.log2(1 + snr_lin);
+        const sx = p2x + (b / 200) * p2w;
+        const sy = plotBottom - (c / maxC2) * plotH;
+        if (b === 1) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    }
+    ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2; ctx.stroke();
+
+    // Note: for fixed SNR, C vs B is linear (C = B log2(1+SNR))
+    // But if total power is fixed, SNR ∝ 1/B, making C → limit
+    // Show both curves
+    ctx.beginPath();
+    const S = snr_lin; // snr at B=1MHz, so total power = S * N0 * 1MHz
+    for (let b = 1; b <= 200; b++) {
+        const b_hz = (b / 200) * maxBplot * 1e6;
+        const snr_bw = S * 1e6 / b_hz; // fixed power, SNR decreases with bandwidth
+        const c = b_hz * Math.log2(1 + snr_bw);
+        const sx = p2x + (b / 200) * p2w;
+        const sy = plotBottom - (c / maxC2) * plotH;
+        if (b === 1) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    }
+    ctx.strokeStyle = 'rgba(74,222,128,0.3)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Current point
+    const curr_bx = p2x + (B_MHz / maxBplot) * p2w;
+    const curr_by = plotBottom - (C / maxC2) * plotH;
+    ctx.strokeStyle = 'rgba(248,113,113,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(curr_bx, plotTop); ctx.lineTo(curr_bx, plotBottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p2x, curr_by); ctx.lineTo(p2x + p2w, curr_by); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f87171';
+    ctx.beginPath(); ctx.arc(curr_bx, curr_by, 5, 0, Math.PI * 2); ctx.fill();
+
+    // Labels
+    ctx.fillStyle = '#4a7a9b'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText('Bandwidth B (MHz) →', p2x + p2w / 2, plotBottom + 16);
+    [0, 100, 200, 300, 400].forEach(b => {
+        ctx.fillStyle = '#1e3a55';
+        ctx.fillText(b, p2x + (b / maxBplot) * p2w, plotBottom + 12);
+    });
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#4a7a9b'; ctx.font = '9px Space Mono';
+    ctx.fillText(`C vs B  (SNR = ${snr_dB} dB)`, p2x + p2w / 2, plotTop - 6);
+
+    // Big capacity readout
+    ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 16px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText(`C = ${formatCapacity(C)}`, W / 2, H - 16);
+
+    ctx.textAlign = 'left';
+}
+
+function cc2Update() { cc2Draw(); }
+
+// ─── Section 3: BER curves ───────────────────────────────────────────────────
+const cc3Canvas = document.getElementById('cc3-canvas');
+const cc3Ctx = cc3Canvas.getContext('2d');
+
+// Q-function approximation
+function qFunc(x) {
+    if (x < 0) return 1 - qFunc(-x);
+    // Abramowitz & Stegun approximation
+    const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741,
+          a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+    const t = 1 / (1 + p * x);
+    const poly = ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t;
+    return poly * Math.exp(-x * x / 2) / 2;
+}
+
+function cc3Resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = cc3Canvas.offsetWidth;
+    cc3Canvas.width = W * dpr;
+    cc3Canvas.height = 380 * dpr;
+    cc3Ctx.scale(dpr, dpr);
+    cc3Draw();
+}
+
+function cc3Draw() {
+    const rate = parseInt(document.getElementById('cc3-rate').value) / 100;
+    document.getElementById('cc3-rateval').textContent = rate.toFixed(2);
+    document.getElementById('cc3-r').textContent = rate.toFixed(2);
+    document.getElementById('cc3-gap').textContent = `${(1 - rate).toFixed(2)} C`;
+
+    // Approximate BER for LDPC/Turbo at given R/C
+    // BER drops off as a waterfall near Shannon limit
+    const gapToCap = 1 - rate; // normalized
+    let berApprox;
+    if (gapToCap > 0.25) berApprox = `~10⁻⁶`;
+    else if (gapToCap > 0.1) berApprox = `~10⁻⁴`;
+    else if (gapToCap > 0.05) berApprox = `~10⁻²`;
+    else berApprox = `~0.1 (near limit)`;
+    document.getElementById('cc3-ber').textContent = berApprox;
+
+    const W = cc3Canvas.offsetWidth;
+    const H = 380;
+    const ctx = cc3Ctx;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0a1628';
+    ctx.fillRect(0, 0, W, H);
+
+    const padL = 60, padR = 20, padT = 36, padB = 48;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+    const bL = padL, bT = padT, bR = padL + plotW, bB = padT + plotH;
+
+    // Background
+    ctx.fillStyle = '#060c1a'; ctx.fillRect(bL, bT, plotW, plotH);
+
+    // Impossible region (R > C vertical line at R/C = 1)
+    // In this plot: x-axis = Eb/N0 in dB (-2 to 12), y-axis = log10(BER)
+    const xMin = -2, xMax = 12; // Eb/N0 in dB
+    const yMin = -7, yMax = 0; // log10(BER)
+
+    function toScreen(ebno_dB, log10_ber) {
+        const sx = bL + (ebno_dB - xMin) / (xMax - xMin) * plotW;
+        const sy = bB - (log10_ber - yMin) / (yMax - yMin) * plotH;
+        return [sx, sy];
+    }
+
+    // Shannon limit vertical line at Eb/N0 = ln2 = -1.59 dB
+    const shannonX = bL + (-1.59 - xMin) / (xMax - xMin) * plotW;
+    ctx.fillStyle = 'rgba(248,113,113,0.06)';
+    ctx.fillRect(bL, bT, shannonX - bL, plotH);
+    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(shannonX, bT); ctx.lineTo(shannonX, bB); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f87171'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText('Shannon', shannonX, bT + 12);
+    ctx.fillText('limit', shannonX, bT + 22);
+    ctx.fillText('-1.59 dB', shannonX, bT + 32);
+
+    // Grid
+    for (let x = xMin; x <= xMax; x += 2) {
+        const sx = bL + (x - xMin) / (xMax - xMin) * plotW;
+        ctx.strokeStyle = '#112236'; ctx.lineWidth = 1; ctx.setLineDash([2, 4]);
+        ctx.beginPath(); ctx.moveTo(sx, bT); ctx.lineTo(sx, bB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#1e3a55'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+        ctx.fillText(x, sx, bB + 14);
+    }
+    for (let y = yMin; y <= yMax; y++) {
+        const sy = bB - (y - yMin) / (yMax - yMin) * plotH;
+        ctx.strokeStyle = '#112236'; ctx.lineWidth = 1; ctx.setLineDash([2, 4]);
+        ctx.beginPath(); ctx.moveTo(bL, sy); ctx.lineTo(bR, sy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#1e3a55'; ctx.font = '9px Space Mono'; ctx.textAlign = 'right';
+        ctx.fillText(`10${y >= 0 ? '' : '⁻'}${Math.abs(y)}`, bL - 4, sy + 3);
+    }
+
+    // 1. Uncoded BPSK: BER = Q(sqrt(2 Eb/N0))
+    ctx.beginPath();
+    for (let i = 0; i <= 200; i++) {
+        const x_dB = xMin + (i / 200) * (xMax - xMin);
+        const x_lin = Math.pow(10, x_dB / 10);
+        const ber = qFunc(Math.sqrt(2 * x_lin));
+        if (ber <= 0.6 && ber >= 1e-8) {
+            const lb = Math.log10(ber);
+            const [sx, sy] = toScreen(x_dB, lb);
+            if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+        }
+    }
+    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#f87171'; ctx.font = '9px Space Mono'; ctx.textAlign = 'left';
+    ctx.fillText('Uncoded BPSK', bL + plotW * 0.5, bT + 20);
+
+    // 2. Repetition code rate 1/3: same as uncoded BPSK but shifted right (lower rate → needs less Eb)
+    // Effective coding gain ~2 dB but rate penalty means same bits/s needs 3x power
+    // BER for rep-3: P_b = 3p² - 2p³ where p = Q(sqrt(2/3 * Eb/N0)) (rate 1/3 means 3x more energy per info bit → gain)
+    ctx.beginPath();
+    let repStarted = false;
+    for (let i = 0; i <= 200; i++) {
+        const x_dB = xMin + (i / 200) * (xMax - xMin);
+        const x_lin = Math.pow(10, x_dB / 10);
+        // Rate 1/3 repetition: effective Eb/N0 per channel bit is x_lin / 3, but we have majority voting
+        const p = qFunc(Math.sqrt(2 * x_lin / 3)); // channel bit error prob
+        const ber = 3 * p * p - 2 * p * p * p; // majority vote
+        if (ber <= 0.6 && ber >= 1e-8) {
+            const lb = Math.log10(Math.max(1e-8, ber));
+            const [sx, sy] = toScreen(x_dB, lb);
+            if (!repStarted) { ctx.moveTo(sx, sy); repStarted = true; } else ctx.lineTo(sx, sy);
+        }
+    }
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fbbf24'; ctx.font = '9px Space Mono';
+    ctx.fillText('Repetition (rate 1/3)', bL + plotW * 0.35, bT + 36);
+
+    // 3. Near-capacity code (LDPC/Turbo): waterfall curve
+    // Modeled as: BER falls steeply near Eb/N0 threshold that depends on rate
+    // For R/C ratio, the minimum Eb/N0 scales approximately as 1/(1 - R/C)
+    // We'll model it as a sigmoid
+    const threshold = -1.59 + 1.5 * rate + 0.3 * (rate * rate);
+    ctx.beginPath();
+    let ldpcStarted = false;
+    for (let i = 0; i <= 200; i++) {
+        const x_dB = xMin + (i / 200) * (xMax - xMin);
+        const gap = x_dB - threshold;
+        let ber;
+        if (gap < -2) {
+            ber = 0.5;
+        } else if (gap < 3) {
+            // Steep waterfall
+            ber = 0.5 * Math.exp(-Math.pow(Math.max(0, gap) * 2.5, 2));
+        } else {
+            ber = 1e-8;
+        }
+        ber = Math.max(1e-8, Math.min(0.5, ber));
+        const lb = Math.log10(ber);
+        if (lb >= yMin && lb <= yMax) {
+            const [sx, sy] = toScreen(x_dB, lb);
+            if (!ldpcStarted) { ctx.moveTo(sx, sy); ldpcStarted = true; } else ctx.lineTo(sx, sy);
+        }
+    }
+    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = '#38bdf8'; ctx.font = '9px Space Mono';
+    ctx.fillText(`Turbo/LDPC (R/C=${rate.toFixed(2)})`, bL + 8, bT + 52);
+
+    // Current R/C slider — mark threshold
+    const [tx, ty] = toScreen(threshold, -4);
+    if (tx >= bL && tx <= bR) {
+        ctx.strokeStyle = 'rgba(56,189,248,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(tx, bT); ctx.lineTo(tx, bB); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath(); ctx.arc(tx, ty, 5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Impossible region label
+    ctx.fillStyle = 'rgba(248,113,113,0.6)'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText('impossible', (bL + shannonX) / 2, bT + 48);
+    ctx.fillText('region', (bL + shannonX) / 2, bT + 60);
+
+    // Axis labels
+    ctx.fillStyle = '#4a7a9b'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText('Eb/N₀ (dB) →', bL + plotW / 2, bB + 32);
+    ctx.save(); ctx.translate(12, bT + plotH / 2);
+    ctx.rotate(-Math.PI / 2); ctx.fillText('Bit Error Rate (BER)', 0, 0); ctx.restore();
+
+    // Reference annotations
+    const annotations = [
+        { label: '5G target', x: 2.5, y: -5 },
+        { label: 'Voice BER', x: 5, y: -3 },
+    ];
+    annotations.forEach(a => {
+        const [sx, sy] = toScreen(a.x, a.y);
+        if (sx > bL && sx < bR && sy > bT && sy < bB) {
+            ctx.fillStyle = 'rgba(251,191,36,0.5)'; ctx.font = '8px Space Mono'; ctx.textAlign = 'left';
+            ctx.fillText(a.label, sx + 4, sy - 2);
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath(); ctx.arc(sx, sy, 3, 0, Math.PI * 2); ctx.fill();
+        }
+    });
+
+    ctx.textAlign = 'left';
+}
+
+function cc3Update() { cc3Draw(); }
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+function initAll() {
+    cc1Resize();
+    cc2Resize();
+    cc3Resize();
+}
+
+const ro = new ResizeObserver(() => {
+    cc1Resize();
+    cc2Resize();
+    cc3Resize();
+});
+ro.observe(document.body);
+
+window.addEventListener('DOMContentLoaded', initAll);
+window.addEventListener('load', initAll);
+</script>
+</body>
+</html>

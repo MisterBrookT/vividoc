@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acid–Base Chemistry</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Fonts: Fira Code + Merriweather -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #031418;
+            --card: #051e24;
+            --surface: #072530;
+            --accent: #06b6d4;
+            --accent2: #0891b2;
+            --accent-light: #67e8f9;
+            --text: #e0f7fa;
+            --muted: #4a7a80;
+            --dim: #0f3a40;
+            --border: #0a2a30;
+            --red: #f87171;
+            --orange: #fb923c;
+            --yellow: #fbbf24;
+            --green: #4ade80;
+            --purple: #c084fc;
+            --pink: #f472b6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Merriweather', serif;
+            line-height: 1.8;
+            padding: 0 0 100px;
+        }
+        header {
+            text-align: center;
+            padding: 64px 40px 52px;
+            background: radial-gradient(ellipse at 50% 0%, #05303a 0%, var(--bg) 68%);
+            border-bottom: 1px solid var(--border);
+        }
+        header .tag {
+            display: inline-block;
+            font-family: 'Fira Code', monospace;
+            font-size: 10px; letter-spacing: 0.22em; color: var(--accent);
+            text-transform: uppercase; border: 1px solid rgba(6,182,212,0.3);
+            padding: 3px 14px; border-radius: 20px; margin-bottom: 22px;
+        }
+        h1 {
+            font-family: 'Merriweather', serif;
+            font-size: 3.2rem; font-weight: 700;
+            color: var(--text); line-height: 1.1; margin-bottom: 18px;
+        }
+        h1 em { color: var(--accent-light); font-style: italic; }
+        header p {
+            font-family: 'Fira Code', monospace;
+            color: var(--muted); font-size: 12px; max-width: 560px; margin: 0 auto;
+            line-height: 1.8;
+        }
+        section { max-width: 960px; margin: 70px auto 0; padding: 0 36px; }
+        .section-label {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px; letter-spacing: 0.22em; color: var(--muted);
+            text-transform: uppercase; margin-bottom: 22px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        h2 {
+            font-family: 'Merriweather', serif;
+            font-size: 1.75rem; font-weight: 700; margin-bottom: 18px;
+        }
+        .prose {
+            font-family: 'Merriweather', serif;
+            font-size: 14px; color: var(--muted); line-height: 1.95; margin-bottom: 20px;
+        }
+        .prose strong { color: var(--text); }
+        .prose em { color: var(--accent-light); font-style: italic; }
+        .math-block {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); padding: 16px 22px;
+            border-radius: 4px; margin: 20px 0; font-size: 13px; overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+        }
+        .canvas-wrap {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden; margin: 28px 0;
+        }
+        canvas { display: block; }
+        .controls {
+            display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+            padding: 14px 18px; background: var(--surface); border-top: 1px solid var(--border);
+        }
+        .btn {
+            padding: 6px 16px; border: 1px solid var(--dim); background: transparent;
+            color: var(--muted); font-family: 'Fira Code', monospace; font-size: 11px;
+            border-radius: 3px; cursor: pointer; transition: all 0.15s;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent-light); }
+        .btn.active {
+            background: var(--accent); color: #031418;
+            border-color: var(--accent); font-weight: 500;
+        }
+        label {
+            font-family: 'Fira Code', monospace;
+            font-size: 11px; color: var(--muted); letter-spacing: 0.04em;
+        }
+        input[type=range] { width: 110px; accent-color: var(--accent); cursor: pointer; }
+        .val {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px; color: var(--accent-light); min-width: 46px;
+        }
+        .readout-bar {
+            padding: 10px 18px; border-top: 1px solid var(--border);
+            background: var(--card);
+            font-family: 'Fira Code', monospace; font-size: 12px;
+            display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+        }
+        .readout-item { display: flex; gap: 8px; align-items: center; }
+        .readout-key { color: var(--muted); }
+        .readout-val { color: var(--accent-light); }
+        .legend {
+            display: flex; gap: 18px; flex-wrap: wrap;
+            padding: 10px 18px; border-top: 1px solid var(--border);
+            font-family: 'Fira Code', monospace; font-size: 11px;
+        }
+        .li { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .swatch { width: 20px; height: 3px; flex-shrink: 0; }
+        .infobox {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 18px 22px; margin: 20px 0;
+            font-family: 'Fira Code', monospace; font-size: 12px;
+            color: var(--muted); line-height: 1.9;
+        }
+        .infobox strong { color: var(--text); }
+        .infobox .hl { color: var(--accent-light); }
+        .indicator-patch {
+            display: inline-block;
+            width: 16px; height: 16px; border-radius: 3px;
+            vertical-align: middle; margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="tag">Parameter Exploration · Acid–Base</div>
+    <h1>Acid–Base <em>Chemistry</em></h1>
+    <p>pH, buffers, and the art of proton transfer. From the Henderson-Hasselbalch equation
+    to titration curves and buffer capacity — explore the quantitative foundations that keep
+    blood at pH 7.4 and laboratories functioning precisely.</p>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 1: Henderson-Hasselbalch and Buffer Regions
+═══════════════════════════════════════════════════════════ -->
+<section>
+    <div class="section-label">01 — Henderson–Hasselbalch Equation</div>
+    <h2>Buffer Regions and the pH Scale</h2>
+
+    <div class="prose">
+        A <strong>buffer solution</strong> resists changes in pH upon addition of small amounts
+        of acid or base. It achieves this by containing both a weak acid (HA) and its conjugate
+        base (A⁻), which can absorb or release protons as needed. The quantitative relationship
+        between pH and the ratio of conjugate base to weak acid is given by the
+        <em>Henderson-Hasselbalch equation</em> — one of the most useful equations in all of
+        analytical and biochemical science.
+    </div>
+
+    <div class="math-block">
+        \[\text{pH} = \text{p}K_a + \log_{10}\left(\frac{[\text{A}^-]}{[\text{HA}]}\right)\]
+    </div>
+
+    <div class="prose">
+        When [A⁻] = [HA], the log term vanishes and pH = pKa exactly. This is the midpoint of
+        the buffer — the point of maximum buffer capacity. When [A⁻]/[HA] = 10, pH = pKa + 1;
+        when [A⁻]/[HA] = 0.1, pH = pKa − 1. The <strong>effective buffer range</strong> is
+        typically defined as pKa ± 1 pH unit, the region where the buffer can meaningfully
+        resist pH change. Outside this range, one of the two forms is so predominant that
+        adding acid or base quickly overwhelms the system.
+    </div>
+
+    <div class="prose">
+        The biological importance of buffer systems cannot be overstated.
+        Human blood is maintained at pH 7.35–7.45 by the
+        <strong>bicarbonate buffer system</strong>: CO₂(aq) + H₂O ⇌ H₂CO₃ ⇌ HCO₃⁻ + H⁺,
+        with an effective pKa of 6.1. At first this seems too low to buffer at pH 7.4
+        — that's outside the ±1 range. But the body cheats: by using the lungs to
+        continuously exhale CO₂, it effectively controls the [CO₂] term in the equation,
+        shifting the equilibrium. This respiratory-metabolic coupling makes the bicarbonate
+        system far more powerful than a simple chemical buffer of the same concentration.
+        Le Chatelier's principle at the respiratory level.
+    </div>
+
+    <div class="prose">
+        Use the controls below to explore how pH responds to changes in pKa and the
+        [A⁻]/[HA] ratio. The pH scale is rendered as a spectral gradient — acid red at
+        the bottom through neutral at 7 to alkaline violet at the top. The buffer zone
+        (pKa ± 1) is highlighted in accent color to show where the buffer is effective.
+    </div>
+
+    <!-- Interactive widget -->
+    <div class="canvas-wrap">
+        <canvas id="ab1-canvas"></canvas>
+        <div class="controls">
+            <label>pKa =</label>
+            <input type="range" id="ab1-pka" min="30" max="110" value="60">
+            <span class="val" id="ab1-pkaval">6.0</span>
+            <label>log([A⁻]/[HA]) =</label>
+            <input type="range" id="ab1-ratio" min="-200" max="200" value="0">
+            <span class="val" id="ab1-ratioval">0.00</span>
+        </div>
+        <div class="readout-bar">
+            <div class="readout-item">
+                <span class="readout-key">pH</span>
+                <span class="readout-val" id="ab1-ph">7.00</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">[A⁻]/[HA]</span>
+                <span class="readout-val" id="ab1-concratio">1.00</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">buffer zone</span>
+                <span class="readout-val" id="ab1-zone">—</span>
+            </div>
+            <div class="readout-item" style="margin-left:auto">
+                <span class="readout-key" style="color:var(--accent-light)">At [A⁻]=[HA]: pH = pKa exactly</span>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="swatch" style="background:linear-gradient(90deg,#ef4444,#fbbf24,#22d3ee,#8b5cf6);height:6px;border-radius:2px;width:40px"></div>pH scale (0–14)</div>
+            <div class="li"><div class="swatch" style="background:var(--accent);opacity:0.6"></div>buffer zone (pKa ± 1)</div>
+            <div class="li"><div class="dot" style="background:#fff"></div>current pH</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Blood buffer systems:</strong>
+        Bicarbonate (pKa 6.1): primary extracellular buffer, respiratory control via CO₂.<br>
+        Phosphate (pKa 7.2): intracellular buffer, important in urine.<br>
+        Proteins/hemoglobin: histidine residues (pKa ~6.0) buffer inside red blood cells.<br>
+        Acidosis (pH &lt; 7.35) or alkalosis (pH &gt; 7.45) of even 0.1 pH units can be
+        life-threatening — enzymes are exquisitely pH-sensitive due to ionisation of
+        catalytic residues. The body expends <span class="hl">enormous</span> energy maintaining
+        this narrow window.
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 2: Titration Curve
+═══════════════════════════════════════════════════════════ -->
+<section>
+    <div class="section-label">02 — Acid–Base Titration</div>
+    <h2>The Sigmoidal Titration Curve</h2>
+
+    <div class="prose">
+        A <strong>titration</strong> is a quantitative analytical technique: a solution of
+        known concentration (the <em>titrant</em>) is added to a solution of unknown
+        concentration (the <em>analyte</em>) until the reaction is complete. For an
+        acid-base titration, this endpoint is the <strong>equivalence point</strong> — where
+        the moles of acid exactly equal the moles of base. The pH at the equivalence point
+        depends on the nature of the acid and base: for strong acid + strong base, it is
+        precisely 7 (neutral); for weak acid + strong base, it is above 7 (the resulting
+        conjugate base is basic); for strong acid + weak base, below 7.
+    </div>
+
+    <div class="prose">
+        The shape of the titration curve is characteristically <strong>sigmoidal</strong> (S-shaped).
+        Far from the equivalence point, large amounts of acid or base must be added to change
+        the pH significantly, so the curve is relatively flat. Near the equivalence point,
+        the pH changes extremely rapidly — a tiny addition of titrant causes a dramatic jump.
+        This steep inflection is what makes titrations useful: it provides a sharp, easily
+        detectable signal of the equivalence point.
+    </div>
+
+    <div class="math-block">
+        \[\text{Before eq. pt.:}\quad \text{pH} = -\log_{10}[\text{H}^+]_{\text{excess}}
+        \qquad \text{After:}\quad \text{pH} = 14 + \log_{10}[\text{OH}^-]_{\text{excess}}\]
+    </div>
+
+    <div class="prose">
+        The choice of <strong>indicator</strong> depends on the equivalence point pH.
+        Indicators are weak acids whose conjugate acid and base forms have different colors.
+        The transition range is roughly pKa(indicator) ± 1. <em>Methyl orange</em>
+        (pKa ≈ 3.5, transition pH 3.1–4.4, red→orange→yellow) is appropriate for titrating
+        strong bases against strong acids. <em>Phenolphthalein</em>
+        (pKa ≈ 9.1, transition pH 8.2–10, colorless→pink) is used for weak acid–strong base
+        titrations where the equivalence point is alkaline. For a strong acid–strong base
+        titration, either indicator works since the pH jump near the equivalence point spans
+        from about 4 to 10 — both indicator transition ranges lie within this steep region.
+    </div>
+
+    <div class="prose">
+        Below, drag the slider to add NaOH to a 50 mL solution of 0.1 M HCl.
+        Watch the pH climb slowly at first, then explode through the equivalence point
+        at 50 mL (where pH = 7), then level off in the basic region. The live indicator
+        panel shows the color a few common indicators would display at each pH value.
+    </div>
+
+    <!-- Interactive widget -->
+    <div class="canvas-wrap">
+        <canvas id="ab2-canvas"></canvas>
+        <div class="controls">
+            <label>Vol. NaOH (mL) =</label>
+            <input type="range" id="ab2-vol" min="0" max="100" value="0" step="0.5">
+            <span class="val" id="ab2-volval">0.0 mL</span>
+            <div style="margin-left:auto; display:flex; align-items:center; gap:8px">
+                <label>Indicator color:</label>
+                <div id="ab2-indicator-patch" style="width:36px;height:18px;border-radius:3px;border:1px solid var(--border)"></div>
+                <span style="font-family:'Fira Code',monospace;font-size:11px;color:var(--muted)" id="ab2-indicator-name"></span>
+            </div>
+        </div>
+        <div class="readout-bar">
+            <div class="readout-item">
+                <span class="readout-key">pH</span>
+                <span class="readout-val" id="ab2-ph">1.00</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">vol NaOH</span>
+                <span class="readout-val" id="ab2-volread">0.0 mL</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">phase</span>
+                <span class="readout-val" id="ab2-phase">excess acid</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">[H⁺] or [OH⁻]</span>
+                <span class="readout-val" id="ab2-conc">—</span>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="swatch" style="background:var(--accent)"></div>titration curve</div>
+            <div class="li"><div class="swatch" style="background:var(--muted);border-top:1px dashed"></div>equivalence pt (50 mL)</div>
+            <div class="li"><div class="dot" style="background:#fff"></div>current point</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Why not use pH paper?</strong> pH paper (or universal indicator) changes color
+        continuously but lacks the precision to detect the sharp equivalence point.
+        Indicators selected to change color at the equivalence point give a binary
+        (color change / no color change) endpoint that a burette can track to ±0.02 mL.
+        For 50 mL of 0.1 M acid, that's ±0.04% accuracy. For most purposes, the
+        <span class="hl">half-equivalence point</span> (25 mL NaOH added here) is even
+        more informative for weak acids — at that point, [HA] = [A⁻] exactly, so pH = pKa,
+        giving you the pKa of the acid directly from the graph.
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 3: Buffer Capacity
+═══════════════════════════════════════════════════════════ -->
+<section>
+    <div class="section-label">03 — Buffer Capacity</div>
+    <h2>Quantifying Buffer Strength: β vs pH</h2>
+
+    <div class="prose">
+        Buffer capacity β is defined as the moles of strong acid or base required to change
+        the pH of one liter of buffer by one unit. It is the derivative of the amount of
+        base added with respect to pH: β = dC_b/dpH. A high β means the buffer strongly
+        resists pH change; a low β means even small additions shift the pH dramatically.
+        Buffer capacity is not a single number but a function of pH — it peaks at the pKa
+        and falls off on both sides.
+    </div>
+
+    <div class="math-block">
+        \[\beta = 2.303 \cdot C \cdot \frac{K_a [\text{H}^+]}{(K_a + [\text{H}^+])^2}\]
+    </div>
+
+    <div class="prose">
+        This formula reveals several important features. First, β is proportional to the
+        <em>total buffer concentration</em> C = [HA] + [A⁻]: doubling the buffer concentration
+        doubles the capacity at every pH, proportionally. Second, the term
+        Ka[H⁺]/(Ka + [H⁺])² is maximised when Ka = [H⁺], i.e., when pH = pKa —
+        confirming that the buffer works best at its midpoint. At pH = pKa ± 1,
+        the capacity has fallen to about 50% of maximum. At pH = pKa ± 2, it is only
+        about 9% of maximum — essentially negligible. This is why choosing a buffer with
+        pKa close to your target pH is so important: a 0.1 M acetate buffer (pKa 4.76)
+        is useless at pH 7.
+    </div>
+
+    <div class="prose">
+        In addition to the conjugate acid/base term, there are water contributions to buffer
+        capacity at extreme pH values: β_water = 2.303([H⁺] + [OH⁻]). At pH 1, [H⁺] = 0.1 M,
+        which is a substantial contribution; at pH 7, [H⁺] = 10⁻⁷ M and [OH⁻] = 10⁻⁷ M,
+        which are negligible. This is why strongly acidic or alkaline solutions (pH &lt; 2 or
+        pH &gt; 12) have high buffer capacity even without a weak acid/base pair.
+    </div>
+
+    <div class="prose">
+        Practical buffer selection in biochemistry requires matching pKa to target pH,
+        choosing adequate concentration (typically 25–100 mM for intracellular conditions),
+        and considering whether the buffer is compatible with the biological system. Common
+        biochemical buffers include HEPES (pKa 7.55), MOPS (pKa 7.2), Tris (pKa 8.1),
+        and MES (pKa 6.1). The so-called <em>Good buffers</em> were designed in 1966 to have
+        pKa values in the physiologically relevant range of 6–8.
+    </div>
+
+    <!-- Interactive widget -->
+    <div class="canvas-wrap">
+        <canvas id="ab3-canvas"></canvas>
+        <div class="controls">
+            <label>pKa =</label>
+            <input type="range" id="ab3-pka" min="40" max="100" value="70">
+            <span class="val" id="ab3-pkaval">7.0</span>
+            <label>C (M) =</label>
+            <input type="range" id="ab3-c" min="1" max="100" value="10">
+            <span class="val" id="ab3-cval">0.10 M</span>
+        </div>
+        <div class="readout-bar">
+            <div class="readout-item">
+                <span class="readout-key">β_max</span>
+                <span class="readout-val" id="ab3-bmax">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">at pH = pKa</span>
+                <span class="readout-val" id="ab3-atpka">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">effective range (β > 10% max)</span>
+                <span class="readout-val" id="ab3-range">—</span>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="swatch" style="background:var(--accent)"></div>β(pH) — buffer capacity curve</div>
+            <div class="li"><div class="swatch" style="background:var(--accent);opacity:0.3;height:8px;border-radius:2px"></div>effective zone (β > 10% of max)</div>
+            <div class="li"><div class="swatch" style="background:var(--muted);border-top:1px dashed"></div>pKa line</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Why CO₂/HCO₃⁻ works as a blood buffer despite pKa = 6.1:</strong><br>
+        Normal blood pH is 7.4 — that's 1.3 units above pKa, where simple buffer capacity would
+        be low. The trick: the body couples chemistry to physiology. If pH drops (acidosis),
+        you breathe faster, exhaling CO₂ and shifting the equilibrium toward consuming H⁺.
+        If pH rises (alkalosis), you breathe slower, retaining CO₂. The lungs act as a
+        continuous <span class="hl">concentration modulator</span>, making the effective
+        buffer range extend far beyond ±1 pH unit. This is Le Chatelier's principle
+        operating at the whole-body level, with feedback time constants of seconds
+        (respiratory) to hours (renal).
+    </div>
+</section>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+function setupHDPI(canvas, w, h) {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    return ctx;
+}
+
+const C = {
+    bg: '#051e24', surface: '#072530', border: '#0a2a30',
+    accent: '#06b6d4', accentL: '#67e8f9',
+    text: '#e0f7fa', muted: '#4a7a80', dim: '#0f3a40',
+    red: '#f87171', orange: '#fb923c', yellow: '#fbbf24',
+    green: '#4ade80', purple: '#c084fc', pink: '#f472b6'
+};
+
+// pH → color function (spectral: red=acid, violet=base)
+function phColor(pH, alpha) {
+    const t = Math.max(0, Math.min(1, pH / 14));
+    // Red (0) → Yellow (7) → Green (8) → Cyan (9) → Blue (11) → Violet (14)
+    let r, g, b;
+    if (t < 0.5) {
+        // 0: red (239,68,68) → 0.5: yellow (250,204,21)
+        const s = t / 0.5;
+        r = Math.round(239 + s * 11);
+        g = Math.round(68 + s * 136);
+        b = Math.round(68 + s * -47);
+    } else {
+        // 0.5: yellow → 1.0: violet (196,132,252)
+        const s = (t - 0.5) / 0.5;
+        r = Math.round(250 + s * (-54));
+        g = Math.round(204 + s * (-72));
+        b = Math.round(21 + s * 231);
+    }
+    const a = alpha !== undefined ? alpha : 1;
+    return `rgba(${r},${g},${b},${a})`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 1 — Henderson-Hasselbalch
+// ═══════════════════════════════════════════════════════════
+const ab1Canvas = document.getElementById('ab1-canvas');
+const W1 = 900, H1 = 380;
+const ab1ctx = setupHDPI(ab1Canvas, W1, H1);
+
+function ab1Draw() {
+    const pkaRaw = parseInt(document.getElementById('ab1-pka').value);
+    const ratioRaw = parseInt(document.getElementById('ab1-ratio').value);
+
+    const pKa = pkaRaw / 10;
+    const logRatio = ratioRaw / 100;
+    const pH = pKa + logRatio;
+    const concRatio = Math.pow(10, logRatio);
+
+    document.getElementById('ab1-pkaval').textContent = pKa.toFixed(1);
+    document.getElementById('ab1-ratioval').textContent = logRatio.toFixed(2);
+    document.getElementById('ab1-ph').textContent = pH.toFixed(2);
+    document.getElementById('ab1-ph').style.color = phColor(pH);
+    document.getElementById('ab1-concratio').textContent = concRatio.toFixed(3);
+    const inZone = Math.abs(pH - pKa) <= 1;
+    document.getElementById('ab1-zone').textContent = inZone ? 'EFFECTIVE' : 'WEAK';
+    document.getElementById('ab1-zone').style.color = inZone ? C.accentL : C.muted;
+
+    const W = W1, H = H1;
+    ab1ctx.fillStyle = C.bg;
+    ab1ctx.fillRect(0, 0, W, H);
+
+    // === Left: pH scale strip ===
+    const stripX = 80, stripY = 40, stripW = 36, stripH = H - 90;
+    // Draw gradient strip
+    for (let i = 0; i < stripH; i++) {
+        const ph = 14 * (1 - i / stripH);
+        ab1ctx.fillStyle = phColor(ph, 0.85);
+        ab1ctx.fillRect(stripX, stripY + i, stripW, 1);
+    }
+    ab1ctx.strokeStyle = C.border;
+    ab1ctx.lineWidth = 1;
+    ab1ctx.strokeRect(stripX, stripY, stripW, stripH);
+
+    // pH tick marks
+    for (let p = 0; p <= 14; p += 2) {
+        const y = stripY + (1 - p / 14) * stripH;
+        ab1ctx.strokeStyle = C.dim;
+        ab1ctx.lineWidth = 1;
+        ab1ctx.beginPath();
+        ab1ctx.moveTo(stripX + stripW, y);
+        ab1ctx.lineTo(stripX + stripW + 8, y);
+        ab1ctx.stroke();
+        ab1ctx.fillStyle = C.muted;
+        ab1ctx.font = '10px Fira Code';
+        ab1ctx.textAlign = 'left';
+        ab1ctx.fillText(p, stripX + stripW + 12, y + 3);
+    }
+    ab1ctx.fillStyle = C.muted;
+    ab1ctx.font = '10px Fira Code';
+    ab1ctx.textAlign = 'center';
+    ab1ctx.fillText('pH', stripX + stripW/2, stripY - 10);
+
+    // Buffer zone highlight (pKa ± 1)
+    const zoneTop = stripY + (1 - Math.min(14, pKa + 1) / 14) * stripH;
+    const zoneBot = stripY + (1 - Math.max(0, pKa - 1) / 14) * stripH;
+    ab1ctx.fillStyle = C.accent + '33';
+    ab1ctx.fillRect(stripX, zoneTop, stripW, zoneBot - zoneTop);
+    ab1ctx.strokeStyle = C.accent + '66';
+    ab1ctx.lineWidth = 1;
+    ab1ctx.beginPath();
+    ab1ctx.moveTo(stripX, zoneTop); ab1ctx.lineTo(stripX + stripW, zoneTop);
+    ab1ctx.moveTo(stripX, zoneBot); ab1ctx.lineTo(stripX + stripW, zoneBot);
+    ab1ctx.stroke();
+
+    // pKa line
+    const pKaY = stripY + (1 - pKa / 14) * stripH;
+    ab1ctx.strokeStyle = C.accentL + 'aa';
+    ab1ctx.lineWidth = 1.5;
+    ab1ctx.setLineDash([4, 5]);
+    ab1ctx.beginPath();
+    ab1ctx.moveTo(stripX, pKaY); ab1ctx.lineTo(stripX + stripW + 50, pKaY);
+    ab1ctx.stroke();
+    ab1ctx.setLineDash([]);
+    ab1ctx.fillStyle = C.accentL;
+    ab1ctx.font = '9px Fira Code';
+    ab1ctx.textAlign = 'left';
+    ab1ctx.fillText('pKa=' + pKa.toFixed(1), stripX + stripW + 14, pKaY - 4);
+
+    // pH pointer
+    const pHy = stripY + (1 - Math.max(0, Math.min(14, pH)) / 14) * stripH;
+    ab1ctx.fillStyle = '#fff';
+    ab1ctx.shadowBlur = 12;
+    ab1ctx.shadowColor = phColor(pH);
+    ab1ctx.beginPath();
+    ab1ctx.moveTo(stripX - 12, pHy);
+    ab1ctx.lineTo(stripX - 2, pHy - 5);
+    ab1ctx.lineTo(stripX - 2, pHy + 5);
+    ab1ctx.closePath();
+    ab1ctx.fill();
+    ab1ctx.shadowBlur = 0;
+
+    // pH label next to pointer
+    ab1ctx.fillStyle = phColor(pH);
+    ab1ctx.font = 'bold 14px Fira Code';
+    ab1ctx.textAlign = 'right';
+    ab1ctx.fillText('pH ' + pH.toFixed(2), stripX - 16, pHy + 5);
+
+    // === Right: bar chart [HA] vs [A-] ===
+    const barAreaX = 240, barAreaY = 50, barAreaW = W - barAreaX - 60, barAreaH = H - 120;
+    const totalC = 1.0; // normalized
+    const fracA = concRatio / (1 + concRatio);
+    const fracHA = 1 / (1 + concRatio);
+
+    const barW = 80;
+    const gap = 40;
+    const bar1X = barAreaX + barAreaW * 0.2;
+    const bar2X = bar1X + barW + gap;
+
+    // [HA] bar
+    const ha_h = fracHA * barAreaH;
+    const ha_grad = ab1ctx.createLinearGradient(bar1X, barAreaY + barAreaH - ha_h, bar1X, barAreaY + barAreaH);
+    ha_grad.addColorStop(0, C.accentL + 'cc');
+    ha_grad.addColorStop(1, C.accentL + '44');
+    ab1ctx.fillStyle = ha_grad;
+    ab1ctx.fillRect(bar1X, barAreaY + barAreaH - ha_h, barW, ha_h);
+    ab1ctx.strokeStyle = C.accent;
+    ab1ctx.lineWidth = 1;
+    ab1ctx.strokeRect(bar1X, barAreaY + barAreaH - ha_h, barW, ha_h);
+    ab1ctx.fillStyle = C.accentL;
+    ab1ctx.font = '12px Fira Code'; ab1ctx.textAlign = 'center';
+    ab1ctx.fillText('[HA]', bar1X + barW/2, barAreaY + barAreaH + 18);
+    ab1ctx.fillText((fracHA * 100).toFixed(1) + '%', bar1X + barW/2, barAreaY + barAreaH - ha_h - 6);
+
+    // [A-] bar
+    const a_h = fracA * barAreaH;
+    const a_grad = ab1ctx.createLinearGradient(bar2X, barAreaY + barAreaH - a_h, bar2X, barAreaY + barAreaH);
+    a_grad.addColorStop(0, C.purple + 'cc');
+    a_grad.addColorStop(1, C.purple + '44');
+    ab1ctx.fillStyle = a_grad;
+    ab1ctx.fillRect(bar2X, barAreaY + barAreaH - a_h, barW, a_h);
+    ab1ctx.strokeStyle = C.purple;
+    ab1ctx.lineWidth = 1;
+    ab1ctx.strokeRect(bar2X, barAreaY + barAreaH - a_h, barW, a_h);
+    ab1ctx.fillStyle = C.purple;
+    ab1ctx.font = '12px Fira Code'; ab1ctx.textAlign = 'center';
+    ab1ctx.fillText('[A⁻]', bar2X + barW/2, barAreaY + barAreaH + 18);
+    ab1ctx.fillText((fracA * 100).toFixed(1) + '%', bar2X + barW/2, barAreaY + barAreaH - a_h - 6);
+
+    // Baseline
+    ab1ctx.strokeStyle = C.dim;
+    ab1ctx.lineWidth = 1;
+    ab1ctx.beginPath();
+    ab1ctx.moveTo(barAreaX, barAreaY + barAreaH);
+    ab1ctx.lineTo(barAreaX + barAreaW, barAreaY + barAreaH);
+    ab1ctx.stroke();
+
+    // Equation display
+    const eqX = bar2X + barW + 60;
+    const eqY = barAreaY + barAreaH * 0.35;
+    ab1ctx.fillStyle = C.muted;
+    ab1ctx.font = '11px Fira Code'; ab1ctx.textAlign = 'left';
+    ab1ctx.fillText('pH = pKa + log([A⁻]/[HA])', eqX, eqY);
+    ab1ctx.fillStyle = C.accentL;
+    ab1ctx.font = 'bold 13px Fira Code';
+    ab1ctx.fillText('pH = ' + pKa.toFixed(1) + ' + (' + logRatio.toFixed(2) + ')', eqX, eqY + 22);
+    ab1ctx.fillStyle = phColor(pH);
+    ab1ctx.font = 'bold 16px Fira Code';
+    ab1ctx.fillText('= ' + pH.toFixed(2), eqX, eqY + 44);
+}
+
+document.getElementById('ab1-pka').addEventListener('input', ab1Draw);
+document.getElementById('ab1-ratio').addEventListener('input', ab1Draw);
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 2 — Titration Curve
+// ═══════════════════════════════════════════════════════════
+const ab2Canvas = document.getElementById('ab2-canvas');
+const W2 = 900, H2 = 360;
+const ab2ctx = setupHDPI(ab2Canvas, W2, H2);
+
+// Strong acid/strong base titration: 50 mL 0.1M HCl + 0.1M NaOH
+function titrationPH(volNaOH_mL) {
+    const V_acid = 50; // mL
+    const M_acid = 0.1; // mol/L
+    const M_base = 0.1; // mol/L
+    const mol_acid = V_acid * M_acid / 1000; // mol
+    const mol_base = volNaOH_mL * M_base / 1000;
+    const V_total = (V_acid + volNaOH_mL) / 1000; // L
+
+    const eps = 1e-12;
+    if (Math.abs(volNaOH_mL - 50) < 0.02) return 7.0;
+
+    if (volNaOH_mL < 50) {
+        const excess_H = (mol_acid - mol_base) / V_total;
+        return -Math.log10(Math.max(eps, excess_H));
+    } else {
+        const excess_OH = (mol_base - mol_acid) / V_total;
+        return 14 + Math.log10(Math.max(eps, excess_OH));
+    }
+}
+
+// Indicator colors
+function indicatorColor(pH) {
+    // Methyl orange: red(pH<3.1) → orange(pH 3.1-4.4) → yellow(pH>4.4)
+    // Phenolphthalein: colorless(pH<8.2) → pink(pH 8.2-10) → magenta(pH>10)
+    // Pick dominant one based on pH
+    if (pH < 6) {
+        if (pH < 3.1) return { color: '#ef4444', name: 'methyl orange (red)' };
+        if (pH < 4.4) return { color: '#f97316', name: 'methyl orange (orange)' };
+        return { color: '#fbbf24', name: 'methyl orange (yellow)' };
+    } else if (pH < 8.2) {
+        return { color: '#e0f7fa', name: 'phenolphthalein (colorless)' };
+    } else if (pH < 10) {
+        return { color: '#f472b6', name: 'phenolphthalein (pink)' };
+    } else {
+        return { color: '#db2777', name: 'phenolphthalein (magenta)' };
+    }
+}
+
+function ab2Draw() {
+    const volRaw = parseFloat(document.getElementById('ab2-vol').value);
+    const pH = titrationPH(volRaw);
+
+    document.getElementById('ab2-volval').textContent = volRaw.toFixed(1) + ' mL';
+    document.getElementById('ab2-volread').textContent = volRaw.toFixed(1) + ' mL';
+    document.getElementById('ab2-ph').textContent = pH.toFixed(2);
+    document.getElementById('ab2-ph').style.color = phColor(pH);
+
+    if (volRaw < 50) {
+        const excess = Math.max(1e-12, (50-volRaw)*0.1/(50+volRaw)*1000);
+        document.getElementById('ab2-phase').textContent = 'excess HCl';
+        document.getElementById('ab2-conc').textContent = '[H⁺] = ' + excess.toExponential(2) + ' M';
+    } else if (volRaw > 50) {
+        const excess = Math.max(1e-12, (volRaw-50)*0.1/(50+volRaw)*1000);
+        document.getElementById('ab2-phase').textContent = 'excess NaOH';
+        document.getElementById('ab2-conc').textContent = '[OH⁻] = ' + excess.toExponential(2) + ' M';
+    } else {
+        document.getElementById('ab2-phase').textContent = 'equivalence point';
+        document.getElementById('ab2-conc').textContent = 'neutral salt (NaCl)';
+    }
+
+    const ind = indicatorColor(pH);
+    document.getElementById('ab2-indicator-patch').style.background = ind.color;
+    document.getElementById('ab2-indicator-name').textContent = ind.name;
+
+    const W = W2, H = H2;
+    ab2ctx.fillStyle = C.bg;
+    ab2ctx.fillRect(0, 0, W, H);
+
+    const pad = {l: 64, r: 32, t: 28, b: 40};
+    const W2p = W - pad.l - pad.r;
+    const H2p = H - pad.t - pad.b;
+
+    // pH axis: 0-14
+    // Vol axis: 0-100 mL
+
+    // Grid
+    ab2ctx.strokeStyle = C.dim;
+    ab2ctx.lineWidth = 1;
+    [0, 2, 4, 6, 7, 8, 10, 12, 14].forEach(p => {
+        const y = pad.t + (1 - p/14) * H2p;
+        ab2ctx.beginPath(); ab2ctx.moveTo(pad.l, y); ab2ctx.lineTo(pad.l + W2p, y); ab2ctx.stroke();
+        ab2ctx.fillStyle = C.muted; ab2ctx.font = '10px Fira Code'; ab2ctx.textAlign = 'right';
+        ab2ctx.fillText(p, pad.l - 8, y + 3);
+    });
+    [0, 25, 50, 75, 100].forEach(v => {
+        const x = pad.l + (v/100) * W2p;
+        ab2ctx.strokeStyle = C.dim;
+        ab2ctx.beginPath(); ab2ctx.moveTo(x, pad.t); ab2ctx.lineTo(x, pad.t + H2p); ab2ctx.stroke();
+        ab2ctx.fillStyle = C.muted; ab2ctx.font = '10px Fira Code'; ab2ctx.textAlign = 'center';
+        ab2ctx.fillText(v + ' mL', x, pad.t + H2p + 16);
+    });
+
+    // Axes
+    ab2ctx.strokeStyle = C.dim;
+    ab2ctx.lineWidth = 1;
+    ab2ctx.beginPath();
+    ab2ctx.moveTo(pad.l, pad.t); ab2ctx.lineTo(pad.l, pad.t + H2p);
+    ab2ctx.moveTo(pad.l, pad.t + H2p); ab2ctx.lineTo(pad.l + W2p, pad.t + H2p);
+    ab2ctx.stroke();
+
+    // pH = 7 line
+    const y7 = pad.t + (1 - 7/14) * H2p;
+    ab2ctx.strokeStyle = C.accent + '44';
+    ab2ctx.lineWidth = 1;
+    ab2ctx.setLineDash([6, 6]);
+    ab2ctx.beginPath(); ab2ctx.moveTo(pad.l, y7); ab2ctx.lineTo(pad.l + W2p, y7); ab2ctx.stroke();
+    ab2ctx.setLineDash([]);
+    ab2ctx.fillStyle = C.accent + '88';
+    ab2ctx.font = '9px Fira Code'; ab2ctx.textAlign = 'left';
+    ab2ctx.fillText('neutral pH=7', pad.l + 4, y7 - 4);
+
+    // Equivalence point vertical line (50 mL)
+    const xEq = pad.l + 0.5 * W2p;
+    ab2ctx.strokeStyle = C.yellow + '88';
+    ab2ctx.lineWidth = 1.5;
+    ab2ctx.setLineDash([5, 5]);
+    ab2ctx.beginPath(); ab2ctx.moveTo(xEq, pad.t); ab2ctx.lineTo(xEq, pad.t + H2p); ab2ctx.stroke();
+    ab2ctx.setLineDash([]);
+    ab2ctx.fillStyle = C.yellow;
+    ab2ctx.font = '9px Fira Code'; ab2ctx.textAlign = 'center';
+    ab2ctx.fillText('eq. pt.', xEq, pad.t + 12);
+
+    // Titration curve
+    const steps = 1000;
+    ab2ctx.strokeStyle = C.accent;
+    ab2ctx.lineWidth = 2.5;
+    ab2ctx.shadowBlur = 6;
+    ab2ctx.shadowColor = C.accent + '66';
+    ab2ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+        const v = (i / steps) * 100;
+        const p = Math.max(0, Math.min(14, titrationPH(v)));
+        const x = pad.l + (v / 100) * W2p;
+        const y = pad.t + (1 - p / 14) * H2p;
+        i === 0 ? ab2ctx.moveTo(x, y) : ab2ctx.lineTo(x, y);
+    }
+    ab2ctx.stroke();
+    ab2ctx.shadowBlur = 0;
+
+    // Current point
+    const xCur = pad.l + (volRaw / 100) * W2p;
+    const yCur = pad.t + (1 - Math.max(0, Math.min(14, pH)) / 14) * H2p;
+    ab2ctx.beginPath(); ab2ctx.arc(xCur, yCur, 5, 0, Math.PI * 2);
+    ab2ctx.fillStyle = '#fff';
+    ab2ctx.shadowBlur = 12; ab2ctx.shadowColor = phColor(pH);
+    ab2ctx.fill(); ab2ctx.shadowBlur = 0;
+
+    // Axis labels
+    ab2ctx.save();
+    ab2ctx.translate(14, pad.t + H2p/2);
+    ab2ctx.rotate(-Math.PI/2);
+    ab2ctx.fillStyle = C.muted; ab2ctx.font = '11px Fira Code'; ab2ctx.textAlign = 'center';
+    ab2ctx.fillText('pH', 0, 0);
+    ab2ctx.restore();
+    ab2ctx.fillStyle = C.muted; ab2ctx.font = '11px Fira Code'; ab2ctx.textAlign = 'right';
+    ab2ctx.fillText('vol NaOH (mL)', pad.l + W2p, pad.t + H2p + 34);
+}
+
+document.getElementById('ab2-vol').addEventListener('input', ab2Draw);
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 3 — Buffer Capacity
+// ═══════════════════════════════════════════════════════════
+const ab3Canvas = document.getElementById('ab3-canvas');
+const W3 = 900, H3 = 360;
+const ab3ctx = setupHDPI(ab3Canvas, W3, H3);
+
+function bufferCapacity(pH, pKa, C_total) {
+    const Ka = Math.pow(10, -pKa);
+    const H = Math.pow(10, -pH);
+    // β = 2.303 * C * Ka*H / (Ka+H)^2
+    return 2.303 * C_total * (Ka * H) / Math.pow(Ka + H, 2);
+}
+
+function ab3Draw() {
+    const pkaRaw = parseInt(document.getElementById('ab3-pka').value);
+    const cRaw = parseInt(document.getElementById('ab3-c').value);
+    const pKa = pkaRaw / 10;
+    const C_total = cRaw / 100;
+
+    document.getElementById('ab3-pkaval').textContent = pKa.toFixed(1);
+    document.getElementById('ab3-cval').textContent = C_total.toFixed(2) + ' M';
+
+    const W = W3, H = H3;
+    ab3ctx.fillStyle = C.bg;
+    ab3ctx.fillRect(0, 0, W, H);
+
+    const pad = {l: 76, r: 32, t: 28, b: 40};
+    const W2p = W - pad.l - pad.r;
+    const H2p = H - pad.t - pad.b;
+
+    // Compute curve
+    const steps = 500;
+    const betas = [];
+    for (let i = 0; i <= steps; i++) {
+        const ph = (i / steps) * 14;
+        betas.push(bufferCapacity(ph, pKa, C_total));
+    }
+    const bMax = Math.max(...betas);
+    const bAxisMax = bMax * 1.15;
+
+    // Effective zone
+    let zoneStart = null, zoneEnd = null;
+    const threshold = 0.1 * bMax;
+    for (let i = 0; i <= steps; i++) {
+        if (betas[i] >= threshold) {
+            if (zoneStart === null) zoneStart = i / steps * 14;
+            zoneEnd = i / steps * 14;
+        }
+    }
+
+    // Grid
+    ab3ctx.strokeStyle = C.dim;
+    ab3ctx.lineWidth = 1;
+    [0, 2, 4, 6, 8, 10, 12, 14].forEach(p => {
+        const x = pad.l + (p/14) * W2p;
+        ab3ctx.beginPath(); ab3ctx.moveTo(x, pad.t); ab3ctx.lineTo(x, pad.t + H2p); ab3ctx.stroke();
+        ab3ctx.fillStyle = C.muted; ab3ctx.font = '10px Fira Code'; ab3ctx.textAlign = 'center';
+        ab3ctx.fillText(p, x, pad.t + H2p + 16);
+    });
+    [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+        const y = pad.t + H2p - f * H2p;
+        ab3ctx.strokeStyle = C.dim;
+        ab3ctx.beginPath(); ab3ctx.moveTo(pad.l, y); ab3ctx.lineTo(pad.l + W2p, y); ab3ctx.stroke();
+        ab3ctx.fillStyle = C.muted; ab3ctx.font = '10px Fira Code'; ab3ctx.textAlign = 'right';
+        ab3ctx.fillText((f * bAxisMax).toExponential(1), pad.l - 6, y + 3);
+    });
+
+    // Axes
+    ab3ctx.strokeStyle = C.dim; ab3ctx.lineWidth = 1;
+    ab3ctx.beginPath();
+    ab3ctx.moveTo(pad.l, pad.t); ab3ctx.lineTo(pad.l, pad.t + H2p);
+    ab3ctx.moveTo(pad.l, pad.t + H2p); ab3ctx.lineTo(pad.l + W2p, pad.t + H2p);
+    ab3ctx.stroke();
+
+    // Effective zone shading
+    if (zoneStart !== null && zoneEnd !== null) {
+        const xZ1 = pad.l + (zoneStart / 14) * W2p;
+        const xZ2 = pad.l + (zoneEnd / 14) * W2p;
+        const zGrad = ab3ctx.createLinearGradient(xZ1, 0, xZ2, 0);
+        zGrad.addColorStop(0, C.accent + '00');
+        zGrad.addColorStop(0.2, C.accent + '22');
+        zGrad.addColorStop(0.5, C.accent + '33');
+        zGrad.addColorStop(0.8, C.accent + '22');
+        zGrad.addColorStop(1, C.accent + '00');
+        ab3ctx.fillStyle = zGrad;
+        ab3ctx.fillRect(xZ1, pad.t, xZ2 - xZ1, H2p);
+    }
+
+    // pKa dashed line
+    const xpKa = pad.l + (pKa / 14) * W2p;
+    ab3ctx.strokeStyle = C.accentL + '88';
+    ab3ctx.lineWidth = 1.5;
+    ab3ctx.setLineDash([5, 5]);
+    ab3ctx.beginPath(); ab3ctx.moveTo(xpKa, pad.t); ab3ctx.lineTo(xpKa, pad.t + H2p); ab3ctx.stroke();
+    ab3ctx.setLineDash([]);
+    ab3ctx.fillStyle = C.accentL;
+    ab3ctx.font = '10px Fira Code'; ab3ctx.textAlign = 'center';
+    ab3ctx.fillText('pKa=' + pKa.toFixed(1), xpKa, pad.t + 14);
+
+    // 10% threshold line
+    const yThresh = pad.t + H2p - (0.1 * bMax / bAxisMax) * H2p;
+    ab3ctx.strokeStyle = C.muted + '55';
+    ab3ctx.lineWidth = 1;
+    ab3ctx.setLineDash([3, 6]);
+    ab3ctx.beginPath(); ab3ctx.moveTo(pad.l, yThresh); ab3ctx.lineTo(pad.l + W2p, yThresh); ab3ctx.stroke();
+    ab3ctx.setLineDash([]);
+    ab3ctx.fillStyle = C.muted;
+    ab3ctx.font = '9px Fira Code'; ab3ctx.textAlign = 'right';
+    ab3ctx.fillText('10% of β_max', pad.l + W2p, yThresh - 4);
+
+    // β(pH) curve filled
+    ab3ctx.beginPath();
+    ab3ctx.moveTo(pad.l, pad.t + H2p);
+    for (let i = 0; i <= steps; i++) {
+        const ph = (i / steps) * 14;
+        const b = bufferCapacity(ph, pKa, C_total);
+        const x = pad.l + (ph / 14) * W2p;
+        const y = pad.t + H2p - (b / bAxisMax) * H2p;
+        ab3ctx.lineTo(x, y);
+    }
+    ab3ctx.lineTo(pad.l + W2p, pad.t + H2p);
+    ab3ctx.closePath();
+    const fillGrad = ab3ctx.createLinearGradient(0, pad.t, 0, pad.t + H2p);
+    fillGrad.addColorStop(0, C.accent + '55');
+    fillGrad.addColorStop(1, C.accent + '11');
+    ab3ctx.fillStyle = fillGrad;
+    ab3ctx.fill();
+
+    // β(pH) curve stroke
+    ab3ctx.strokeStyle = C.accent;
+    ab3ctx.lineWidth = 2.5;
+    ab3ctx.shadowBlur = 6; ab3ctx.shadowColor = C.accent + '44';
+    ab3ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+        const ph = (i / steps) * 14;
+        const b = bufferCapacity(ph, pKa, C_total);
+        const x = pad.l + (ph / 14) * W2p;
+        const y = pad.t + H2p - (b / bAxisMax) * H2p;
+        i === 0 ? ab3ctx.moveTo(x, y) : ab3ctx.lineTo(x, y);
+    }
+    ab3ctx.stroke();
+    ab3ctx.shadowBlur = 0;
+
+    // Peak dot at pKa
+    const bPeak = bufferCapacity(pKa, pKa, C_total);
+    const yPeak = pad.t + H2p - (bPeak / bAxisMax) * H2p;
+    ab3ctx.beginPath(); ab3ctx.arc(xpKa, yPeak, 5, 0, Math.PI * 2);
+    ab3ctx.fillStyle = C.accentL;
+    ab3ctx.shadowBlur = 12; ab3ctx.shadowColor = C.accentL;
+    ab3ctx.fill(); ab3ctx.shadowBlur = 0;
+
+    // Axis labels
+    ab3ctx.save();
+    ab3ctx.translate(14, pad.t + H2p/2);
+    ab3ctx.rotate(-Math.PI/2);
+    ab3ctx.fillStyle = C.muted; ab3ctx.font = '11px Fira Code'; ab3ctx.textAlign = 'center';
+    ab3ctx.fillText('β (mol/L/pH)', 0, 0);
+    ab3ctx.restore();
+    ab3ctx.fillStyle = C.muted; ab3ctx.font = '11px Fira Code'; ab3ctx.textAlign = 'right';
+    ab3ctx.fillText('pH →', pad.l + W2p, pad.t + H2p + 34);
+
+    // Readouts
+    document.getElementById('ab3-bmax').textContent = bMax.toExponential(3) + ' mol/L/pH';
+    document.getElementById('ab3-atpka').textContent = 'β_max at pH = ' + pKa.toFixed(1);
+    if (zoneStart !== null) {
+        document.getElementById('ab3-range').textContent = zoneStart.toFixed(1) + ' – ' + zoneEnd.toFixed(1);
+    }
+}
+
+document.getElementById('ab3-pka').addEventListener('input', ab3Draw);
+document.getElementById('ab3-c').addEventListener('input', ab3Draw);
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+    ab1Draw();
+    ab2Draw();
+    ab3Draw();
+    setTimeout(() => {
+        if (window.renderMathInElement) {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        }
+    }, 300);
+});
+</script>
+</body>
+</html>

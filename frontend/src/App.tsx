@@ -103,7 +103,6 @@ const DOMAINS = [
     cases: [
       { slug: 'gradient_descent',     title: 'Gradient Descent',      category: 'Direct Manipulation',   desc: 'Click to place the starting point on a 3D loss surface and watch SGD, momentum, and Adam navigate to minima.' },
       { slug: 'bias_variance',        title: 'Bias–Variance Tradeoff', category: 'Parameter Exploration', desc: 'Fit polynomials to noisy data — as degree grows, watch bias collapse and variance explode into overfitting.' },
-      { slug: 'decision_boundary',    title: 'Decision Boundaries',   category: 'Direct Manipulation',   desc: 'Place class points and see how k-NN, logistic regression, and SVM carve the space into regions.' },
     ],
   },
   {
@@ -112,7 +111,6 @@ const DOMAINS = [
     cases: [
       { slug: 'time_dilation',        title: 'Time Dilation',         category: 'Parameter Exploration', desc: 'Drag a starship to near-light speed and watch proper time diverge from coordinate time on a live Lorentz factor curve.' },
       { slug: 'lorentz_transform',    title: 'Lorentz Transformation', category: 'Direct Manipulation',  desc: 'Drag a moving frame on the Minkowski diagram to see simultaneity shatter and length-contracted rulers emerge.' },
-      { slug: 'spacetime_interval',   title: 'Spacetime Interval',    category: 'Inspection',            desc: 'Click to place events on a spacetime diagram and hover to classify their causal relationship via the light cone.' },
     ],
   },
 ];
