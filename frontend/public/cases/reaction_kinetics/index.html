@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Kinetics</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #05101e;
+            --card: #081828;
+            --surface: #0c1f30;
+            --accent: #84cc16;
+            --accent2: #65a30d;
+            --text: #e8f4e8;
+            --muted: #5a7a5a;
+            --dim: #2a4a2a;
+            --border: #0f2a1a;
+            --red: #f87171;
+            --yellow: #fbbf24;
+            --cyan: #22d3ee;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Lora', serif;
+            line-height: 1.8;
+            padding: 0 0 100px;
+        }
+        header {
+            text-align: center;
+            padding: 64px 40px 52px;
+            background: radial-gradient(ellipse at 50% 0%, #0a2a10 0%, var(--bg) 68%);
+            border-bottom: 1px solid var(--border);
+        }
+        header .tag {
+            display: inline-block;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 0.22em; color: var(--accent);
+            text-transform: uppercase; border: 1px solid rgba(132,204,22,0.25);
+            padding: 3px 14px; border-radius: 20px; margin-bottom: 22px;
+        }
+        h1 {
+            font-family: 'Lora', serif;
+            font-size: 3.4rem; font-weight: 600;
+            color: var(--text); line-height: 1.1; margin-bottom: 18px;
+        }
+        h1 em { color: var(--accent); font-style: italic; }
+        header p {
+            font-family: 'DM Mono', monospace;
+            color: var(--muted); font-size: 12px; max-width: 560px; margin: 0 auto;
+            line-height: 1.8;
+        }
+        section { max-width: 960px; margin: 70px auto 0; padding: 0 36px; }
+        .section-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 0.22em; color: var(--muted);
+            text-transform: uppercase; margin-bottom: 22px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        h2 {
+            font-family: 'Lora', serif;
+            font-size: 1.85rem; font-weight: 600; margin-bottom: 18px;
+            color: var(--text);
+        }
+        .prose {
+            font-family: 'Lora', serif;
+            font-size: 14.5px; color: var(--muted); line-height: 1.9; margin-bottom: 20px;
+        }
+        .prose strong { color: var(--text); }
+        .prose em { color: var(--accent); font-style: italic; }
+        .math-block {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); padding: 16px 22px;
+            border-radius: 4px; margin: 20px 0; font-size: 13px; overflow-x: auto;
+            font-family: 'DM Mono', monospace;
+        }
+        .canvas-wrap {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden; margin: 28px 0;
+        }
+        canvas { display: block; }
+        .controls {
+            display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+            padding: 14px 18px; background: var(--surface); border-top: 1px solid var(--border);
+        }
+        .btn {
+            padding: 6px 16px; border: 1px solid var(--dim); background: transparent;
+            color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px;
+            border-radius: 3px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.active {
+            background: var(--accent); color: #05101e;
+            border-color: var(--accent); font-weight: 500;
+        }
+        label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px; color: var(--muted); letter-spacing: 0.04em;
+        }
+        input[type=range] { width: 100px; accent-color: var(--accent); cursor: pointer; }
+        .val {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px; color: var(--accent); min-width: 46px;
+        }
+        .readout-bar {
+            padding: 10px 18px; border-top: 1px solid var(--border);
+            background: var(--card);
+            font-family: 'DM Mono', monospace; font-size: 12px;
+            display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+        }
+        .readout-item { display: flex; gap: 8px; align-items: center; }
+        .readout-key { color: var(--muted); }
+        .readout-val { color: var(--accent); }
+        .legend {
+            display: flex; gap: 18px; flex-wrap: wrap;
+            padding: 10px 18px; border-top: 1px solid var(--border);
+            font-family: 'DM Mono', monospace; font-size: 11px;
+        }
+        .li { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .swatch { width: 20px; height: 3px; flex-shrink: 0; }
+        .infobox {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 18px 22px; margin: 20px 0;
+            font-family: 'DM Mono', monospace; font-size: 12px;
+            color: var(--muted); line-height: 1.9;
+        }
+        .infobox strong { color: var(--text); }
+        .infobox .hl { color: var(--accent); }
+        .halflife-display {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--yellow);
+            border-radius: 4px; padding: 12px 18px; margin-top: 12px;
+            font-family: 'DM Mono', monospace; font-size: 13px;
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .halflife-label { color: var(--muted); }
+        .halflife-value { color: var(--yellow); font-size: 15px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="tag">Parameter Exploration · Chemical Kinetics</div>
+    <h1>Reaction <em>Kinetics</em></h1>
+    <p>How fast do chemical reactions proceed — and why? Explore integrated rate laws,
+    the Arrhenius equation, and enzyme kinetics through interactive visualizations
+    grounded in first principles.</p>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 1: Reaction Order and Concentration Decay
+═══════════════════════════════════════════════════════════ -->
+<section>
+    <div class="section-label">01 — Integrated Rate Laws</div>
+    <h2>Reaction Order and Concentration Decay</h2>
+
+    <div class="prose">
+        Every chemical reaction has a <strong>rate law</strong>: an equation relating the rate of
+        consumption of reactants to their concentrations. For a simple reaction A → products,
+        the rate law takes the form <em>rate = k[A]ⁿ</em>, where <em>k</em> is the rate constant
+        and <em>n</em> is the <strong>reaction order</strong> — typically 0, 1, or 2.
+        The order is an empirical quantity; it cannot generally be read off from the balanced
+        equation, but must be determined by measuring concentration vs. time in the laboratory.
+    </div>
+
+    <div class="math-block">
+        \[\frac{d[\text{A}]}{dt} = -k[\text{A}]^n\]
+    </div>
+
+    <div class="prose">
+        Integrating the rate law yields the <strong>integrated rate law</strong> — a direct
+        expression for how concentration evolves with time. For a
+        <strong>zeroth-order reaction</strong> (n = 0), the rate is constant and concentration
+        declines linearly: [A](t) = [A]₀ − kt. The reaction proceeds at the same rate regardless
+        of how much reactant remains; this occurs when the reaction is limited by a surface or
+        enzyme that is always saturated. For a
+        <strong>first-order reaction</strong> (n = 1), every molecule decomposes independently,
+        giving exponential decay: [A](t) = [A]₀ · e^(−kt). Radioactive decay and many
+        unimolecular reactions follow this law — each nucleus or molecule has a fixed probability
+        per unit time of reacting. For a
+        <strong>second-order reaction</strong> (n = 2), molecules must collide pairwise, so the
+        rate slows dramatically as concentration drops: [A](t) = [A]₀/(1 + k[A]₀t).
+    </div>
+
+    <div class="prose">
+        One diagnostic tool is the <strong>half-life</strong> t₁/₂ — the time required for
+        concentration to fall to half its initial value. For a zeroth-order reaction,
+        t₁/₂ = [A]₀/(2k), which depends on initial concentration.
+        For a first-order reaction, t₁/₂ = ln 2/k ≈ 0.693/k, which is gloriously
+        <em>independent</em> of initial concentration — this is the familiar constant half-life
+        of radioactive isotopes. For a second-order reaction, t₁/₂ = 1/(k[A]₀), inversely
+        proportional to initial concentration. Experimenters routinely measure half-lives
+        at several starting concentrations to determine reaction order.
+    </div>
+
+    <div class="prose">
+        To identify order experimentally, one plots [A] vs. t (linear for 0th order),
+        ln[A] vs. t (linear for 1st order), or 1/[A] vs. t (linear for 2nd order) — whichever
+        gives a straight line reveals the order. The slope of that line gives k.
+        Use the controls below to explore how the shape of the decay curve changes with order,
+        rate constant, and initial concentration.
+    </div>
+
+    <!-- Interactive widget -->
+    <div class="canvas-wrap">
+        <canvas id="rk1-canvas"></canvas>
+        <div class="controls">
+            <label>Order:</label>
+            <button class="btn active" id="rk1-btn0" onclick="rk1SetOrder(0)">0th</button>
+            <button class="btn" id="rk1-btn1" onclick="rk1SetOrder(1)">1st</button>
+            <button class="btn" id="rk1-btn2" onclick="rk1SetOrder(2)">2nd</button>
+            <div style="width:1px;height:24px;background:var(--border);margin:0 4px;"></div>
+            <label>k =</label>
+            <input type="range" id="rk1-k" min="5" max="200" value="50">
+            <span class="val" id="rk1-kval">0.50</span>
+            <label>[A]₀ =</label>
+            <input type="range" id="rk1-a0" min="10" max="100" value="80">
+            <span class="val" id="rk1-a0val">8.0 M</span>
+        </div>
+        <div class="halflife-display">
+            <span class="halflife-label">t₁/₂ =</span>
+            <span class="halflife-value" id="rk1-t12">—</span>
+            <span class="halflife-label" id="rk1-t12-formula" style="font-size:11px"></span>
+        </div>
+        <div class="readout-bar">
+            <div class="readout-item">
+                <span class="readout-key">current [A]</span>
+                <span class="readout-val" id="rk1-readout-a">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">at t =</span>
+                <span class="readout-val" id="rk1-readout-t">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">order</span>
+                <span class="readout-val" id="rk1-readout-n">0</span>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="swatch" style="background:var(--accent)"></div>[A](t) — concentration</div>
+            <div class="li"><div class="swatch" style="background:var(--yellow);opacity:0.6"></div>t₁/₂ marker</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Determining order from linearization:</strong><br>
+        Plot [A] vs t → if linear, n=0. Plot ln[A] vs t → if linear, n=1. Plot 1/[A] vs t → if linear, n=2.
+        The slope of the linear plot gives <span class="hl">−k</span> (n=0), <span class="hl">−k</span> (n=1),
+        or <span class="hl">+k</span> (n=2). This is how chemists determine rate constants from experimental data.
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 2: Arrhenius Equation
+═══════════════════════════════════════════════════════════ -->
+<section>
+    <div class="section-label">02 — Arrhenius Equation</div>
+    <h2>Temperature and the Energy Barrier</h2>
+
+    <div class="prose">
+        Rate constants are not truly constant — they depend exponentially on temperature.
+        In 1889, Svante Arrhenius proposed an equation that has become one of the most
+        important in all of physical chemistry. It explains why reactions speed up dramatically
+        when heated, why food spoils faster in summer, and why enzymes evolved to work
+        near 37 °C rather than 100 °C.
+    </div>
+
+    <div class="math-block">
+        \[k = A\,e^{-E_a / RT}\]
+    </div>
+
+    <div class="prose">
+        The <strong>activation energy</strong> Eₐ is the minimum energy that colliding molecules
+        must possess for a reaction to occur. Imagine a potential-energy surface: reactants sit
+        in a valley, and the transition state is a mountain pass. Only molecules with enough
+        kinetic energy to climb this barrier contribute to the reaction rate. The
+        <strong>pre-exponential factor A</strong> (also called the frequency factor) captures
+        both the collision frequency and the geometric requirement that molecules be correctly
+        oriented when they collide. It has units of s⁻¹ for first-order reactions or M⁻¹s⁻¹
+        for second-order.
+    </div>
+
+    <div class="prose">
+        The exponential dependence on temperature is striking. At 310 K (near body temperature),
+        a 10 K increase in temperature typically <em>doubles</em> the rate constant for reactions
+        with typical Eₐ values of 50–70 kJ/mol. This "doubling rule" is a rough empirical
+        observation — more precisely, the ratio k(T+10)/k(T) = exp(Eₐ × 10 / [R·T·(T+10)]).
+        High-Eₐ reactions are more sensitive to temperature changes; low-Eₐ reactions (like
+        enzyme-catalysed reactions, Eₐ ≈ 20–40 kJ/mol) are less sensitive. Catalysts work
+        precisely by providing an alternative reaction pathway with a lower activation energy —
+        the same Arrhenius exponential applies, but with a smaller Eₐ, giving an enormously
+        larger k at the same temperature.
+    </div>
+
+    <div class="prose">
+        Taking the natural log of the Arrhenius equation gives
+        ln k = ln A − Eₐ/(RT), so a plot of ln k vs 1/T (an "Arrhenius plot") is a straight line
+        with slope −Eₐ/R. Chemists use Arrhenius plots to extract Eₐ experimentally: measure k
+        at several temperatures, plot ln k vs 1/T, fit a line. The slope gives −Eₐ/R ≈ −Eₐ/8.314.
+        This technique is used in drug stability testing, food science, and materials engineering.
+    </div>
+
+    <!-- Interactive widget -->
+    <div class="canvas-wrap">
+        <canvas id="rk2-canvas"></canvas>
+        <div class="controls">
+            <label>Eₐ (kJ/mol) =</label>
+            <input type="range" id="rk2-ea" min="20" max="100" value="55">
+            <span class="val" id="rk2-eaval">55</span>
+            <label>T (K) =</label>
+            <input type="range" id="rk2-T" min="250" max="400" value="310">
+            <span class="val" id="rk2-Tval">310</span>
+        </div>
+        <div class="readout-bar">
+            <div class="readout-item">
+                <span class="readout-key">k at T</span>
+                <span class="readout-val" id="rk2-kval">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">k at T+10 K</span>
+                <span class="readout-val" id="rk2-kval2">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">ratio k(T+10)/k(T)</span>
+                <span class="readout-val" id="rk2-ratio">—</span>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="swatch" style="background:var(--accent)"></div>k(T) curve (250–700 K)</div>
+            <div class="li"><div class="dot" style="background:var(--cyan)"></div>current T</div>
+            <div class="li"><div class="dot" style="background:var(--yellow)"></div>T + 10 K</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Catalysis and Eₐ:</strong> A platinum catalyst reduces the Eₐ of H₂ + O₂ → H₂O
+        from ~240 kJ/mol to ~50 kJ/mol, making the reaction proceed at room temperature instead
+        of requiring an ignition source. Biological enzymes are even more dramatic — they reduce
+        Eₐ by stabilising the transition state through precise geometric and electrostatic
+        interactions in the active site. The Arrhenius factor improvement can be
+        <span class="hl">10⁸ to 10²⁰ fold</span> compared to uncatalysed reactions.
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 3: Michaelis-Menten Enzyme Kinetics
+═══════════════════════════════════════════════════════════ -->
+<section>
+    <div class="section-label">03 — Enzyme Kinetics</div>
+    <h2>Michaelis–Menten Saturation</h2>
+
+    <div class="prose">
+        Unlike ordinary chemical reactions, enzyme-catalysed reactions display a characteristic
+        <strong>saturation behaviour</strong>: at low substrate concentrations [S], the rate
+        increases nearly linearly with [S], but at high [S] the rate asymptotes to a maximum
+        velocity Vmax, no matter how much more substrate is added. This is because enzymes have
+        a fixed number of active sites, and when all are occupied, the enzyme is working as fast
+        as it can.
+    </div>
+
+    <div class="math-block">
+        \[v = \frac{V_{\max}[\text{S}]}{K_m + [\text{S}]}\]
+    </div>
+
+    <div class="prose">
+        The Michaelis-Menten mechanism (1913) assumes a two-step process: the enzyme E reversibly
+        binds substrate S to form the enzyme-substrate complex ES (with dissociation constant-like
+        parameter Km), which then breaks down to release product P and regenerate E. The
+        <strong>Michaelis constant Km</strong> is the substrate concentration at which the reaction
+        rate is exactly half of Vmax. A small Km means the enzyme has high affinity for its
+        substrate — the active site is half-saturated at low [S]. A large Km means the enzyme
+        has weak affinity and needs a higher substrate concentration to operate efficiently.
+        Km values span roughly 10 μM to 100 mM across different enzymes; they are fundamental
+        parameters for understanding enzyme specificity.
+    </div>
+
+    <div class="prose">
+        Clinically, Km is crucial in pharmacology. Many drugs work by <em>competitive inhibition</em>:
+        the drug molecule resembles the natural substrate and competes for the active site.
+        A competitive inhibitor increases the apparent Km (makes the enzyme seem to have lower
+        affinity) but does not change Vmax — at saturating substrate, the inhibitor is out-competed.
+        <em>Noncompetitive inhibitors</em> bind a different site (the allosteric site), decreasing
+        Vmax without affecting Km — the enzyme's affinity is unchanged, but its maximum throughput
+        is reduced. HIV protease inhibitors, statins (cholesterol-lowering drugs), and ACE inhibitors
+        (for hypertension) all work by exploiting Km and Vmax relationships.
+    </div>
+
+    <div class="prose">
+        The Lineweaver-Burk double-reciprocal plot (1/v vs 1/[S]) transforms the hyperbola into
+        a straight line with y-intercept 1/Vmax and x-intercept −1/Km. Though imprecise for
+        high-[S] data due to error amplification, it allows graphical determination of both
+        kinetic parameters and is still widely used to classify inhibitor types by comparing
+        the effect on the slope and intercepts.
+    </div>
+
+    <!-- Interactive widget -->
+    <div class="canvas-wrap">
+        <canvas id="rk3-canvas"></canvas>
+        <div class="controls">
+            <label>Vmax =</label>
+            <input type="range" id="rk3-vmax" min="5" max="50" value="30">
+            <span class="val" id="rk3-vmaxval">3.0 μM/s</span>
+            <label>Km =</label>
+            <input type="range" id="rk3-km" min="5" max="50" value="20">
+            <span class="val" id="rk3-kmval">2.0 mM</span>
+            <label>[S] probe =</label>
+            <input type="range" id="rk3-s" min="0" max="200" value="40">
+            <span class="val" id="rk3-sval">2.0 mM</span>
+        </div>
+        <div class="readout-bar">
+            <div class="readout-item">
+                <span class="readout-key">v at probe [S]</span>
+                <span class="readout-val" id="rk3-v">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">v / Vmax</span>
+                <span class="readout-val" id="rk3-frac">—</span>
+            </div>
+            <div class="readout-item">
+                <span class="readout-key">Vmax/2</span>
+                <span class="readout-val" id="rk3-vmaxhalf">—</span>
+            </div>
+            <div class="readout-item" style="margin-left:auto">
+                <span class="readout-key" style="color:var(--accent)">When [S]=Km → v = Vmax/2 exactly</span>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="swatch" style="background:var(--accent)"></div>v([S]) — Michaelis-Menten curve</div>
+            <div class="li"><div class="swatch" style="background:var(--muted);border-top:1px dashed var(--muted)"></div>Vmax/2 (dashed)</div>
+            <div class="li"><div class="dot" style="background:var(--red)"></div>probe position</div>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Lineweaver–Burk plot diagnostic:</strong><br>
+        Competitive inhibitor: <span class="hl">steeper slope</span> (apparent Km increases), same y-intercept (same Vmax).<br>
+        Noncompetitive inhibitor: <span class="hl">higher y-intercept</span> (Vmax decreases), same x-intercept (same Km).<br>
+        Mixed inhibitor: both slope and intercept change.
+        This graphical signature allows pharmacologists to determine mechanism of inhibition
+        from kinetic data alone, without knowing the inhibitor binding site.
+    </div>
+</section>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+function setupHDPI(canvas, w, h) {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    return ctx;
+}
+
+// Color palette
+const C = {
+    bg: '#081828', surface: '#0c1f30', border: '#0f2a1a',
+    accent: '#84cc16', accent2: '#65a30d',
+    text: '#e8f4e8', muted: '#5a7a5a', dim: '#2a4a2a',
+    yellow: '#fbbf24', cyan: '#22d3ee', red: '#f87171',
+    grid: '#0f2a1a'
+};
+
+function clearBg(ctx, w, h) {
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, w, h);
+}
+
+function drawGrid(ctx, pad, W2, H2, xTicks, yTicks, xLabel, yLabel) {
+    ctx.strokeStyle = C.grid;
+    ctx.lineWidth = 1;
+    xTicks.forEach(([xv, label]) => {
+        const x = pad.l + xv * W2;
+        ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t + H2); ctx.stroke();
+        if (label !== null) {
+            ctx.fillStyle = C.muted; ctx.font = '10px DM Mono';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, pad.t + H2 + 16);
+        }
+    });
+    yTicks.forEach(([yv, label]) => {
+        const y = pad.t + H2 - yv * H2;
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + W2, y); ctx.stroke();
+        if (label !== null) {
+            ctx.fillStyle = C.muted; ctx.font = '10px DM Mono';
+            ctx.textAlign = 'right';
+            ctx.fillText(label, pad.l - 6, y + 3);
+        }
+    });
+    if (xLabel) {
+        ctx.fillStyle = C.muted; ctx.font = '11px DM Mono';
+        ctx.textAlign = 'right';
+        ctx.fillText(xLabel, pad.l + W2, pad.t + H2 + 30);
+    }
+    if (yLabel) {
+        ctx.save();
+        ctx.translate(12, pad.t + H2/2);
+        ctx.rotate(-Math.PI/2);
+        ctx.fillStyle = C.muted; ctx.font = '11px DM Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText(yLabel, 0, 0);
+        ctx.restore();
+    }
+    // Axes
+    ctx.strokeStyle = C.dim; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + H2);
+    ctx.moveTo(pad.l, pad.t + H2); ctx.lineTo(pad.l + W2, pad.t + H2);
+    ctx.stroke();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 1 — Reaction Order
+// ═══════════════════════════════════════════════════════════
+const rk1Canvas = document.getElementById('rk1-canvas');
+const W1 = 900, H1 = 340;
+const rk1ctx = setupHDPI(rk1Canvas, W1, H1);
+const rk1pad = {l: 56, r: 24, t: 24, b: 36};
+
+let rk1Order = 0;
+
+function rk1GetParams() {
+    const kRaw = parseInt(document.getElementById('rk1-k').value);
+    const a0Raw = parseInt(document.getElementById('rk1-a0').value);
+    return { k: kRaw / 100, a0: a0Raw / 10 };
+}
+
+function rk1SetOrder(n) {
+    rk1Order = n;
+    [0, 1, 2].forEach(i => {
+        document.getElementById('rk1-btn' + i).classList.toggle('active', i === n);
+    });
+    document.getElementById('rk1-readout-n').textContent = n;
+    rk1Draw();
+}
+
+function rk1Conc(t, k, a0, n) {
+    if (n === 0) return Math.max(0, a0 - k * t);
+    if (n === 1) return a0 * Math.exp(-k * t);
+    if (n === 2) return a0 / (1 + k * a0 * t);
+    return 0;
+}
+
+function rk1HalfLife(k, a0, n) {
+    if (n === 0) return a0 / (2 * k);
+    if (n === 1) return Math.LN2 / k;
+    if (n === 2) return 1 / (k * a0);
+    return 0;
+}
+
+function rk1Draw() {
+    const { k, a0 } = rk1GetParams();
+    const n = rk1Order;
+    const W2 = W1 - rk1pad.l - rk1pad.r;
+    const H2 = H1 - rk1pad.t - rk1pad.b;
+
+    // Determine time range: show until ~10% remains or 20 s
+    let tMax = 20;
+    if (n === 1) tMax = Math.min(20, 6 * Math.LN2 / k);
+    if (n === 0) tMax = Math.min(20, a0 / k * 1.1);
+    if (n === 2) tMax = Math.min(20, 9 / (k * a0));
+    tMax = Math.max(tMax, 2);
+
+    clearBg(rk1ctx, W1, H1);
+
+    // Grid
+    const xSteps = 5;
+    const xTicks = [];
+    for (let i = 0; i <= xSteps; i++) {
+        const tv = (i / xSteps);
+        xTicks.push([tv, (tv * tMax).toFixed(1) + 's']);
+    }
+    const yMax = a0 * 1.05;
+    const yTicks = [];
+    for (let i = 0; i <= 4; i++) {
+        const yv = i / 4;
+        yTicks.push([yv, (yv * yMax).toFixed(1)]);
+    }
+    drawGrid(rk1ctx, rk1pad, W2, H2, xTicks, yTicks, 'time (s)', '[A] (M)');
+
+    // Half-life
+    const t12 = rk1HalfLife(k, a0, n);
+    if (t12 > 0 && t12 < tMax) {
+        const x12 = rk1pad.l + (t12 / tMax) * W2;
+        const y12 = rk1pad.t + H2 - (a0 * 0.5 / yMax) * H2;
+        rk1ctx.strokeStyle = C.yellow + '88';
+        rk1ctx.lineWidth = 1;
+        rk1ctx.setLineDash([5, 6]);
+        rk1ctx.beginPath();
+        rk1ctx.moveTo(x12, rk1pad.t);
+        rk1ctx.lineTo(x12, rk1pad.t + H2);
+        rk1ctx.stroke();
+        rk1ctx.beginPath();
+        rk1ctx.moveTo(rk1pad.l, y12);
+        rk1ctx.lineTo(rk1pad.l + W2, y12);
+        rk1ctx.stroke();
+        rk1ctx.setLineDash([]);
+        // Label
+        rk1ctx.fillStyle = C.yellow;
+        rk1ctx.font = '10px DM Mono';
+        rk1ctx.textAlign = 'left';
+        rk1ctx.fillText('t₁/₂', x12 + 4, rk1pad.t + 14);
+    }
+
+    // Concentration curve
+    const steps = 600;
+    rk1ctx.strokeStyle = C.accent;
+    rk1ctx.lineWidth = 2.5;
+    rk1ctx.shadowBlur = 6;
+    rk1ctx.shadowColor = C.accent + '55';
+    rk1ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * tMax;
+        const a = rk1Conc(t, k, a0, n);
+        const x = rk1pad.l + (t / tMax) * W2;
+        const y = rk1pad.t + H2 - (a / yMax) * H2;
+        i === 0 ? rk1ctx.moveTo(x, y) : rk1ctx.lineTo(x, y);
+    }
+    rk1ctx.stroke();
+    rk1ctx.shadowBlur = 0;
+
+    // Half-life update
+    const t12Str = t12.toFixed(2) + ' s';
+    document.getElementById('rk1-t12').textContent = t12Str;
+    const formulae = ['[A]₀/(2k)', 'ln2 / k', '1/(k·[A]₀)'];
+    document.getElementById('rk1-t12-formula').textContent = '= ' + formulae[n];
+
+    // Readout: mouse position or midpoint
+    const tMid = tMax * 0.5;
+    const aMid = rk1Conc(tMid, k, a0, n);
+    document.getElementById('rk1-readout-a').textContent = aMid.toFixed(3) + ' M';
+    document.getElementById('rk1-readout-t').textContent = tMid.toFixed(2) + ' s';
+}
+
+document.getElementById('rk1-k').addEventListener('input', e => {
+    document.getElementById('rk1-kval').textContent = (parseInt(e.target.value) / 100).toFixed(2);
+    rk1Draw();
+});
+document.getElementById('rk1-a0').addEventListener('input', e => {
+    document.getElementById('rk1-a0val').textContent = (parseInt(e.target.value) / 10).toFixed(1) + ' M';
+    rk1Draw();
+});
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 2 — Arrhenius
+// ═══════════════════════════════════════════════════════════
+const rk2Canvas = document.getElementById('rk2-canvas');
+const W2s = 900, H2s = 340;
+const rk2ctx = setupHDPI(rk2Canvas, W2s, H2s);
+const rk2pad = {l: 70, r: 30, t: 28, b: 36};
+
+const R_gas = 8.314;
+const A_factor = 1e13; // pre-exponential
+
+function rk2Calc(Ea_kJ, T) {
+    return A_factor * Math.exp(-(Ea_kJ * 1000) / (R_gas * T));
+}
+
+function rk2Draw() {
+    const Ea = parseInt(document.getElementById('rk2-ea').value);
+    const T = parseInt(document.getElementById('rk2-T').value);
+
+    const W2 = W2s - rk2pad.l - rk2pad.r;
+    const H2 = H2s - rk2pad.t - rk2pad.b;
+
+    clearBg(rk2ctx, W2s, H2s);
+
+    // Compute curve: k vs T from 250 to 700 K
+    const Tmin = 250, Tmax = 700;
+    const steps = 500;
+    const kValues = [];
+    for (let i = 0; i <= steps; i++) {
+        const Tc = Tmin + (i / steps) * (Tmax - Tmin);
+        kValues.push(rk2Calc(Ea, Tc));
+    }
+    const kMax = kValues[steps] * 1.05;
+
+    // Grid
+    const xTicks = [];
+    [250, 300, 350, 400, 450, 500, 600, 700].forEach(tv => {
+        xTicks.push([(tv - Tmin) / (Tmax - Tmin), tv + 'K']);
+    });
+    const yTicks = [];
+    for (let i = 0; i <= 4; i++) {
+        const yv = i / 4;
+        const kv = yv * kMax;
+        const exp = Math.floor(Math.log10(kMax));
+        yTicks.push([yv, (kv / Math.pow(10, exp)).toFixed(1) + '×10^' + exp]);
+    }
+    drawGrid(rk2ctx, rk2pad, W2, H2, xTicks, yTicks, 'T (K)', 'k (s⁻¹)');
+
+    // Curve
+    rk2ctx.strokeStyle = C.accent;
+    rk2ctx.lineWidth = 2.5;
+    rk2ctx.shadowBlur = 6;
+    rk2ctx.shadowColor = C.accent + '44';
+    rk2ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+        const Tc = Tmin + (i / steps) * (Tmax - Tmin);
+        const k = rk2Calc(Ea, Tc);
+        const x = rk2pad.l + ((Tc - Tmin) / (Tmax - Tmin)) * W2;
+        const y = rk2pad.t + H2 - (k / kMax) * H2;
+        i === 0 ? rk2ctx.moveTo(x, y) : rk2ctx.lineTo(x, y);
+    }
+    rk2ctx.stroke();
+    rk2ctx.shadowBlur = 0;
+
+    // Current T dot
+    const kT = rk2Calc(Ea, T);
+    const kT10 = rk2Calc(Ea, T + 10);
+    const xT = rk2pad.l + ((T - Tmin) / (Tmax - Tmin)) * W2;
+    const yT = rk2pad.t + H2 - (kT / kMax) * H2;
+    const xT10 = rk2pad.l + ((T + 10 - Tmin) / (Tmax - Tmin)) * W2;
+    const yT10 = rk2pad.t + H2 - (kT10 / kMax) * H2;
+
+    // Vertical dashed line at T
+    rk2ctx.strokeStyle = C.cyan + '55';
+    rk2ctx.lineWidth = 1;
+    rk2ctx.setLineDash([4, 5]);
+    rk2ctx.beginPath();
+    rk2ctx.moveTo(xT, rk2pad.t);
+    rk2ctx.lineTo(xT, rk2pad.t + H2);
+    rk2ctx.stroke();
+    rk2ctx.setLineDash([]);
+
+    // Dot at T
+    rk2ctx.beginPath();
+    rk2ctx.arc(xT, yT, 5, 0, Math.PI * 2);
+    rk2ctx.fillStyle = C.cyan;
+    rk2ctx.shadowBlur = 10;
+    rk2ctx.shadowColor = C.cyan;
+    rk2ctx.fill();
+    rk2ctx.shadowBlur = 0;
+
+    // Dot at T+10
+    rk2ctx.beginPath();
+    rk2ctx.arc(xT10, yT10, 5, 0, Math.PI * 2);
+    rk2ctx.fillStyle = C.yellow;
+    rk2ctx.shadowBlur = 10;
+    rk2ctx.shadowColor = C.yellow;
+    rk2ctx.fill();
+    rk2ctx.shadowBlur = 0;
+
+    // Bracket between the two points
+    rk2ctx.strokeStyle = C.yellow + '88';
+    rk2ctx.lineWidth = 1;
+    rk2ctx.beginPath();
+    rk2ctx.moveTo(xT, yT - 20);
+    rk2ctx.lineTo(xT10, yT - 20);
+    rk2ctx.stroke();
+    rk2ctx.fillStyle = C.yellow;
+    rk2ctx.font = '10px DM Mono';
+    rk2ctx.textAlign = 'center';
+    rk2ctx.fillText('+10K', (xT + xT10) / 2, yT - 26);
+
+    // Readouts
+    const expT = Math.floor(Math.log10(Math.abs(kT)));
+    const mantT = kT / Math.pow(10, expT);
+    const expT10 = Math.floor(Math.log10(Math.abs(kT10)));
+    const mantT10 = kT10 / Math.pow(10, expT10);
+    document.getElementById('rk2-kval').textContent = mantT.toFixed(2) + '×10^' + expT;
+    document.getElementById('rk2-kval2').textContent = mantT10.toFixed(2) + '×10^' + expT10;
+    document.getElementById('rk2-ratio').textContent = (kT10 / kT).toFixed(2) + '×';
+
+    // Y-axis label: fix exponent display
+    rk2ctx.fillStyle = C.muted;
+    rk2ctx.font = '10px DM Mono';
+    rk2ctx.textAlign = 'left';
+    const exp = Math.floor(Math.log10(kMax));
+    rk2ctx.fillText('×10^' + exp, rk2pad.l, rk2pad.t - 8);
+}
+
+document.getElementById('rk2-ea').addEventListener('input', e => {
+    document.getElementById('rk2-eaval').textContent = e.target.value;
+    rk2Draw();
+});
+document.getElementById('rk2-T').addEventListener('input', e => {
+    document.getElementById('rk2-Tval').textContent = e.target.value;
+    rk2Draw();
+});
+
+// ═══════════════════════════════════════════════════════════
+// SECTION 3 — Michaelis-Menten
+// ═══════════════════════════════════════════════════════════
+const rk3Canvas = document.getElementById('rk3-canvas');
+const W3 = 900, H3 = 340;
+const rk3ctx = setupHDPI(rk3Canvas, W3, H3);
+const rk3pad = {l: 60, r: 24, t: 28, b: 36};
+
+function rk3Draw() {
+    const vmaxRaw = parseInt(document.getElementById('rk3-vmax').value);
+    const kmRaw = parseInt(document.getElementById('rk3-km').value);
+    const sRaw = parseInt(document.getElementById('rk3-s').value);
+
+    const Vmax = vmaxRaw / 10;  // 0.5–5 μM/s
+    const Km = kmRaw / 10;      // 0.5–5 mM
+    const Sprobe = sRaw / 20;   // 0–10 mM
+
+    document.getElementById('rk3-vmaxval').textContent = Vmax.toFixed(1) + ' μM/s';
+    document.getElementById('rk3-kmval').textContent = Km.toFixed(1) + ' mM';
+    document.getElementById('rk3-sval').textContent = Sprobe.toFixed(2) + ' mM';
+
+    const W2 = W3 - rk3pad.l - rk3pad.r;
+    const H2 = H3 - rk3pad.t - rk3pad.b;
+
+    clearBg(rk3ctx, W3, H3);
+
+    const Smax = 10; // mM
+    const vMax_axis = Vmax * 1.1;
+
+    // Grid
+    const xTicks = [];
+    [0, 2, 4, 6, 8, 10].forEach(sv => {
+        xTicks.push([sv / Smax, sv === 0 ? '' : sv + ' mM']);
+    });
+    const yTicks = [];
+    [0, 0.25, 0.5, 0.75, 1].forEach(frac => {
+        yTicks.push([frac * Vmax / vMax_axis, (frac * Vmax).toFixed(1)]);
+    });
+    drawGrid(rk3ctx, rk3pad, W2, H2, xTicks, yTicks, '[S] (mM)', 'v (μM/s)');
+
+    // Vmax dashed line
+    const yVmax = rk3pad.t + H2 - (Vmax / vMax_axis) * H2;
+    rk3ctx.strokeStyle = C.muted + '88';
+    rk3ctx.lineWidth = 1;
+    rk3ctx.setLineDash([5, 6]);
+    rk3ctx.beginPath();
+    rk3ctx.moveTo(rk3pad.l, yVmax);
+    rk3ctx.lineTo(rk3pad.l + W2, yVmax);
+    rk3ctx.stroke();
+    rk3ctx.fillStyle = C.muted;
+    rk3ctx.font = '10px DM Mono';
+    rk3ctx.textAlign = 'left';
+    rk3ctx.fillText('Vmax = ' + Vmax.toFixed(1), rk3pad.l + W2 - 110, yVmax - 5);
+
+    // Vmax/2 dashed line
+    const yVmax2 = rk3pad.t + H2 - ((Vmax / 2) / vMax_axis) * H2;
+    rk3ctx.strokeStyle = C.accent + '66';
+    rk3ctx.beginPath();
+    rk3ctx.moveTo(rk3pad.l, yVmax2);
+    rk3ctx.lineTo(rk3pad.l + W2, yVmax2);
+    rk3ctx.stroke();
+
+    // Km vertical dashed line
+    const xKm = rk3pad.l + (Km / Smax) * W2;
+    rk3ctx.strokeStyle = C.accent + '66';
+    rk3ctx.beginPath();
+    rk3ctx.moveTo(xKm, rk3pad.t);
+    rk3ctx.lineTo(xKm, rk3pad.t + H2);
+    rk3ctx.stroke();
+    rk3ctx.setLineDash([]);
+
+    // Labels
+    rk3ctx.fillStyle = C.accent;
+    rk3ctx.font = '10px DM Mono';
+    rk3ctx.textAlign = 'left';
+    rk3ctx.fillText('Vmax/2', rk3pad.l + 4, yVmax2 - 4);
+    rk3ctx.textAlign = 'center';
+    rk3ctx.fillText('Km', xKm, rk3pad.t + 14);
+
+    // MM curve
+    const steps = 600;
+    rk3ctx.strokeStyle = C.accent;
+    rk3ctx.lineWidth = 2.5;
+    rk3ctx.shadowBlur = 6;
+    rk3ctx.shadowColor = C.accent + '44';
+    rk3ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+        const S = (i / steps) * Smax;
+        const v = Vmax * S / (Km + S);
+        const x = rk3pad.l + (S / Smax) * W2;
+        const y = rk3pad.t + H2 - (v / vMax_axis) * H2;
+        i === 0 ? rk3ctx.moveTo(x, y) : rk3ctx.lineTo(x, y);
+    }
+    rk3ctx.stroke();
+    rk3ctx.shadowBlur = 0;
+
+    // Probe dot
+    const vProbe = Vmax * Sprobe / (Km + Sprobe);
+    const xProbe = rk3pad.l + (Sprobe / Smax) * W2;
+    const yProbe = rk3pad.t + H2 - (vProbe / vMax_axis) * H2;
+    rk3ctx.beginPath();
+    rk3ctx.arc(xProbe, yProbe, 6, 0, Math.PI * 2);
+    rk3ctx.fillStyle = C.red;
+    rk3ctx.shadowBlur = 12;
+    rk3ctx.shadowColor = C.red;
+    rk3ctx.fill();
+    rk3ctx.shadowBlur = 0;
+
+    // Readouts
+    document.getElementById('rk3-v').textContent = vProbe.toFixed(3) + ' μM/s';
+    document.getElementById('rk3-frac').textContent = (vProbe / Vmax * 100).toFixed(1) + '%';
+    document.getElementById('rk3-vmaxhalf').textContent = (Vmax / 2).toFixed(3) + ' μM/s';
+}
+
+document.getElementById('rk3-vmax').addEventListener('input', rk3Draw);
+document.getElementById('rk3-km').addEventListener('input', rk3Draw);
+document.getElementById('rk3-s').addEventListener('input', rk3Draw);
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+    rk1Draw();
+    rk2Draw();
+    rk3Draw();
+    setTimeout(() => {
+        if (window.renderMathInElement) {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        }
+    }, 300);
+});
+</script>
+</body>
+</html>

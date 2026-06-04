@@ -38,6 +38,13 @@ Choose a color that has a natural semantic tie to the concept:
 **One-accent rule**: pick one accent color and use it for everything interactive.
 Multiple accent colors dilute focus — the accent IS the concept's color.
 
+**Information density → layout**
+- Single relationship (one variable → one effect) → centered large canvas, generous whitespace, let the change speak
+- Multi-state comparison (discrete mode switching) → side-by-side panels, differences visible at a glance
+- Time-evolving trajectory → reserve space for history trails; never crowd the buffer region
+- Complex system / emergent behavior → full-canvas priority; controls overlaid in corners
+- Formula-heavy derivation → alternate text column and canvas column; math and visual must be co-visible
+
 After reasoning, write down:
 - `bg`: background hex, `card`: card/surface hex, `accent`: accent hex
 - Font pair: heading font + body font
