@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Decision Boundaries</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: #08060c;
+  color: #f5f0ff;
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0;
+  padding: 40px 20px 80px;
+  display: flex;
+  justify-content: center;
+}
+.wrapper { max-width: 920px; width: 100%; }
+
+h1.main-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: -1.5px;
+  text-align: center;
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 45%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle {
+  text-align: center;
+  color: #8a7aaa;
+  font-size: 0.9rem;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 56px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.section {
+  background: #110e1a;
+  border: 1px solid #2a1f3d;
+  border-radius: 18px;
+  padding: 44px;
+  margin-bottom: 48px;
+  box-shadow: 0 4px 50px rgba(249,115,22,0.05);
+}
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #f97316;
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+.section-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #f5f0ff;
+  margin: 0 0 28px;
+  line-height: 1.25;
+}
+.section-divider {
+  border: none;
+  border-top: 1px solid #2a1f3d;
+  margin: 0 0 30px;
+}
+
+p {
+  font-size: 1.02rem;
+  line-height: 1.85;
+  color: #a799c4;
+  margin: 0 0 20px;
+  font-weight: 300;
+}
+p strong { color: #f5f0ff; font-weight: 600; }
+p code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.86rem;
+  background: #1a1226;
+  color: #f97316;
+  padding: 1px 7px;
+  border-radius: 4px;
+}
+
+.math-block {
+  background: #0e0b16;
+  border: 1px solid #2a1f3d;
+  border-left: 3px solid #f97316;
+  border-radius: 10px;
+  padding: 18px 24px;
+  margin: 22px 0 30px;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.widget {
+  background: #08060c;
+  border: 1px solid #2a1f3d;
+  border-radius: 14px;
+  padding: 22px;
+  margin-top: 32px;
+}
+.widget-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  color: #f97316;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+canvas { display: block; border-radius: 10px; cursor: crosshair; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+}
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.87rem;
+  color: #8a7aaa;
+}
+.ctrl-group label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+  color: #8a7aaa;
+  white-space: nowrap;
+}
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 130px;
+  height: 4px;
+  background: #2a1f3d;
+  border-radius: 2px;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #f97316;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(249,115,22,0.6);
+}
+input[type=range]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #f97316;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.val-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: #f97316;
+  min-width: 32px;
+}
+
+button {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  padding: 8px 16px;
+  background: transparent;
+  color: #f97316;
+  border: 1px solid #f97316;
+  border-radius: 7px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: background 0.15s, color 0.15s;
+}
+button:hover { background: rgba(249,115,22,0.15); }
+button.active {
+  background: #f97316;
+  color: #08060c;
+  font-weight: 700;
+}
+
+.radio-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.radio-btn {
+  padding: 7px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+  cursor: pointer;
+  border-radius: 7px;
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.radio-btn.class0 {
+  border-color: #f87171;
+  color: #f87171;
+}
+.radio-btn.class0.selected {
+  background: #f87171;
+  color: #08060c;
+  font-weight: 700;
+}
+.radio-btn.class1 {
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+.radio-btn.class1.selected {
+  background: #60a5fa;
+  color: #08060c;
+  font-weight: 700;
+}
+
+.info-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: #8a7aaa;
+}
+.info-chip {
+  background: #1a1226;
+  border: 1px solid #2a1f3d;
+  border-radius: 6px;
+  padding: 5px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.info-chip span { color: #f5f0ff; }
+
+/* SVM kernel switch */
+.kernel-switch {
+  display: flex;
+  gap: 0;
+  border: 1px solid #2a1f3d;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.kernel-btn {
+  padding: 8px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+  cursor: pointer;
+  background: transparent;
+  color: #8a7aaa;
+  border: none;
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+.kernel-btn.active {
+  background: #f97316;
+  color: #08060c;
+  font-weight: 700;
+}
+.kernel-btn:hover:not(.active) { background: rgba(249,115,22,0.1); color: #f97316; }
+
+.constraint-box {
+  background: #0e0b16;
+  border: 1px solid #2a1f3d;
+  border-left: 3px solid #f97316;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-top: 20px;
+  font-size: 0.88rem;
+  color: #a799c4;
+  font-style: italic;
+}
+.constraint-box strong { color: #f97316; font-style: normal; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <h1 class="main-title">Decision Boundaries</h1>
+  <p class="subtitle">k-NN · Logistic Regression · SVM</p>
+
+  <!-- ===================== SECTION 01: k-NN ===================== -->
+  <div class="section" id="db1-section">
+    <div class="section-label">Section 01</div>
+    <h2 class="section-title">k-Nearest Neighbors</h2>
+    <hr class="section-divider"/>
+
+    <p>
+      <strong>Instance-based learning</strong> takes a fundamentally different approach to classification than parametric models. Rather than fitting a global function during training, k-Nearest Neighbors simply memorizes the entire training set. At prediction time, it finds the <em>k</em> closest training examples—by Euclidean distance or another metric—and lets them vote. The predicted class is whatever the majority holds. This "lazy learning" strategy is surprisingly powerful, yet carries a deep cost: every prediction requires scanning all stored examples, and storing the entire dataset in memory becomes prohibitive as data grows.
+    </p>
+    <p>
+      The concept of a <strong>decision boundary</strong> emerges naturally from this voting process. Imagine the feature space divided into a grid of tiny cells. Each cell gets classified by querying the <em>k</em> nearest training points. Where the majority vote flips from one class to the other, you have the decision boundary. With <code>k = 1</code>, each cell is claimed entirely by its single nearest neighbor, producing the <strong>Voronoi diagram</strong>—a jagged, highly complex partition of space. As <em>k</em> increases, the boundary smooths: distant points influence the vote, outliers get outvoted, and the frontier becomes a gentler curve.
+    </p>
+    <p>
+      This tradeoff between <strong>k = 1</strong> (maximum complexity, zero training error, maximum variance) and large <em>k</em> (smooth boundary, some misclassification, high bias) is one of the clearest illustrations of the bias-variance tradeoff in all of machine learning. The optimal <em>k</em> is typically found by cross-validation. Notably, as the training set size <em>n → ∞</em>, the error rate of 1-NN approaches at most twice the Bayes error—a remarkable theoretical guarantee.
+    </p>
+    <p>
+      Distance metrics determine which points count as "near." In high dimensions, the <strong>curse of dimensionality</strong> strikes: as dimensions grow, all points become roughly equidistant from any query point, dissolving the notion of locality. k-NN silently breaks in hundreds of dimensions unless features are carefully selected or the data lives on a low-dimensional manifold. This is why feature engineering, PCA, or learned embeddings often precede k-NN in practice.
+    </p>
+
+    <div class="math-block">
+      $$\hat{y}(x) = \underset{c}{\arg\max} \sum_{x_i \in \mathcal{N}_k(x)} \mathbf{1}[y_i = c]$$
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — k-NN Decision Boundary</div>
+      <canvas id="db1-canvas" width="860" height="480"></canvas>
+      <div class="controls">
+        <div class="ctrl-group">
+          <label>Class:</label>
+          <div class="radio-group">
+            <div class="radio-btn class0 selected" id="db1-cls0" onclick="db1SelectClass(0)">0 (red)</div>
+            <div class="radio-btn class1" id="db1-cls1" onclick="db1SelectClass(1)">1 (blue)</div>
+          </div>
+        </div>
+        <div class="ctrl-group">
+          <label>k =</label>
+          <input type="range" id="db1-k" min="1" max="15" value="3" oninput="db1OnKChange()"/>
+          <span class="val-display" id="db1-kval">3</span>
+        </div>
+        <button onclick="db1Clear()">Clear</button>
+        <div class="info-chip">
+          <span id="db1-count0">0</span> red &nbsp;·&nbsp;
+          <span id="db1-count1">0</span> blue
+        </div>
+      </div>
+      <div class="constraint-box">
+        <strong>Pedagogical constraint:</strong> With k=1, the boundary traces the Voronoi diagram — the most complex possible partition. Every added point creates a new cell. As k increases, distant points gain influence and the boundary smooths. Hover over the canvas to see the k nearest neighbors from any query point.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 02: Logistic Regression ===================== -->
+  <div class="section" id="db2-section">
+    <div class="section-label">Section 02</div>
+    <h2 class="section-title">Logistic Regression</h2>
+    <hr class="section-divider"/>
+
+    <p>
+      Logistic regression reframes binary classification as <strong>probabilistic prediction</strong>. Instead of asking "which class?", it asks "what is the probability of class 1?" The model computes a linear combination of features—$w_1 x_1 + w_2 x_2 + b$—then squashes this score into the interval $(0, 1)$ via the <strong>sigmoid function</strong> $\sigma(z) = 1/(1 + e^{-z})$. Predict class 1 when this probability exceeds 0.5, and class 0 otherwise. The surface where $P = 0.5$ is exactly where the linear score equals zero: this is the decision boundary, and it is always a <em>hyperplane</em>.
+    </p>
+    <p>
+      Training finds weights that maximize the <strong>likelihood</strong> of the observed labels. Equivalently, it minimizes the <strong>cross-entropy loss</strong>: $\mathcal{L} = -\sum_i [y_i \log \hat{p}_i + (1-y_i)\log(1-\hat{p}_i)]$. This is a convex objective with a unique global minimum, which gradient descent reliably finds. The gradient update for each weight is beautifully intuitive: it is proportional to the prediction error $(y_i - \hat{p}_i)$ times the feature value, pushing the model to correct its largest mistakes most aggressively.
+    </p>
+    <p>
+      The weight vector $\mathbf{w} = (w_1, w_2)$ has a geometric meaning: it is <strong>perpendicular to the decision boundary</strong>. To see why, recall that the boundary is the set $\{x : \mathbf{w} \cdot x + b = 0\}$—a hyperplane whose normal is $\mathbf{w}$. The magnitude $\|\mathbf{w}\|$ controls the steepness of the sigmoid "ramp": large weights produce a sharp, near-step transition; small weights produce a gentle gradient. This means logistic regression can represent both crisp and uncertain decisions.
+    </p>
+    <p>
+      The fundamental limitation of logistic regression is that it can <strong>only learn linear decision boundaries</strong>. If two classes are arranged in concentric rings or an XOR pattern, no line will separate them, and logistic regression will plateau at high cross-entropy. The remedy is <strong>feature engineering</strong>: add polynomial or radial basis features, and logistic regression can carve non-linear boundaries in the original space—while remaining linear in the expanded feature space. This insight directly motivates the kernel trick.
+    </p>
+
+    <div class="math-block">
+      $$P(y=1 \mid x) = \sigma(w_1 x_1 + w_2 x_2 + b) = \frac{1}{1+e^{-(w_1 x_1 + w_2 x_2 + b)}}$$
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Logistic Regression</div>
+      <canvas id="db2-canvas" width="860" height="480"></canvas>
+      <div class="controls">
+        <div class="ctrl-group">
+          <label>Add:</label>
+          <div class="radio-group">
+            <div class="radio-btn class0 selected" id="db2-cls0" onclick="db2SelectClass(0)">Class 0</div>
+            <div class="radio-btn class1" id="db2-cls1" onclick="db2SelectClass(1)">Class 1</div>
+          </div>
+        </div>
+        <button onclick="db2Reset()">Reset</button>
+        <div class="info-chip">w₁ = <span id="db2-w1">—</span></div>
+        <div class="info-chip">w₂ = <span id="db2-w2">—</span></div>
+        <div class="info-chip">b = <span id="db2-b">—</span></div>
+        <div class="info-chip">Loss: <span id="db2-loss">—</span></div>
+      </div>
+      <div class="constraint-box">
+        <strong>Pedagogical constraint:</strong> Logistic regression can only produce a <em>linear</em> decision boundary — a straight line in 2D. The orange arrow shows the weight vector w, which is always perpendicular to this line. Try placing points in an XOR or circular pattern to see it fail.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 03: SVM ===================== -->
+  <div class="section" id="db3-section">
+    <div class="section-label">Section 03</div>
+    <h2 class="section-title">Support Vector Machine</h2>
+    <hr class="section-divider"/>
+
+    <p>
+      Support Vector Machines approach classification through the lens of <strong>structural risk minimization</strong>. Among all hyperplanes that correctly separate two classes, SVM selects the one with the largest <strong>margin</strong>—the distance between the hyperplane and the nearest training points of each class. This "maximum margin" criterion is not arbitrary: the VC dimension theory shows that classifiers with large margins generalize better, because they are less sensitive to small perturbations in the training data. The SVM is simultaneously a geometric construction and a principled statistical estimator.
+    </p>
+    <p>
+      The defining insight is that only a tiny subset of training points—the <strong>support vectors</strong>—actually determine the boundary. These are the points sitting exactly on the margin boundary, closest to the separating hyperplane. If you removed any non-support-vector point and retrained, the boundary would not change at all. This sparsity gives SVMs a kind of interpretive clarity: the model is fully described by a handful of critical examples. The soft-margin parameter <strong>C</strong> controls the tradeoff between maximizing the margin and tolerating misclassifications: small C allows wide margins at the cost of errors; large C pushes toward perfect training separation.
+    </p>
+    <p>
+      For non-linearly separable data, the <strong>kernel trick</strong> is one of the most elegant ideas in machine learning. The observation is: if we map inputs to a high-dimensional feature space $\phi(x)$, the data might become linearly separable there. But the SVM dual formulation only ever needs <em>inner products</em> $\phi(x_i)^T \phi(x_j)$, never the explicit feature vectors. A kernel function $K(x_i, x_j) = \phi(x_i) \cdot \phi(x_j)$ computes this inner product implicitly, often in $O(d)$ time even when the feature space is infinite-dimensional. The Gaussian RBF kernel $K(x, x') = \exp(-\|x - x'\|^2 / (2\sigma^2))$ corresponds to an infinite-dimensional feature space and can represent arbitrarily complex boundaries.
+    </p>
+    <p>
+      SVMs dominated applied machine learning through the 2000s because they were the first method offering both <strong>non-linear classification</strong> via kernels and <strong>theoretical generalization guarantees</strong> via margin maximization. Deep learning eventually supplanted them for most large-scale tasks—neural networks scale better with data and avoid the $O(n^2)$ kernel matrix cost—but SVMs remain unbeaten in many small-data, high-dimensional regimes. The kernel trick's conceptual DNA lives on in attention mechanisms and modern metric learning.
+    </p>
+
+    <div class="math-block">
+      $$f(x) = \text{sign}\!\left(\sum_{i \in SV} \alpha_i y_i K(x_i, x) + b\right), \quad K_{\text{RBF}}(x, x') = \exp\!\left(-\frac{\|x - x'\|^2}{2\sigma^2}\right)$$
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — SVM with Kernel Switching</div>
+      <canvas id="db3-canvas" width="860" height="480"></canvas>
+      <div class="controls">
+        <div class="ctrl-group">
+          <label>Kernel:</label>
+          <div class="kernel-switch">
+            <button class="kernel-btn active" id="db3-lin" onclick="db3SetKernel('linear')">Linear</button>
+            <button class="kernel-btn" id="db3-rbf" onclick="db3SetKernel('rbf')">RBF</button>
+          </div>
+        </div>
+        <div class="ctrl-group">
+          <label>C =</label>
+          <input type="range" id="db3-C" min="0" max="100" value="50" oninput="db3OnCChange()"/>
+          <span class="val-display" id="db3-Cval">1.0</span>
+        </div>
+        <div class="ctrl-group">
+          <label>γ (RBF) =</label>
+          <input type="range" id="db3-gamma" min="1" max="50" value="15" oninput="db3OnGammaChange()"/>
+          <span class="val-display" id="db3-gammaval">0.5</span>
+        </div>
+      </div>
+      <div class="constraint-box">
+        <strong>Pedagogical constraint:</strong> SVM maximizes the margin between the two classes. Only the support vectors (highlighted with squares) determine the boundary — removing any other point leaves it unchanged. Switch to RBF to see how the kernel trick enables non-linear boundaries without explicit high-dimensional computation.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+//  UTILS
+// ============================================================
+function setupCanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const W = canvas.width;
+  const H = canvas.height;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, W, H, dpr };
+}
+
+function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+function dist2(ax, ay, bx, by) { const dx=ax-bx,dy=ay-by; return dx*dx+dy*dy; }
+
+// ============================================================
+//  SECTION 01 — k-NN
+// ============================================================
+(function() {
+  const canvas = document.getElementById('db1-canvas');
+  const { ctx, W, H } = setupCanvas(canvas);
+
+  const GRID_W = 80, GRID_H = 60;
+  const cellW = W / GRID_W, cellH = H / GRID_H;
+
+  let points = [];     // {x, y, cls}  (canvas coords)
+  let selectedClass = 0;
+  let k = 3;
+  let hoverX = -1, hoverY = -1;
+  let bgCache = null;   // ImageData for the grid background
+
+  // Pre-seed with a few points so it's not empty
+  const seeds0 = [[0.20,0.30],[0.25,0.55],[0.15,0.65],[0.30,0.40],[0.10,0.45]];
+  const seeds1 = [[0.70,0.35],[0.75,0.60],[0.80,0.45],[0.65,0.55],[0.85,0.30]];
+  seeds0.forEach(([fx,fy]) => points.push({x: fx*W, y: fy*H, cls: 0}));
+  seeds1.forEach(([fx,fy]) => points.push({x: fx*W, y: fy*H, cls: 1}));
+
+  window.db1SelectClass = function(c) {
+    selectedClass = c;
+    document.getElementById('db1-cls0').classList.toggle('selected', c===0);
+    document.getElementById('db1-cls1').classList.toggle('selected', c===1);
+  };
+  window.db1OnKChange = function() {
+    k = parseInt(document.getElementById('db1-k').value);
+    document.getElementById('db1-kval').textContent = k;
+    bgCache = null;
+    draw();
+  };
+  window.db1Clear = function() {
+    points = [];
+    bgCache = null;
+    document.getElementById('db1-count0').textContent = '0';
+    document.getElementById('db1-count1').textContent = '0';
+    draw();
+  };
+
+  function knnPredict(qx, qy) {
+    if (points.length === 0) return -1;
+    const kk = Math.min(k, points.length);
+    const dists = points.map((p, i) => [dist2(qx, qy, p.x, p.y), i]);
+    dists.sort((a,b) => a[0]-b[0]);
+    let votes = [0,0];
+    for (let i=0; i<kk; i++) votes[points[dists[i][1]].cls]++;
+    return votes[0] > votes[1] ? 0 : 1;
+  }
+
+  function buildBgCache() {
+    const offscreen = document.createElement('canvas');
+    offscreen.width  = canvas.width;
+    offscreen.height = canvas.height;
+    const dpr = window.devicePixelRatio || 1;
+    const octx = offscreen.getContext('2d');
+    octx.scale(dpr, dpr);
+
+    for (let gi=0; gi<GRID_W; gi++) {
+      for (let gj=0; gj<GRID_H; gj++) {
+        const cx = (gi + 0.5) * cellW;
+        const cy = (gj + 0.5) * cellH;
+        const cls = knnPredict(cx, cy);
+        if (cls === 0) octx.fillStyle = 'rgba(248,113,113,0.18)';
+        else if (cls === 1) octx.fillStyle = 'rgba(96,165,250,0.18)';
+        else octx.fillStyle = 'rgba(26,18,38,0.5)';
+        octx.fillRect(gi*cellW, gj*cellH, cellW+1, cellH+1);
+      }
+    }
+    bgCache = offscreen;
+  }
+
+  function drawBg() {
+    if (points.length === 0) {
+      ctx.fillStyle = '#0e0b18';
+      ctx.fillRect(0, 0, W, H);
+      return;
+    }
+    if (!bgCache) buildBgCache();
+    ctx.drawImage(bgCache, 0, 0, W, H);
+  }
+
+  function drawPoints() {
+    const n0 = points.filter(p=>p.cls===0).length;
+    const n1 = points.filter(p=>p.cls===1).length;
+    document.getElementById('db1-count0').textContent = n0;
+    document.getElementById('db1-count1').textContent = n1;
+
+    points.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 7, 0, Math.PI*2);
+      ctx.fillStyle = p.cls === 0 ? '#f87171' : '#60a5fa';
+      ctx.fill();
+      ctx.strokeStyle = '#f5f0ff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+  }
+
+  function drawHover() {
+    if (hoverX < 0 || points.length === 0) return;
+    const kk = Math.min(k, points.length);
+    const dists = points.map((p, i) => [dist2(hoverX, hoverY, p.x, p.y), i]);
+    dists.sort((a,b) => a[0]-b[0]);
+    // draw lines to k nearest
+    for (let i=0; i<kk; i++) {
+      const p = points[dists[i][1]];
+      ctx.beginPath();
+      ctx.moveTo(hoverX, hoverY);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = 'rgba(249,115,22,0.55)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4,4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // highlight k nearest with ring
+    for (let i=0; i<kk; i++) {
+      const p = points[dists[i][1]];
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 11, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(249,115,22,0.9)';
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+    }
+    // draw query point
+    ctx.beginPath();
+    ctx.arc(hoverX, hoverY, 5, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(249,115,22,0.9)';
+    ctx.fill();
+    // label
+    const pred = knnPredict(hoverX, hoverY);
+    ctx.font = '600 12px "JetBrains Mono"';
+    ctx.fillStyle = '#f97316';
+    ctx.fillText(`→ Class ${pred}`, hoverX+10, hoverY-10);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    drawBg();
+    drawHover();
+    drawPoints();
+    // subtle grid lines
+    ctx.strokeStyle = 'rgba(42,31,61,0.5)';
+    ctx.lineWidth = 0.4;
+    for (let i=0; i<=GRID_W; i+=10) {
+      ctx.beginPath(); ctx.moveTo(i*cellW,0); ctx.lineTo(i*cellW,H); ctx.stroke();
+    }
+    for (let j=0; j<=GRID_H; j+=10) {
+      ctx.beginPath(); ctx.moveTo(0,j*cellH); ctx.lineTo(W,j*cellH); ctx.stroke();
+    }
+    // redraw points on top (they might be under grid)
+    drawPoints();
+    drawHover();
+  }
+
+  canvas.addEventListener('click', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    points.push({x, y, cls: selectedClass});
+    bgCache = null;
+    draw();
+  });
+
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    hoverX = e.clientX - rect.left;
+    hoverY = e.clientY - rect.top;
+    draw();
+  });
+
+  canvas.addEventListener('mouseleave', function() {
+    hoverX = -1; hoverY = -1;
+    draw();
+  });
+
+  draw();
+})();
+
+// ============================================================
+//  SECTION 02 — Logistic Regression
+// ============================================================
+(function() {
+  const canvas = document.getElementById('db2-canvas');
+  const { ctx, W, H } = setupCanvas(canvas);
+
+  let selectedClass = 0;
+  let weights = {w1: 0, w2: 0, b: 0};
+
+  // Pre-seeded data: cluster 0 lower-left, cluster 1 upper-right
+  let points = [];
+  const rng = (function() {
+    let s = 42;
+    return function() {
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      return ((s >>> 0) / 4294967296);
+    };
+  })();
+
+  function randn() {
+    const u = 1 - rng(), v = rng();
+    return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+  }
+
+  // Generate initial 20 points: 10 class0 at (0.3,0.65), 10 class1 at (0.7,0.35) in normalized coords
+  for (let i=0; i<10; i++) {
+    points.push({x: (0.28 + randn()*0.09)*W, y: (0.60 + randn()*0.09)*H, cls: 0});
+    points.push({x: (0.72 + randn()*0.09)*W, y: (0.40 + randn()*0.09)*H, cls: 1});
+  }
+
+  window.db2SelectClass = function(c) {
+    selectedClass = c;
+    document.getElementById('db2-cls0').classList.toggle('selected', c===0);
+    document.getElementById('db2-cls1').classList.toggle('selected', c===1);
+  };
+
+  window.db2Reset = function() {
+    points = [];
+    for (let i=0; i<10; i++) {
+      points.push({x: (0.28 + randn()*0.09)*W, y: (0.60 + randn()*0.09)*H, cls: 0});
+      points.push({x: (0.72 + randn()*0.09)*W, y: (0.40 + randn()*0.09)*H, cls: 1});
+    }
+    trainLogistic();
+    draw();
+  };
+
+  function normalize(pts) {
+    // Map canvas coords to [-2, 2] feature space
+    return pts.map(p => ({
+      x1: (p.x / W) * 4 - 2,
+      x2: -((p.y / H) * 4 - 2),  // flip y so "up" is positive
+      y: p.cls
+    }));
+  }
+
+  function trainLogistic() {
+    if (points.length < 2) return;
+    const data = normalize(points);
+    let w1 = 0, w2 = 0, b = 0;
+    const lr = 0.15;
+    for (let iter=0; iter<600; iter++) {
+      let dw1=0, dw2=0, db=0;
+      for (const d of data) {
+        const p = sigmoid(w1*d.x1 + w2*d.x2 + b);
+        const err = p - d.y;
+        dw1 += err * d.x1;
+        dw2 += err * d.x2;
+        db  += err;
+      }
+      const n = data.length;
+      w1 -= lr * dw1/n;
+      w2 -= lr * dw2/n;
+      b  -= lr * db/n;
+    }
+    weights = {w1, w2, b};
+
+    // compute loss
+    let loss = 0;
+    for (const d of data) {
+      const p = clamp(sigmoid(weights.w1*d.x1 + weights.w2*d.x2 + weights.b), 1e-7, 1-1e-7);
+      loss -= d.y * Math.log(p) + (1-d.y)*Math.log(1-p);
+    }
+    loss /= data.length;
+
+    document.getElementById('db2-w1').textContent   = weights.w1.toFixed(3);
+    document.getElementById('db2-w2').textContent   = weights.w2.toFixed(3);
+    document.getElementById('db2-b').textContent    = weights.b.toFixed(3);
+    document.getElementById('db2-loss').textContent = loss.toFixed(4);
+  }
+
+  function canvasToFeature(cx, cy) {
+    return {
+      x1: (cx/W)*4 - 2,
+      x2: -((cy/H)*4 - 2)
+    };
+  }
+
+  function featureProb(x1, x2) {
+    return sigmoid(weights.w1*x1 + weights.w2*x2 + weights.b);
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+
+    // Background heatmap (sampled at 80x60)
+    const GW=80, GH=60;
+    const cw=W/GW, ch=H/GH;
+    for (let gi=0; gi<GW; gi++) {
+      for (let gj=0; gj<GH; gj++) {
+        const cx=(gi+0.5)*cw, cy=(gj+0.5)*ch;
+        const {x1,x2} = canvasToFeature(cx,cy);
+        const p = featureProb(x1,x2);
+        let r,g,bb;
+        if (p < 0.5) {
+          const t = p*2;
+          r = Math.round(248 - 248*t*0.3);
+          g = Math.round(50  + 40*t);
+          bb= Math.round(50  + 80*t);
+        } else {
+          const t = (p-0.5)*2;
+          r = Math.round(90  - 60*t);
+          g = Math.round(90  + 20*t);
+          bb= Math.round(130 + 120*t);
+        }
+        ctx.fillStyle = `rgba(${r},${g},${bb},0.28)`;
+        ctx.fillRect(gi*cw, gj*ch, cw+1, ch+1);
+      }
+    }
+
+    // Probability contour lines
+    const contourLevels = [0.1, 0.3, 0.7, 0.9];
+    const contourColors = ['rgba(248,113,113,0.5)','rgba(248,113,113,0.3)','rgba(96,165,250,0.3)','rgba(96,165,250,0.5)'];
+    contourLevels.forEach((level, li) => {
+      ctx.beginPath();
+      ctx.strokeStyle = contourColors[li];
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5,5]);
+      // marching squares approximation: draw horizontal scanlines
+      for (let gj=0; gj<GH; gj++) {
+        let inContour = false;
+        let startX = 0;
+        for (let gi=0; gi<=GW; gi++) {
+          const cx=(gi+0.5)*cw, cy=(gj+0.5)*ch;
+          const {x1,x2} = canvasToFeature(cx,cy);
+          const above = featureProb(x1,x2) >= level;
+          if (above && !inContour) { startX = gi*cw; inContour=true; }
+          if (!above && inContour) {
+            const y = (gj+0.5)*ch;
+            ctx.moveTo(startX, y);
+            ctx.lineTo(gi*cw, y);
+            inContour=false;
+          }
+        }
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+
+    // Decision boundary: P=0.5 → w1*x1 + w2*x2 + b = 0
+    // x2 = -(w1*x1 + b)/w2 in feature space
+    // map back to canvas: cy = H - ((x2+2)/4)*H
+    const {w1,w2,b} = weights;
+    if (Math.abs(w2) > 0.001 || Math.abs(w1) > 0.001) {
+      ctx.beginPath();
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([]);
+      let first=true;
+      for (let px=0; px<=W; px+=4) {
+        const x1v = (px/W)*4 - 2;
+        let cy_feat;
+        if (Math.abs(w2) > 0.001) {
+          cy_feat = -(w1*x1v + b) / w2;
+          const cy = H - ((cy_feat+2)/4)*H;
+          if (cy>=0 && cy<=H) {
+            if (first) { ctx.moveTo(px,cy); first=false; }
+            else ctx.lineTo(px,cy);
+          } else first=true;
+        }
+      }
+      ctx.stroke();
+
+      // Weight vector arrow
+      if (Math.sqrt(w1*w1+w2*w2) > 0.1) {
+        const cx=W/2, cy=H/2;
+        const mag = Math.sqrt(w1*w1+w2*w2);
+        const scale = 55;
+        const ax = cx + (w1/mag)*scale;
+        const ay = cy - (w2/mag)*scale;  // flip y for canvas
+        ctx.beginPath();
+        ctx.moveTo(cx,cy);
+        ctx.lineTo(ax,ay);
+        ctx.strokeStyle = 'rgba(249,115,22,0.85)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // arrowhead
+        const angle = Math.atan2(-(ay-cy), ax-cx);
+        const hs=8;
+        ctx.beginPath();
+        ctx.moveTo(ax,ay);
+        ctx.lineTo(ax-hs*Math.cos(angle-0.4), ay+hs*Math.sin(angle-0.4));
+        ctx.lineTo(ax-hs*Math.cos(angle+0.4), ay+hs*Math.sin(angle+0.4));
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(249,115,22,0.85)';
+        ctx.fill();
+        ctx.font = '600 11px "JetBrains Mono"';
+        ctx.fillStyle = '#f97316';
+        ctx.fillText('w', ax+6, ay-4);
+      }
+    }
+
+    // Training points
+    points.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 6.5, 0, Math.PI*2);
+      ctx.fillStyle = p.cls===0 ? '#f87171' : '#60a5fa';
+      ctx.fill();
+      ctx.strokeStyle = '#f5f0ff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+  }
+
+  canvas.addEventListener('click', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    points.push({x, y, cls: selectedClass});
+    trainLogistic();
+    draw();
+  });
+
+  trainLogistic();
+  draw();
+})();
+
+// ============================================================
+//  SECTION 03 — SVM
+// ============================================================
+(function() {
+  const canvas = document.getElementById('db3-canvas');
+  const { ctx, W, H } = setupCanvas(canvas);
+
+  let kernel = 'linear';
+  let C = 1.0;
+  let gamma = 0.5;
+
+  // XOR-ish dataset: 2 classes not linearly separable
+  // class 0: top-left + bottom-right clusters
+  // class 1: top-right + bottom-left clusters
+  const pts0 = [
+    [0.22,0.25],[0.28,0.20],[0.25,0.30],[0.30,0.22],[0.18,0.28],
+    [0.72,0.72],[0.78,0.68],[0.75,0.78],[0.80,0.75],[0.68,0.72],
+  ];
+  const pts1 = [
+    [0.72,0.25],[0.78,0.20],[0.75,0.30],[0.80,0.22],[0.68,0.28],
+    [0.22,0.72],[0.28,0.68],[0.25,0.78],[0.30,0.75],[0.18,0.72],
+  ];
+
+  const points = [
+    ...pts0.map(([fx,fy]) => ({x:fx*W, y:fy*H, cls:0})),
+    ...pts1.map(([fx,fy]) => ({x:fx*W, y:fy*H, cls:1})),
+  ];
+
+  window.db3SetKernel = function(k) {
+    kernel = k;
+    document.getElementById('db3-lin').classList.toggle('active', k==='linear');
+    document.getElementById('db3-rbf').classList.toggle('active', k==='rbf');
+    draw();
+  };
+
+  window.db3OnCChange = function() {
+    const raw = parseFloat(document.getElementById('db3-C').value);
+    // log scale: 0→0.01, 50→1, 100→100
+    C = Math.pow(10, (raw/50 - 1) * 2);
+    document.getElementById('db3-Cval').textContent = C >= 10 ? C.toFixed(0) : C.toFixed(2);
+    draw();
+  };
+
+  window.db3OnGammaChange = function() {
+    const raw = parseInt(document.getElementById('db3-gamma').value);
+    gamma = raw / 30;
+    document.getElementById('db3-gammaval').textContent = gamma.toFixed(2);
+    draw();
+  };
+
+  // Coordinate normalization: canvas -> [-1, 1]
+  function toNorm(cx,cy) {
+    return [(cx/W)*2-1, (cy/H)*2-1];
+  }
+
+  function rbfKernel(ax,ay, bx,by) {
+    const dx=ax-bx, dy=ay-by;
+    return Math.exp(-gamma*(dx*dx+dy*dy));
+  }
+
+  // Simplified SVM decision function using heuristic dual weights
+  // alpha_i proportional to (1 - y_i * f(x_i) + 0) clamped, derived iteratively
+  function computeSVMWeights() {
+    const n = points.length;
+    // Use a simplified SMO-like heuristic for demo purposes
+    // Initialize alphas
+    let alphas = new Array(n).fill(0.01);
+    const ys = points.map(p => p.cls===1 ? 1 : -1);
+    const [nx, ny] = points.map(p => toNorm(p.x,p.y)).reduce((_,x)=>x,[0,0]); // dummy
+
+    // Build kernel matrix
+    const norms = points.map(p => toNorm(p.x,p.y));
+    const K = [];
+    for (let i=0; i<n; i++) {
+      K[i] = [];
+      for (let j=0; j<n; j++) {
+        if (kernel === 'linear') {
+          K[i][j] = norms[i][0]*norms[j][0] + norms[i][1]*norms[j][1];
+        } else {
+          const dx=norms[i][0]-norms[j][0], dy=norms[i][1]-norms[j][1];
+          K[i][j] = Math.exp(-gamma*4*(dx*dx+dy*dy));
+        }
+      }
+    }
+
+    // Simple gradient ascent on dual (Platt-SMO simplified)
+    const maxIter = 200;
+    for (let iter=0; iter<maxIter; iter++) {
+      for (let i=0; i<n; i++) {
+        // compute f(x_i)
+        let fi = 0;
+        for (let j=0; j<n; j++) fi += alphas[j]*ys[j]*K[i][j];
+        // gradient of dual
+        const grad = 1 - ys[i]*fi;
+        alphas[i] += 0.005 * grad;
+        alphas[i] = clamp(alphas[i], 0, C);
+      }
+    }
+
+    // Compute bias b
+    let bSum=0, bCount=0;
+    for (let i=0; i<n; i++) {
+      if (alphas[i] > 0.001 && alphas[i] < C-0.001) {
+        let fi=0;
+        for (let j=0; j<n; j++) fi += alphas[j]*ys[j]*K[i][j];
+        bSum += ys[i] - fi;
+        bCount++;
+      }
+    }
+    const biasB = bCount>0 ? bSum/bCount : 0;
+
+    return {alphas, ys, norms, K, biasB};
+  }
+
+  function svmDecision(qx, qy, alphas, ys, norms, biasB) {
+    const [qnx,qny] = toNorm(qx,qy);
+    let f = biasB;
+    for (let i=0; i<points.length; i++) {
+      if (alphas[i] < 1e-4) continue;
+      let kval;
+      if (kernel === 'linear') {
+        kval = qnx*norms[i][0] + qny*norms[i][1];
+      } else {
+        const dx=qnx-norms[i][0], dy=qny-norms[i][1];
+        kval = Math.exp(-gamma*4*(dx*dx+dy*dy));
+      }
+      f += alphas[i]*ys[i]*kval;
+    }
+    return f;
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+
+    const {alphas, ys, norms, K, biasB} = computeSVMWeights();
+
+    // Background decision regions
+    const GW=80, GH=60;
+    const cw=W/GW, ch=H/GH;
+    // Cache decision values
+    const grid = [];
+    for (let gi=0; gi<GW; gi++) {
+      grid[gi] = [];
+      for (let gj=0; gj<GH; gj++) {
+        const cx=(gi+0.5)*cw, cy=(gj+0.5)*ch;
+        grid[gi][gj] = svmDecision(cx, cy, alphas, ys, norms, biasB);
+      }
+    }
+
+    for (let gi=0; gi<GW; gi++) {
+      for (let gj=0; gj<GH; gj++) {
+        const f = grid[gi][gj];
+        const t = 1/(1+Math.exp(-f*3));  // soften
+        let r,g,b;
+        if (t < 0.5) {
+          const s=(0.5-t)*2;
+          r=Math.round(248*s+60*(1-s)); g=Math.round(113*s+60*(1-s)); b=Math.round(113*s+100*(1-s));
+        } else {
+          const s=(t-0.5)*2;
+          r=Math.round(60*(1-s)+96*s); g=Math.round(60*(1-s)+165*s); b=Math.round(100*(1-s)+250*s);
+        }
+        ctx.fillStyle = `rgba(${r},${g},${b},0.22)`;
+        ctx.fillRect(gi*cw, gj*ch, cw+1, ch+1);
+      }
+    }
+
+    // Decision boundary (f=0)
+    ctx.beginPath();
+    ctx.strokeStyle = '#f97316';
+    ctx.lineWidth = 2.5;
+    let started=false;
+    for (let gi=0; gi<GW-1; gi++) {
+      for (let gj=0; gj<GH-1; gj++) {
+        const f00=grid[gi][gj], f10=grid[gi+1][gj];
+        const f01=grid[gi][gj+1], f11=grid[gi+1][gj+1];
+        // check if boundary crosses this cell horizontally
+        if ((f00<0) !== (f10<0)) {
+          const t = f00/(f00-f10);
+          const bx=(gi+t)*cw, by=(gj+0.5)*ch;
+          ctx.moveTo(bx,by); ctx.lineTo(bx,by+1);
+        }
+        if ((f00<0) !== (f01<0)) {
+          const t = f00/(f00-f01);
+          const bx=(gi+0.5)*cw, by=(gj+t)*ch;
+          ctx.moveTo(bx,by); ctx.lineTo(bx+1,by);
+        }
+      }
+    }
+    ctx.stroke();
+
+    // Margin bands (f=±1)
+    [-1, 1].forEach(level => {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(249,115,22,0.35)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([5,4]);
+      for (let gi=0; gi<GW-1; gi++) {
+        for (let gj=0; gj<GH-1; gj++) {
+          const f00=grid[gi][gj]-level, f10=grid[gi+1][gj]-level;
+          const f01=grid[gi][gj+1]-level;
+          if ((f00<0) !== (f10<0)) {
+            const t = f00/(f00-f10);
+            const bx=(gi+t)*cw, by=(gj+0.5)*ch;
+            ctx.moveTo(bx,by); ctx.lineTo(bx,by+1);
+          }
+          if ((f00<0) !== (f01<0)) {
+            const t = f00/(f00-f01);
+            const bx=(gi+0.5)*cw, by=(gj+t)*ch;
+            ctx.moveTo(bx,by); ctx.lineTo(bx+1,by);
+          }
+        }
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+
+    // Identify support vectors (alpha > threshold)
+    const svThresh = Math.max(0.001, C * 0.02);
+
+    // Draw all points
+    points.forEach((p, i) => {
+      const isSV = alphas[i] > svThresh;
+      // SV highlight square
+      if (isSV) {
+        ctx.beginPath();
+        ctx.rect(p.x-11, p.y-11, 22, 22);
+        ctx.strokeStyle = p.cls===0 ? 'rgba(248,113,113,0.8)' : 'rgba(96,165,250,0.8)';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+      }
+      // Point
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 6.5, 0, Math.PI*2);
+      ctx.fillStyle = p.cls===0 ? '#f87171' : '#60a5fa';
+      ctx.fill();
+      ctx.strokeStyle = '#f5f0ff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+
+    // For linear kernel, draw the weight vector arrow
+    if (kernel === 'linear') {
+      let w1=0, w2=0;
+      for (let i=0; i<points.length; i++) {
+        w1 += alphas[i]*ys[i]*norms[i][0];
+        w2 += alphas[i]*ys[i]*norms[i][1];
+      }
+      const wMag = Math.sqrt(w1*w1+w2*w2);
+      if (wMag > 0.05) {
+        const cx2=W/2, cy2=H/2;
+        const scale=60;
+        const ax = cx2 + (w1/wMag)*scale * (W/2);
+        const ay = cy2 + (w2/wMag)*scale * (H/2);
+        ctx.beginPath();
+        ctx.moveTo(cx2,cy2);
+        ctx.lineTo(ax,ay);
+        ctx.strokeStyle='rgba(249,115,22,0.9)';
+        ctx.lineWidth=2.2;
+        ctx.stroke();
+        const angle=Math.atan2(ay-cy2,ax-cx2);
+        const hs=9;
+        ctx.beginPath();
+        ctx.moveTo(ax,ay);
+        ctx.lineTo(ax-hs*Math.cos(angle-0.4),ay-hs*Math.sin(angle-0.4));
+        ctx.lineTo(ax-hs*Math.cos(angle+0.4),ay-hs*Math.sin(angle+0.4));
+        ctx.closePath();
+        ctx.fillStyle='rgba(249,115,22,0.9)';
+        ctx.fill();
+        ctx.font='600 11px "JetBrains Mono"';
+        ctx.fillStyle='#f97316';
+        ctx.fillText('w',ax+8,ay-4);
+      }
+    }
+
+    // Legend
+    ctx.font = '500 11px "JetBrains Mono"';
+    ctx.fillStyle = 'rgba(249,115,22,0.7)';
+    ctx.fillText(`Kernel: ${kernel.toUpperCase()}  C=${C>=10?C.toFixed(0):C.toFixed(2)}  γ=${gamma.toFixed(2)}`, 12, H-14);
+
+    // SV count label
+    const svCount = points.filter((_,i)=>alphas[i]>svThresh).length;
+    ctx.fillStyle = 'rgba(245,240,255,0.5)';
+    ctx.fillText(`Support Vectors: ${svCount}/${points.length}`, W-230, H-14);
+  }
+
+  draw();
+})();
+</script>
+</body>
+</html>
