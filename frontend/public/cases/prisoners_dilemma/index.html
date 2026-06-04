@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Prisoner's Dilemma — Game Theory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a24;
+    --amber: #f59e0b;
+    --amber-dim: #b37308;
+    --amber-pale: #fcd34d;
+    --text: #e8e0d0;
+    --text-dim: #9a9080;
+    --border: #2a2820;
+    --border-bright: #3d3520;
+    --red: #ef4444;
+    --green: #22c55e;
+    --blue: #60a5fa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(180deg, #0d0c14 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--amber-dim);
+    padding: 3rem 0 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-ornament {
+    font-family: 'Cinzel', serif;
+    color: var(--amber-dim);
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--amber-pale);
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ── Layout ── */
+  main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+  section {
+    margin-bottom: 5rem;
+    padding-bottom: 4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: var(--amber-dim);
+    margin-bottom: 0.75rem;
+  }
+  h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--amber-pale);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border-bright);
+  }
+
+  p { margin-bottom: 1.25rem; color: var(--text); }
+
+  /* ── Math blocks ── */
+  .math-block {
+    background: var(--bg2);
+    border: 1px solid var(--border-bright);
+    border-left: 3px solid var(--amber);
+    border-radius: 4px;
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .math-block p { margin-bottom: 0.6rem; font-size: 0.85rem; color: var(--text-dim); }
+  .math-block p:last-child { margin-bottom: 0; }
+
+  /* ── Canvas containers ── */
+  .viz-container {
+    background: var(--bg2);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    padding: 1.25rem;
+    margin: 2rem 0;
+  }
+  .viz-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--amber-dim);
+    margin-bottom: 1rem;
+  }
+  canvas {
+    display: block;
+    max-width: 100%;
+    border-radius: 3px;
+  }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    align-items: center;
+  }
+  .controls label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  select, button {
+    background: var(--bg3);
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 3px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  select:hover, button:hover { border-color: var(--amber); }
+  button.primary {
+    background: var(--amber);
+    color: #000;
+    font-weight: 700;
+    border-color: var(--amber);
+  }
+  button.primary:hover { background: var(--amber-pale); }
+
+  input[type=range] {
+    accent-color: var(--amber);
+    width: 120px;
+  }
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+  .slider-val {
+    font-family: 'Space Mono', monospace;
+    color: var(--amber);
+    min-width: 2.5rem;
+    text-align: right;
+  }
+
+  /* ── Info bar under viz ── */
+  .info-bar {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+  }
+  .info-bar span { display: flex; align-items: center; gap: 0.4rem; }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* ── Footnote ── */
+  .footnote {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-ornament">A Study in Rational Conflict</div>
+  <h1>The Prisoner's Dilemma</h1>
+  <p class="subtitle">Game Theory &nbsp;·&nbsp; Nash Equilibria &nbsp;·&nbsp; Evolutionary Dynamics</p>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 01 — THE DILEMMA
+════════════════════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-label">Section I</div>
+  <h2>The Dilemma</h2>
+
+  <p>
+    Two suspects are arrested and held in separate cells, unable to communicate. The prosecutor
+    lacks sufficient evidence for a conviction on the principal charge and offers each prisoner
+    an identical deal: betray your partner (Defect) or remain silent (Cooperate). The tragedy of the
+    situation is that the individually rational choice leads both players to a collectively inferior
+    outcome — the very essence of what makes this problem so enduringly profound.
+  </p>
+  <p>
+    The payoff matrix captures the structure precisely. If both cooperate, each serves a short
+    sentence: \((-1, -1)\). If one defects while the other cooperates, the defector goes free
+    \((0)\) while the cooperator receives the maximum sentence \((-5)\). If both defect, both
+    receive a moderately harsh sentence \((-3, -3)\). Notice that Defect <em>strictly dominates</em>
+    Cooperate: regardless of what the other player does, you always fare better by defecting.
+    This asymmetry between individual rationality and collective welfare is the dilemma.
+  </p>
+  <p>
+    A <strong>Nash equilibrium</strong> is a strategy profile where no player can improve their
+    payoff by unilaterally changing strategy. Here, (Defect, Defect) is the unique Nash equilibrium
+    — neither player has an incentive to deviate. Yet the <em>social optimum</em> — the outcome
+    maximizing total welfare — is (Cooperate, Cooperate) with a combined payoff of \(-2\) versus
+    the Nash equilibrium's combined \(-6\). This gap between individual rationality and collective
+    optimality is not merely an academic curiosity; it models arms races, climate negotiations,
+    corporate price wars, and countless social dilemmas.
+  </p>
+
+  <div class="math-block">
+    <p>Formal Nash equilibrium: a profile \((s_1^*, s_2^*)\) such that for all players \(i\):</p>
+    <p>\[ u_i(s_i^*, s_{-i}^*) \geq u_i(s_i, s_{-i}^*) \quad \forall\, s_i \in S_i \]</p>
+    <p>Dominance of Defection. For Player A, whatever Player B plays:</p>
+    <p>\[ u_A(D, C) = 0 > -1 = u_A(C, C) \quad\text{and}\quad u_A(D, D) = -3 > -5 = u_A(C, D) \]</p>
+    <p>So \(D\) strictly dominates \(C\). By symmetry, the same holds for Player B. Hence \((D,D)\) is the unique dominant-strategy Nash equilibrium.</p>
+  </div>
+
+  <div class="viz-container">
+    <div class="viz-title">Interactive Payoff Matrix — Click to Highlight Strategy Profiles</div>
+    <canvas id="matrixCanvas" width="836" height="300"></canvas>
+    <div class="controls">
+      <button id="btnShowDominance">Show Dominance Arrows</button>
+      <button id="btnShowNash">Highlight Nash Equilibrium</button>
+      <button id="btnResetMatrix">Reset</button>
+    </div>
+    <div class="footnote">Click any cell to highlight that strategy combination. Payoffs are (Player A, Player B) in units of years imprisoned (negative = good).</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 02 — ITERATED GAMES
+════════════════════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-label">Section II</div>
+  <h2>Iterated Games &amp; Cooperation</h2>
+
+  <p>
+    The one-shot analysis is damning: rational actors must defect. But the world is full of
+    repeated interactions. When the same players meet again and again, the future casts a shadow
+    backward, making cooperation potentially sustainable. Robert Axelrod's landmark 1980 computer
+    tournament invited game theorists to submit strategies for an iterated Prisoner's Dilemma
+    played over 200 rounds. The tournament winner — and winner of the sequel — was the disarmingly
+    simple strategy <strong>Tit-for-Tat</strong> (TfT).
+  </p>
+  <p>
+    TfT has four elegant properties. It is <em>nice</em>: it never defects first. It is
+    <em>retaliatory</em>: it immediately punishes defection in the next round. It is
+    <em>forgiving</em>: once the opponent cooperates again, TfT returns to cooperation. And it is
+    <em>clear</em>: its behavior is so transparent that sophisticated opponents quickly learn what
+    to expect. These properties stand in sharp contrast to always-defect (AD), which may score
+    points in early rounds but fails to exploit the potential for mutual cooperation.
+    <strong>Grim Trigger</strong> is the other extreme: cooperate until the opponent defects once,
+    then defect forever — maximally punishing but unforgiving.
+  </p>
+  <p>
+    The mathematics of the repeated game introduces a <em>discount factor</em> \(\delta \in [0,1)\)
+    representing how much players value future payoffs relative to present ones. When \(\delta\) is
+    sufficiently large — players care enough about the future — mutual cooperation can be sustained
+    as a Nash equilibrium. The Folk Theorem formalizes this: any payoff that strictly dominates
+    the minimax payoff can be sustained as a Nash equilibrium in the infinitely repeated game,
+    provided \(\delta\) is large enough. In the finite case, backward induction unravels cooperation,
+    but in practice, uncertain endpoints and reputation effects restore it.
+  </p>
+
+  <div class="math-block">
+    <p>Total discounted payoff over \(N\) rounds with discount factor \(\delta\):</p>
+    <p>\[ V = \sum_{t=0}^{N-1} \delta^t \cdot r_t \]</p>
+    <p>TfT vs Always Defect over \(N\) rounds (undiscounted, starting TfT cooperates round 0):</p>
+    <p>\[ V_{\text{TfT}} = -5 + (-3)(N-1), \quad V_{\text{AD}} = 0 + (-3)(N-1) \]</p>
+    <p>AD always scores 5 more than TfT when playing against TfT. But TfT vs TfT scores \(-1 \cdot N\), while AD vs AD scores \(-3 \cdot N\). The collective payoff under mutual TfT dominates mutual AD for all \(N \geq 2\).</p>
+  </div>
+
+  <div class="viz-container">
+    <div class="viz-title">Strategy Tournament — 40-Round Simulation</div>
+    <canvas id="tournamentCanvas" width="836" height="320"></canvas>
+    <div class="controls">
+      <label>Player A: <select id="stratA">
+        <option value="tft">Tit-for-Tat</option>
+        <option value="ac">Always Cooperate</option>
+        <option value="ad">Always Defect</option>
+        <option value="grim">Grim Trigger</option>
+        <option value="rand">Random (50%)</option>
+      </select></label>
+      <label>Player B: <select id="stratB">
+        <option value="ad">Always Defect</option>
+        <option value="tft">Tit-for-Tat</option>
+        <option value="ac">Always Cooperate</option>
+        <option value="grim">Grim Trigger</option>
+        <option value="rand">Random (50%)</option>
+      </select></label>
+      <button class="primary" id="btnRun">▶ Run 40 Rounds</button>
+      <button id="btnReset2">Reset</button>
+    </div>
+    <div class="info-bar">
+      <span><span class="dot" style="background:#f59e0b"></span> Player A score</span>
+      <span><span class="dot" style="background:#60a5fa"></span> Player B score</span>
+      <span><span class="dot" style="background:#22c55e"></span> Cooperate</span>
+      <span><span class="dot" style="background:#ef4444"></span> Defect</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 03 — EVOLUTIONARY DYNAMICS
+════════════════════════════════════════════════════ -->
+<section id="s3">
+  <div class="section-label">Section III</div>
+  <h2>Evolutionary Dynamics</h2>
+
+  <p>
+    Beyond rational deliberation lies a deeper question: which strategies survive and spread in
+    a population of agents playing repeatedly against one another? Evolutionary game theory,
+    pioneered by John Maynard Smith, answers this without assuming that players consciously
+    optimize. Instead, strategies that earn above-average payoffs are imitated and replicated;
+    those that underperform shrink. The mathematical vehicle is the <strong>replicator equation</strong>.
+  </p>
+  <p>
+    In a population with three strategy types — Always Cooperate (AC), Always Defect (AD), and
+    Tit-for-Tat (TfT) — each strategy's fitness depends on its expected payoff against the
+    current population mix. When the population is mostly cooperators, AD invades easily:
+    defectors exploit cooperators and multiply. But a critical mass of TfT players can resist
+    this invasion: TfT punishes defectors immediately while still cooperating with fellow TfT
+    players. This creates a kind of conditional cooperation that is both exploitable only at
+    a cost and mutually rewarding.
+  </p>
+  <p>
+    The dynamics are <em>frequency-dependent</em>: the fitness of a strategy depends not on any
+    intrinsic value, but on who else is in the population. This leads to rich behavior: bistability
+    (where the final state depends sensitively on initial conditions), limit cycles, and even
+    chaos in larger strategy spaces. The fundamental lesson is that cooperation is not a given —
+    it must be maintained by the right structural conditions, whether through iteration, reputation,
+    kin selection, or network structure. The replicator dynamics reveal when those conditions are met.
+  </p>
+
+  <div class="math-block">
+    <p>Replicator equation for strategy \(i\) with population fraction \(x_i\):</p>
+    <p>\[ \dot{x}_i = x_i \bigl( f_i - \bar{f} \bigr) \]</p>
+    <p>where the fitness of strategy \(i\) against the current population is:</p>
+    <p>\[ f_i = \sum_j x_j \cdot \pi(i, j) \]</p>
+    <p>and the mean population fitness is \(\bar{f} = \sum_i x_i f_i\). Strategies with \(f_i > \bar{f}\) grow; those with \(f_i < \bar{f}\) shrink. Fixed points occur at \(x_i = 0\) or \(f_i = \bar{f}\).</p>
+  </div>
+
+  <div class="viz-container">
+    <div class="viz-title">Evolutionary Population Dynamics — 80 Generations</div>
+    <canvas id="evoCanvas" width="836" height="300"></canvas>
+    <div class="controls">
+      <div class="slider-group">
+        <span>AC%</span>
+        <input type="range" id="slAC" min="0" max="100" value="30" step="1">
+        <span class="slider-val" id="valAC">30%</span>
+      </div>
+      <div class="slider-group">
+        <span>AD%</span>
+        <input type="range" id="slAD" min="0" max="100" value="40" step="1">
+        <span class="slider-val" id="valAD">40%</span>
+      </div>
+      <div class="slider-group">
+        <span>TfT%</span>
+        <input type="range" id="slTFT" min="0" max="100" value="30" step="1">
+        <span class="slider-val" id="valTFT">30%</span>
+      </div>
+      <button class="primary" id="btnEvolve">Evolve</button>
+      <button id="btnResetEvo">Reset</button>
+    </div>
+    <div class="info-bar">
+      <span><span class="dot" style="background:#22c55e"></span> Always Cooperate</span>
+      <span><span class="dot" style="background:#ef4444"></span> Always Defect</span>
+      <span><span class="dot" style="background:#f59e0b"></span> Tit-for-Tat</span>
+      <span id="evoStatus" style="color:var(--amber);margin-left:auto"></span>
+    </div>
+    <div class="footnote">Drag sliders so the three percentages sum to 100. Click Evolve to watch population dynamics over 80 generations under replicator dynamics.</div>
+  </div>
+</section>
+
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ]
+    });
+  }
+
+  // ════════════════════════════════════════════
+  // SECTION 1 — PAYOFF MATRIX
+  // ════════════════════════════════════════════
+  const mc = document.getElementById('matrixCanvas');
+  const mctx = mc.getContext('2d');
+  mc.style.width = '100%';
+  mc.style.maxWidth = '836px';
+
+  const PAYOFFS = {
+    CC: [-1, -1], CD: [-5, 0], DC: [0, -5], DD: [-3, -3]
+  };
+
+  let matrixState = { selected: null, showDominance: false, showNash: false };
+
+  function drawMatrix() {
+    const W = mc.width, H = mc.height;
+    const ctx = mctx;
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = '#0d0d15';
+    ctx.fillRect(0, 0, W, H);
+
+    const leftPad = 160, topPad = 90;
+    const cellW = 180, cellH = 90;
+
+    // Strategy labels — Player B header
+    ctx.font = '700 13px "Cinzel", serif';
+    ctx.fillStyle = '#f59e0b';
+    ctx.textAlign = 'center';
+    ctx.fillText("PLAYER B", leftPad + cellW, 22);
+
+    ctx.font = '11px "Space Mono", monospace';
+    ctx.fillStyle = '#9a9080';
+    ctx.fillText("Cooperate", leftPad + cellW * 0.5, 44);
+    ctx.fillText("Defect", leftPad + cellW * 1.5, 44);
+
+    // Player A header
+    ctx.save();
+    ctx.translate(28, topPad + cellH);
+    ctx.rotate(-Math.PI / 2);
+    ctx.font = '700 13px "Cinzel", serif';
+    ctx.fillStyle = '#f59e0b';
+    ctx.textAlign = 'center';
+    ctx.fillText("PLAYER A", 0, 0);
+    ctx.restore();
+
+    ctx.font = '11px "Space Mono", monospace';
+    ctx.fillStyle = '#9a9080';
+    ctx.textAlign = 'right';
+    ctx.fillText("Cooperate", leftPad - 12, topPad + cellH * 0.5 + 4);
+    ctx.fillText("Defect", leftPad - 12, topPad + cellH * 1.5 + 4);
+
+    // Cell data
+    const cells = [
+      { key: 'CC', row: 0, col: 0, label: 'CC', a: -1, b: -1 },
+      { key: 'CD', row: 0, col: 1, label: 'CD', a: -5, b: 0 },
+      { key: 'DC', row: 1, col: 0, label: 'DC', a: 0, b: -5 },
+      { key: 'DD', row: 1, col: 1, label: 'DD', a: -3, b: -3 },
+    ];
+
+    cells.forEach(cell => {
+      const x = leftPad + cell.col * cellW;
+      const y = topPad + cell.row * cellH;
+      const isSelected = matrixState.selected === cell.key;
+      const isNash = cell.key === 'DD' && matrixState.showNash;
+
+      // Cell fill
+      let bg = '#111118';
+      if (isNash) bg = '#1a0a00';
+      if (isSelected) bg = '#1a1510';
+      ctx.fillStyle = bg;
+      ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+
+      // Cell border
+      let borderColor = '#2a2820';
+      if (isNash) borderColor = '#f59e0b';
+      if (isSelected && !isNash) borderColor = '#b37308';
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = isNash ? 2 : 1;
+      ctx.strokeRect(x + 1, y + 1, cellW - 2, cellH - 2);
+
+      // Payoff text
+      ctx.textAlign = 'center';
+      const cx = x + cellW / 2, cy = y + cellH / 2;
+
+      ctx.font = '700 20px "Space Mono", monospace';
+      const pA = cell.a, pB = cell.b;
+      ctx.fillStyle = pA === 0 ? '#22c55e' : (pA === -1 ? '#fcd34d' : (pA === -3 ? '#f97316' : '#ef4444'));
+      ctx.fillText(pA, cx - 30, cy + 2);
+      ctx.fillStyle = '#9a9080';
+      ctx.font = '14px "Space Mono", monospace';
+      ctx.fillText(',', cx, cy + 2);
+      ctx.font = '700 20px "Space Mono", monospace';
+      ctx.fillStyle = pB === 0 ? '#22c55e' : (pB === -1 ? '#fcd34d' : (pB === -3 ? '#f97316' : '#ef4444'));
+      ctx.fillText(pB, cx + 30, cy + 2);
+
+      // Sub-label
+      ctx.font = '10px "Space Mono", monospace';
+      ctx.fillStyle = '#555';
+      ctx.fillText('(A, B)', cx, y + cellH - 10);
+
+      // Nash label
+      if (isNash) {
+        ctx.font = '700 9px "Cinzel", serif';
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText('NASH EQUILIBRIUM', cx, y + 14);
+      }
+    });
+
+    // Dominance arrows
+    if (matrixState.showDominance) {
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 3]);
+
+      // Arrow: for B=C, A prefers D over C (right column not, left col: DC better than CC)
+      // A's best response to B=C: DC (row1, col0) better than CC (row0, col0)
+      // Arrow from CC to DC
+      drawArrow(ctx,
+        leftPad + cellW * 0.5, topPad + cellH * 0.5,
+        leftPad + cellW * 0.5, topPad + cellH * 1.5,
+        '#22c55e', 'A: 0 > −1'
+      );
+      // A's best response to B=D: DD better than CD
+      drawArrow(ctx,
+        leftPad + cellW * 1.5, topPad + cellH * 0.5,
+        leftPad + cellW * 1.5, topPad + cellH * 1.5,
+        '#22c55e', 'A: −3 > −5'
+      );
+
+      ctx.setLineDash([]);
+      ctx.font = '10px "Space Mono", monospace';
+      ctx.fillStyle = '#22c55e';
+      ctx.textAlign = 'left';
+      ctx.fillText('← A always prefers to Defect', leftPad + 4, H - 10);
+    }
+  }
+
+  function drawArrow(ctx, x1, y1, x2, y2, color, label) {
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 3]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 + 30);
+    ctx.lineTo(x2, y2 - 30);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // arrowhead
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2 - 30);
+    ctx.lineTo(x2 - 10 * Math.cos(angle - 0.4), y2 - 30 - 10 * Math.sin(angle - 0.4));
+    ctx.lineTo(x2 - 10 * Math.cos(angle + 0.4), y2 - 30 - 10 * Math.sin(angle + 0.4));
+    ctx.closePath();
+    ctx.fill();
+    ctx.font = '10px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, (x1 + x2) / 2 + 50, (y1 + y2) / 2);
+  }
+
+  mc.addEventListener('click', (e) => {
+    const rect = mc.getBoundingClientRect();
+    const scaleX = mc.width / rect.width;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * (mc.height / rect.height);
+    const leftPad = 160, topPad = 90, cellW = 180, cellH = 90;
+    const col = Math.floor((mx - leftPad) / cellW);
+    const row = Math.floor((my - topPad) / cellH);
+    if (col >= 0 && col < 2 && row >= 0 && row < 2) {
+      const key = ['CC','CD','DC','DD'][row * 2 + col];
+      matrixState.selected = matrixState.selected === key ? null : key;
+    }
+    drawMatrix();
+  });
+
+  document.getElementById('btnShowDominance').addEventListener('click', () => {
+    matrixState.showDominance = !matrixState.showDominance;
+    drawMatrix();
+  });
+  document.getElementById('btnShowNash').addEventListener('click', () => {
+    matrixState.showNash = !matrixState.showNash;
+    drawMatrix();
+  });
+  document.getElementById('btnResetMatrix').addEventListener('click', () => {
+    matrixState = { selected: null, showDominance: false, showNash: false };
+    drawMatrix();
+  });
+
+  drawMatrix();
+
+  // ════════════════════════════════════════════
+  // SECTION 2 — TOURNAMENT SIMULATION
+  // ════════════════════════════════════════════
+  const tc = document.getElementById('tournamentCanvas');
+  const tctx = tc.getContext('2d');
+  tc.style.width = '100%';
+  tc.style.maxWidth = '836px';
+
+  const NROUNDS = 40;
+  let tournamentData = null;
+  let animFrame2 = null;
+  let animStep2 = 0;
+
+  const strategies = {
+    ac: { name: 'Always Cooperate', fn: (myHist, oppHist, r) => 'C' },
+    ad: { name: 'Always Defect',    fn: (myHist, oppHist, r) => 'D' },
+    tft: { name: 'Tit-for-Tat',    fn: (myHist, oppHist, r) => r === 0 ? 'C' : oppHist[r-1] },
+    grim: { name: 'Grim Trigger',  fn: (myHist, oppHist, r) => oppHist.includes('D') ? 'D' : 'C' },
+    rand: { name: 'Random 50%',    fn: (myHist, oppHist, r) => Math.random() < 0.5 ? 'C' : 'D' },
+  };
+
+  function payoff(a, b) {
+    if (a === 'C' && b === 'C') return [-1, -1];
+    if (a === 'C' && b === 'D') return [-5, 0];
+    if (a === 'D' && b === 'C') return [0, -5];
+    return [-3, -3];
+  }
+
+  function runTournament(sA, sB) {
+    const histA = [], histB = [];
+    const scoresA = [0], scoresB = [0];
+    for (let r = 0; r < NROUNDS; r++) {
+      const mA = strategies[sA].fn(histA, histB, r);
+      const mB = strategies[sB].fn(histB, histA, r);
+      histA.push(mA); histB.push(mB);
+      const [pA, pB] = payoff(mA, mB);
+      scoresA.push(scoresA[scoresA.length - 1] + pA);
+      scoresB.push(scoresB[scoresB.length - 1] + pB);
+    }
+    return { histA, histB, scoresA, scoresB };
+  }
+
+  function drawTournament(step) {
+    const W = tc.width, H = tc.height;
+    const ctx = tctx;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0d0d15';
+    ctx.fillRect(0, 0, W, H);
+
+    if (!tournamentData) {
+      ctx.fillStyle = '#3a3028';
+      ctx.font = '14px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Select strategies and click ▶ Run 40 Rounds', W / 2, H / 2);
+      return;
+    }
+
+    const { histA, histB, scoresA, scoresB } = tournamentData;
+    const rounds = Math.min(step, NROUNDS);
+
+    // Layout
+    const chartH = 140, gridH = 70;
+    const pad = { l: 55, r: 20, t: 20, chartB: 10, gridT: 10 };
+    const chartTop = pad.t;
+    const chartBottom = chartTop + chartH;
+    const gridTop = chartBottom + pad.chartB + pad.gridT + 20;
+    const gridBottom = gridTop + gridH;
+    const plotW = W - pad.l - pad.r;
+
+    // Score chart
+    ctx.strokeStyle = '#2a2820';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, chartTop); ctx.lineTo(pad.l, chartBottom);
+    ctx.moveTo(pad.l, chartBottom); ctx.lineTo(W - pad.r, chartBottom);
+    ctx.stroke();
+
+    // Y axis labels
+    const minS = Math.min(...scoresA.slice(0, rounds + 1), ...scoresB.slice(0, rounds + 1));
+    const maxS = Math.max(...scoresA.slice(0, rounds + 1), ...scoresB.slice(0, rounds + 1), 0.1);
+    const scoreRange = maxS - minS || 1;
+
+    ctx.font = '10px "Space Mono", monospace';
+    ctx.fillStyle = '#554840';
+    ctx.textAlign = 'right';
+    for (let v = Math.ceil(minS / 10) * 10; v <= maxS; v += 10) {
+      const y = chartBottom - ((v - minS) / scoreRange) * chartH;
+      ctx.fillText(v, pad.l - 5, y + 3);
+      ctx.strokeStyle = '#1e1e26';
+      ctx.beginPath();
+      ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y);
+      ctx.stroke();
+    }
+
+    // Draw score lines
+    function drawLine(scores, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let r = 0; r <= rounds; r++) {
+        const x = pad.l + (r / NROUNDS) * plotW;
+        const y = chartBottom - ((scores[r] - minS) / scoreRange) * chartH;
+        r === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      // Dot at end
+      if (rounds > 0) {
+        const x = pad.l + (rounds / NROUNDS) * plotW;
+        const y = chartBottom - ((scores[rounds] - minS) / scoreRange) * chartH;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    drawLine(scoresA, '#f59e0b');
+    drawLine(scoresB, '#60a5fa');
+
+    // Score labels
+    const sA = document.getElementById('stratA');
+    const sB = document.getElementById('stratB');
+    ctx.font = '10px "Space Mono", monospace';
+    ctx.fillStyle = '#f59e0b';
+    ctx.textAlign = 'left';
+    ctx.fillText('A: ' + strategies[sA.value].name + '  ' + (rounds > 0 ? scoresA[rounds] : 0) + ' pts', pad.l + 5, chartTop + 15);
+    ctx.fillStyle = '#60a5fa';
+    ctx.fillText('B: ' + strategies[sB.value].name + '  ' + (rounds > 0 ? scoresB[rounds] : 0) + ' pts', pad.l + 5, chartTop + 30);
+
+    // Chart title
+    ctx.fillStyle = '#9a9080';
+    ctx.font = '10px "Space Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('Cumulative Score', W - pad.r, chartTop + 12);
+
+    // Grid label
+    ctx.fillStyle = '#9a9080';
+    ctx.textAlign = 'left';
+    ctx.fillText('Moves (green=C, red=D)', pad.l, gridTop - 4);
+
+    // Round-by-round grid
+    const cellW2 = plotW / NROUNDS;
+    const rowH = gridH / 2;
+    for (let r = 0; r < rounds; r++) {
+      const x = pad.l + r * cellW2;
+      const mA = histA[r], mB = histB[r];
+
+      ctx.fillStyle = mA === 'C' ? '#15452a' : '#3d1010';
+      ctx.fillRect(x + 0.5, gridTop + 0.5, cellW2 - 1, rowH - 1);
+      ctx.fillStyle = mB === 'C' ? '#15452a' : '#3d1010';
+      ctx.fillRect(x + 0.5, gridTop + rowH + 0.5, cellW2 - 1, rowH - 1);
+
+      if (cellW2 > 12) {
+        ctx.fillStyle = mA === 'C' ? '#22c55e' : '#ef4444';
+        ctx.font = `${Math.min(cellW2 - 2, 11)}px "Space Mono", monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText(mA, x + cellW2 / 2, gridTop + rowH / 2 + 4);
+        ctx.fillStyle = mB === 'C' ? '#22c55e' : '#ef4444';
+        ctx.fillText(mB, x + cellW2 / 2, gridTop + rowH + rowH / 2 + 4);
+      }
+    }
+
+    // Row labels
+    ctx.fillStyle = '#9a9080';
+    ctx.font = '10px "Space Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('A', pad.l - 5, gridTop + rowH / 2 + 4);
+    ctx.fillText('B', pad.l - 5, gridTop + rowH + rowH / 2 + 4);
+
+    // Grid border
+    ctx.strokeStyle = '#2a2820';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(pad.l, gridTop, plotW, gridH);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, gridTop + rowH);
+    ctx.lineTo(pad.l + plotW, gridTop + rowH);
+    ctx.stroke();
+  }
+
+  function animateTournament() {
+    animStep2++;
+    drawTournament(animStep2);
+    if (animStep2 < NROUNDS) {
+      animFrame2 = requestAnimationFrame(animateTournament);
+    }
+  }
+
+  document.getElementById('btnRun').addEventListener('click', () => {
+    if (animFrame2) cancelAnimationFrame(animFrame2);
+    const sA = document.getElementById('stratA').value;
+    const sB = document.getElementById('stratB').value;
+    tournamentData = runTournament(sA, sB);
+    animStep2 = 0;
+    animateTournament();
+  });
+
+  document.getElementById('btnReset2').addEventListener('click', () => {
+    if (animFrame2) cancelAnimationFrame(animFrame2);
+    tournamentData = null;
+    animStep2 = 0;
+    drawTournament(0);
+  });
+
+  drawTournament(0);
+
+  // ════════════════════════════════════════════
+  // SECTION 3 — EVOLUTIONARY DYNAMICS
+  // ════════════════════════════════════════════
+  const ec = document.getElementById('evoCanvas');
+  const ectx = ec.getContext('2d');
+  ec.style.width = '100%';
+  ec.style.maxWidth = '836px';
+
+  // Payoff matrix for evolution (per-round against opponent)
+  // Averaged over 40 rounds for TfT calculations
+  function avgPayoff(stratA, stratB) {
+    // Approximate payoffs over many rounds
+    const matrix = {
+      AC: { AC: -1,  AD: -5,  TFT: -1  },
+      AD: { AC:  0,  AD: -3,  TFT: -2.925 }, // TfT: AD gets 0 once, then -3 x 39 / 40
+      TFT:{ AC: -1,  AD: -2.975, TFT: -1  }, // TfT: -5 once, then -1 x 39 / 40
+    };
+    return matrix[stratA][stratB];
+  }
+
+  function replicatorStep(x, dt = 0.05) {
+    const [xAC, xAD, xTFT] = x;
+    const strats = ['AC', 'AD', 'TFT'];
+    const fracs = { AC: xAC, AD: xAD, TFT: xTFT };
+
+    const fitness = {};
+    strats.forEach(si => {
+      fitness[si] = strats.reduce((sum, sj) => sum + fracs[sj] * avgPayoff(si, sj), 0);
+    });
+    const fbar = strats.reduce((sum, si) => sum + fracs[si] * fitness[si], 0);
+
+    const dx = strats.map(si => fracs[si] * (fitness[si] - fbar) * dt);
+    let newX = [xAC + dx[0], xAD + dx[1], xTFT + dx[2]];
+    // Clamp and normalize
+    newX = newX.map(v => Math.max(0, v));
+    const total = newX.reduce((a, b) => a + b, 0);
+    return total > 0 ? newX.map(v => v / total) : [0.333, 0.334, 0.333];
+  }
+
+  let evoHistory = null;
+  let evoAnimFrame = null;
+  let evoStep = 0;
+
+  function runEvo() {
+    const ac0 = parseInt(document.getElementById('slAC').value) / 100;
+    const ad0 = parseInt(document.getElementById('slAD').value) / 100;
+    const tft0 = parseInt(document.getElementById('slTFT').value) / 100;
+    const total = ac0 + ad0 + tft0;
+    let x = [ac0 / total, ad0 / total, tft0 / total];
+    const hist = [x];
+    for (let g = 0; g < 80; g++) {
+      x = replicatorStep(x, 0.1);
+      hist.push(x);
+    }
+    return hist;
+  }
+
+  function drawEvo(steps) {
+    const W = ec.width, H = ec.height;
+    const ctx = ectx;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0d0d15';
+    ctx.fillRect(0, 0, W, H);
+
+    if (!evoHistory) {
+      ctx.fillStyle = '#3a3028';
+      ctx.font = '14px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Set initial populations and click Evolve', W / 2, H / 2);
+      return;
+    }
+
+    const pad = { l: 50, r: 20, t: 30, b: 40 };
+    const plotW = W - pad.l - pad.r;
+    const plotH = H - pad.t - pad.b;
+    const gens = Math.min(steps, evoHistory.length - 1);
+
+    // Axes
+    ctx.strokeStyle = '#2a2820';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, pad.t);
+    ctx.lineTo(pad.l, H - pad.b);
+    ctx.lineTo(W - pad.r, H - pad.b);
+    ctx.stroke();
+
+    // Y axis labels
+    ctx.font = '10px "Space Mono", monospace';
+    ctx.fillStyle = '#554840';
+    ctx.textAlign = 'right';
+    for (let v = 0; v <= 100; v += 25) {
+      const y = H - pad.b - (v / 100) * plotH;
+      ctx.fillText(v + '%', pad.l - 5, y + 3);
+      ctx.strokeStyle = '#1e1e26';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y);
+      ctx.stroke();
+    }
+
+    // X axis labels
+    ctx.fillStyle = '#554840';
+    ctx.textAlign = 'center';
+    for (let g = 0; g <= 80; g += 20) {
+      const x = pad.l + (g / 80) * plotW;
+      ctx.fillText('G' + g, x, H - pad.b + 14);
+    }
+
+    // Stacked area chart
+    const NGEN = evoHistory.length;
+    const colors = ['#22c55e', '#ef4444', '#f59e0b'];
+    const stratNames = ['AC', 'AD', 'TFT'];
+
+    // For each gen, compute stacked bounds
+    function getStack(g) {
+      const [ac, ad, tft] = evoHistory[Math.min(g, NGEN - 1)];
+      return [0, ac, ac + ad, ac + ad + tft];
+    }
+
+    // Draw areas (bottom to top: AC, AD, TfT)
+    for (let s = 0; s < 3; s++) {
+      ctx.beginPath();
+      // Forward pass (bottom edge)
+      for (let g = 0; g <= gens; g++) {
+        const x = pad.l + (g / 80) * plotW;
+        const stack = getStack(g);
+        const y = H - pad.b - stack[s] * plotH;
+        g === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      // Backward pass (top edge)
+      for (let g = gens; g >= 0; g--) {
+        const x = pad.l + (g / 80) * plotW;
+        const stack = getStack(g);
+        const y = H - pad.b - stack[s + 1] * plotH;
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = colors[s] + '55';
+      ctx.fill();
+
+      // Top edge line
+      ctx.strokeStyle = colors[s];
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let g = 0; g <= gens; g++) {
+        const x = pad.l + (g / 80) * plotW;
+        const stack = getStack(g);
+        const y = H - pad.b - stack[s + 1] * plotH;
+        g === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Final state annotation
+    if (gens >= 1) {
+      const final = evoHistory[gens];
+      const labels = ['AC', 'AD', 'TfT'];
+      const cols = ['#22c55e', '#ef4444', '#f59e0b'];
+      const x = pad.l + (gens / 80) * plotW;
+      for (let s = 0; s < 3; s++) {
+        if (final[s] > 0.05) {
+          const stack = getStack(gens);
+          const y = H - pad.b - (stack[s] + stack[s + 1]) / 2 * plotH;
+          ctx.fillStyle = cols[s];
+          ctx.font = '700 11px "Space Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(Math.round(final[s] * 100) + '%', x + 6, y + 4);
+        }
+      }
+    }
+
+    // Status
+    if (gens >= 80) {
+      const final = evoHistory[80];
+      let dominant = '';
+      if (final[1] > 0.9) dominant = 'AD dominates — defection wins';
+      else if (final[0] + final[2] > 0.9) dominant = 'Cooperation prevails (AC+TfT)';
+      else dominant = 'Mixed equilibrium';
+      document.getElementById('evoStatus').textContent = dominant;
+    }
+  }
+
+  function animateEvo() {
+    evoStep++;
+    drawEvo(evoStep);
+    if (evoStep < 80) evoAnimFrame = requestAnimationFrame(animateEvo);
+  }
+
+  document.getElementById('btnEvolve').addEventListener('click', () => {
+    if (evoAnimFrame) cancelAnimationFrame(evoAnimFrame);
+    evoHistory = runEvo();
+    evoStep = 0;
+    document.getElementById('evoStatus').textContent = '';
+    animateEvo();
+  });
+
+  document.getElementById('btnResetEvo').addEventListener('click', () => {
+    if (evoAnimFrame) cancelAnimationFrame(evoAnimFrame);
+    evoHistory = null;
+    evoStep = 0;
+    document.getElementById('evoStatus').textContent = '';
+    drawEvo(0);
+  });
+
+  // Sliders — keep sum = 100
+  ['slAC', 'slAD', 'slTFT'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      const ids = ['slAC', 'slAD', 'slTFT'];
+      const vals = ids.map(i => parseInt(document.getElementById(i).value));
+      const total = vals.reduce((a, b) => a + b, 0);
+      const labels = ['valAC', 'valAD', 'valTFT'];
+      labels.forEach((lid, i) => {
+        document.getElementById(lid).textContent = Math.round(vals[i] / total * 100) + '%';
+      });
+    });
+  });
+
+  drawEvo(0);
+});
+</script>
+</body>
+</html>

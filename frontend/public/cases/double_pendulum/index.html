@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Pendulum</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#08090e; --card:#0f1018; --surface:#161820;
+            --accent:#22d3ee; --orange:#fb923c; --green:#4ade80;
+            --red:#f87171; --purple:#a78bfa;
+            --text:#e2e8f0; --muted:#64748b; --dim:#2d3346; --border:#1e2235;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:'Fira Code',monospace; line-height:1.75; padding:0 0 80px; }
+        header { text-align:center; padding:60px 40px 48px; background:radial-gradient(ellipse at 50% 0%,#0b1a20 0%,var(--bg) 65%); border-bottom:1px solid var(--border); }
+        .tag { display:inline-block; font-size:10px; letter-spacing:0.2em; color:var(--accent); text-transform:uppercase; border:1px solid rgba(34,211,238,0.25); padding:3px 12px; border-radius:20px; margin-bottom:20px; }
+        h1 { font-family:'Space Grotesk',sans-serif; font-size:3.5rem; font-weight:700; line-height:1.1; margin-bottom:16px; }
+        h1 em { color:var(--accent); font-style:normal; }
+        header p { color:var(--muted); font-size:13px; max-width:540px; margin:0 auto; }
+        section { max-width:900px; margin:60px auto 0; padding:0 32px; }
+        .sl { font-size:10px; letter-spacing:0.2em; color:var(--dim); text-transform:uppercase; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+        h2 { font-family:'Space Grotesk',sans-serif; font-size:1.75rem; font-weight:700; margin-bottom:14px; }
+        .prose { font-size:13px; color:var(--muted); line-height:1.9; margin-bottom:18px; }
+        .math-block { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); padding:14px 20px; border-radius:4px; margin:18px 0; font-size:13px; overflow-x:auto; }
+        .canvas-wrap { background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:24px 0; }
+        canvas { display:block; }
+        .controls { display:flex; gap:12px; flex-wrap:wrap; align-items:center; padding:12px 16px; background:var(--surface); border-top:1px solid var(--border); }
+        .btn { padding:6px 14px; border:1px solid var(--dim); background:transparent; color:var(--muted); font-family:'Fira Code',monospace; font-size:11px; border-radius:3px; cursor:pointer; transition:all 0.15s; }
+        .btn:hover { border-color:var(--accent); color:var(--accent); }
+        .btn.go { background:var(--accent); color:#08090e; border-color:var(--accent); font-weight:600; }
+        label { font-size:11px; color:var(--dim); }
+        input[type=range] { width:80px; accent-color:var(--accent); }
+        .val { font-size:12px; color:var(--accent); min-width:36px; }
+        .legend { display:flex; gap:16px; flex-wrap:wrap; padding:8px 16px; border-top:1px solid var(--border); font-size:11px; }
+        .li { display:flex; align-items:center; gap:6px; color:var(--dim); }
+        .dot { width:8px; height:8px; border-radius:50%; }
+        .infobox { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:16px 20px; margin:16px 0; font-size:12px; color:var(--dim); line-height:1.8; }
+        .infobox strong { color:var(--text); }
+        .stats { display:flex; gap:20px; padding:7px 16px; border-top:1px solid var(--border); background:var(--card); font-size:11px; color:var(--dim); }
+        .sv { color:var(--accent); }
+    </style>
+</head>
+<body>
+<header>
+    <div class="tag">Direct Manipulation · Classical Mechanics</div>
+    <h1>Double <em>Pendulum</em></h1>
+    <p>Two linked pendulums. Fully deterministic — governed by Newton's laws. Yet completely unpredictable beyond a few seconds. The simplest system that is genuinely chaotic.</p>
+</header>
+
+<section>
+    <div class="sl">01 — Equations of Motion</div>
+    <h2>The Lagrangian</h2>
+    <div class="prose">
+        The double pendulum has two degrees of freedom: angles θ₁ and θ₂. Unlike the single pendulum, it has no closed-form solution for arbitrary amplitudes. The Lagrangian formulation — L = T − V — gives equations of motion that couple the two angles nonlinearly through inertia, gravity, and the constraint forces between the rods. This coupling is what makes the system so rich: energy flows between the two bobs in irregular bursts, punctuated by sudden flips of the lower bob.
+    </div>
+    <div class="prose">
+        The pivot is fixed. Rod 1 has length l₁ and carries mass m₁; rod 2 has length l₂ and carries mass m₂. The kinetic energy of m₂ must account for the combined motion of both rods. The resulting equations of motion are a pair of coupled second-order ODEs with no analytic solution — we integrate them numerically using <strong style="color:var(--text)">4th-order Runge–Kutta</strong> (RK4).
+    </div>
+    <div class="math-block">
+        \[T = \tfrac{1}{2}(m_1+m_2)l_1^2\dot\theta_1^2 + \tfrac{1}{2}m_2 l_2^2\dot\theta_2^2 + m_2 l_1 l_2\dot\theta_1\dot\theta_2\cos(\theta_1-\theta_2)\]
+        \[V = -(m_1+m_2)g l_1\cos\theta_1 - m_2 g l_2\cos\theta_2\]
+        Equations of motion from \(\frac{d}{dt}\frac{\partial L}{\partial \dot\theta_i} - \frac{\partial L}{\partial \theta_i} = 0\) — coupled, nonlinear, no closed form.
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c1" width="836" height="400"></canvas>
+        <div class="controls">
+            <button class="btn go" id="btnPlay1" onclick="togglePlay1()">▶ Play</button>
+            <button class="btn" onclick="reset1()">↺ Reset</button>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <label>m₁</label><input type="range" id="m1" min="0.5" max="3" step="0.1" value="1" oninput="paramChange()"><span class="val" id="m1v">1.0</span>
+                <label>m₂</label><input type="range" id="m2" min="0.5" max="3" step="0.1" value="1" oninput="paramChange()"><span class="val" id="m2v">1.0</span>
+                <label>l₁</label><input type="range" id="l1" min="0.5" max="1.5" step="0.05" value="1" oninput="paramChange()"><span class="val" id="l1v">1.0</span>
+                <label>l₂</label><input type="range" id="l2" min="0.5" max="1.5" step="0.05" value="1" oninput="paramChange()"><span class="val" id="l2v">1.0</span>
+            </div>
+        </div>
+        <div class="stats">
+            <span>θ₁ = <span class="sv" id="s_t1">—</span></span>
+            <span>θ₂ = <span class="sv" id="s_t2">—</span></span>
+            <span>E = <span class="sv" id="s_e">—</span></span>
+            <span style="color:var(--dim);font-size:10px;margin-left:auto">drag bobs to set initial angles</span>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="dot" style="background:var(--accent)"></div>pendulum</div>
+            <div class="li"><div class="dot" style="background:rgba(34,211,238,0.3)"></div>trail (last 400 steps)</div>
+        </div>
+    </div>
+    <div class="infobox">
+        <strong>Why RK4?</strong> Euler integration accumulates energy errors that make the pendulum spin faster over time (non-physical). RK4 evaluates four slope estimates per step and achieves 4th-order accuracy — errors scale as dt⁴. With dt = 0.005 s the energy drift over 60 seconds is less than 0.01%.
+    </div>
+</section>
+
+<section>
+    <div class="sl">02 — Chaos and Sensitivity</div>
+    <h2>Exponential Divergence</h2>
+    <div class="prose">
+        Start two identical double pendulums with θ₁ differing by just ε = 0.001 radians — about 0.06°. At first they track each other almost perfectly. Then, after a few seconds, they abruptly diverge and become completely uncorrelated. This exponential separation of initially nearby trajectories is the hallmark of <strong style="color:var(--text)">deterministic chaos</strong>. The system is fully predictable in principle (Newton's laws), but practically unpredictable because any measurement error — however tiny — grows without bound.
+    </div>
+    <div class="prose">
+        The rate of divergence is characterized by the <strong style="color:var(--text)">Lyapunov exponent</strong> λ. If d(t) is the angular separation between the two trajectories at time t, then d(t) ≈ d₀·e^{λt} in the chaotic regime. On a log-scale plot, this appears as a straight line with slope λ. For the double pendulum at moderate energy, λ ≈ 1–7 per second depending on the energy level, meaning trajectories double their separation every 0.1–0.7 seconds.
+    </div>
+    <div class="math-block">
+        Lyapunov exponent: \(\lambda = \lim_{t\to\infty}\frac{1}{t}\ln\frac{d(t)}{d(0)}\)<br>
+        Predictability horizon: \(t^* \approx \frac{1}{\lambda}\ln\frac{\Delta_{\max}}{\Delta_0}\)<br>
+        For \(\Delta_0 = 10^{-3}\) rad and \(\Delta_{\max} = 1\) rad: \(t^* \approx \frac{6.9}{\lambda} \approx 2\text{–}7\text{ s}\)
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c2" width="836" height="360"></canvas>
+        <div class="controls">
+            <button class="btn go" id="btnPlay2" onclick="togglePlay2()">▶ Run</button>
+            <button class="btn" onclick="reset2()">↺ Reset</button>
+            <div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
+                <label>ε (rad)</label>
+                <input type="range" id="epsilon" min="-4" max="-1" step="0.5" value="-3" oninput="epsilonChange()">
+                <span class="val" id="epsVal">0.001</span>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="dot" style="background:var(--accent)"></div>pendulum A (θ₁)</div>
+            <div class="li"><div class="dot" style="background:var(--orange)"></div>pendulum B (θ₁ + ε)</div>
+            <div class="li"><div class="dot" style="background:var(--green)"></div>log₁₀ separation</div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="sl">03 — Phase Space</div>
+    <h2>Poincaré Section</h2>
+    <div class="prose">
+        The full phase space of the double pendulum is 4-dimensional: (θ₁, θ̇₁, θ₂, θ̇₂). To visualize it, we take a <strong style="color:var(--text)">Poincaré section</strong>: record the state (θ₂, θ̇₂) every time θ₁ = 0 with θ̇₁ &gt; 0. This strobes the 4D flow onto a 2D plane, revealing the system's global structure.
+    </div>
+    <div class="prose">
+        At low energy, the system is near-integrable: the Poincaré section shows smooth closed curves — invariant tori. As energy increases, these tori break up. Chaotic trajectories fill 2D regions with scattered dots; regular trajectories trace closed curves. The mix of smooth curves and scattered regions is characteristic of <strong style="color:var(--text)">KAM theory</strong> (Kolmogorov–Arnold–Moser): a fraction of the tori survive perturbation, and the rest break into chaos.
+    </div>
+    <div class="math-block">
+        Section condition: record \((\theta_2,\,\dot\theta_2)\) when \(\theta_1 = 0\) and \(\dot\theta_1 &gt; 0\)<br>
+        Energy surface: \(E = \tfrac{1}{2}(m_1+m_2)l_1^2\dot\theta_1^2 + \ldots = \text{const}\)<br>
+        For fixed E, phase space is 3D; the section is 2D — the Poincaré map \(P: (\theta_2,\dot\theta_2)\to(\theta_2',\dot\theta_2')\)
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c3" width="836" height="300"></canvas>
+        <div class="controls">
+            <button class="btn go" id="btnPoinc" onclick="togglePoinc()">▶ Accumulate</button>
+            <button class="btn" onclick="resetPoinc()">↺ Clear</button>
+            <div style="display:flex;gap:8px;align-items:center;margin-left:8px;">
+                <label>energy</label>
+                <button class="btn" id="eBtn1" onclick="setEnergy('low')">Low</button>
+                <button class="btn go" id="eBtn2" onclick="setEnergy('medium')">Medium</button>
+                <button class="btn" id="eBtn3" onclick="setEnergy('high')">High</button>
+            </div>
+            <span style="font-size:11px;color:var(--dim);margin-left:auto">points: <span class="sv" id="ptCount">0</span></span>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="dot" style="background:var(--accent)"></div>Poincaré section (θ₂, θ̇₂) when θ₁=0, θ̇₁&gt;0</div>
+        </div>
+    </div>
+    <div class="infobox">
+        <strong>KAM Theory:</strong> Andrei Kolmogorov (1954) proved that for small perturbations of an integrable system, most invariant tori survive — they are deformed but unbroken. Vladimir Arnold and Jürgen Moser extended this to nearly-integrable systems and dissipative maps. The double pendulum at moderate energy is far from the small-perturbation regime, so most tori have broken, but pockets of regularity persist — visible as the smooth curves in the Poincaré section.
+    </div>
+</section>
+
+<script>
+const g = 9.81;
+const SCALE = 130; // pixels per meter
+
+// ── RK4 for double pendulum ───────────────────────────────────────────────────
+function deriv(state, m1, m2, L1, L2) {
+    const [t1, w1, t2, w2] = state;
+    const d = t1 - t2, M = m1 + m2;
+    const cosD = Math.cos(d), sinD = Math.sin(d);
+    const den1 = (M * L1) - (m2 * L1 * cosD * cosD);
+    const den2 = (L2 / L1) * den1;
+    const dw1 = (m2 * L1 * w1 * w1 * sinD * cosD
+               + m2 * g * Math.sin(t2) * cosD
+               + m2 * L2 * w2 * w2 * sinD
+               - M * g * Math.sin(t1)) / den1;
+    const dw2 = (-m2 * L2 * w2 * w2 * sinD * cosD
+               + M * g * Math.sin(t1) * cosD
+               - M * L1 * w1 * w1 * sinD
+               - M * g * Math.sin(t2)) / den2;
+    return [w1, dw1, w2, dw2];
+}
+
+function rk4Step(state, m1, m2, L1, L2, dt) {
+    const k1 = deriv(state, m1, m2, L1, L2);
+    const s2 = state.map((v, i) => v + k1[i] * dt / 2);
+    const k2 = deriv(s2, m1, m2, L1, L2);
+    const s3 = state.map((v, i) => v + k2[i] * dt / 2);
+    const k3 = deriv(s3, m1, m2, L1, L2);
+    const s4 = state.map((v, i) => v + k3[i] * dt);
+    const k4 = deriv(s4, m1, m2, L1, L2);
+    return state.map((v, i) => v + (k1[i] + 2*k2[i] + 2*k3[i] + k4[i]) * dt / 6);
+}
+
+function energy(state, m1, m2, L1, L2) {
+    const [t1, w1, t2, w2] = state;
+    const T = 0.5*(m1+m2)*L1*L1*w1*w1 + 0.5*m2*L2*L2*w2*w2
+            + m2*L1*L2*w1*w2*Math.cos(t1-t2);
+    const V = -(m1+m2)*g*L1*Math.cos(t1) - m2*g*L2*Math.cos(t2);
+    return T + V;
+}
+
+function getParams() {
+    return {
+        m1: parseFloat(document.getElementById('m1').value),
+        m2: parseFloat(document.getElementById('m2').value),
+        L1: parseFloat(document.getElementById('l1').value),
+        L2: parseFloat(document.getElementById('l2').value),
+    };
+}
+function updateParamLabels() {
+    const p = getParams();
+    document.getElementById('m1v').textContent = p.m1.toFixed(1);
+    document.getElementById('m2v').textContent = p.m2.toFixed(1);
+    document.getElementById('l1v').textContent = p.L1.toFixed(2);
+    document.getElementById('l2v').textContent = p.L2.toFixed(2);
+}
+
+// ── Section 1: Interactive pendulum ─────────────────────────────────────────
+const c1 = document.getElementById('c1'), ctx1 = c1.getContext('2d');
+const W1 = c1.width, H1 = c1.height;
+const OX1 = W1 / 2, OY1 = 80;
+const TRAIL_LEN = 400;
+
+let state1 = [Math.PI * 0.6, 0, Math.PI * 0.5, 0];
+let trail1 = [];
+let play1 = false, raf1 = null;
+let dragging1 = -1; // 0=bob1, 1=bob2
+
+function getBobPos(state, L1, L2) {
+    const [t1, , t2] = state;
+    const x1 = OX1 + L1 * SCALE * Math.sin(t1);
+    const y1 = OY1 + L1 * SCALE * Math.cos(t1);
+    const x2 = x1 + L2 * SCALE * Math.sin(t2);
+    const y2 = y1 + L2 * SCALE * Math.cos(t2);
+    return { x1, y1, x2, y2 };
+}
+
+function drawSpring(ctx, x1, y1, x2, y2, col) {
+    ctx.strokeStyle = col; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+}
+
+function drawPendulum1() {
+    const p = getParams();
+    ctx1.clearRect(0, 0, W1, H1);
+    ctx1.fillStyle = '#0f1018'; ctx1.fillRect(0, 0, W1, H1);
+
+    const pos = getBobPos(state1, p.L1, p.L2);
+
+    // Trail
+    if (trail1.length > 1) {
+        for (let i = 1; i < trail1.length; i++) {
+            const alpha = i / trail1.length;
+            ctx1.strokeStyle = `rgba(34,211,238,${alpha * 0.4})`;
+            ctx1.lineWidth = 1;
+            ctx1.beginPath();
+            ctx1.moveTo(trail1[i-1].x, trail1[i-1].y);
+            ctx1.lineTo(trail1[i].x, trail1[i].y);
+            ctx1.stroke();
+        }
+    }
+
+    // Pivot
+    ctx1.beginPath(); ctx1.arc(OX1, OY1, 5, 0, Math.PI*2);
+    ctx1.fillStyle = '#4b5563'; ctx1.fill();
+
+    // Rods
+    drawSpring(ctx1, OX1, OY1, pos.x1, pos.y1, 'rgba(100,116,139,0.7)');
+    drawSpring(ctx1, pos.x1, pos.y1, pos.x2, pos.y2, 'rgba(100,116,139,0.7)');
+
+    // Bobs
+    [{ x: pos.x1, y: pos.y1, r: 10 + p.m1 * 4 }, { x: pos.x2, y: pos.y2, r: 10 + p.m2 * 4 }].forEach((b, i) => {
+        ctx1.beginPath(); ctx1.arc(b.x, b.y, b.r, 0, Math.PI*2);
+        ctx1.fillStyle = i === 0 ? 'rgba(34,211,238,0.85)' : 'rgba(251,146,60,0.85)';
+        ctx1.fill();
+        ctx1.strokeStyle = 'rgba(255,255,255,0.2)'; ctx1.lineWidth = 1; ctx1.stroke();
+    });
+
+    const E = energy(state1, p.m1, p.m2, p.L1, p.L2);
+    document.getElementById('s_t1').textContent = (state1[0] * 180 / Math.PI).toFixed(1) + '°';
+    document.getElementById('s_t2').textContent = (state1[2] * 180 / Math.PI).toFixed(1) + '°';
+    document.getElementById('s_e').textContent = E.toFixed(3) + ' J';
+}
+
+function loop1() {
+    const p = getParams();
+    const dt = 0.005;
+    for (let i = 0; i < 3; i++) state1 = rk4Step(state1, p.m1, p.m2, p.L1, p.L2, dt);
+    const pos = getBobPos(state1, p.L1, p.L2);
+    trail1.push({ x: pos.x2, y: pos.y2 });
+    if (trail1.length > TRAIL_LEN) trail1.shift();
+    drawPendulum1();
+    if (play1) raf1 = requestAnimationFrame(loop1);
+}
+
+function togglePlay1() {
+    play1 = !play1;
+    document.getElementById('btnPlay1').textContent = play1 ? '⏸ Pause' : '▶ Play';
+    document.getElementById('btnPlay1').classList.toggle('go', play1);
+    if (play1) raf1 = requestAnimationFrame(loop1);
+    else cancelAnimationFrame(raf1);
+}
+function reset1() {
+    play1 = false; cancelAnimationFrame(raf1);
+    document.getElementById('btnPlay1').textContent = '▶ Play';
+    document.getElementById('btnPlay1').classList.add('go');
+    state1 = [Math.PI * 0.6, 0, Math.PI * 0.5, 0];
+    trail1 = []; drawPendulum1();
+}
+function paramChange() { updateParamLabels(); reset1(); }
+
+// Drag bobs
+c1.addEventListener('mousedown', e => {
+    const r = c1.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const p = getParams();
+    const pos = getBobPos(state1, p.L1, p.L2);
+    if (Math.hypot(mx - pos.x1, my - pos.y1) < 20) { dragging1 = 0; play1 = false; cancelAnimationFrame(raf1); }
+    else if (Math.hypot(mx - pos.x2, my - pos.y2) < 20) { dragging1 = 1; play1 = false; cancelAnimationFrame(raf1); }
+});
+c1.addEventListener('mousemove', e => {
+    if (dragging1 < 0) return;
+    const r = c1.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const p = getParams();
+    if (dragging1 === 0) {
+        state1[0] = Math.atan2(mx - OX1, my - OY1);
+        state1[1] = 0;
+    } else {
+        const pos = getBobPos(state1, p.L1, p.L2);
+        state1[2] = Math.atan2(mx - pos.x1, my - pos.y1);
+        state1[3] = 0;
+    }
+    trail1 = []; drawPendulum1();
+});
+c1.addEventListener('mouseup', () => { dragging1 = -1; });
+
+// ── Section 2: Chaos comparison ──────────────────────────────────────────────
+const c2 = document.getElementById('c2'), ctx2 = c2.getContext('2d');
+const W2 = c2.width, H2 = c2.height;
+const OX2 = W2 / 4, OY2 = 70;
+
+let stateA = [Math.PI * 0.7, 0, -0.5, 0];
+let stateB = null;
+let play2 = false, raf2 = null;
+let sepLog = [];
+let simTime = 0;
+
+function getEps() { return Math.pow(10, parseFloat(document.getElementById('epsilon').value)); }
+function epsilonChange() { document.getElementById('epsVal').textContent = getEps().toExponential(1); reset2(); }
+
+function reset2() {
+    play2 = false; cancelAnimationFrame(raf2);
+    document.getElementById('btnPlay2').textContent = '▶ Run';
+    document.getElementById('btnPlay2').classList.add('go');
+    stateA = [Math.PI * 0.7, 0, -0.5, 0];
+    stateB = [stateA[0] + getEps(), stateA[1], stateA[2], stateA[3]];
+    sepLog = []; simTime = 0;
+    draw2();
+}
+
+function loop2() {
+    const p = getParams();
+    const dt = 0.005;
+    for (let i = 0; i < 4; i++) {
+        stateA = rk4Step(stateA, p.m1, p.m2, p.L1, p.L2, dt);
+        stateB = rk4Step(stateB, p.m1, p.m2, p.L1, p.L2, dt);
+        simTime += dt;
+    }
+    const sep = Math.abs(stateA[0] - stateB[0]) + Math.abs(stateA[2] - stateB[2]);
+    sepLog.push({ t: simTime, v: Math.max(sep, 1e-15) });
+    if (sepLog.length > 800) sepLog.shift();
+    draw2();
+    if (play2) raf2 = requestAnimationFrame(loop2);
+}
+
+function togglePlay2() {
+    if (!stateB) reset2();
+    play2 = !play2;
+    document.getElementById('btnPlay2').textContent = play2 ? '⏸ Pause' : '▶ Run';
+    document.getElementById('btnPlay2').classList.toggle('go', play2);
+    if (play2) raf2 = requestAnimationFrame(loop2);
+    else cancelAnimationFrame(raf2);
+}
+
+function drawPendulumSmall(ctx, state, ox, oy, L1, L2, col, scale=80) {
+    const t1 = state[0], t2 = state[2];
+    const x1 = ox + L1 * scale * Math.sin(t1);
+    const y1 = oy + L1 * scale * Math.cos(t1);
+    const x2 = x1 + L2 * scale * Math.sin(t2);
+    const y2 = y1 + L2 * scale * Math.cos(t2);
+    ctx.strokeStyle = 'rgba(100,116,139,0.6)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x1, y1, 7, 0, Math.PI*2); ctx.fillStyle = col + 'cc'; ctx.fill();
+    ctx.beginPath(); ctx.arc(x2, y2, 9, 0, Math.PI*2); ctx.fillStyle = col; ctx.fill();
+}
+
+function draw2() {
+    ctx2.clearRect(0, 0, W2, H2);
+    ctx2.fillStyle = '#0f1018'; ctx2.fillRect(0, 0, W2, H2);
+
+    // Draw both pendulums side by side
+    const p = getParams();
+    drawPendulumSmall(ctx2, stateA || [0.7,0,-0.5,0], OX2, OY2, p.L1, p.L2, '#22d3ee');
+    drawPendulumSmall(ctx2, stateB || [0.7+getEps(),0,-0.5,0], OX2 + 20, OY2, p.L1, p.L2, '#fb923c');
+
+    // Log separation plot
+    if (sepLog.length < 2) return;
+    const pad = { l: W2/2 + 20, r: 20, t: 20, b: 36 };
+    const pw = W2 - pad.l - pad.r, ph = H2 - pad.t - pad.b;
+    // Axes
+    ctx2.strokeStyle = '#1e2235'; ctx2.lineWidth = 1;
+    ctx2.beginPath(); ctx2.moveTo(pad.l, pad.t); ctx2.lineTo(pad.l, pad.t + ph); ctx2.lineTo(pad.l + pw, pad.t + ph); ctx2.stroke();
+    ctx2.fillStyle = '#2d3346'; ctx2.font = '9px Fira Code';
+    ctx2.fillText('time (s)', pad.l + pw - 30, pad.t + ph + 14);
+    ctx2.fillText('log₁₀|Δ|', pad.l + 4, pad.t + 12);
+
+    const tMax = Math.max(sepLog[sepLog.length-1].t, 1);
+    const logMin = -12, logMax = 1;
+    ctx2.strokeStyle = '#4ade80'; ctx2.lineWidth = 1.5;
+    ctx2.beginPath();
+    sepLog.forEach((pt, i) => {
+        const x = pad.l + (pt.t / tMax) * pw;
+        const y = pad.t + ph - ((Math.log10(pt.v) - logMin) / (logMax - logMin)) * ph;
+        i === 0 ? ctx2.moveTo(x, y) : ctx2.lineTo(x, y);
+    });
+    ctx2.stroke();
+
+    // Lyapunov fit line (if enough data)
+    if (sepLog.length > 100) {
+        const mid = Math.floor(sepLog.length * 0.6);
+        const x0 = sepLog[20].t, y0 = Math.log10(sepLog[20].v);
+        const x1 = sepLog[mid].t, y1 = Math.log10(sepLog[mid].v);
+        const slope = (y1 - y0) / (x1 - x0);
+        const lyap = slope * Math.log(10);
+        const px0 = pad.l + (x0/tMax)*pw, py0 = pad.t + ph - ((y0-logMin)/(logMax-logMin))*ph;
+        const px1 = pad.l + (x1/tMax)*pw, py1 = pad.t + ph - ((y1-logMin)/(logMax-logMin))*ph;
+        ctx2.strokeStyle = 'rgba(251,146,60,0.5)'; ctx2.lineWidth = 1; ctx2.setLineDash([4,4]);
+        ctx2.beginPath(); ctx2.moveTo(px0,py0); ctx2.lineTo(px1,py1); ctx2.stroke();
+        ctx2.setLineDash([]);
+        if (lyap > 0) {
+            ctx2.fillStyle = '#fb923c'; ctx2.font = '10px Fira Code';
+            ctx2.fillText('λ ≈ ' + lyap.toFixed(2) + ' s⁻¹', px0 + 4, Math.min(py0 - 4, pad.t + ph - 10));
+        }
+    }
+
+    // Y axis labels
+    [-10, -7, -4, -1].forEach(v => {
+        const y = pad.t + ph - ((v - logMin)/(logMax - logMin))*ph;
+        ctx2.fillStyle = '#2d3346'; ctx2.font = '8px Fira Code';
+        ctx2.fillText('10^'+v, pad.l - 38, y + 3);
+        ctx2.strokeStyle = '#1e2235'; ctx2.lineWidth = 0.5;
+        ctx2.beginPath(); ctx2.moveTo(pad.l, y); ctx2.lineTo(pad.l + pw, y); ctx2.stroke();
+    });
+}
+
+// ── Section 3: Poincaré Section ──────────────────────────────────────────────
+const c3 = document.getElementById('c3'), ctx3 = c3.getContext('2d');
+const W3 = c3.width, H3 = c3.height;
+let poincState = null, poincPoints = [], poincPlay = false, poincRaf = null;
+let prevT1 = 0, poincEnergy = 'medium';
+
+function energyToState(level) {
+    const levels = { low: 0.4, medium: 1.2, high: 2.5 };
+    const t1init = levels[level];
+    return [t1init, 0, 0.1, 0];
+}
+
+function setEnergy(level) {
+    poincEnergy = level;
+    ['low','medium','high'].forEach(l => document.getElementById('eBtn'+(l==='low'?1:l==='medium'?2:3)).classList.toggle('go', l===level));
+    resetPoinc();
+}
+
+function resetPoinc() {
+    poincPlay = false; cancelAnimationFrame(poincRaf);
+    document.getElementById('btnPoinc').textContent = '▶ Accumulate';
+    document.getElementById('btnPoinc').classList.add('go');
+    poincState = energyToState(poincEnergy);
+    prevT1 = poincState[0];
+    poincPoints = [];
+    document.getElementById('ptCount').textContent = '0';
+    drawPoinc();
+}
+
+function togglePoinc() {
+    poincPlay = !poincPlay;
+    document.getElementById('btnPoinc').textContent = poincPlay ? '⏸ Pause' : '▶ Accumulate';
+    document.getElementById('btnPoinc').classList.toggle('go', poincPlay);
+    if (poincPlay) poincRaf = requestAnimationFrame(poincLoop);
+    else cancelAnimationFrame(poincRaf);
+}
+
+function poincLoop() {
+    const p = getParams();
+    const dt = 0.005;
+    for (let i = 0; i < 20; i++) {
+        const prevW1 = poincState[1];
+        poincState = rk4Step(poincState, p.m1, p.m2, p.L1, p.L2, dt);
+        // Check θ₁ crosses 0 from negative to positive
+        if (prevT1 < 0 && poincState[0] >= 0 && poincState[1] > 0) {
+            poincPoints.push({ t2: poincState[2], w2: poincState[3] });
+        }
+        prevT1 = poincState[0];
+    }
+    document.getElementById('ptCount').textContent = poincPoints.length;
+    drawPoinc();
+    if (poincPlay && poincPoints.length < 3000) poincRaf = requestAnimationFrame(poincLoop);
+    else { poincPlay = false; document.getElementById('btnPoinc').textContent = '▶ Accumulate'; }
+}
+
+function drawPoinc() {
+    ctx3.clearRect(0, 0, W3, H3);
+    ctx3.fillStyle = '#0f1018'; ctx3.fillRect(0, 0, W3, H3);
+    const pad = { l: 40, r: 20, t: 20, b: 36 };
+    const pw = W3 - pad.l - pad.r, ph = H3 - pad.t - pad.b;
+    const t2range = [-Math.PI, Math.PI], w2range = [-8, 8];
+    function px(t2) { return pad.l + (t2 - t2range[0])/(t2range[1]-t2range[0])*pw; }
+    function py(w2) { return pad.t + ph - (w2 - w2range[0])/(w2range[1]-w2range[0])*ph; }
+
+    ctx3.strokeStyle = '#1e2235'; ctx3.lineWidth = 1;
+    ctx3.beginPath(); ctx3.moveTo(pad.l,pad.t); ctx3.lineTo(pad.l,pad.t+ph); ctx3.lineTo(pad.l+pw,pad.t+ph); ctx3.stroke();
+    ctx3.beginPath(); ctx3.moveTo(px(0),pad.t); ctx3.lineTo(px(0),pad.t+ph); ctx3.stroke();
+    ctx3.beginPath(); ctx3.moveTo(pad.l,py(0)); ctx3.lineTo(pad.l+pw,py(0)); ctx3.stroke();
+    ctx3.fillStyle = '#2d3346'; ctx3.font = '9px Fira Code';
+    ctx3.fillText('θ₂', pad.l + pw - 14, pad.t + ph + 14);
+    ctx3.fillText('θ̇₂', pad.l + 4, pad.t + 12);
+
+    const colors = { low:'#4ade80', medium:'#22d3ee', high:'#fb923c' };
+    const col = colors[poincEnergy] || '#22d3ee';
+    poincPoints.forEach(pt => {
+        if (pt.t2 < t2range[0] || pt.t2 > t2range[1] || pt.w2 < w2range[0] || pt.w2 > w2range[1]) return;
+        ctx3.beginPath(); ctx3.arc(px(pt.t2), py(pt.w2), 1.5, 0, Math.PI*2);
+        ctx3.fillStyle = col + 'cc'; ctx3.fill();
+    });
+
+    if (poincPoints.length === 0) {
+        ctx3.fillStyle = '#2d3346'; ctx3.font = '12px Fira Code'; ctx3.textAlign='center';
+        ctx3.fillText('Press "Accumulate" to build the Poincaré section', W3/2, H3/2);
+        ctx3.textAlign = 'left';
+    }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+updateParamLabels();
+drawPendulum1();
+draw2();
+resetPoinc();
+stateB = [stateA[0] + getEps(), stateA[1], stateA[2], stateA[3]];
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.renderMathInElement) renderMathInElement(document.body, {
+        delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}]
+    });
+});
+</script>
+</body>
+</html>

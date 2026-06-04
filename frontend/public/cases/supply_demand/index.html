@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply & Demand — An Interactive Exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg: #0d0f0a;
+    --bg2: #111410;
+    --bg3: #161a12;
+    --surface: #1a1f14;
+    --surface2: #1f261a;
+    --border: #2a3322;
+    --emerald: #10b981;
+    --emerald-dim: #0d9268;
+    --emerald-glow: rgba(16,185,129,0.12);
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --text: #e8ede4;
+    --text-muted: #7a8f72;
+    --text-dim: #4d6045;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+  /* Header */
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 0;
+    text-align: center;
+    background: linear-gradient(180deg, #0a0c08 0%, var(--bg) 100%);
+  }
+  .site-header .eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--emerald);
+    margin-bottom: 0.75rem;
+  }
+  .site-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .site-header .subtitle {
+    margin-top: 0.75rem;
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  /* Layout */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* Section structure */
+  .doc-section {
+    border-bottom: 1px solid var(--border);
+    padding: 4rem 0;
+  }
+  .doc-section:last-child { border-bottom: none; }
+
+  .section-header {
+    margin-bottom: 2.5rem;
+  }
+  .section-number {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--emerald);
+    margin-bottom: 0.5rem;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  /* Prose */
+  .prose p {
+    color: #c8d4c0;
+    margin-bottom: 1.25rem;
+    font-size: 1.0rem;
+    line-height: 1.8;
+  }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* Math blocks */
+  .math-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--emerald);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    overflow-x: auto;
+  }
+  .math-block .math-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--emerald);
+    margin-bottom: 0.75rem;
+  }
+
+  /* Canvas wrapper */
+  .viz-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-top: 2.5rem;
+    overflow: hidden;
+  }
+  .viz-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+  }
+  .viz-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .viz-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+  canvas {
+    display: block;
+    background: var(--bg3);
+  }
+
+  /* Controls */
+  .controls-bar {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .slider-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    white-space: nowrap;
+    min-width: 120px;
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    width: 180px;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--emerald);
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(16,185,129,0.5);
+  }
+  .slider-val {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--emerald);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  /* Toggle buttons */
+  .toggle-group {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+    flex-wrap: wrap;
+  }
+  .toggle-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+  .toggle-btn:hover { border-color: var(--emerald); color: var(--text); }
+  .toggle-btn.active {
+    background: var(--emerald-glow);
+    border-color: var(--emerald);
+    color: var(--emerald);
+  }
+
+  /* Stats display */
+  .stats-row {
+    display: flex;
+    gap: 2rem;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg3);
+    flex-wrap: wrap;
+  }
+  .stat-item { display: flex; align-items: baseline; gap: 0.4rem; }
+  .stat-label { font-size: 11px; color: var(--text-dim); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+  .stat-value { font-size: 14px; font-weight: 600; color: var(--emerald); font-variant-numeric: tabular-nums; }
+
+  /* Footnote */
+  .doc-footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-dim);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  .doc-footer span { color: var(--emerald); }
+
+  /* KaTeX */
+  .katex { font-size: 1.05em; }
+  .katex-display { margin: 0.5em 0; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="eyebrow">Economics · Interactive Exploration</div>
+  <h1>Supply &amp; Demand</h1>
+  <p class="subtitle">The invisible hand made visible — drag, shift, and discover equilibrium</p>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  SECTION 01 — THE CURVES                               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="doc-section">
+<div class="container">
+  <div class="section-header">
+    <div class="section-number">Section 01</div>
+    <h2>The Curves &amp; Equilibrium</h2>
+  </div>
+
+  <div class="prose">
+    <p>At the heart of market economics lies a deceptively simple idea: the price of any good is determined by the intersection of two opposing forces. Buyers want to purchase more when prices fall — this is the <em>Law of Demand</em>. Sellers want to supply more when prices rise — the <em>Law of Supply</em>. Where these two imperatives meet, we find the market equilibrium: the price at which the quantity buyers wish to purchase exactly equals the quantity sellers wish to sell. No shortages, no surpluses — just a clearing price that Adam Smith called the work of an invisible hand.</p>
+    <p>The demand curve captures every consumer's willingness-to-pay aggregated across the market. In its linear form, \(Q_d = a - bP\), the intercept \(a\) represents the quantity demanded when the good is free, while \(b\) captures how sharply demand responds to price increases. The supply curve \(Q_s = c + dP\) similarly encodes producers' behavior: \(c\) may be negative (reflecting fixed costs that must be overcome) and \(d\) tells us how much additional quantity comes to market as the price rises. It is essential to distinguish between <em>movement along</em> a curve — caused by price changes — and a <em>shift</em> of the entire curve, caused by changes in underlying determinants like income, input costs, or technology.</p>
+    <p>Solving for equilibrium, we set \(Q_d = Q_s\) and find \(P^* = \tfrac{a - c}{b + d}\). Substituting back gives equilibrium quantity \(Q^* = a - b P^*\). The visualization below makes this concrete: drag either curve up or down to simulate a supply or demand shock, and watch the equilibrium recalculate in real time.</p>
+  </div>
+
+  <div class="math-block">
+    <div class="math-label">Equilibrium Conditions</div>
+    \[Q_d = a - bP, \quad Q_s = c + dP\]
+    \[P^* = \frac{a - c}{b + d}, \qquad Q^* = a - bP^*\]
+  </div>
+
+  <div class="viz-wrapper">
+    <div class="viz-header">
+      <span class="viz-title">Supply &amp; Demand Diagram</span>
+      <span class="viz-hint">Drag either curve to shift it</span>
+    </div>
+    <canvas id="canvas-curves" width="836" height="380"></canvas>
+    <div class="stats-row">
+      <div class="stat-item"><span class="stat-label">P*</span><span class="stat-value" id="eq-price">—</span></div>
+      <div class="stat-item"><span class="stat-label">Q*</span><span class="stat-value" id="eq-qty">—</span></div>
+      <div class="stat-item"><span class="stat-label">D-shift</span><span class="stat-value" id="d-shift">0</span></div>
+      <div class="stat-item"><span class="stat-label">S-shift</span><span class="stat-value" id="s-shift">0</span></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  SECTION 02 — ELASTICITY                               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="doc-section">
+<div class="container">
+  <div class="section-header">
+    <div class="section-number">Section 02</div>
+    <h2>Price Elasticity &amp; Total Revenue</h2>
+  </div>
+
+  <div class="prose">
+    <p>Not all demand curves are created equal. A small price increase might cause consumers of insulin to barely reduce their purchases, while the same increase on a luxury handbag might trigger a dramatic collapse in sales. This difference in sensitivity is captured by the <em>price elasticity of demand</em>, defined as the percentage change in quantity demanded divided by the percentage change in price. Formally, the point elasticity is \(\varepsilon = \tfrac{dQ}{dP} \cdot \tfrac{P}{Q}\). Because demand curves slope downward, \(\varepsilon\) is always negative; we typically report its absolute value. When \(|\varepsilon| > 1\), demand is elastic: consumers are highly responsive to price changes. When \(|\varepsilon| < 1\), demand is inelastic: price swings have relatively little impact on quantity.</p>
+    <p>The relationship between elasticity and <em>total revenue</em> \(\text{TR} = P \cdot Q\) is one of the most practically important results in microeconomics. Taking the derivative: \(\tfrac{d(\text{TR})}{dP} = Q\bigl(1 + \varepsilon\bigr)\). This tells us that raising price increases revenue only when demand is inelastic (\(|\varepsilon| < 1\)), because the revenue gained per unit more than compensates for the lost sales. When demand is elastic (\(|\varepsilon| > 1\)), a price increase destroys more revenue than it creates. At unit elasticity (\(|\varepsilon| = 1\)), total revenue is maximized — no price change can improve it.</p>
+    <p>Graphically, this produces a characteristic arch: plot total revenue against price and you get a parabola (for a linear demand curve) whose peak corresponds exactly to the unit-elastic point. The left panel below shows how the demand curve's slope changes with elasticity, and the right panel shows the corresponding TR curve. Adjust the elasticity slider and observe how both panels respond.</p>
+  </div>
+
+  <div class="math-block">
+    <div class="math-label">Point Elasticity &amp; Revenue Theorem</div>
+    \[\varepsilon = \frac{dQ}{dP} \cdot \frac{P}{Q}, \qquad \text{TR} = P \cdot Q\]
+    \[\frac{d(\text{TR})}{dP} = Q(1 + \varepsilon) \begin{cases} > 0 & |\varepsilon| < 1 \text{ (inelastic)} \\ = 0 & |\varepsilon| = 1 \text{ (unit elastic, TR max)} \\ < 0 & |\varepsilon| > 1 \text{ (elastic)} \end{cases}\]
+  </div>
+
+  <div class="viz-wrapper">
+    <div class="viz-header">
+      <span class="viz-title">Elasticity Explorer</span>
+      <span class="viz-hint">Adjust elasticity — watch demand curve &amp; revenue change</span>
+    </div>
+    <canvas id="canvas-elasticity" width="836" height="260"></canvas>
+    <div class="controls-bar">
+      <div class="slider-group">
+        <span class="slider-label">Elasticity |ε|</span>
+        <input type="range" id="elas-slider" min="0.1" max="5.0" step="0.05" value="1.0">
+        <span class="slider-val" id="elas-val">1.00</span>
+      </div>
+      <div class="stat-item" style="margin-left:auto;">
+        <span class="stat-label">Regime</span>
+        <span class="stat-value" id="elas-regime">Unit Elastic</span>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  SECTION 03 — MARKET INTERVENTIONS                     -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="doc-section">
+<div class="container">
+  <div class="section-header">
+    <div class="section-number">Section 03</div>
+    <h2>Market Interventions &amp; Welfare</h2>
+  </div>
+
+  <div class="prose">
+    <p>Markets left to themselves reach an equilibrium that maximizes total welfare — the sum of consumer surplus (the difference between what buyers would have been willing to pay and what they actually pay) and producer surplus (the analogous gain to sellers). Consumer surplus is geometrically the triangle above the price line and below the demand curve; producer surplus is the triangle below the price line and above the supply curve. This insight — that the free-market equilibrium exhausts all gains from trade — is one of the deepest results in welfare economics and the theoretical foundation of the presumption against price controls.</p>
+    <p>Yet governments routinely intervene. A <em>price ceiling</em> set below the equilibrium price is intended to make goods more affordable. It does hold the price down — but it simultaneously increases the quantity demanded and decreases the quantity supplied, creating a persistent shortage. Suppliers who exit the market take with them potential gains from trade that neither buyers nor sellers can now realize; this lost welfare is called <em>deadweight loss</em>. A <em>price floor</em> set above equilibrium (such as a minimum wage or agricultural price support) has the mirror-image effect: it raises revenue for sellers already in the market but creates a surplus, as more sellers enter than buyers wish to accommodate.</p>
+    <p>The welfare arithmetic is straightforward. With equilibrium price \(P^*\) and maximum willingness-to-pay \(P_{\max}\): \(\text{CS} = \tfrac{1}{2}(P_{\max} - P^*)Q^*\). With minimum supply price \(P_{\min}\): \(\text{PS} = \tfrac{1}{2}(P^* - P_{\min})Q^*\). When a ceiling binds at \(\bar{P} < P^*\), the total surplus shrinks and the DWL triangle appears between the ceiling price and the equilibrium. Use the buttons below to toggle between regimes and observe how welfare is redistributed and destroyed.</p>
+  </div>
+
+  <div class="math-block">
+    <div class="math-label">Welfare Measures</div>
+    \[\text{CS} = \tfrac{1}{2}(P_{\max} - P^*)\,Q^*, \quad \text{PS} = \tfrac{1}{2}(P^* - P_{\min})\,Q^*\]
+    \[\text{DWL} = \tfrac{1}{2}|P_{\text{control}} - P^*| \cdot |Q_{\text{control}} - Q^*|\]
+  </div>
+
+  <div class="viz-wrapper">
+    <div class="viz-header">
+      <span class="viz-title">Welfare &amp; Interventions</span>
+      <span class="viz-hint">Toggle between market regimes</span>
+    </div>
+    <canvas id="canvas-welfare" width="836" height="340"></canvas>
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-free" onclick="setWelfareMode('free')">Free Market</button>
+      <button class="toggle-btn" id="btn-ceiling" onclick="setWelfareMode('ceiling')">Price Ceiling</button>
+      <button class="toggle-btn" id="btn-floor" onclick="setWelfareMode('floor')">Price Floor</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-item"><span class="stat-label">CS</span><span class="stat-value" id="w-cs">—</span></div>
+      <div class="stat-item"><span class="stat-label">PS</span><span class="stat-value" id="w-ps">—</span></div>
+      <div class="stat-item"><span class="stat-label">DWL</span><span class="stat-value" id="w-dwl">—</span></div>
+      <div class="stat-item"><span class="stat-label">Total Surplus</span><span class="stat-value" id="w-total">—</span></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer class="doc-footer">
+  An interactive document by <span>ViviDoc</span> · Economics · 2026
+</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────
+//  UTILITIES
+// ─────────────────────────────────────────────────────────
+const palette = {
+  bg:      '#0d0f0a',
+  bg2:     '#111410',
+  bg3:     '#161a12',
+  surface: '#1a1f14',
+  border:  '#2a3322',
+  emerald: '#10b981',
+  emeraldDim: '#0d9268',
+  amber:   '#f59e0b',
+  red:     '#ef4444',
+  blue:    '#3b82f6',
+  text:    '#e8ede4',
+  muted:   '#7a8f72',
+  dim:     '#4d6045',
+};
+
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function drawGrid(ctx, pad, w, h, nx, ny, xMin, xMax, yMin, yMax) {
+  ctx.strokeStyle = palette.border;
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= nx; i++) {
+    const x = pad.l + (w - pad.l - pad.r) * i / nx;
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, h - pad.b); ctx.stroke();
+  }
+  for (let i = 0; i <= ny; i++) {
+    const y = pad.t + (h - pad.t - pad.b) * i / ny;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+  }
+}
+
+function drawAxes(ctx, pad, w, h) {
+  ctx.strokeStyle = palette.muted;
+  ctx.lineWidth = 1.5;
+  // x axis
+  ctx.beginPath();
+  ctx.moveTo(pad.l, h - pad.b);
+  ctx.lineTo(w - pad.r, h - pad.b);
+  ctx.stroke();
+  // y axis
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, h - pad.b);
+  ctx.stroke();
+  // arrows
+  ctx.fillStyle = palette.muted;
+  ctx.beginPath();
+  ctx.moveTo(w - pad.r, h - pad.b);
+  ctx.lineTo(w - pad.r - 8, h - pad.b - 4);
+  ctx.lineTo(w - pad.r - 8, h - pad.b + 4);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l - 4, pad.t + 8);
+  ctx.lineTo(pad.l + 4, pad.t + 8);
+  ctx.fill();
+}
+
+function toCanvas(val, min, max, startPx, endPx) {
+  return startPx + (endPx - startPx) * (val - min) / (max - min);
+}
+
+function labelAxis(ctx, text, x, y, size=11, color=palette.muted) {
+  ctx.fillStyle = color;
+  ctx.font = `500 ${size}px Inter, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+}
+
+// ─────────────────────────────────────────────────────────
+//  SECTION 01 — DRAGGABLE CURVES
+// ─────────────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('canvas-curves');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const pad = { l: 60, r: 30, t: 30, b: 50 };
+  const plotW = W - pad.l - pad.r;
+  const plotH = H - pad.t - pad.b;
+
+  // Model parameters: Q_d = a - b*P, Q_s = c + d*P
+  // Using Q as x-axis (horizontal), P as y-axis (vertical)
+  const b = 2.0, d = 2.0; // slopes
+  let dIntercept = 80;  // 'a' — demand vertical intercept on Q axis (price when Q=0)
+  let sIntercept = 20;  // price at which S curve starts
+
+  const qMin = 0, qMax = 100, pMin = 0, pMax = 100;
+
+  // Convert model coords to canvas coords
+  function qToX(q) { return pad.l + (q - qMin) / (qMax - qMin) * plotW; }
+  function pToY(p) { return pad.t + (1 - (p - pMin) / (pMax - pMin)) * plotH; }
+  function xToQ(x) { return qMin + (x - pad.l) / plotW * (qMax - qMin); }
+  function yToP(y) { return pMin + (1 - (y - pad.t) / plotH) * (pMax - pMin); }
+
+  // Demand: P = (a - Q) / b  → for a line, endpoints
+  function demandP(q) { return (dIntercept - q) / b; } // P given Q on demand
+  function supplyP(q) { return (q - sIntercept) / d; }  // P given Q on supply — wait, restate
+
+  // Actually: Q_d = a - b*P  →  P = (a - Q_d)/b
+  // Q_s = -c + d*P  →  P = (Q_s + c)/d  where c is adjusted
+  // Let's parameterize differently for clarity:
+  // dIntercept = a (Q when P=0 for demand) → demand: Q = dIntercept - b*P
+  // sIntercept = c' such that supply: Q = -c' + d*P  → P = (Q + c')/d
+  // Equilibrium: dIntercept - b*P = -sIntercept + d*P  → P* = (dIntercept + sIntercept)/(b+d)
+
+  function getEquilibrium() {
+    const pStar = (dIntercept + sIntercept) / (b + d);
+    const qStar = dIntercept - b * pStar;
+    return { pStar, qStar };
+  }
+
+  // Line endpoints for demand
+  function demandEndpoints() {
+    // Q = dIntercept - b*P  → P in [0, dIntercept/b]
+    // At P=0: Q = dIntercept; at Q=0: P = dIntercept/b
+    const pAtQzero = dIntercept / b;
+    const qAtPzero = dIntercept;
+    return [{ q: 0, p: pAtQzero }, { q: qAtPzero, p: 0 }];
+  }
+
+  function supplyEndpoints() {
+    // Q = -sIntercept + d*P  → P = (Q + sIntercept)/d
+    // At Q=0: P = sIntercept/d
+    const pAtQzero = sIntercept / d;
+    const qAtPmax = -sIntercept + d * pMax;
+    return [{ q: 0, p: pAtQzero }, { q: Math.min(qAtPmax, qMax), p: pMax }];
+  }
+
+  let dragTarget = null; // 'demand' | 'supply'
+  let dragStartY = 0, dragStartIntercept = 0;
+
+  function distToLine(mx, my, ep1, ep2) {
+    const x1 = qToX(ep1.q), y1 = pToY(ep1.p);
+    const x2 = qToX(ep2.q), y2 = pToY(ep2.p);
+    const dx = x2 - x1, dy = y2 - y1;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    if (len < 1) return 9999;
+    return Math.abs(dy*mx - dx*my + x2*y1 - y2*x1) / len;
+  }
+
+  function drawCurveLabel(ctx, x, y, text, color) {
+    ctx.fillStyle = color;
+    ctx.font = 'bold 13px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, y);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#161a12';
+    ctx.fillRect(0, 0, W, H);
+
+    drawGrid(ctx, pad, W, H, 8, 6, qMin, qMax, pMin, pMax);
+    drawAxes(ctx, pad, W, H);
+
+    // Axis labels
+    labelAxis(ctx, 'Quantity', pad.l + plotW / 2, H - 12);
+    ctx.save();
+    ctx.translate(16, pad.t + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    labelAxis(ctx, 'Price', 0, 0);
+    ctx.restore();
+
+    // Tick labels
+    ctx.fillStyle = palette.dim;
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    for (let q = 0; q <= qMax; q += 20) {
+      ctx.fillText(q, qToX(q), H - pad.b + 14);
+    }
+    ctx.textAlign = 'right';
+    for (let p = 0; p <= pMax; p += 20) {
+      ctx.fillText(p, pad.l - 8, pToY(p) + 4);
+    }
+
+    // Demand curve
+    const dep = demandEndpoints();
+    ctx.beginPath();
+    ctx.moveTo(qToX(dep[0].q), pToY(dep[0].p));
+    ctx.lineTo(qToX(dep[1].q), pToY(dep[1].p));
+    ctx.strokeStyle = palette.blue;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    drawCurveLabel(ctx, qToX(dep[1].q) - 24, pToY(dep[1].p) - 14, 'D', palette.blue);
+
+    // Supply curve
+    const sep = supplyEndpoints();
+    ctx.beginPath();
+    ctx.moveTo(qToX(sep[0].q), pToY(sep[0].p));
+    ctx.lineTo(qToX(sep[1].q), pToY(sep[1].p));
+    ctx.strokeStyle = palette.emerald;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    drawCurveLabel(ctx, qToX(sep[1].q) - 10, pToY(sep[1].p) - 12, 'S', palette.emerald);
+
+    // Equilibrium
+    const { pStar, qStar } = getEquilibrium();
+    if (qStar > 0 && qStar < qMax && pStar > 0 && pStar < pMax) {
+      const ex = qToX(qStar), ey = pToY(pStar);
+
+      // Dashed lines to axes
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = hexToRgba(palette.amber, 0.4);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(pad.l, ey); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex, H - pad.b); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Equilibrium dot
+      ctx.beginPath();
+      ctx.arc(ex, ey, 7, 0, Math.PI * 2);
+      ctx.fillStyle = palette.amber;
+      ctx.fill();
+      ctx.strokeStyle = '#0d0f0a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Axis ticks
+      ctx.fillStyle = palette.amber;
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`P* = ${pStar.toFixed(1)}`, pad.l - 4, ey + 4);
+      ctx.textAlign = 'center';
+      ctx.fillText(`Q* = ${qStar.toFixed(1)}`, ex, H - pad.b + 14);
+
+      document.getElementById('eq-price').textContent = pStar.toFixed(2);
+      document.getElementById('eq-qty').textContent = qStar.toFixed(2);
+    }
+
+    const dRef = 80, sRef = 20;
+    document.getElementById('d-shift').textContent = (dIntercept - dRef > 0 ? '+' : '') + (dIntercept - dRef).toFixed(0);
+    document.getElementById('s-shift').textContent = (sIntercept - sRef > 0 ? '+' : '') + (sIntercept - sRef).toFixed(0);
+
+    // Drag hints
+    ctx.fillStyle = hexToRgba(palette.muted, 0.5);
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+  }
+
+  function onMouseDown(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+
+    const dep = demandEndpoints();
+    const sep = supplyEndpoints();
+
+    const dDist = distToLine(mx, my, dep[0], dep[1]);
+    const sDist = distToLine(mx, my, sep[0], sep[1]);
+
+    if (dDist < 18 && dDist < sDist) {
+      dragTarget = 'demand';
+      dragStartY = my;
+      dragStartIntercept = dIntercept;
+      canvas.style.cursor = 'ns-resize';
+    } else if (sDist < 18) {
+      dragTarget = 'supply';
+      dragStartY = my;
+      dragStartIntercept = sIntercept;
+      canvas.style.cursor = 'ns-resize';
+    }
+  }
+
+  function onMouseMove(e) {
+    if (!dragTarget) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const mx = (e.clientX - rect.left) * scaleX;
+      const my = (e.clientY - rect.top) * scaleY;
+      const dep = demandEndpoints();
+      const sep = supplyEndpoints();
+      const dDist = distToLine(mx, my, dep[0], dep[1]);
+      const sDist = distToLine(mx, my, sep[0], sep[1]);
+      if (dDist < 18 || sDist < 18) canvas.style.cursor = 'ns-resize';
+      else canvas.style.cursor = 'default';
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const scaleY = canvas.height / rect.height;
+    const dy = (e.clientY - rect.top) * scaleY - dragStartY;
+    // Convert canvas dy to price units (inverted y)
+    const dprice = -dy / plotH * (pMax - pMin);
+    // For demand: shift in Q space = b * dprice shift
+    const dqShift = b * dprice;
+    if (dragTarget === 'demand') {
+      dIntercept = Math.max(40, Math.min(130, dragStartIntercept + dqShift));
+    } else {
+      // supply: shifting intercept in supply sense
+      // Q_s = -sIntercept + d*P → shifting intercept down means supply increases
+      sIntercept = Math.max(-20, Math.min(70, dragStartIntercept + dqShift));
+    }
+    draw();
+  }
+
+  function onMouseUp() {
+    dragTarget = null;
+    canvas.style.cursor = 'default';
+  }
+
+  canvas.addEventListener('mousedown', onMouseDown);
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+
+  draw();
+})();
+
+// ─────────────────────────────────────────────────────────
+//  SECTION 02 — ELASTICITY
+// ─────────────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('canvas-elasticity');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const slider = document.getElementById('elas-slider');
+  const valLabel = document.getElementById('elas-val');
+  const regimeLabel = document.getElementById('elas-regime');
+
+  // Two panels
+  const leftPad  = { l: 55, r: 20, t: 30, b: 40 };
+  const rightPad = { l: 55, r: 20, t: 30, b: 40 };
+  const panelW = W / 2;
+  const leftPlotW = panelW - leftPad.l - leftPad.r;
+  const leftPlotH = H - leftPad.t - leftPad.b;
+  const rightPlotW = panelW - rightPad.l - rightPad.r;
+  const rightPlotH = H - rightPad.t - rightPad.b;
+
+  // Model: linear demand Q = a - b*P
+  // At midpoint P0, Q0: ε = -b * P0/Q0  →  b = -ε * Q0/P0
+  const a = 100; // demand intercept
+  const P0 = 40, Q0 = 60; // reference point
+
+  function getB(epsilon) {
+    return Math.abs(epsilon) * Q0 / P0;
+  }
+
+  function draw(epsilon) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#161a12';
+    ctx.fillRect(0, 0, W, H);
+
+    // Divider
+    ctx.strokeStyle = palette.border;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(panelW, 10); ctx.lineTo(panelW, H - 10); ctx.stroke();
+
+    const b = getB(epsilon);
+    // demand: Q = a - b*P  →  P ∈ [0, a/b]
+    const pMax = Math.min(a / b, 100);
+    const pMin = 0;
+    const qMin = 0;
+    const qMax = a;
+
+    // ── LEFT PANEL: Demand curve ──
+    const lx0 = leftPad.l;
+    const lx1 = panelW - leftPad.r;
+    const ly0 = leftPad.t;
+    const ly1 = H - leftPad.b;
+    const lW = lx1 - lx0;
+    const lH = ly1 - ly0;
+
+    // Use fixed axes: P from 0..100, Q from 0..100
+    function lqToX(q) { return lx0 + (q / 100) * lW; }
+    function lpToY(p) { return ly0 + (1 - p / 100) * lH; }
+
+    // Grid
+    ctx.strokeStyle = palette.border;
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 5; i++) {
+      const x = lx0 + lW * i / 5;
+      ctx.beginPath(); ctx.moveTo(x, ly0); ctx.lineTo(x, ly1); ctx.stroke();
+      const y = ly0 + lH * i / 5;
+      ctx.beginPath(); ctx.moveTo(lx0, y); ctx.lineTo(lx1, y); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = palette.muted; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(lx0, ly1); ctx.lineTo(lx1, ly1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.lineTo(lx0, ly1); ctx.stroke();
+    labelAxis(ctx, 'Quantity', lx0 + lW/2, H - 8);
+    ctx.save(); ctx.translate(12, ly0 + lH/2); ctx.rotate(-Math.PI/2); labelAxis(ctx, 'Price', 0, 0); ctx.restore();
+
+    // Demand curve gradient fill
+    const demGrad = ctx.createLinearGradient(lx0, 0, lx1, 0);
+    demGrad.addColorStop(0, hexToRgba(palette.blue, 0.15));
+    demGrad.addColorStop(1, hexToRgba(palette.blue, 0.0));
+    const qAtPmax = Math.max(0, a - b * 100);
+    const qAtPzero = Math.min(100, a);
+    const pAtQzero = Math.min(100, a / b);
+    ctx.beginPath();
+    ctx.moveTo(lqToX(qAtPmax), lpToY(100));
+    ctx.lineTo(lqToX(qAtPzero), lpToY(0));
+    ctx.lineTo(lqToX(qAtPzero), ly1);
+    ctx.lineTo(lqToX(qAtPmax), ly1);
+    ctx.closePath();
+    ctx.fillStyle = demGrad;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(lqToX(qAtPmax), lpToY(100));
+    ctx.lineTo(lqToX(qAtPzero), lpToY(0));
+    ctx.strokeStyle = palette.blue;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Reference point
+    const refX = lqToX(Q0), refY = lpToY(P0);
+    ctx.beginPath(); ctx.arc(refX, refY, 5, 0, Math.PI*2);
+    ctx.fillStyle = palette.amber; ctx.fill();
+
+    // Label
+    ctx.fillStyle = palette.blue;
+    ctx.font = 'bold 13px Inter';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('D', lqToX(qAtPzero) + 16, lpToY(0) + 12);
+
+    ctx.fillStyle = palette.muted;
+    ctx.font = '10px Inter';
+    ctx.textAlign = 'left';
+    const slopeTxt = epsilon < 0.5 ? 'Steep (Inelastic)' : epsilon < 1.5 ? 'Moderate' : 'Flat (Elastic)';
+    ctx.fillText(slopeTxt, lx0 + 6, ly0 + 15);
+
+    // ── RIGHT PANEL: TR vs P ──
+    const rx0 = panelW + rightPad.l;
+    const rx1 = W - rightPad.r;
+    const ry0 = rightPad.t;
+    const ry1 = H - rightPad.b;
+    const rW = rx1 - rx0;
+    const rH = ry1 - ry0;
+
+    // TR = P * Q = P * (a - b*P) = aP - bP^2
+    // Maximum at P = a/(2b), TR_max = a^2/(4b)
+    const pPeak = a / (2 * b);
+    const trMax = a * a / (4 * b);
+    const trScale = trMax * 1.1;
+
+    function rpToX(p) { return rx0 + (Math.min(p, 100) / 100) * rW; }
+    function trToY(tr) { return ry0 + (1 - tr / trScale) * rH; }
+
+    // Grid
+    ctx.strokeStyle = palette.border; ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 5; i++) {
+      const x = rx0 + rW * i / 5;
+      ctx.beginPath(); ctx.moveTo(x, ry0); ctx.lineTo(x, ry1); ctx.stroke();
+      const y = ry0 + rH * i / 5;
+      ctx.beginPath(); ctx.moveTo(rx0, y); ctx.lineTo(rx1, y); ctx.stroke();
+    }
+    ctx.strokeStyle = palette.muted; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(rx0, ry1); ctx.lineTo(rx1, ry1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(rx0, ry0); ctx.lineTo(rx0, ry1); ctx.stroke();
+    labelAxis(ctx, 'Price', rx0 + rW/2, H - 8);
+    ctx.save(); ctx.translate(panelW + 12, ry0 + rH/2); ctx.rotate(-Math.PI/2); labelAxis(ctx, 'TR = P·Q', 0, 0); ctx.restore();
+
+    // TR curve
+    ctx.beginPath();
+    let first = true;
+    for (let p = 0; p <= 100; p += 1) {
+      const q = Math.max(0, a - b * p);
+      const tr = p * q;
+      const x = rpToX(p), y = trToY(tr);
+      if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
+    }
+    // Gradient stroke
+    const trGrad = ctx.createLinearGradient(rx0, 0, rx1, 0);
+    trGrad.addColorStop(0, palette.emerald);
+    trGrad.addColorStop(0.5, palette.amber);
+    trGrad.addColorStop(1, palette.red);
+    ctx.strokeStyle = trGrad;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Peak marker
+    if (pPeak <= 100) {
+      const peakX = rpToX(pPeak);
+      const peakY = trToY(trMax);
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = hexToRgba(palette.amber, 0.5);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(peakX, ry0); ctx.lineTo(peakX, ry1); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(peakX, peakY, 6, 0, Math.PI*2);
+      ctx.fillStyle = palette.amber; ctx.fill();
+      ctx.fillStyle = palette.amber;
+      ctx.font = '10px Inter';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(`P=${pPeak.toFixed(0)}`, peakX, peakY - 8);
+      ctx.fillText('TR max', peakX, peakY - 18);
+    }
+
+    ctx.fillStyle = palette.muted;
+    ctx.font = '10px Inter';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('Total Revenue', rx0 + 6, ry0 + 4);
+  }
+
+  slider.addEventListener('input', () => {
+    const eps = parseFloat(slider.value);
+    valLabel.textContent = eps.toFixed(2);
+    if (eps < 0.95) regimeLabel.textContent = 'Inelastic';
+    else if (eps < 1.05) regimeLabel.textContent = 'Unit Elastic';
+    else regimeLabel.textContent = 'Elastic';
+    draw(eps);
+  });
+
+  draw(1.0);
+})();
+
+// ─────────────────────────────────────────────────────────
+//  SECTION 03 — WELFARE / INTERVENTIONS
+// ─────────────────────────────────────────────────────────
+let welfareMode = 'free';
+
+function setWelfareMode(mode) {
+  welfareMode = mode;
+  ['free', 'ceiling', 'floor'].forEach(m => {
+    document.getElementById('btn-' + m).classList.toggle('active', m === mode);
+  });
+  drawWelfare();
+}
+
+function drawWelfare() {
+  const canvas = document.getElementById('canvas-welfare');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const pad = { l: 65, r: 30, t: 30, b: 50 };
+  const plotW = W - pad.l - pad.r;
+  const plotH = H - pad.t - pad.b;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#161a12';
+  ctx.fillRect(0, 0, W, H);
+
+  // Model parameters
+  const pMax = 90;  // demand curve p-intercept (where Q=0)
+  const pMin = 10;  // supply curve p-intercept (where Q=0)
+  const slope = 1.0; // both curves have same absolute slope
+
+  // Demand: Q = pMax - slope*P  → P = pMax - Q
+  // Supply: Q = slope*(P - pMin) → P = Q + pMin
+  // Equilibrium: pMax - Q = Q + pMin → Q* = (pMax-pMin)/2, P* = (pMax+pMin)/2
+  const pStar = (pMax + pMin) / 2;
+  const qStar = (pMax - pMin) / 2;
+
+  const pCeiling = pStar - 15;
+  const pFloor = pStar + 15;
+
+  // Axis ranges
+  const pAxisMin = 0, pAxisMax = 100;
+  const qAxisMin = 0, qAxisMax = 100;
+
+  function qToX(q) { return pad.l + (q - qAxisMin) / (qAxisMax - qAxisMin) * plotW; }
+  function pToY(p) { return pad.t + (1 - (p - pAxisMin) / (pAxisMax - pAxisMin)) * plotH; }
+
+  // Demand line endpoints
+  function demandQ(p) { return Math.max(0, pMax - slope * p); }
+  function supplyQ(p) { return Math.max(0, slope * (p - pMin)); }
+
+  drawGrid(ctx, pad, W, H, 8, 5, 0, 100, 0, 100);
+  drawAxes(ctx, pad, W, H);
+
+  // Labels
+  ctx.fillStyle = palette.dim; ctx.font = '10px Inter'; ctx.textAlign = 'center';
+  for (let q = 0; q <= 100; q += 20) ctx.fillText(q, qToX(q), H - pad.b + 14);
+  ctx.textAlign = 'right';
+  for (let p = 0; p <= 100; p += 20) ctx.fillText(p, pad.l - 8, pToY(p) + 4);
+  labelAxis(ctx, 'Quantity', pad.l + plotW / 2, H - 12);
+  ctx.save(); ctx.translate(16, pad.t + plotH / 2); ctx.rotate(-Math.PI / 2); labelAxis(ctx, 'Price', 0, 0); ctx.restore();
+
+  // ── Welfare shading ──
+  if (welfareMode === 'free') {
+    // Consumer surplus: above P*, below demand, from 0 to Q*
+    ctx.beginPath();
+    ctx.moveTo(qToX(0), pToY(pMax));
+    ctx.lineTo(qToX(0), pToY(pStar));
+    ctx.lineTo(qToX(qStar), pToY(pStar));
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(palette.blue, 0.25);
+    ctx.fill();
+
+    // Producer surplus: below P*, above supply, from 0 to Q*
+    ctx.beginPath();
+    ctx.moveTo(qToX(0), pToY(pMin));
+    ctx.lineTo(qToX(0), pToY(pStar));
+    ctx.lineTo(qToX(qStar), pToY(pStar));
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(palette.emerald, 0.25);
+    ctx.fill();
+
+    // Labels
+    ctx.font = '12px Playfair Display, serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = palette.blue;
+    ctx.fillText('CS', qToX(qStar * 0.35), pToY((pMax + pStar) / 2 + 2));
+    ctx.fillStyle = palette.emerald;
+    ctx.fillText('PS', qToX(qStar * 0.35), pToY((pMin + pStar) / 2));
+
+    // Stats
+    const cs = 0.5 * (pMax - pStar) * qStar;
+    const ps = 0.5 * (pStar - pMin) * qStar;
+    document.getElementById('w-cs').textContent = cs.toFixed(1);
+    document.getElementById('w-ps').textContent = ps.toFixed(1);
+    document.getElementById('w-dwl').textContent = '0';
+    document.getElementById('w-total').textContent = (cs + ps).toFixed(1);
+
+  } else if (welfareMode === 'ceiling') {
+    const pc = pCeiling;
+    const qd = demandQ(pc); // quantity demanded at ceiling
+    const qs = supplyQ(pc); // quantity supplied at ceiling (binding)
+
+    // Reduced CS (above ceiling, below demand, from 0 to qs)
+    ctx.beginPath();
+    ctx.moveTo(qToX(0), pToY(pMax));
+    ctx.lineTo(qToX(0), pToY(pc));
+    ctx.lineTo(qToX(qs), pToY(pc));
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(palette.blue, 0.25);
+    ctx.fill();
+
+    // Reduced PS (below ceiling, above supply, 0 to qs)
+    ctx.beginPath();
+    ctx.moveTo(qToX(0), pToY(pMin));
+    ctx.lineTo(qToX(0), pToY(pc));
+    ctx.lineTo(qToX(qs), pToY(pc));
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(palette.emerald, 0.15);
+    ctx.fill();
+
+    // DWL triangle
+    ctx.beginPath();
+    ctx.moveTo(qToX(qs), pToY(pc));
+    ctx.lineTo(qToX(qStar), pToY(pStar));
+    ctx.lineTo(qToX(qs), pToY(supplyQ(pc) > 0 ? pc + (pStar - pc) * qs / qStar : pc));
+    ctx.closePath();
+    // Actually the DWL is the triangle between:
+    // (qs, pc), (qStar, pStar), and (qs, pDemand(qs))
+    const pDemandAtQs = pMax - qs; // demand gives P = pMax - Q
+    ctx.beginPath();
+    ctx.moveTo(qToX(qs), pToY(pc));
+    ctx.lineTo(qToX(qStar), pToY(pStar));
+    ctx.lineTo(qToX(qs), pToY(pDemandAtQs));
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(palette.amber, 0.45);
+    ctx.fill();
+    ctx.strokeStyle = palette.amber; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Shortage region annotation
+    const qMid = (qs + qd) / 2;
+    ctx.fillStyle = hexToRgba(palette.red, 0.12);
+    ctx.fillRect(qToX(qs), pToY(pc + 2), qToX(qd) - qToX(qs), 14);
+    ctx.fillStyle = palette.red;
+    ctx.font = '10px Inter'; ctx.textAlign = 'center';
+    ctx.fillText('Shortage', qToX(qMid), pToY(pc + 6));
+
+    const cs = 0.5 * (pMax - pc) * qs;
+    const ps = 0.5 * (pc - pMin) * qs;
+    const dwl = 0.5 * (pStar - pc) * (qStar - qs);
+    document.getElementById('w-cs').textContent = cs.toFixed(1);
+    document.getElementById('w-ps').textContent = ps.toFixed(1);
+    document.getElementById('w-dwl').textContent = dwl.toFixed(1);
+    document.getElementById('w-total').textContent = (cs + ps).toFixed(1);
+
+  } else if (welfareMode === 'floor') {
+    const pf = pFloor;
+    const qs = supplyQ(pf); // quantity supplied (large)
+    const qd = demandQ(pf); // quantity demanded (small)
+
+    // Reduced CS (above floor, below demand, 0 to qd)
+    ctx.beginPath();
+    ctx.moveTo(qToX(0), pToY(pMax));
+    ctx.lineTo(qToX(0), pToY(pf));
+    ctx.lineTo(qToX(qd), pToY(pf));
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(palette.blue, 0.15);
+    ctx.fill();
+
+    // PS (below floor, above supply, 0 to qd)
+    ctx.beginPath();
+    ctx.moveTo(qToX(0), pToY(pMin));
+    ctx.lineTo(qToX(0), pToY(pf));
+    ctx.lineTo(qToX(qd), pToY(pf));
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(palette.emerald, 0.25);
+    ctx.fill();
+
+    // DWL triangle
+    const pSupplyAtQd = qd + pMin; // supply gives P = Q + pMin
+    ctx.beginPath();
+    ctx.moveTo(qToX(qStar), pToY(pStar));
+    ctx.lineTo(qToX(qd), pToY(pf));
+    ctx.lineTo(qToX(qd), pToY(pSupplyAtQd));
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(palette.amber, 0.45);
+    ctx.fill();
+    ctx.strokeStyle = palette.amber; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Surplus region
+    const qMid2 = (qs + qd) / 2;
+    ctx.fillStyle = hexToRgba(palette.red, 0.12);
+    ctx.fillRect(qToX(qd), pToY(pf + 2), Math.min(qToX(qs) - qToX(qd), 80), 14);
+    ctx.fillStyle = palette.red;
+    ctx.font = '10px Inter'; ctx.textAlign = 'center';
+    ctx.fillText('Surplus', qToX((qd + Math.min(qs, qd + 25)) / 2), pToY(pf + 6));
+
+    const cs = 0.5 * (pMax - pf) * qd;
+    const ps = 0.5 * (pf - pMin) * qd;
+    const dwl = 0.5 * (pf - pStar) * (qStar - qd);
+    document.getElementById('w-cs').textContent = cs.toFixed(1);
+    document.getElementById('w-ps').textContent = ps.toFixed(1);
+    document.getElementById('w-dwl').textContent = dwl.toFixed(1);
+    document.getElementById('w-total').textContent = (cs + ps).toFixed(1);
+  }
+
+  // ── Draw D and S curves ──
+  // Demand line: P from pMax to 0, Q from 0 to pMax
+  ctx.beginPath();
+  ctx.moveTo(qToX(0), pToY(pMax));
+  ctx.lineTo(qToX(pMax), pToY(0));
+  ctx.strokeStyle = palette.blue;
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  ctx.fillStyle = palette.blue;
+  ctx.font = 'bold 13px Inter'; ctx.textAlign = 'left';
+  ctx.fillText('D', qToX(pMax) - 16, pToY(0) + 18);
+
+  // Supply line: P from pMin to 100, Q from 0 to 90
+  ctx.beginPath();
+  ctx.moveTo(qToX(0), pToY(pMin));
+  ctx.lineTo(qToX(100 - pMin), pToY(100));
+  ctx.strokeStyle = palette.emerald;
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  ctx.fillStyle = palette.emerald;
+  ctx.fillText('S', qToX(100 - pMin) - 6, pToY(100) + 16);
+
+  // Equilibrium point
+  ctx.beginPath();
+  ctx.arc(qToX(qStar), pToY(pStar), 6, 0, Math.PI * 2);
+  ctx.fillStyle = palette.amber;
+  ctx.fill();
+  ctx.strokeStyle = '#0d0f0a'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Control line
+  if (welfareMode !== 'free') {
+    const controlP = welfareMode === 'ceiling' ? pCeiling : pFloor;
+    const color = welfareMode === 'ceiling' ? palette.red : palette.emerald;
+
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, pToY(controlP));
+    ctx.lineTo(W - pad.r, pToY(controlP));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = color;
+    ctx.font = '11px Inter'; ctx.textAlign = 'right';
+    const lbl = welfareMode === 'ceiling' ? 'Price Ceiling' : 'Price Floor';
+    ctx.fillText(lbl + ` (P=${controlP})`, W - pad.r - 4, pToY(controlP) - 6);
+
+    // Axis dashed lines for equilibrium
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = hexToRgba(palette.amber, 0.35);
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(qToX(qStar), pToY(pStar)); ctx.lineTo(pad.l, pToY(pStar)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(qToX(qStar), pToY(pStar)); ctx.lineTo(qToX(qStar), H - pad.b); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = hexToRgba(palette.amber, 0.6);
+    ctx.font = '10px Inter'; ctx.textAlign = 'right';
+    ctx.fillText(`P*=${pStar}`, pad.l - 2, pToY(pStar) + 4);
+
+    // DWL label
+    ctx.fillStyle = palette.amber;
+    ctx.font = 'bold 11px Inter'; ctx.textAlign = 'center';
+    const dwlMidQ = welfareMode === 'ceiling'
+      ? (supplyQ(welfareMode === 'ceiling' ? pCeiling : pFloor) + qStar) / 2
+      : (demandQ(pFloor) + qStar) / 2;
+    ctx.fillText('DWL', qToX(dwlMidQ + 3), pToY(pStar + (welfareMode === 'ceiling' ? -4 : 4)));
+  }
+}
+
+drawWelfare();
+
+// ─────────────────────────────────────────────────────────
+//  KATEX INIT
+// ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) renderMathInElement(document.body, {
+    delimiters: [
+      { left: '\\[', right: '\\]', display: true },
+      { left: '\\(', right: '\\)', display: false }
+    ]
+  });
+});
+</script>
+</body>
+</html>

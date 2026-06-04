@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wave Interference — An Interactive Exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inconsolata:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #070b0e;
+  --surface: #0d1317;
+  --surface2: #131b21;
+  --border: #1e2d38;
+  --amber: #f59e0b;
+  --amber-dim: #b97b0a;
+  --amber-glow: rgba(245,158,11,0.12);
+  --blue: #3b82f6;
+  --blue-dim: #2563c8;
+  --blue-glow: rgba(59,130,246,0.12);
+  --text: #e8dcc8;
+  --text-dim: #8a9ba8;
+  --text-muted: #4a5e6a;
+  --green: #34d399;
+  --red: #f87171;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 19px;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 70%);
+}
+
+.eyebrow {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 1.2rem;
+  opacity: 0.8;
+}
+
+h1 {
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 1.2rem;
+}
+
+h1 em { color: var(--amber); font-style: italic; }
+
+.subtitle {
+  font-size: 1.15rem;
+  color: var(--text-dim);
+  max-width: 600px;
+  margin: 0 auto;
+  font-weight: 300;
+}
+
+/* ── Layout ── */
+main { max-width: 920px; margin: 0 auto; padding: 0 2rem 6rem; }
+
+section {
+  padding: 4.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+section:last-child { border-bottom: none; }
+
+.section-label {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 0.6rem;
+  opacity: 0.7;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  font-weight: 400;
+  color: #fff;
+  margin-bottom: 1.8rem;
+  line-height: 1.2;
+}
+
+p { margin-bottom: 1.3rem; color: var(--text); }
+p:last-of-type { margin-bottom: 0; }
+
+.math-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  padding: 1.4rem 1.8rem;
+  margin: 1.8rem 0;
+  border-radius: 0 6px 6px 0;
+  overflow-x: auto;
+}
+
+.math-block .label {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 0.6rem;
+  display: block;
+}
+
+/* ── Canvas panels ── */
+.canvas-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 2.5rem 0 1.5rem;
+}
+
+.panel-header {
+  padding: 0.9rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.panel-title {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 6px var(--amber);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+canvas { display: block; width: 100%; cursor: pointer; }
+
+/* ── Controls ── */
+.controls {
+  padding: 1.2rem 1.4rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.ctrl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ctrl label {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ctrl label span {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--amber);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(245,158,11,0.5);
+}
+
+/* ── Stat readout ── */
+.stat-row {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.9rem 1.4rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  flex-wrap: wrap;
+}
+
+.stat {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.78rem;
+}
+
+.stat .key { color: var(--text-muted); }
+.stat .val { color: var(--amber); margin-left: 0.4rem; font-weight: 600; }
+
+/* ── Tab switcher ── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  padding: 0.75rem 1.6rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.tab-btn.active {
+  color: var(--amber);
+  border-bottom-color: var(--amber);
+}
+
+.tab-btn:hover:not(.active) { color: var(--text-dim); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 2.5rem;
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  letter-spacing: 0.1em;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Physics · Waves · Optics</div>
+  <h1>Wave <em>Interference</em></h1>
+  <p class="subtitle">When two waves meet, they don't collide — they combine. Explore how amplitude, phase, and geometry sculpt the patterns that light and sound leave behind.</p>
+</header>
+
+<main>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SECTION 01: SUPERPOSITION -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section id="superposition">
+  <div class="section-label">Section 01</div>
+  <h2>The Principle of Superposition</h2>
+
+  <p>Every undergraduate physics course introduces the superposition principle with something like: "the total displacement is the sum of the individual displacements." But the full depth of that statement only becomes apparent when you watch it happen. Two waves — each sinusoidal, each perfectly obedient to the wave equation — arrive at the same point, and the medium simply adds them. The medium has no memory of which wave contributed what; it simply responds to the net force.</p>
+
+  <p>Consider two traveling waves with possibly different amplitudes and phases: \(y_1 = A_1\sin(kx - \omega t + \varphi_1)\) and \(y_2 = A_2\sin(kx - \omega t + \varphi_2)\). Their sum is another sinusoid whose amplitude depends critically on the phase difference \(\Delta\varphi = \varphi_2 - \varphi_1\). When \(\Delta\varphi = 0\) (or any integer multiple of \(2\pi\)), the crests of one wave land exactly on the crests of the other — <em>constructive interference</em> — and the resultant amplitude is \(A_1 + A_2\). When \(\Delta\varphi = \pi\) (or any odd multiple), crests cancel troughs — <em>destructive interference</em> — leaving \(|A_1 - A_2|\). For equal amplitudes \(A_1 = A_2 = A\), destructive interference is complete annihilation.</p>
+
+  <p>The general resultant amplitude for equal amplitudes comes from the phasor addition rule. Adding two sinusoids of equal amplitude with phase difference \(\Delta\varphi\) yields a sinusoid with the amplitude below. This is not merely a computational formula — it encodes the transition from constructive (\(\Delta\varphi = 0\)) to destructive (\(\Delta\varphi = \pi\)) as a smooth cosine, which is why interference fringes in optics have a smooth intensity gradient rather than sharp on/off edges.</p>
+
+  <div class="math-block">
+    <span class="label">Phasor Resultant</span>
+    \[\text{For equal amplitudes: } y_1 + y_2 = 2A\cos\!\left(\frac{\Delta\varphi}{2}\right)\sin\!\!\left(kx - \omega t + \frac{\varphi_1+\varphi_2}{2}\right)\]
+    \[\text{General case: } R = \sqrt{A_1^2 + A_2^2 + 2A_1 A_2\cos(\Delta\varphi)}\]
+  </div>
+
+  <div class="canvas-panel">
+    <div class="panel-header">
+      <div class="status-dot"></div>
+      <span class="panel-title">Live Superposition — three-row wave display</span>
+    </div>
+    <canvas id="canvas1" height="300"></canvas>
+    <div class="stat-row" id="stats1">
+      <div class="stat"><span class="key">Δφ</span><span class="val" id="dphi-val">0.00 rad</span></div>
+      <div class="stat"><span class="key">Resultant R</span><span class="val" id="R-val">2.00</span></div>
+      <div class="stat"><span class="key">Type</span><span class="val" id="type-val">Constructive</span></div>
+    </div>
+    <div class="controls">
+      <div class="ctrl">
+        <label>Phase φ₁ <span id="p1-val">0.00</span> rad</label>
+        <input type="range" id="phi1" min="0" max="6.283" step="0.01" value="0">
+      </div>
+      <div class="ctrl">
+        <label>Phase φ₂ <span id="p2-val">0.00</span> rad</label>
+        <input type="range" id="phi2" min="0" max="6.283" step="0.01" value="0">
+      </div>
+      <div class="ctrl">
+        <label>Amplitude A₁ <span id="a1-val">1.00</span></label>
+        <input type="range" id="amp1" min="0.2" max="1" step="0.01" value="1">
+      </div>
+      <div class="ctrl">
+        <label>Amplitude A₂ <span id="a2-val">1.00</span></label>
+        <input type="range" id="amp2" min="0.2" max="1" step="0.01" value="1">
+      </div>
+      <div class="ctrl">
+        <label>Freq ratio f₂/f₁ <span id="fr-val">1.00</span></label>
+        <input type="range" id="fratio" min="0.5" max="2" step="0.01" value="1">
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SECTION 02: 2D INTERFERENCE PATTERN -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section id="twod">
+  <div class="section-label">Section 02</div>
+  <h2>Two-Source Interference in Two Dimensions</h2>
+
+  <p>A single sinusoidal source sends out circular wavefronts in all directions — concentric rings expanding at the wave speed. Add a second identical source, separated by a distance \(d\), and the two families of concentric rings overlap. Where rings of the same phase meet, the medium heaves upward twice as high; where opposing phases meet, the medium sits still. The result is a stationary pattern of bright and dark fringes frozen in space, even as the waves themselves rush outward at speed \(v = \lambda f\).</p>
+
+  <p>The key variable governing which pattern forms at any given point P in space is the <em>path difference</em> \(\Delta r = r_2 - r_1\), the difference in distances from P to each source. Constructive interference occurs wherever \(\Delta r = n\lambda\) for integer \(n\); destructive wherever \(\Delta r = (n + \tfrac{1}{2})\lambda\). The locus of points with a fixed path difference forms a hyperbola, so the fringe pattern consists of a family of hyperbolic nodal lines radiating outward from the midpoint between the sources.</p>
+
+  <p>In the far field — when the observation screen is far from the sources, \(L \gg d\) — the hyperbolic fringes straighten into the familiar Young's double-slit pattern. The bright fringe positions on a screen at distance \(L\) are approximated by \(y_n \approx n\lambda L / d\), and the angular positions by \(\theta_n = \arcsin(n\lambda/d)\). The intensity in this approximation is \(I \propto \cos^2(\pi d \sin\theta / \lambda)\). Drag either source point in the visualization below and watch the hyperbolic symmetry reconfigure in real time.</p>
+
+  <div class="math-block">
+    <span class="label">Path Difference & Intensity</span>
+    \[\Delta r = r_2 - r_1, \qquad r_i = \sqrt{(x-x_i)^2 + (y-y_i)^2}\]
+    \[\text{Constructive: } \Delta r = n\lambda, \quad \text{Destructive: } \Delta r = \left(n+\tfrac{1}{2}\right)\lambda\]
+    \[I \propto \cos^2\!\left(\frac{\pi d \sin\theta}{\lambda}\right) \approx \cos^2\!\left(\frac{\pi d\, y}{\lambda L}\right)\]
+  </div>
+
+  <div class="canvas-panel">
+    <div class="panel-header">
+      <div class="status-dot"></div>
+      <span class="panel-title">2D Interference Heatmap — drag sources to reposition</span>
+    </div>
+    <canvas id="canvas2" height="360" style="cursor: grab;"></canvas>
+    <div class="stat-row">
+      <div class="stat"><span class="key">λ</span><span class="val" id="lambda-val">60 px</span></div>
+      <div class="stat"><span class="key">Source separation</span><span class="val" id="sep-val">—</span></div>
+      <div class="stat"><span class="key">d/λ</span><span class="val" id="dlambda-val">—</span></div>
+    </div>
+    <div class="controls">
+      <div class="ctrl">
+        <label>Wavelength λ <span id="lam-disp">60</span> px</label>
+        <input type="range" id="lambdaSlider" min="20" max="100" step="1" value="60">
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SECTION 03: BEATS & STANDING WAVES -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section id="beats">
+  <div class="section-label">Section 03</div>
+  <h2>Beats and Standing Waves</h2>
+
+  <p>When two waves of slightly different frequencies travel in the same direction, their superposition produces a phenomenon every musician knows: <em>beats</em>. The amplitude of the combined wave swells and fades at a rate equal to the difference in frequencies. A piano tuner exploits this directly — by listening for the beat frequency between a struck string and a reference tuning fork, she can reduce \(|f_1 - f_2|\) to zero, achieving perfect unison. The mathematics behind this is the same product-to-sum identity that gives us the carrier and envelope in amplitude modulation radio.</p>
+
+  <p>A standing wave, on the other hand, arises from two waves of the <em>same</em> frequency traveling in <em>opposite</em> directions. This happens naturally on a plucked guitar string: the traveling wave bounces off both fixed endpoints, and the two counter-propagating waves superpose into a pattern that appears frozen in space. The nodes — points of permanent zero displacement — are fixed at positions \(x = n\lambda/2\); the antinodes between them oscillate with doubled amplitude. What looks like a stationary pattern is actually a rapid oscillation that stroboscopic photography makes visible only at certain moments.</p>
+
+  <p>The allowed frequencies on a string of length \(L\) fixed at both ends form a harmonic series: \(f_n = nv/(2L)\), where \(v = \sqrt{T/\mu}\) is the wave speed set by the string tension \(T\) and linear mass density \(\mu\). The fundamental (\(n=1\)) has exactly one half-wavelength fitting between the fixed ends; the second harmonic (\(n=2\)) fits two; and so on. This integer sequence underlies the harmonic structure of virtually all musical instruments, from organ pipes to stretched membranes.</p>
+
+  <div class="math-block">
+    <span class="label">Beats and Standing Wave Formulas</span>
+    \[\text{Beats: } y_1+y_2 = 2A\cos\!\left(\pi\Delta f \cdot t\right)\cos\!\left(2\pi \bar{f}\, t\right), \quad f_{\rm beat} = |f_1 - f_2|\]
+    \[\text{Standing wave: } y(x,t) = 2A\cos(kx)\sin(\omega t)\]
+    \[\text{String harmonics: } f_n = \frac{n\,v}{2L}, \quad \lambda_n = \frac{2L}{n}, \quad n = 1,2,3,\ldots\]
+  </div>
+
+  <div class="canvas-panel">
+    <div class="panel-header">
+      <div class="status-dot"></div>
+      <span class="panel-title">Beats &amp; Standing Waves</span>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-beats" onclick="switchTab('beats')">Beats</button>
+      <button class="tab-btn" id="tab-standing" onclick="switchTab('standing')">Standing Wave</button>
+    </div>
+    <canvas id="canvas3" height="280"></canvas>
+    <div class="stat-row">
+      <div class="stat"><span class="key" id="stat3-key">Beat freq</span><span class="val" id="stat3-val">5.0 Hz</span></div>
+      <div class="stat"><span class="key" id="stat3-key2">f₁</span><span class="val" id="stat3-val2">440 Hz</span></div>
+      <div class="stat"><span class="key" id="stat3-key3">f₂</span><span class="val" id="stat3-val3">445 Hz</span></div>
+    </div>
+    <div class="controls" id="controls3">
+      <div class="ctrl" id="ctrl-df">
+        <label>Δf (beat frequency) <span id="df-val">5.0</span> Hz</label>
+        <input type="range" id="deltaF" min="0" max="20" step="0.5" value="5">
+      </div>
+      <div class="ctrl" id="ctrl-harm" style="display:none">
+        <label>Harmonic n <span id="harm-val">1</span></label>
+        <input type="range" id="harmonic" min="1" max="6" step="1" value="1">
+      </div>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<footer>Wave Interference · Interactive Physics · Built with Canvas API &amp; KaTeX</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ]
+    });
+  }
+  initSuperposition();
+  initTwoD();
+  initBeats();
+});
+
+/* ═══════════════════════════════════════════════════
+   SECTION 01: SUPERPOSITION
+═══════════════════════════════════════════════════ */
+function initSuperposition() {
+  const canvas = document.getElementById('canvas1');
+  const ctx = canvas.getContext('2d');
+  let phi1 = 0, phi2 = 0, A1 = 1, A2 = 1, fRatio = 1;
+  let t = 0;
+
+  function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 300;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  document.getElementById('phi1').addEventListener('input', e => {
+    phi1 = +e.target.value;
+    document.getElementById('p1-val').textContent = phi1.toFixed(2);
+    updateStats();
+  });
+  document.getElementById('phi2').addEventListener('input', e => {
+    phi2 = +e.target.value;
+    document.getElementById('p2-val').textContent = phi2.toFixed(2);
+    updateStats();
+  });
+  document.getElementById('amp1').addEventListener('input', e => {
+    A1 = +e.target.value;
+    document.getElementById('a1-val').textContent = A1.toFixed(2);
+    updateStats();
+  });
+  document.getElementById('amp2').addEventListener('input', e => {
+    A2 = +e.target.value;
+    document.getElementById('a2-val').textContent = A2.toFixed(2);
+    updateStats();
+  });
+  document.getElementById('fratio').addEventListener('input', e => {
+    fRatio = +e.target.value;
+    document.getElementById('fr-val').textContent = fRatio.toFixed(2);
+  });
+
+  function updateStats() {
+    const dPhi = ((phi2 - phi1) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    const R = Math.sqrt(A1*A1 + A2*A2 + 2*A1*A2*Math.cos(phi2 - phi1));
+    document.getElementById('dphi-val').textContent = dPhi.toFixed(2) + ' rad';
+    document.getElementById('R-val').textContent = R.toFixed(3);
+    const type = R > (A1 + A2) * 0.95 ? 'Constructive' : R < Math.abs(A1 - A2) * 1.05 + 0.05 ? 'Destructive' : 'Partial';
+    document.getElementById('type-val').textContent = type;
+  }
+
+  function drawSection(ctx, label, color, getY, rowTop, rowHeight) {
+    const W = canvas.width;
+    const cx = rowTop + rowHeight / 2;
+    const amp = rowHeight * 0.35;
+
+    // Row background
+    ctx.fillStyle = 'rgba(255,255,255,0.018)';
+    ctx.fillRect(0, rowTop, W, rowHeight);
+
+    // Label
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.7;
+    ctx.font = '500 11px Inconsolata, monospace';
+    ctx.fillText(label, 12, rowTop + 18);
+    ctx.globalAlpha = 1;
+
+    // Zero line
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    ctx.moveTo(0, cx);
+    ctx.lineTo(W, cx);
+    ctx.stroke();
+
+    // Wave
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    let first = true;
+    for (let px = 0; px < W; px++) {
+      const x = (px / W) * 4 * Math.PI;
+      const y = cx - amp * getY(x);
+      if (first) { ctx.moveTo(px, y); first = false; }
+      else ctx.lineTo(px, y);
+    }
+    ctx.stroke();
+  }
+
+  function draw() {
+    const W = canvas.width;
+    const H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0d1317';
+    ctx.fillRect(0, 0, W, H);
+
+    const rh = H / 3;
+    const k = 1, omega = 1;
+
+    drawSection(ctx, 'y₁  A₁·sin(kx − ωt + φ₁)', '#f59e0b',
+      x => A1 * Math.sin(k * x - omega * t + phi1), 0, rh);
+
+    drawSection(ctx, 'y₂  A₂·sin(k·ratio·x − ωt + φ₂)', '#3b82f6',
+      x => A2 * Math.sin(k * fRatio * x - omega * t + phi2), rh, rh);
+
+    // Resultant with fill
+    const cx = 2 * rh + rh / 2;
+    const amp = rh * 0.35;
+    ctx.fillStyle = 'rgba(255,255,255,0.018)';
+    ctx.fillRect(0, 2 * rh, W, rh);
+    ctx.fillStyle = '#52d398';
+    ctx.globalAlpha = 0.07;
+    ctx.beginPath();
+    let firstR = true;
+    const pathPoints = [];
+    for (let px = 0; px < W; px++) {
+      const x = (px / W) * 4 * Math.PI;
+      const y = A1 * Math.sin(k * x - omega * t + phi1) + A2 * Math.sin(k * fRatio * x - omega * t + phi2);
+      pathPoints.push(cx - amp * y);
+      if (firstR) { ctx.moveTo(px, pathPoints[px]); firstR = false; }
+      else ctx.lineTo(px, pathPoints[px]);
+    }
+    ctx.lineTo(W, cx);
+    ctx.lineTo(0, cx);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.beginPath();
+    ctx.strokeStyle = '#52d398';
+    ctx.lineWidth = 2.5;
+    for (let px = 0; px < W; px++) {
+      if (px === 0) ctx.moveTo(px, pathPoints[px]);
+      else ctx.lineTo(px, pathPoints[px]);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = '#52d398';
+    ctx.globalAlpha = 0.7;
+    ctx.font = '500 11px Inconsolata, monospace';
+    ctx.fillText('y₁ + y₂  (Resultant)', 12, 2 * rh + 18);
+    ctx.globalAlpha = 1;
+
+    // Dividers
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    [rh, 2*rh].forEach(y => {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    });
+
+    t += 0.025;
+    requestAnimationFrame(draw);
+  }
+
+  updateStats();
+  draw();
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION 02: 2D INTERFERENCE HEATMAP
+═══════════════════════════════════════════════════ */
+function initTwoD() {
+  const canvas = document.getElementById('canvas2');
+  const ctx = canvas.getContext('2d');
+  let lambda = 60;
+  let t = 0;
+  let dragging = null;
+
+  function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 360;
+    sources[0] = { x: canvas.width * 0.35, y: canvas.height * 0.5 };
+    sources[1] = { x: canvas.width * 0.65, y: canvas.height * 0.5 };
+  }
+
+  let sources = [
+    { x: 280, y: 180 },
+    { x: 560, y: 180 }
+  ];
+
+  resize();
+  window.addEventListener('resize', () => { resize(); });
+
+  document.getElementById('lambdaSlider').addEventListener('input', e => {
+    lambda = +e.target.value;
+    document.getElementById('lam-disp').textContent = lambda;
+    document.getElementById('lambda-val').textContent = lambda + ' px';
+    updateSepStats();
+  });
+
+  function updateSepStats() {
+    const dx = sources[1].x - sources[0].x;
+    const dy = sources[1].y - sources[0].y;
+    const sep = Math.sqrt(dx*dx + dy*dy).toFixed(1);
+    document.getElementById('sep-val').textContent = sep + ' px';
+    document.getElementById('dlambda-val').textContent = (sep / lambda).toFixed(2);
+  }
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    const pos = getPos(e);
+    for (let i = 0; i < 2; i++) {
+      const dx = pos.x - sources[i].x, dy = pos.y - sources[i].y;
+      if (Math.sqrt(dx*dx + dy*dy) < 18) { dragging = i; canvas.style.cursor = 'grabbing'; break; }
+    }
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (dragging !== null) {
+      const pos = getPos(e);
+      sources[dragging].x = pos.x;
+      sources[dragging].y = pos.y;
+      updateSepStats();
+    } else {
+      const pos = getPos(e);
+      let near = false;
+      for (let i = 0; i < 2; i++) {
+        const dx = pos.x - sources[i].x, dy = pos.y - sources[i].y;
+        if (Math.sqrt(dx*dx + dy*dy) < 18) { near = true; break; }
+      }
+      canvas.style.cursor = near ? 'grab' : 'crosshair';
+    }
+  });
+  canvas.addEventListener('mouseup', () => { dragging = null; canvas.style.cursor = 'crosshair'; });
+  canvas.addEventListener('mouseleave', () => { dragging = null; });
+
+  const offscreen = document.createElement('canvas');
+  let lastLambda = -1, lastSx0 = -1, lastSy0 = -1, lastSx1 = -1, lastSy1 = -1;
+
+  function buildHeatmap() {
+    const W = canvas.width, H = canvas.height;
+    if (offscreen.width !== W || offscreen.height !== H) {
+      offscreen.width = W; offscreen.height = H;
+    }
+    const oc = offscreen.getContext('2d');
+    const id = oc.createImageData(W, H);
+    const d = id.data;
+
+    for (let py = 0; py < H; py++) {
+      for (let px = 0; px < W; px++) {
+        const r1 = Math.sqrt((px-sources[0].x)**2 + (py-sources[0].y)**2);
+        const r2 = Math.sqrt((px-sources[1].x)**2 + (py-sources[1].y)**2);
+        const phase1 = (2 * Math.PI * r1) / lambda;
+        const phase2 = (2 * Math.PI * r2) / lambda;
+        const val = (Math.cos(phase1) + Math.cos(phase2));
+        // val in [-2,2], intensity in [0,1]
+        const intensity = (val * val) / 4;
+
+        const idx = (py * W + px) * 4;
+        // Amber for bright, dark blue for destructive
+        if (intensity > 0.5) {
+          const s = (intensity - 0.5) * 2;
+          d[idx]   = Math.round(245 * s);
+          d[idx+1] = Math.round(158 * s);
+          d[idx+2] = Math.round(11 * s);
+        } else {
+          const s = intensity * 2;
+          d[idx]   = Math.round(10 + 20 * s);
+          d[idx+1] = Math.round(20 + 35 * s);
+          d[idx+2] = Math.round(40 + 60 * s);
+        }
+        d[idx+3] = 255;
+      }
+    }
+    oc.putImageData(id, 0, 0);
+    lastLambda = lambda;
+    lastSx0 = sources[0].x; lastSy0 = sources[0].y;
+    lastSx1 = sources[1].x; lastSy1 = sources[1].y;
+  }
+
+  let frameCount = 0;
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    // Rebuild heatmap only when params change
+    if (lambda !== lastLambda || sources[0].x !== lastSx0 || sources[0].y !== lastSy0 ||
+        sources[1].x !== lastSx1 || sources[1].y !== lastSy1) {
+      buildHeatmap();
+    }
+
+    ctx.drawImage(offscreen, 0, 0);
+
+    // Time-modulated ripple overlay
+    frameCount++;
+    if (frameCount % 2 === 0) {
+      for (let i = 0; i < 2; i++) {
+        const maxR = Math.max(W, H);
+        for (let r = (t * 60) % lambda; r < maxR; r += lambda) {
+          ctx.beginPath();
+          ctx.arc(sources[i].x, sources[i].y, r, 0, 2 * Math.PI);
+          ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Source markers
+    for (let i = 0; i < 2; i++) {
+      ctx.beginPath();
+      ctx.arc(sources[i].x, sources[i].y, 8, 0, 2 * Math.PI);
+      ctx.fillStyle = i === 0 ? '#f59e0b' : '#3b82f6';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px Inconsolata, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(i + 1, sources[i].x, sources[i].y);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+    }
+
+    // Legend
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(W - 130, 10, 120, 54);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '11px Inconsolata, monospace';
+    ctx.fillText('■ Constructive', W - 120, 30);
+    ctx.fillStyle = '#1e3a5f';
+    ctx.fillText('■ Destructive', W - 120, 52);
+
+    t += 0.012;
+    requestAnimationFrame(draw);
+  }
+
+  updateSepStats();
+  buildHeatmap();
+  draw();
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION 03: BEATS & STANDING WAVES
+═══════════════════════════════════════════════════ */
+let currentTab = 'beats';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-beats').classList.toggle('active', tab === 'beats');
+  document.getElementById('tab-standing').classList.toggle('active', tab === 'standing');
+  document.getElementById('ctrl-df').style.display = tab === 'beats' ? '' : 'none';
+  document.getElementById('ctrl-harm').style.display = tab === 'standing' ? '' : 'none';
+  updateTab3Stats();
+}
+
+function updateTab3Stats() {
+  if (currentTab === 'beats') {
+    const df = +document.getElementById('deltaF').value;
+    document.getElementById('stat3-key').textContent = 'Beat freq';
+    document.getElementById('stat3-val').textContent = df.toFixed(1) + ' Hz';
+    document.getElementById('stat3-key2').textContent = 'f₁';
+    document.getElementById('stat3-val2').textContent = '440 Hz';
+    document.getElementById('stat3-key3').textContent = 'f₂';
+    document.getElementById('stat3-val3').textContent = (440 + df).toFixed(1) + ' Hz';
+  } else {
+    const n = +document.getElementById('harmonic').value;
+    const L = 1, v = 340;
+    const fn = (n * v / (2 * L)).toFixed(0);
+    document.getElementById('stat3-key').textContent = 'Harmonic n';
+    document.getElementById('stat3-val').textContent = n;
+    document.getElementById('stat3-key2').textContent = 'fₙ = nv/2L';
+    document.getElementById('stat3-val2').textContent = fn + ' Hz';
+    document.getElementById('stat3-key3').textContent = 'Nodes';
+    document.getElementById('stat3-val3').textContent = n + 1;
+  }
+}
+
+function initBeats() {
+  const canvas = document.getElementById('canvas3');
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 280;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  document.getElementById('deltaF').addEventListener('input', e => {
+    document.getElementById('df-val').textContent = (+e.target.value).toFixed(1);
+    updateTab3Stats();
+  });
+  document.getElementById('harmonic').addEventListener('input', e => {
+    document.getElementById('harm-val').textContent = e.target.value;
+    updateTab3Stats();
+  });
+
+  function drawBeats() {
+    const W = canvas.width, H = canvas.height;
+    const df = +document.getElementById('deltaF').value;
+    const f1 = 2, f2 = f1 + df * 0.01; // scaled for visual
+    const A = 0.42 * H;
+    const cy = H / 2;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0d1317';
+    ctx.fillRect(0, 0, W, H);
+
+    // Zero line
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+
+    // Envelope dashed
+    const envColor = 'rgba(245,158,11,0.5)';
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = envColor;
+    ctx.lineWidth = 1.5;
+    for (let sign of [1, -1]) {
+      ctx.beginPath();
+      for (let px = 0; px < W; px++) {
+        const xn = px / W * 12;
+        const env = sign * A * Math.abs(Math.cos(Math.PI * (f2 - f1) * (xn + t * 0.3)));
+        if (px === 0) ctx.moveTo(px, cy - env);
+        else ctx.lineTo(px, cy - env);
+      }
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Beat wave
+    ctx.beginPath();
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 2;
+    for (let px = 0; px < W; px++) {
+      const xn = px / W * 12;
+      const y1 = Math.sin(2 * Math.PI * f1 * (xn + t * 0.3));
+      const y2 = Math.sin(2 * Math.PI * f2 * (xn + t * 0.3));
+      const yv = cy - A * (y1 + y2) / 2;
+      if (px === 0) ctx.moveTo(px, yv);
+      else ctx.lineTo(px, yv);
+    }
+    ctx.stroke();
+
+    // Beat frequency label
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 28px Inconsolata, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('f_beat = ' + df.toFixed(1) + ' Hz', W - 16, 42);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(245,158,11,0.6)';
+    ctx.font = '12px Inconsolata, monospace';
+    ctx.fillText('— envelope', 16, 22);
+    ctx.fillStyle = 'rgba(59,130,246,0.8)';
+    ctx.fillText('— combined wave y₁ + y₂', 16, 40);
+  }
+
+  function drawStanding() {
+    const W = canvas.width, H = canvas.height;
+    const n = +document.getElementById('harmonic').value;
+    const A = H * 0.36;
+    const cy = H / 2;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0d1317';
+    ctx.fillRect(0, 0, W, H);
+
+    const k = n * Math.PI; // k = nπ/L with L normalized to 1
+
+    // Zero line
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(40, cy); ctx.lineTo(W - 40, cy); ctx.stroke();
+
+    // Shade antinodes
+    for (let i = 0; i < n; i++) {
+      const x0 = 40 + (i / n) * (W - 80);
+      const x1 = 40 + ((i + 1) / n) * (W - 80);
+      const xm = (x0 + x1) / 2;
+      ctx.fillStyle = i % 2 === 0 ? 'rgba(245,158,11,0.07)' : 'rgba(59,130,246,0.07)';
+      ctx.fillRect(x0, cy - A - 10, x1 - x0, 2 * A + 20);
+    }
+
+    // Standing wave at current time
+    ctx.beginPath();
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2.5;
+    const sinT = Math.sin(n * t * 0.04);
+    for (let px = 40; px <= W - 40; px++) {
+      const xn = (px - 40) / (W - 80); // 0..1
+      const cosKx = Math.cos(k * xn);
+      const yv = cy - A * cosKx * sinT;
+      if (px === 40) ctx.moveTo(px, yv);
+      else ctx.lineTo(px, yv);
+    }
+    ctx.stroke();
+
+    // Ghost (half period earlier)
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(245,158,11,0.2)';
+    ctx.lineWidth = 1.5;
+    const sinT2 = Math.sin(n * t * 0.04 + Math.PI / 2);
+    for (let px = 40; px <= W - 40; px++) {
+      const xn = (px - 40) / (W - 80);
+      const cosKx = Math.cos(k * xn);
+      const yv = cy - A * cosKx * sinT2;
+      if (px === 40) ctx.moveTo(px, yv);
+      else ctx.lineTo(px, yv);
+    }
+    ctx.stroke();
+
+    // Node markers
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = '11px Inconsolata, monospace';
+    for (let i = 0; i <= n; i++) {
+      const px = 40 + (i / n) * (W - 80);
+      ctx.beginPath();
+      ctx.arc(px, cy, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = '#3b82f6';
+      ctx.fill();
+      ctx.fillStyle = 'rgba(59,130,246,0.7)';
+      ctx.textAlign = 'center';
+      ctx.fillText('N', px, cy + 18);
+    }
+
+    // Antinode markers
+    ctx.fillStyle = '#f59e0b';
+    for (let i = 0; i < n; i++) {
+      const px = 40 + ((i + 0.5) / n) * (W - 80);
+      ctx.beginPath();
+      ctx.arc(px, cy, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fill();
+      ctx.fillStyle = 'rgba(245,158,11,0.7)';
+      ctx.font = '11px Inconsolata, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('A', px, cy - 18);
+    }
+    ctx.textAlign = 'left';
+
+    // Fixed endpoints
+    for (let px of [40, W - 40]) {
+      ctx.fillStyle = '#888';
+      ctx.fillRect(px - 3, cy - A - 18, 6, 2 * A + 36);
+    }
+
+    // Harmonic label
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 22px Inconsolata, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('n = ' + n + '  ·  f_' + n + ' = ' + n + 'v / 2L', W - 16, 34);
+    ctx.textAlign = 'left';
+  }
+
+  function draw() {
+    if (currentTab === 'beats') drawBeats();
+    else drawStanding();
+    t++;
+    requestAnimationFrame(draw);
+  }
+
+  updateTab3Stats();
+  draw();
+}
+</script>
+</body>
+</html>

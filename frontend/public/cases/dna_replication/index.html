@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Replication</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080d16; --card: #0e1520; --surface: #141e2e;
+            --accent: #39d353; --blue: #58a6ff; --orange: #ffa657;
+            --red: #f85149; --purple: #bc8cff;
+            --text: #e6edf3; --muted: #7d8590; --dim: #30363d; --border: #21262d;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:'IBM Plex Mono',monospace; line-height:1.75; padding:0 0 80px; }
+        header { text-align:center; padding:60px 40px 48px; background:radial-gradient(ellipse at 50% 0%,#0d2010 0%,var(--bg) 65%); border-bottom:1px solid var(--border); }
+        .tag { display:inline-block; font-size:10px; letter-spacing:0.2em; color:var(--accent); text-transform:uppercase; border:1px solid rgba(57,211,83,0.25); padding:3px 12px; border-radius:20px; margin-bottom:20px; }
+        h1 { font-family:'IBM Plex Sans',sans-serif; font-size:3.5rem; font-weight:700; line-height:1.1; margin-bottom:16px; }
+        h1 em { color:var(--accent); font-style:normal; }
+        header p { color:var(--muted); font-size:13px; max-width:540px; margin:0 auto; }
+        section { max-width:900px; margin:60px auto 0; padding:0 32px; }
+        .sl { font-size:10px; letter-spacing:0.2em; color:var(--dim); text-transform:uppercase; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+        h2 { font-family:'IBM Plex Sans',sans-serif; font-size:1.75rem; font-weight:700; margin-bottom:14px; }
+        .prose { font-size:13px; color:var(--muted); line-height:1.9; margin-bottom:18px; }
+        .math-block { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); padding:14px 20px; border-radius:4px; margin:18px 0; font-size:13px; overflow-x:auto; }
+        .canvas-wrap { background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:24px 0; }
+        canvas { display:block; }
+        .controls { display:flex; gap:12px; flex-wrap:wrap; align-items:center; padding:12px 16px; background:var(--surface); border-top:1px solid var(--border); }
+        .btn { padding:6px 14px; border:1px solid var(--dim); background:transparent; color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:11px; border-radius:3px; cursor:pointer; transition:all 0.15s; }
+        .btn:hover { border-color:var(--accent); color:var(--accent); }
+        .btn.go { background:var(--accent); color:#080d16; border-color:var(--accent); font-weight:600; }
+        label { font-size:11px; color:var(--dim); }
+        input[type=range] { width:90px; accent-color:var(--accent); }
+        .val { font-size:12px; color:var(--accent); min-width:36px; }
+        .legend { display:flex; gap:16px; flex-wrap:wrap; padding:8px 16px; border-top:1px solid var(--border); font-size:11px; }
+        .li { display:flex; align-items:center; gap:6px; color:var(--dim); }
+        .dot { width:8px; height:8px; border-radius:50%; }
+        .sq { width:10px; height:6px; border-radius:1px; }
+        .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0; }
+        .info-card { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:16px; }
+        .info-card h4 { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:600; margin-bottom:8px; }
+        .info-card p { font-size:12px; color:var(--dim); line-height:1.7; }
+        .infobox { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:16px 20px; margin:16px 0; font-size:12px; color:var(--dim); line-height:1.8; }
+        .infobox strong { color:var(--text); }
+        .phase-bar { padding:6px 16px; border-top:1px solid var(--border); background:var(--card); font-size:11px; color:var(--accent); min-height:28px; }
+    </style>
+</head>
+<body>
+<header>
+    <div class="tag">Temporal Control · Molecular Biology</div>
+    <h1>DNA <em>Replication</em></h1>
+    <p>How a cell copies 3 billion base pairs with error rates below one in a billion. The molecular machinery of life's most fundamental process.</p>
+</header>
+
+<section>
+    <div class="sl">01 — The Double Helix Unwinds</div>
+    <h2>Base Pairing and the Replication Fork</h2>
+    <div class="prose">
+        The DNA double helix is held together by hydrogen bonds between complementary bases: adenine pairs with thymine (2 H-bonds), and guanine pairs with cytosine (3 H-bonds). This specificity is the molecular basis of heredity — each strand is a complete template for the other. <strong style="color:var(--text)">Chargaff's rules</strong> state that in any double-stranded DNA, [A]=[T] and [G]=[C], a fact Chargaff observed empirically in 1950, three years before Watson and Crick's structure.
+    </div>
+    <div class="prose">
+        Replication begins at specific sequences called <strong style="color:var(--text)">origins of replication</strong>. In E. coli, there is one origin (oriC); in human cells, there are ~30,000, allowing the entire 6-billion-base genome to be copied in ~8 hours. At each origin, the enzyme <strong style="color:var(--accent)">helicase</strong> uses ATP hydrolysis to unwind the helix at ~1000 bp/second, creating a Y-shaped replication fork. Single-strand binding proteins (SSBPs) stabilize the unwound strands, and <strong style="color:var(--blue)">topoisomerase</strong> relieves the torsional stress ahead of the fork.
+    </div>
+    <div class="math-block">
+        Chargaff's rules: \([A]=[T]\), \([G]=[C]\)&nbsp;→&nbsp;\([A]+[G]=[T]+[C]=50\%\)<br>
+        GC content: \(\text{GC\%} = \dfrac{[G]+[C]}{[A]+[T]+[G]+[C]}\times 100\)<br>
+        Human genome GC content ≈ 41% (varies by region, e.g., CpG islands &gt; 55%)
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c1" width="836" height="320"></canvas>
+        <div class="controls">
+            <button class="btn go" id="btn1" onclick="toggleHelix()">▶ Unwind</button>
+            <button class="btn" onclick="resetHelix()">↺ Reset</button>
+            <div style="margin-left:auto;display:flex;gap:10px;align-items:center;">
+                <label>speed</label>
+                <input type="range" id="sp1" min="1" max="8" value="4">
+            </div>
+        </div>
+        <div class="phase-bar" id="phase1">Press "Unwind" to start helicase →</div>
+        <div class="legend">
+            <div class="li"><div class="dot" style="background:#f85149"></div>adenine (A)</div>
+            <div class="li"><div class="dot" style="background:#58a6ff"></div>thymine (T)</div>
+            <div class="li"><div class="dot" style="background:#39d353"></div>guanine (G)</div>
+            <div class="li"><div class="dot" style="background:#ffa657"></div>cytosine (C)</div>
+            <div class="li"><div class="dot" style="background:#bc8cff"></div>helicase</div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="sl">02 — Leading and Lagging Strands</div>
+    <h2>The Directionality Constraint</h2>
+    <div class="prose">
+        DNA polymerase III can only synthesize DNA in the <strong style="color:var(--text)">5'→3' direction</strong> — it adds nucleotides to the 3'-OH end of the growing strand. This creates an elegant asymmetry at the replication fork: one template strand (3'→5') allows continuous synthesis, producing the <strong style="color:var(--accent)">leading strand</strong>. The other template (5'→3') must be copied in short segments moving <em>away</em> from the fork — these are <strong style="color:var(--orange)">Okazaki fragments</strong>, each 100–200 nt in eukaryotes (1000–2000 in prokaryotes).
+    </div>
+    <div class="prose">
+        Each Okazaki fragment begins with a short RNA primer (~10 nt) synthesized by <strong style="color:var(--blue)">primase</strong>, which DNA Pol III then extends. After synthesis, RNase H removes the RNA primers, DNA Pol I fills the gaps, and <strong style="color:var(--purple)">DNA ligase</strong> seals the nicks with phosphodiester bonds, using NAD⁺ (bacteria) or ATP (eukaryotes) as energy source. The net result: both strands are copied, but the lagging strand synthesis requires much more coordination.
+    </div>
+    <div class="math-block">
+        E. coli replication speed: \(\sim 1000\) bp/s per fork, \(\sim 2\) forks → full genome (\(4.6 \times 10^6\) bp) in \(\sim 40\) min<br>
+        Human: \(\sim 50\) bp/s per fork, \(\sim 30{,}000\) origins → \(6\times10^9\) bp in \(\sim 8\) h<br>
+        Processivity: Pol III stays on template for \(\sim 5 \times 10^5\) bp per binding event (β-clamp)
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c2" width="836" height="300"></canvas>
+        <div class="controls">
+            <button class="btn go" id="btn2" onclick="toggleFork()">▶ Replicate</button>
+            <button class="btn" onclick="resetFork()">↺ Reset</button>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+                <label>speed</label>
+                <input type="range" id="sp2" min="1" max="8" value="3">
+            </div>
+        </div>
+        <div class="phase-bar" id="phase2">Replication fork proceeds 5'→3' continuously on leading, in fragments on lagging</div>
+        <div class="legend">
+            <div class="li"><div class="sq" style="background:var(--accent)"></div>leading strand (continuous)</div>
+            <div class="li"><div class="sq" style="background:var(--orange)"></div>Okazaki fragment</div>
+            <div class="li"><div class="sq" style="background:var(--blue)"></div>RNA primer</div>
+            <div class="li"><div class="sq" style="background:var(--purple)"></div>ligase seal</div>
+        </div>
+    </div>
+    <div class="two-col">
+        <div class="info-card">
+            <h4 style="color:var(--accent)">Leading Strand</h4>
+            <p>Template: 3'→5'. Pol III synthesizes continuously in 5'→3' toward the fork. One RNA primer needed at the origin. No fragments, no ligation — the simplest path.</p>
+        </div>
+        <div class="info-card">
+            <h4 style="color:var(--orange)">Lagging Strand</h4>
+            <p>Template: 5'→3'. Pol III synthesizes each Okazaki fragment away from the fork. Each fragment requires its own primer. Pol I removes primers; ligase seals nicks. ~10× more coordination.</p>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="sl">03 — Fidelity and Error Correction</div>
+    <h2>One Error per Billion Bases</h2>
+    <div class="prose">
+        Raw base-selection accuracy of DNA Pol III is approximately 1 error per 10⁵ bases — already remarkable, but insufficient for a 6-billion-base genome (60,000 errors per division). Three successive error-correction mechanisms reduce this by nine orders of magnitude. First, the polymerase's own <strong style="color:var(--text)">proofreading activity</strong> (3'→5' exonuclease) catches misincorporated bases immediately, reducing errors ~100-fold. Then <strong style="color:var(--blue)">mismatch repair</strong> (MMR) scans the newly synthesized strand afterward, reducing errors another ~1000-fold.
+    </div>
+    <div class="prose">
+        The net result: approximately 1 mutation per 10⁹–10¹⁰ base pairs per replication. Over a human lifetime, each cell division in skin generates ~1–2 point mutations; stem cells in the colon divide ~800 times — roughly 1600 mutations by age 80, most in non-coding regions. Cancer arises when mutations hit driver genes. This is why error correction fidelity is directly tied to cancer risk, and why MMR-deficient tumors have dramatically elevated mutation loads (Lynch syndrome).
+    </div>
+    <div class="math-block">
+        \[P_{\text{final}} = P_{\text{raw}} \times \varepsilon_{\text{proof}} \times \varepsilon_{\text{MMR}}\]
+        \[\approx 10^{-5} \times 10^{-2} \times 10^{-3} = 10^{-10}\]
+        Genome size \(= 6\times10^9\) bp → \(\sim 0.06\) errors per genome replication
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="c3" width="836" height="280"></canvas>
+        <div class="controls">
+            <div style="display:flex;gap:8px;align-items:center;">
+                <label>bases copied (log scale)</label>
+                <input type="range" id="baseSlider" min="3" max="10" value="6" step="0.1" oninput="drawFidelity()">
+                <span class="val" id="baseVal">10⁶</span>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="li"><div class="sq" style="background:var(--red)"></div>raw pol III (10⁻⁵)</div>
+            <div class="li"><div class="sq" style="background:var(--orange)"></div>after proofreading (10⁻⁷)</div>
+            <div class="li"><div class="sq" style="background:var(--accent)"></div>after MMR (10⁻¹⁰)</div>
+        </div>
+    </div>
+    <div class="infobox">
+        <strong>Telomere problem:</strong> DNA Pol III cannot replicate the very end of linear chromosomes (no room for a new primer). <strong>Telomerase</strong> extends the 3' overhang using its own RNA template, solving the end-replication problem in germ cells and stem cells. In somatic cells, telomeres shorten with each division — a molecular clock for cellular aging — and critically short telomeres trigger senescence or apoptosis.
+    </div>
+</section>
+
+<script>
+// ── Section 1: Double Helix Animation ────────────────────────────────────────
+const c1=document.getElementById('c1'),ctx1=c1.getContext('2d');
+const BASES=['A','T','G','C'];
+const BCOLORS={A:'#f85149',T:'#58a6ff',G:'#39d353',C:'#ffa657'};
+const PAIRS={A:'T',T:'A',G:'C',C:'G'};
+
+let helixT=0,helixPlaying=false,helixRaf=null;
+const N_PAIRS=24;
+let sequence=Array.from({length:N_PAIRS},()=>BASES[Math.floor(Math.random()*4)]);
+let unzipPos=0; // 0 to N_PAIRS, how far helicase has traveled
+
+function drawHelix(t) {
+    const W=c1.width,H=c1.height,cx=W/2,cy=H/2;
+    ctx1.clearRect(0,0,W,H);
+    ctx1.fillStyle='#0e1520';ctx1.fillRect(0,0,W,H);
+    const R=30,pitch=W/(N_PAIRS+2),baseR=5;
+    let heliPos=Math.floor(unzipPos);
+
+    for(let i=0;i<N_PAIRS;i++){
+        let x=pitch*(i+1);
+        let phase=i/(N_PAIRS)*Math.PI*4+t;
+        let y1=cy+R*Math.sin(phase);
+        let y2=cy-R*Math.sin(phase);
+        let base=sequence[i];
+        let pair=PAIRS[base];
+        let unwound=i<heliPos;
+
+        if(!unwound){
+            // H-bond lines
+            ctx1.strokeStyle='rgba(255,255,255,0.12)';
+            ctx1.lineWidth=1;
+            ctx1.setLineDash([2,3]);
+            ctx1.beginPath();ctx1.moveTo(x,y1);ctx1.lineTo(x,y2);ctx1.stroke();
+            ctx1.setLineDash([]);
+        }
+
+        // Top strand base
+        ctx1.beginPath();ctx1.arc(x, unwound?y1-20:y1, baseR,0,Math.PI*2);
+        ctx1.fillStyle=BCOLORS[base];ctx1.fill();
+        // Bottom strand base
+        ctx1.beginPath();ctx1.arc(x, unwound?y2+20:y2, baseR,0,Math.PI*2);
+        ctx1.fillStyle=BCOLORS[pair];ctx1.fill();
+
+        if(i>0){
+            let px=pitch*i;
+            let py1=cy+R*Math.sin((i-1)/(N_PAIRS)*Math.PI*4+t);
+            let py2=cy-R*Math.sin((i-1)/(N_PAIRS)*Math.PI*4+t);
+            let punwound=(i-1)<heliPos;
+            ctx1.strokeStyle='rgba(100,180,100,0.5)';ctx1.lineWidth=2;
+            ctx1.beginPath();ctx1.moveTo(px,punwound?py1-20:py1);ctx1.lineTo(x,unwound?y1-20:y1);ctx1.stroke();
+            ctx1.strokeStyle='rgba(90,150,255,0.5)';
+            ctx1.beginPath();ctx1.moveTo(px,punwound?py2+20:py2);ctx1.lineTo(x,unwound?y2+20:y2);ctx1.stroke();
+        }
+    }
+
+    // Helicase dot
+    if(heliPos>0&&heliPos<=N_PAIRS){
+        let hx=pitch*Math.min(heliPos,N_PAIRS-1);
+        let hphase=Math.min(heliPos,N_PAIRS-1)/(N_PAIRS)*Math.PI*4+t;
+        let hy=cy+R*Math.sin(hphase);
+        ctx1.beginPath();ctx1.arc(hx,cy,16,0,Math.PI*2);
+        ctx1.fillStyle='rgba(188,140,255,0.8)';ctx1.fill();
+        ctx1.strokeStyle='#bc8cff';ctx1.lineWidth=2;ctx1.stroke();
+        ctx1.fillStyle='#fff';ctx1.font='9px IBM Plex Mono';ctx1.textAlign='center';ctx1.textBaseline='middle';
+        ctx1.fillText('HEL',hx,cy);ctx1.textBaseline='alphabetic';ctx1.textAlign='left';
+    }
+    // Labels
+    ctx1.fillStyle='var(--muted,#7d8590)';ctx1.font='9px IBM Plex Mono';
+    ctx1.fillStyle='rgba(125,133,144,0.6)';
+    ctx1.fillText("5'", 8, cy-R-8);ctx1.fillText("3'", 8, cy+R+14);
+    ctx1.fillText("3'", W-20, cy-R-8);ctx1.fillText("5'", W-20, cy+R+14);
+}
+
+function helixLoop(){
+    helixT+=0.04*(parseInt(document.getElementById('sp1').value)/4);
+    if(unzipPos<N_PAIRS) unzipPos+=0.12*(parseInt(document.getElementById('sp1').value)/4);
+    drawHelix(helixT);
+    let phases=['Helix intact — hydrogen bonds stable','Helicase approaching...','Helicase unwinding strand...','Fork open — SSBPs stabilize ssDNA','Replication can begin!'];
+    let pi=Math.min(4,Math.floor(unzipPos/N_PAIRS*5));
+    document.getElementById('phase1').textContent=phases[pi];
+    if(unzipPos<N_PAIRS) helixRaf=requestAnimationFrame(helixLoop);
+    else{ helixPlaying=false; document.getElementById('btn1').textContent='▶ Unwind'; document.getElementById('btn1').classList.remove('go'); }
+}
+function toggleHelix(){
+    if(helixPlaying){helixPlaying=false;cancelAnimationFrame(helixRaf);document.getElementById('btn1').textContent='▶ Unwind';}
+    else{helixPlaying=true;document.getElementById('btn1').textContent='⏸ Pause';helixRaf=requestAnimationFrame(helixLoop);}
+}
+function resetHelix(){unzipPos=0;helixPlaying=false;cancelAnimationFrame(helixRaf);document.getElementById('btn1').textContent='▶ Unwind';drawHelix(0);}
+drawHelix(0);
+
+// ── Section 2: Replication Fork Animation ────────────────────────────────────
+const c2=document.getElementById('c2'),ctx2=c2.getContext('2d');
+let forkPos=0,forkPlay=false,forkRaf=null;
+const FORK_W=800,N_OKZ=5;
+
+function drawFork(pos){
+    const W=c2.width,H=c2.height;
+    ctx2.clearRect(0,0,W,H);ctx2.fillStyle='#0e1520';ctx2.fillRect(0,0,W,H);
+    const yMid=H/2,fxMax=W-60,fxStart=60;
+    let fx=fxStart+pos*(fxMax-fxStart);
+    const strandH=28;
+
+    // Intact double helix (right of fork)
+    ctx2.fillStyle='rgba(100,180,100,0.25)';ctx2.fillRect(fx,yMid-strandH,W-fx,strandH);
+    ctx2.fillStyle='rgba(90,150,255,0.25)';ctx2.fillRect(fx,yMid,W-fx,strandH);
+    ctx2.fillStyle='rgba(100,180,100,0.5)';ctx2.font='10px IBM Plex Mono';
+    ctx2.fillText("template (3'→5')",fx+8,yMid-6);
+    ctx2.fillStyle='rgba(90,150,255,0.5)';ctx2.fillText("template (5'→3')",fx+8,yMid+22);
+
+    // Leading strand (top, grows left→right)
+    let leadLen=Math.max(0,fx-fxStart-10);
+    ctx2.fillStyle='rgba(57,211,83,0.7)';ctx2.fillRect(fxStart,yMid-strandH*2-8,leadLen,strandH);
+    ctx2.fillStyle='var(--accent,#39d353)';ctx2.font='10px IBM Plex Mono';
+    if(leadLen>40) ctx2.fillText("leading (5'→3') →",fxStart+4,yMid-strandH*2+18);
+
+    // Okazaki fragments (bottom, discrete chunks)
+    let fragW=Math.max(20,pos*fxMax/(N_OKZ+1));
+    for(let i=0;i<N_OKZ;i++){
+        let fStart=fxStart+i*(fragW+6);
+        let fEnd=fStart+fragW;
+        if(fEnd>fx-5) break;
+        // RNA primer (first 20% of fragment)
+        let primerLen=fragW*0.18;
+        ctx2.fillStyle='rgba(88,166,255,0.8)';ctx2.fillRect(fStart,yMid+strandH+8,primerLen,strandH);
+        // DNA body
+        ctx2.fillStyle='rgba(255,166,87,0.7)';ctx2.fillRect(fStart+primerLen,yMid+strandH+8,fragW-primerLen,strandH);
+        // If not last, show ligase seal
+        if(i>0){
+            ctx2.fillStyle='rgba(188,140,255,0.8)';ctx2.fillRect(fStart-3,yMid+strandH+8,4,strandH);
+        }
+        ctx2.fillStyle='#ffa657';ctx2.font='8px IBM Plex Mono';
+        if(fragW>50) ctx2.fillText('Okz '+(i+1),fStart+primerLen+4,yMid+strandH*2+14);
+    }
+
+    // Fork marker
+    ctx2.strokeStyle='rgba(255,255,255,0.3)';ctx2.lineWidth=1.5;ctx2.setLineDash([3,5]);
+    ctx2.beginPath();ctx2.moveTo(fx,yMid-strandH*2-16);ctx2.lineTo(fx,yMid+strandH*2+20);ctx2.stroke();
+    ctx2.setLineDash([]);
+    ctx2.fillStyle='rgba(255,255,255,0.4)';ctx2.font='9px IBM Plex Mono';ctx2.textAlign='center';
+    ctx2.fillText('fork →',fx,yMid-strandH*2-20);ctx2.textAlign='left';
+}
+
+function forkLoop(){
+    let spd=parseInt(document.getElementById('sp2').value);
+    forkPos+=0.003*spd;
+    if(forkPos>1) forkPos=1;
+    drawFork(forkPos);
+    if(forkPos<1) forkRaf=requestAnimationFrame(forkLoop);
+    else{ forkPlay=false; document.getElementById('btn2').textContent='▶ Replicate'; }
+}
+function toggleFork(){
+    if(forkPlay){forkPlay=false;cancelAnimationFrame(forkRaf);document.getElementById('btn2').textContent='▶ Replicate';}
+    else{forkPlay=true;document.getElementById('btn2').textContent='⏸ Pause';forkRaf=requestAnimationFrame(forkLoop);}
+}
+function resetFork(){forkPos=0;forkPlay=false;cancelAnimationFrame(forkRaf);document.getElementById('btn2').textContent='▶ Replicate';drawFork(0);}
+drawFork(0);
+
+// ── Section 3: Fidelity Chart ─────────────────────────────────────────────────
+const c3=document.getElementById('c3'),ctx3=c3.getContext('2d');
+
+function drawFidelity(){
+    let exp=parseFloat(document.getElementById('baseSlider').value);
+    let n=Math.pow(10,exp);
+    document.getElementById('baseVal').textContent='10'+superscript(Math.round(exp));
+
+    const W=c3.width,H=c3.height,pad={l:60,r:120,t:20,b:40};
+    const W2=W-pad.l-pad.r,H2=H-pad.t-pad.b;
+    ctx3.clearRect(0,0,W,H);ctx3.fillStyle='#0e1520';ctx3.fillRect(0,0,W,H);
+
+    let stages=[
+        {label:'Raw Pol III',rate:1e-5,col:'#f85149'},
+        {label:'+ Proofreading',rate:1e-7,col:'#ffa657'},
+        {label:'+ MMR',rate:1e-10,col:'#39d353'},
+    ];
+
+    let maxErrors=n*1e-5;
+    let barW=(W2-40)/3;
+
+    ctx3.strokeStyle='#21262d';ctx3.lineWidth=1;
+    [0,0.25,0.5,0.75,1].forEach(f=>{
+        let y=pad.t+H2-f*H2;
+        ctx3.beginPath();ctx3.moveTo(pad.l,y);ctx3.lineTo(pad.l+W2,y);ctx3.stroke();
+        let v=(maxErrors*f).toExponential(1);
+        ctx3.fillStyle='#30363d';ctx3.font='9px IBM Plex Mono';ctx3.textAlign='right';
+        ctx3.fillText(v,pad.l-4,y+3);ctx3.textAlign='left';
+    });
+
+    stages.forEach((s,i)=>{
+        let errors=n*s.rate;
+        let frac=Math.min(errors/maxErrors,1);
+        let x=pad.l+10+i*(barW+10);
+        let bh=frac*H2;
+        ctx3.fillStyle=s.col+'44';ctx3.fillRect(x,pad.t+H2-bh,barW,bh);
+        ctx3.strokeStyle=s.col;ctx3.lineWidth=1.5;ctx3.strokeRect(x,pad.t+H2-bh,barW,bh);
+        ctx3.fillStyle=s.col;ctx3.font='10px IBM Plex Mono';ctx3.textAlign='center';
+        ctx3.fillText(s.label,x+barW/2,pad.t+H2+20);
+        ctx3.fillText(errors.toExponential(1)+' errors',x+barW/2,pad.t+H2-bh-6);
+        ctx3.textAlign='left';
+    });
+
+    ctx3.fillStyle='#30363d';ctx3.font='10px IBM Plex Mono';
+    ctx3.fillText('Expected errors when copying '+n.toExponential(0)+' bp',pad.l+8,pad.t+14);
+}
+
+function superscript(n){let map='⁰¹²³⁴⁵⁶⁷⁸⁹';return n<0?'⁻'+[...(-n).toString()].map(d=>map[d]).join(''):n.toString().split('').map(d=>map[d]?map[d]:d).join('');}
+drawFidelity();
+
+document.addEventListener('DOMContentLoaded',()=>{
+    if(window.renderMathInElement) renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}]});
+});
+</script>
+</body>
+</html>

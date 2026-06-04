@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black–Scholes — An Interactive Exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg:       #060810;
+    --bg2:      #080a14;
+    --bg3:      #0a0c18;
+    --surface:  #0d1020;
+    --surface2: #101320;
+    --border:   #1a2040;
+    --blue:     #3b82f6;
+    --blue-dim: #2563eb;
+    --blue-glow: rgba(59,130,246,0.12);
+    --cyan:     #06b6d4;
+    --green:    #10b981;
+    --amber:    #f59e0b;
+    --red:      #f43f5e;
+    --purple:   #a78bfa;
+    --text:     #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim:   #2a3550;
+    --mono: 'Space Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 0;
+    text-align: center;
+    background: linear-gradient(180deg, #040608 0%, var(--bg) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(59,130,246,0.08), transparent);
+    pointer-events: none;
+  }
+  .site-header .eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 0.75rem;
+  }
+  .site-header h1 {
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .site-header h1 span { color: var(--blue); }
+  .site-header .subtitle {
+    margin-top: 0.8rem;
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .doc-section {
+    border-bottom: 1px solid var(--border);
+    padding: 4rem 0;
+  }
+  .doc-section:last-child { border-bottom: none; }
+
+  .section-header { margin-bottom: 2.5rem; }
+  .section-number {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 0.5rem;
+  }
+  .section-header h2 {
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+
+  /* ── Prose ── */
+  .prose p {
+    color: #94a3b8;
+    margin-bottom: 1.2rem;
+    font-size: 13px;
+    line-height: 1.85;
+    font-family: var(--mono);
+  }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* ── Math blocks ── */
+  .math-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--blue);
+    border-radius: 4px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    overflow-x: auto;
+  }
+  .math-block .math-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 0.75rem;
+  }
+
+  /* ── Viz wrapper ── */
+  .viz-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-top: 2.5rem;
+    overflow: hidden;
+  }
+  .viz-header {
+    padding: 0.8rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+  }
+  .viz-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .viz-hint { font-size: 10px; color: var(--text-dim); }
+
+  canvas {
+    display: block;
+    background: var(--bg3);
+  }
+
+  /* ── Controls ── */
+  .controls-bar {
+    padding: 0.8rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+  }
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .slider-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+    min-width: 80px;
+    letter-spacing: 0.04em;
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    width: 130px;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--blue);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(59,130,246,0.6);
+  }
+  .slider-val {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    min-width: 42px;
+    text-align: right;
+  }
+
+  /* ── Stats row ── */
+  .stats-row {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg3);
+    flex-wrap: wrap;
+  }
+  .stat-item { display: flex; align-items: baseline; gap: 0.4rem; }
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .stat-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-value.green { color: var(--green); }
+  .stat-value.amber { color: var(--amber); }
+  .stat-value.red   { color: var(--red); }
+  .stat-value.cyan  { color: var(--cyan); }
+  .stat-value.purple { color: var(--purple); }
+
+  /* ── Toggle buttons ── */
+  .toggle-group {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .toggle-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.35rem 0.9rem;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.12s;
+    letter-spacing: 0.04em;
+  }
+  .toggle-btn:hover { border-color: var(--blue); color: var(--text); }
+  .toggle-btn.active {
+    background: var(--blue-glow);
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+
+  /* ── Greeks grid ── */
+  .greeks-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .greek-cell {
+    padding: 1rem 1.5rem;
+    border-right: 1px solid var(--border);
+  }
+  .greek-cell:last-child { border-right: none; }
+  .greek-name { font-size: 10px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; }
+  .greek-formula { font-size: 10px; color: var(--text-muted); margin: 0.2rem 0; }
+  .greek-value { font-size: 1.4rem; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+
+  /* ── Big call value ── */
+  .call-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 1.5rem;
+    border-right: 1px solid var(--border);
+  }
+  .call-label { font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); }
+  .call-value { font-size: 3rem; font-weight: 700; color: var(--blue); letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .call-moneyness { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; margin-top: 0.25rem; }
+
+  /* ── Footer ── */
+  .doc-footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-dim);
+    font-size: 11px;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.06em;
+  }
+  .doc-footer span { color: var(--blue); }
+
+  .katex { font-size: 1.02em; }
+  .katex-display { margin: 0.4em 0; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="eyebrow">Quantitative Finance · Interactive Exploration</div>
+  <h1>Black<span>–</span>Scholes</h1>
+  <p class="subtitle">OPTION PRICING · THE GREEKS · VOLATILITY SMILE</p>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  SECTION 01 — THE FORMULA                              -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="doc-section">
+<div class="container">
+  <div class="section-header">
+    <div class="section-number">Section 01</div>
+    <h2>The Pricing Formula</h2>
+  </div>
+
+  <div class="prose">
+    <p>A European call option gives its holder the right — but not the obligation — to purchase an underlying asset at a predetermined strike price \(K\) on a fixed expiry date \(T\). At expiration, the payoff is simply \(\max(S_T - K,\ 0)\): you exercise only if the asset's spot price \(S_T\) exceeds the strike, pocketing the difference. The profound question, and the one that earned Black, Scholes, and Merton the Nobel Prize, is: what is this contingent claim worth <em>today</em>, before we know \(S_T\)?</p>
+    <p>The Black–Scholes model answers this by assuming stock price dynamics follow geometric Brownian motion — equivalently, that continuously compounded log-returns are normally distributed with constant volatility \(\sigma\). Under the risk-neutral measure (achieved by continuously delta-hedging), the expected payoff is discounted at the risk-free rate \(r\). This yields the celebrated closed-form formula: \(C = S \cdot N(d_1) - K e^{-rT} N(d_2)\), where \(N(\cdot)\) is the standard normal CDF. The term \(S \cdot N(d_1)\) can be read as the expected value of the asset conditional on exercise, and \(K e^{-rT} N(d_2)\) is the present value of the strike payment weighted by the risk-neutral probability of exercise.</p>
+    <p>The inputs driving this formula produce rich intuitions. Deep in-the-money options (\(S \gg K\)) behave almost like the stock itself — their value tracks the asset dollar-for-dollar. Deep out-of-the-money options approach zero. As time to expiry \(T\) or volatility \(\sigma\) increases, the option gains value because uncertainty creates upside potential while the liability is limited to zero. This asymmetric payoff structure — the core insight behind derivatives pricing — is captured entirely in the formula below. Use the sliders to explore how each parameter drives the call value \(C\).</p>
+  </div>
+
+  <div class="math-block">
+    <div class="math-label">Black–Scholes Call Formula</div>
+    \[C = S \cdot N(d_1) - K e^{-rT} N(d_2)\]
+    \[d_1 = \frac{\ln(S/K) + (r + \tfrac{\sigma^2}{2})T}{\sigma\sqrt{T}}, \qquad d_2 = d_1 - \sigma\sqrt{T}\]
+  </div>
+
+  <div class="viz-wrapper">
+    <div class="viz-header">
+      <span class="viz-title">BS Parameter Explorer</span>
+      <span class="viz-hint">Adjust sliders — call value updates live</span>
+    </div>
+    <canvas id="canvas-bs" width="836" height="320"></canvas>
+    <div class="controls-bar" id="bs-controls">
+      <div class="slider-group">
+        <span class="slider-label">S (spot)</span>
+        <input type="range" id="sl-S" min="50" max="200" step="1" value="100">
+        <span class="slider-val" id="val-S">100</span>
+      </div>
+      <div class="slider-group">
+        <span class="slider-label">K (strike)</span>
+        <input type="range" id="sl-K" min="50" max="200" step="1" value="100">
+        <span class="slider-val" id="val-K">100</span>
+      </div>
+      <div class="slider-group">
+        <span class="slider-label">r (rate %)</span>
+        <input type="range" id="sl-r" min="0" max="10" step="0.1" value="5">
+        <span class="slider-val" id="val-r">5.0%</span>
+      </div>
+      <div class="slider-group">
+        <span class="slider-label">σ (vol %)</span>
+        <input type="range" id="sl-sigma" min="5" max="80" step="1" value="25">
+        <span class="slider-val" id="val-sigma">25%</span>
+      </div>
+      <div class="slider-group">
+        <span class="slider-label">T (years)</span>
+        <input type="range" id="sl-T" min="0.05" max="2" step="0.05" value="1">
+        <span class="slider-val" id="val-T">1.00</span>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-item"><span class="stat-label">C</span><span class="stat-value" id="bs-C">—</span></div>
+      <div class="stat-item"><span class="stat-label">d₁</span><span class="stat-value cyan" id="bs-d1">—</span></div>
+      <div class="stat-item"><span class="stat-label">d₂</span><span class="stat-value cyan" id="bs-d2">—</span></div>
+      <div class="stat-item"><span class="stat-label">N(d₁)</span><span class="stat-value purple" id="bs-nd1">—</span></div>
+      <div class="stat-item"><span class="stat-label">N(d₂)</span><span class="stat-value purple" id="bs-nd2">—</span></div>
+      <div class="stat-item"><span class="stat-label">Moneyness</span><span class="stat-value" id="bs-money">—</span></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  SECTION 02 — THE GREEKS                               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="doc-section">
+<div class="container">
+  <div class="section-header">
+    <div class="section-number">Section 02</div>
+    <h2>The Greeks</h2>
+  </div>
+
+  <div class="prose">
+    <p>Options traders manage risk through the "Greeks" — partial derivatives of the option price with respect to its inputs. <em>Delta</em>, \(\Delta = N(d_1)\), measures the instantaneous sensitivity of the call price to the underlying: a delta of 0.6 means the option gains approximately $0.60 for each $1 rise in the stock. Delta serves as the theoretical hedge ratio: to create a delta-neutral portfolio, you short \(\Delta\) shares of stock for each long call. Crucially, delta is bounded in \([0, 1]\) for calls, approaching 1 deep in-the-money and 0 deep out-of-the-money — the S-shaped curve below makes this visually obvious.</p>
+    <p><em>Gamma</em>, \(\Gamma = \tfrac{\phi(d_1)}{S\sigma\sqrt{T}}\), is the second derivative of the call price with respect to \(S\), or equivalently the rate of change of delta. It peaks sharply near the at-the-money point because that is where delta transitions most rapidly from 0 to 1. A high-gamma position means your hedge (delta) goes stale quickly as the stock moves — you must rebalance frequently. This "gamma scalping" is the essence of volatility trading: long gamma benefits from large moves regardless of direction.</p>
+    <p><em>Theta</em>, \(\Theta\), captures time decay: as expiry approaches, the time value of an option erodes, all else equal — long options lose money from theta even when the stock is unchanged. <em>Vega</em>, \(\mathcal{V} = S\sqrt{T}\phi(d_1)\), measures sensitivity to volatility: an option with vega of 0.35 gains $0.35 in value for each 1-percentage-point increase in implied volatility. Together, the Greeks form a complete local-linear (and local-quadratic via gamma) description of how an option's value changes in any scenario.</p>
+  </div>
+
+  <div class="math-block">
+    <div class="math-label">Greeks Formulae (European Call)</div>
+    \[\Delta = N(d_1), \qquad \Gamma = \frac{\phi(d_1)}{S\,\sigma\sqrt{T}}\]
+    \[\Theta = -\frac{S\,\phi(d_1)\,\sigma}{2\sqrt{T}} - r\,K\,e^{-rT}\,N(d_2), \qquad \mathcal{V} = S\sqrt{T}\,\phi(d_1)\]
+  </div>
+
+  <div class="viz-wrapper">
+    <div class="viz-header">
+      <span class="viz-title">Delta &amp; Gamma Curves</span>
+      <span class="viz-hint">Vertical line = current S from sliders above</span>
+    </div>
+    <canvas id="canvas-greeks" width="836" height="280"></canvas>
+    <div class="greeks-grid">
+      <div class="greek-cell">
+        <div class="greek-name">Delta</div>
+        <div class="greek-formula">\(\Delta = N(d_1)\)</div>
+        <div class="greek-value" id="g-delta" style="color: var(--blue)">—</div>
+      </div>
+      <div class="greek-cell">
+        <div class="greek-name">Gamma</div>
+        <div class="greek-formula">\(\Gamma = \phi(d_1)/(S\sigma\sqrt{T})\)</div>
+        <div class="greek-value" id="g-gamma" style="color: var(--cyan)">—</div>
+      </div>
+      <div class="greek-cell">
+        <div class="greek-name">Theta</div>
+        <div class="greek-formula">\(\Theta\) per year</div>
+        <div class="greek-value" id="g-theta" style="color: var(--amber)">—</div>
+      </div>
+      <div class="greek-cell" style="border-right:none">
+        <div class="greek-name">Vega</div>
+        <div class="greek-formula">\(\mathcal{V} = S\sqrt{T}\phi(d_1)\)</div>
+        <div class="greek-value" id="g-vega" style="color: var(--purple)">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  SECTION 03 — VOLATILITY SMILE                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="doc-section">
+<div class="container">
+  <div class="section-header">
+    <div class="section-number">Section 03</div>
+    <h2>The Volatility Smile</h2>
+  </div>
+
+  <div class="prose">
+    <p>One of the most important empirical violations of Black–Scholes is the <em>volatility smile</em> (or skew). If the model were perfectly correct, the implied volatility — obtained by inverting the BS formula for a market-observed option price — would be constant across all strikes. It is not. In equity markets, options with strikes far from the current spot price (both deep in-the-money and deep out-of-the-money) trade at implied volatilities significantly higher than at-the-money options, forming a characteristic U-shaped "smile" when plotted against moneyness \(K/S\).</p>
+    <p>The existence of the smile reveals that real-world log-returns have fatter tails than the normal distribution assumes. Extreme moves — stock market crashes, sudden earnings collapses — occur more frequently than Brownian motion predicts. Deep OTM puts serve as portfolio insurance against tail events; investors bid up their prices, inflating their implied volatility. The mathematical foundation is clear: inverting \(C_{\text{mkt}} = C_{\text{BS}}(\sigma)\) via Newton–Raphson, we get \(\sigma_{n+1} = \sigma_n - (C(\sigma_n) - C_{\text{mkt}}) / \mathcal{V}(\sigma_n)\), which converges rapidly because BS is smooth and monotone in \(\sigma\). The resulting implied volatility surface — which also varies with expiry (the "term structure") — is the practitioner's core tool for quoting options and hedging consistently.</p>
+    <p>A simple parametric smile model approximates the curve as \(\sigma(k) = \sigma_{\min} + \alpha(k - 1)^2\) where \(k = K/S\) is moneyness and \(\alpha\) controls the smile's curvature. Toggle between the flat BS world and the realistic smile below, and adjust the smile intensity with the slider. The gap between the two represents the model risk embedded in using Black–Scholes naively.</p>
+  </div>
+
+  <div class="math-block">
+    <div class="math-label">Implied Vol &amp; Newton–Raphson Inversion</div>
+    \[\text{IV}(K) = \text{BS}^{-1}(C_{\text{mkt}},\ K)\]
+    \[\sigma_{n+1} = \sigma_n - \frac{C(\sigma_n) - C_{\text{mkt}}}{\mathcal{V}(\sigma_n)}, \qquad \sigma(k) = \sigma_{\min} + \alpha\,(k-1)^2\]
+  </div>
+
+  <div class="viz-wrapper">
+    <div class="viz-header">
+      <span class="viz-title">Implied Volatility Surface</span>
+      <span class="viz-hint">Smile intensity α controls curvature</span>
+    </div>
+    <canvas id="canvas-smile" width="836" height="260"></canvas>
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-flat" onclick="setSmileMode('flat')">Flat (Black–Scholes)</button>
+      <button class="toggle-btn" id="btn-smile" onclick="setSmileMode('smile')">Smile (Realistic)</button>
+    </div>
+    <div class="controls-bar">
+      <div class="slider-group">
+        <span class="slider-label">σ_min (%)</span>
+        <input type="range" id="sl-sigma-min" min="5" max="40" step="1" value="18">
+        <span class="slider-val" id="val-sigma-min">18%</span>
+      </div>
+      <div class="slider-group">
+        <span class="slider-label">Smile α</span>
+        <input type="range" id="sl-alpha" min="0" max="1" step="0.01" value="0.3">
+        <span class="slider-val" id="val-alpha">0.30</span>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer class="doc-footer">
+  AN INTERACTIVE DOCUMENT BY <span>VIVIDOC</span> · QUANTITATIVE FINANCE · 2026
+</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────
+//  MATH HELPERS
+// ─────────────────────────────────────────────────────────
+function erf(x) {
+  const t = 1 / (1 + 0.3275911 * Math.abs(x));
+  const y = 1 - t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * Math.exp(-x * x);
+  return x >= 0 ? y : -y;
+}
+
+function normalCDF(x) {
+  return 0.5 * (1 + erf(x / Math.sqrt(2)));
+}
+
+function normalPDF(x) {
+  return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+}
+
+function bsParams(S, K, r, sigma, T) {
+  if (T <= 0) return { d1: Infinity, d2: Infinity };
+  const d1 = (Math.log(S / K) + (r + sigma * sigma / 2) * T) / (sigma * Math.sqrt(T));
+  const d2 = d1 - sigma * Math.sqrt(T);
+  return { d1, d2 };
+}
+
+function bsCall(S, K, r, sigma, T) {
+  if (T <= 0) return Math.max(S - K, 0);
+  const { d1, d2 } = bsParams(S, K, r, sigma, T);
+  return S * normalCDF(d1) - K * Math.exp(-r * T) * normalCDF(d2);
+}
+
+function bsDelta(S, K, r, sigma, T) {
+  if (T <= 0) return S > K ? 1 : 0;
+  return normalCDF(bsParams(S, K, r, sigma, T).d1);
+}
+
+function bsGamma(S, K, r, sigma, T) {
+  if (T <= 0) return 0;
+  const { d1 } = bsParams(S, K, r, sigma, T);
+  return normalPDF(d1) / (S * sigma * Math.sqrt(T));
+}
+
+function bsTheta(S, K, r, sigma, T) {
+  if (T <= 0) return 0;
+  const { d1, d2 } = bsParams(S, K, r, sigma, T);
+  return -S * normalPDF(d1) * sigma / (2 * Math.sqrt(T)) - r * K * Math.exp(-r * T) * normalCDF(d2);
+}
+
+function bsVega(S, K, r, sigma, T) {
+  if (T <= 0) return 0;
+  const { d1 } = bsParams(S, K, r, sigma, T);
+  return S * Math.sqrt(T) * normalPDF(d1);
+}
+
+// ─────────────────────────────────────────────────────────
+//  DRAW HELPERS
+// ─────────────────────────────────────────────────────────
+const C = {
+  bg3:      '#0a0c18',
+  surface:  '#0d1020',
+  border:   '#1a2040',
+  blue:     '#3b82f6',
+  cyan:     '#06b6d4',
+  green:    '#10b981',
+  amber:    '#f59e0b',
+  red:      '#f43f5e',
+  purple:   '#a78bfa',
+  text:     '#e2e8f0',
+  muted:    '#64748b',
+  dim:      '#2a3550',
+};
+
+function rgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function drawBgGrid(ctx, pad, W, H, nx, ny) {
+  ctx.strokeStyle = C.border; ctx.lineWidth = 0.4;
+  const x0 = pad.l, x1 = W - pad.r, y0 = pad.t, y1 = H - pad.b;
+  for (let i = 0; i <= nx; i++) {
+    const x = x0 + (x1 - x0) * i / nx;
+    ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y1); ctx.stroke();
+  }
+  for (let i = 0; i <= ny; i++) {
+    const y = y0 + (y1 - y0) * i / ny;
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+  }
+}
+
+function drawAxesMono(ctx, pad, W, H) {
+  ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(pad.l, H - pad.b); ctx.lineTo(W - pad.r, H - pad.b); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, H - pad.b); ctx.stroke();
+}
+
+function monoLabel(ctx, text, x, y, size=10, color=C.muted, align='center') {
+  ctx.fillStyle = color; ctx.font = `700 ${size}px 'Space Mono', monospace`;
+  ctx.textAlign = align; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+}
+
+// ─────────────────────────────────────────────────────────
+//  SHARED PARAMETER STATE
+// ─────────────────────────────────────────────────────────
+const params = { S: 100, K: 100, r: 0.05, sigma: 0.25, T: 1.0 };
+
+function readSliders() {
+  params.S     = parseFloat(document.getElementById('sl-S').value);
+  params.K     = parseFloat(document.getElementById('sl-K').value);
+  params.r     = parseFloat(document.getElementById('sl-r').value) / 100;
+  params.sigma = parseFloat(document.getElementById('sl-sigma').value) / 100;
+  params.T     = parseFloat(document.getElementById('sl-T').value);
+
+  document.getElementById('val-S').textContent     = params.S.toFixed(0);
+  document.getElementById('val-K').textContent     = params.K.toFixed(0);
+  document.getElementById('val-r').textContent     = (params.r * 100).toFixed(1) + '%';
+  document.getElementById('val-sigma').textContent = (params.sigma * 100).toFixed(0) + '%';
+  document.getElementById('val-T').textContent     = params.T.toFixed(2);
+}
+
+// ─────────────────────────────────────────────────────────
+//  SECTION 01 — BS CANVAS
+// ─────────────────────────────────────────────────────────
+function drawBS() {
+  const canvas = document.getElementById('canvas-bs');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  readSliders();
+  const { S, K, r, sigma, T } = params;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.bg3; ctx.fillRect(0, 0, W, H);
+
+  const halfW = W / 2;
+
+  // Divider
+  ctx.strokeStyle = C.border; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(halfW, 16); ctx.lineTo(halfW, H - 16); ctx.stroke();
+
+  // ── LEFT: call value display ──
+  const callVal = bsCall(S, K, r, sigma, T);
+  const { d1, d2 } = bsParams(S, K, r, sigma, T);
+  const nd1 = normalCDF(d1), nd2 = normalCDF(d2);
+
+  const moneyness = S > K * 1.02 ? 'IN THE MONEY' : S < K * 0.98 ? 'OUT OF MONEY' : 'AT THE MONEY';
+  const moneyColor = S > K * 1.02 ? C.green : S < K * 0.98 ? C.red : C.amber;
+
+  const cx = halfW / 2;
+  ctx.fillStyle = C.blue;
+  ctx.font = '700 52px Space Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('$' + callVal.toFixed(2), cx, H / 2 - 12);
+
+  ctx.fillStyle = C.dim;
+  ctx.font = '700 10px Space Mono, monospace';
+  ctx.letterSpacing = '0.1em';
+  ctx.fillText('CALL VALUE', cx, H / 2 - 52);
+
+  ctx.fillStyle = moneyColor;
+  ctx.font = '700 11px Space Mono, monospace';
+  ctx.fillText(moneyness, cx, H / 2 + 26);
+
+  // N(d1) N(d2) display
+  ctx.fillStyle = C.muted; ctx.font = '10px Space Mono'; ctx.textAlign = 'center';
+  ctx.fillText(`d₁ = ${d1.toFixed(3)}`, cx - 55, H / 2 + 55);
+  ctx.fillText(`d₂ = ${d2.toFixed(3)}`, cx + 55, H / 2 + 55);
+  ctx.fillStyle = C.purple;
+  ctx.fillText(`N(d₁) = ${nd1.toFixed(3)}`, cx - 55, H / 2 + 72);
+  ctx.fillText(`N(d₂) = ${nd2.toFixed(3)}`, cx + 55, H / 2 + 72);
+
+  // ── RIGHT: payoff diagram ──
+  const pad = { l: halfW + 50, r: 20, t: 30, b: 40 };
+  const plotW = W - pad.l - pad.r;
+  const plotH = H - pad.t - pad.b;
+  const sMin = 40, sMax = 200;
+
+  function sToX(s) { return pad.l + (s - sMin) / (sMax - sMin) * plotW; }
+  function vToY(v) { return pad.t + (1 - v / (sMax * 0.5)) * plotH; }
+
+  drawBgGrid(ctx, pad, W, H, 6, 5);
+  drawAxesMono(ctx, pad, W, H);
+  monoLabel(ctx, 'SPOT PRICE', pad.l + plotW / 2, H - 8);
+  ctx.save(); ctx.translate(halfW + 14, pad.t + plotH / 2); ctx.rotate(-Math.PI / 2);
+  monoLabel(ctx, 'VALUE', 0, 0); ctx.restore();
+
+  // Payoff at expiry: max(S-K, 0)
+  ctx.beginPath();
+  for (let s = sMin; s <= sMax; s += 1) {
+    const payoff = Math.max(s - K, 0);
+    const x = sToX(s), y = vToY(payoff);
+    s === sMin ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = rgba(C.muted, 0.5);
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // BS theoretical value curve
+  ctx.beginPath();
+  for (let s = sMin; s <= sMax; s += 1) {
+    const cv = bsCall(s, K, r, sigma, T);
+    const x = sToX(s), y = vToY(cv);
+    s === sMin ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  const bsGrad = ctx.createLinearGradient(sToX(sMin), 0, sToX(sMax), 0);
+  bsGrad.addColorStop(0, rgba(C.blue, 0.4));
+  bsGrad.addColorStop(0.5, C.blue);
+  bsGrad.addColorStop(1, C.cyan);
+  ctx.strokeStyle = bsGrad; ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Breakeven line (S = K + C)
+  const breakeven = K + callVal;
+  if (breakeven < sMax) {
+    ctx.setLineDash([3, 5]);
+    ctx.strokeStyle = rgba(C.amber, 0.5);
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sToX(breakeven), pad.t); ctx.lineTo(sToX(breakeven), H - pad.b); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = C.amber; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText('B/E', sToX(breakeven), pad.t + 12);
+  }
+
+  // Current S dot
+  const curCV = bsCall(S, K, r, sigma, T);
+  ctx.beginPath();
+  ctx.arc(sToX(S), vToY(curCV), 5, 0, Math.PI * 2);
+  ctx.fillStyle = C.blue; ctx.fill();
+  ctx.strokeStyle = C.bg3; ctx.lineWidth = 2; ctx.stroke();
+
+  // K line
+  ctx.setLineDash([3, 5]);
+  ctx.strokeStyle = rgba(C.red, 0.35);
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(sToX(K), pad.t); ctx.lineTo(sToX(K), H - pad.b); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = rgba(C.red, 0.6); ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+  ctx.fillText('K', sToX(K), pad.t + 12);
+
+  // Update stat bar
+  document.getElementById('bs-C').textContent    = '$' + callVal.toFixed(3);
+  document.getElementById('bs-d1').textContent   = d1.toFixed(4);
+  document.getElementById('bs-d2').textContent   = d2.toFixed(4);
+  document.getElementById('bs-nd1').textContent  = nd1.toFixed(4);
+  document.getElementById('bs-nd2').textContent  = nd2.toFixed(4);
+  const mEl = document.getElementById('bs-money');
+  mEl.textContent = moneyness;
+  mEl.style.color = moneyColor;
+
+  drawGreeks();
+  drawSmile();
+}
+
+// ─────────────────────────────────────────────────────────
+//  SECTION 02 — GREEKS CANVAS
+// ─────────────────────────────────────────────────────────
+function drawGreeks() {
+  const canvas = document.getElementById('canvas-greeks');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const { S, K, r, sigma, T } = params;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.bg3; ctx.fillRect(0, 0, W, H);
+
+  const halfW = W / 2;
+  const padL = { l: 55, r: 20, t: 30, b: 45 };
+  const padR = { l: halfW + 55, r: 20, t: 30, b: 45 };
+
+  // Divider
+  ctx.strokeStyle = C.border; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(halfW, 10); ctx.lineTo(halfW, H - 10); ctx.stroke();
+
+  const sMin = 40, sMax = 200;
+  const plotLW = halfW - padL.l - padL.r;
+  const plotLH = H - padL.t - padL.b;
+  const plotRW = halfW - padR.l + halfW - padR.r;  // fix
+  // Actually:
+  const rx0 = padR.l, rx1 = W - padR.r, ry0 = padR.t, ry1 = H - padR.b;
+  const rW = rx1 - rx0, rH = ry1 - ry0;
+  const lx0 = padL.l, lx1 = halfW - padL.r, ly0 = padL.t, ly1 = H - padL.b;
+  const lW = lx1 - lx0, lH = ly1 - ly0;
+
+  function sToLX(s) { return lx0 + (s - sMin) / (sMax - sMin) * lW; }
+  function sToRX(s) { return rx0 + (s - sMin) / (sMax - sMin) * rW; }
+
+  // ── LEFT: Delta ──
+  drawBgGrid(ctx, padL, halfW, H, 6, 4);
+  drawAxesMono(ctx, padL, halfW, H);
+  monoLabel(ctx, 'SPOT PRICE', lx0 + lW/2, H - 8);
+  ctx.save(); ctx.translate(16, ly0 + lH/2); ctx.rotate(-Math.PI/2); monoLabel(ctx, 'DELTA', 0, 0); ctx.restore();
+  monoLabel(ctx, 'DELTA  Δ = N(d₁)', lx0 + lW/2, ly0 + 10, 10, C.blue);
+
+  // Delta area fill
+  ctx.beginPath();
+  ctx.moveTo(sToLX(sMin), ly1);
+  for (let s = sMin; s <= sMax; s += 1) {
+    const d = bsDelta(s, K, r, sigma, T);
+    ctx.lineTo(sToLX(s), ly0 + (1 - d) * lH);
+  }
+  ctx.lineTo(sToLX(sMax), ly1); ctx.closePath();
+  ctx.fillStyle = rgba(C.blue, 0.1); ctx.fill();
+
+  // Delta curve
+  ctx.beginPath();
+  for (let s = sMin; s <= sMax; s += 1) {
+    const d = bsDelta(s, K, r, sigma, T);
+    const x = sToLX(s), y = ly0 + (1 - d) * lH;
+    s === sMin ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = C.blue; ctx.lineWidth = 2.5; ctx.stroke();
+
+  // Current S marker on delta
+  const curDelta = bsDelta(S, K, r, sigma, T);
+  const curDeltaY = ly0 + (1 - curDelta) * lH;
+  ctx.setLineDash([3, 4]);
+  ctx.strokeStyle = rgba(C.amber, 0.5); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(sToLX(S), ly0); ctx.lineTo(sToLX(S), ly1); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(sToLX(S), curDeltaY, 5, 0, Math.PI*2);
+  ctx.fillStyle = C.amber; ctx.fill();
+
+  // Tick labels
+  ctx.fillStyle = C.dim; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+  [50, 100, 150, 200].forEach(s => ctx.fillText(s, sToLX(s), H - padL.b + 14));
+  ctx.textAlign = 'right';
+  [0, 0.25, 0.5, 0.75, 1.0].forEach(d => {
+    ctx.fillText(d.toFixed(2), lx0 - 4, ly0 + (1-d)*lH + 4);
+  });
+
+  // ── RIGHT: Gamma ──
+  // Find max gamma for scaling
+  let gammaMax = 0;
+  for (let s = sMin; s <= sMax; s += 2) {
+    gammaMax = Math.max(gammaMax, bsGamma(s, K, r, sigma, T));
+  }
+  gammaMax *= 1.2;
+
+  drawBgGrid(ctx, {l: rx0, r: W - rx1, t: ry0, b: H - ry1}, W, H, 6, 4);
+  drawAxesMono(ctx, {l: rx0, r: W - rx1, t: ry0, b: H - ry1}, W, H);
+  monoLabel(ctx, 'SPOT PRICE', rx0 + rW/2, H - 8);
+  ctx.save(); ctx.translate(halfW + 16, ry0 + rH/2); ctx.rotate(-Math.PI/2); monoLabel(ctx, 'GAMMA', 0, 0); ctx.restore();
+  monoLabel(ctx, 'GAMMA  Γ = φ(d₁)/(Sσ√T)', rx0 + rW/2, ry0 + 10, 10, C.cyan);
+
+  // Gamma area fill
+  ctx.beginPath();
+  ctx.moveTo(sToRX(sMin), ry1);
+  for (let s = sMin; s <= sMax; s += 1) {
+    const g = bsGamma(s, K, r, sigma, T);
+    ctx.lineTo(sToRX(s), ry0 + (1 - g / gammaMax) * rH);
+  }
+  ctx.lineTo(sToRX(sMax), ry1); ctx.closePath();
+  ctx.fillStyle = rgba(C.cyan, 0.12); ctx.fill();
+
+  // Gamma curve
+  ctx.beginPath();
+  for (let s = sMin; s <= sMax; s += 1) {
+    const g = bsGamma(s, K, r, sigma, T);
+    const x = sToRX(s), y = ry0 + (1 - g / gammaMax) * rH;
+    s === sMin ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = C.cyan; ctx.lineWidth = 2.5; ctx.stroke();
+
+  // Current S marker on gamma
+  const curGamma = bsGamma(S, K, r, sigma, T);
+  ctx.setLineDash([3, 4]);
+  ctx.strokeStyle = rgba(C.amber, 0.5); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(sToRX(S), ry0); ctx.lineTo(sToRX(S), ry1); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(sToRX(S), ry0 + (1 - curGamma / gammaMax) * rH, 5, 0, Math.PI*2);
+  ctx.fillStyle = C.amber; ctx.fill();
+
+  [50, 100, 150, 200].forEach(s => {
+    ctx.fillStyle = C.dim; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText(s, sToRX(s), H - padR.b + 14);
+  });
+
+  // Update Greek cells
+  const theta = bsTheta(S, K, r, sigma, T);
+  const vega  = bsVega(S, K, r, sigma, T);
+
+  document.getElementById('g-delta').textContent = curDelta.toFixed(4);
+  document.getElementById('g-gamma').textContent = curGamma.toFixed(5);
+  document.getElementById('g-theta').textContent = theta.toFixed(3);
+  document.getElementById('g-vega').textContent  = vega.toFixed(3);
+}
+
+// ─────────────────────────────────────────────────────────
+//  SECTION 03 — VOLATILITY SMILE
+// ─────────────────────────────────────────────────────────
+let smileMode = 'flat';
+
+function setSmileMode(mode) {
+  smileMode = mode;
+  document.getElementById('btn-flat').classList.toggle('active', mode === 'flat');
+  document.getElementById('btn-smile').classList.toggle('active', mode === 'smile');
+  drawSmile();
+}
+
+function drawSmile() {
+  const canvas = document.getElementById('canvas-smile');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const sigmaMin = parseFloat(document.getElementById('sl-sigma-min').value) / 100;
+  const alpha    = parseFloat(document.getElementById('sl-alpha').value);
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.bg3; ctx.fillRect(0, 0, W, H);
+
+  const pad = { l: 65, r: 30, t: 35, b: 50 };
+  const plotW = W - pad.l - pad.r;
+  const plotH = H - pad.t - pad.b;
+
+  const kMin = 0.6, kMax = 1.4;
+  const ivMin = 0.05, ivMax = 0.7;
+
+  function kToX(k)  { return pad.l + (k - kMin) / (kMax - kMin) * plotW; }
+  function ivToY(iv) { return pad.t + (1 - (iv - ivMin) / (ivMax - ivMin)) * plotH; }
+
+  drawBgGrid(ctx, pad, W, H, 8, 6);
+  drawAxesMono(ctx, pad, W, H);
+  monoLabel(ctx, 'MONEYNESS  K/S', pad.l + plotW/2, H - 8);
+  ctx.save(); ctx.translate(16, pad.t + plotH/2); ctx.rotate(-Math.PI/2); monoLabel(ctx, 'IMPLIED VOL', 0, 0); ctx.restore();
+
+  // Tick labels
+  ctx.fillStyle = C.dim; ctx.font = '9px Space Mono';
+  ctx.textAlign = 'center';
+  [0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4].forEach(k => {
+    ctx.fillText(k.toFixed(1), kToX(k), H - pad.b + 14);
+  });
+  ctx.textAlign = 'right';
+  [0.1, 0.2, 0.3, 0.4, 0.5, 0.6].forEach(iv => {
+    ctx.fillText((iv*100).toFixed(0)+'%', pad.l - 6, ivToY(iv) + 4);
+  });
+
+  // ATM line
+  ctx.setLineDash([3, 5]);
+  ctx.strokeStyle = rgba(C.dim, 0.8); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(kToX(1.0), pad.t); ctx.lineTo(kToX(1.0), H - pad.b); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = rgba(C.muted, 0.5); ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
+  ctx.fillText('ATM', kToX(1.0), pad.t + 10);
+
+  // Flat IV line (always show as reference)
+  const flatIV = sigmaMin;
+  ctx.beginPath();
+  ctx.moveTo(kToX(kMin), ivToY(flatIV));
+  ctx.lineTo(kToX(kMax), ivToY(flatIV));
+  ctx.strokeStyle = smileMode === 'flat' ? C.blue : rgba(C.blue, 0.3);
+  ctx.lineWidth = smileMode === 'flat' ? 2.5 : 1;
+  ctx.stroke();
+
+  if (smileMode === 'flat') {
+    ctx.fillStyle = rgba(C.blue, 0.08);
+    ctx.fillRect(kToX(kMin), ivToY(flatIV), kToX(kMax) - kToX(kMin), H - pad.b - ivToY(flatIV));
+    ctx.fillStyle = C.blue; ctx.font = '10px Space Mono'; ctx.textAlign = 'left';
+    ctx.fillText('FLAT BS  σ=' + (flatIV*100).toFixed(0)+'%', kToX(kMin) + 6, ivToY(flatIV) - 8);
+  }
+
+  // Smile IV curve
+  if (smileMode === 'smile') {
+    function smileIV(k) { return sigmaMin + alpha * Math.pow(k - 1, 2); }
+
+    // Fill under smile
+    ctx.beginPath();
+    ctx.moveTo(kToX(kMin), H - pad.b);
+    for (let k = kMin; k <= kMax; k += 0.01) {
+      ctx.lineTo(kToX(k), ivToY(smileIV(k)));
+    }
+    ctx.lineTo(kToX(kMax), H - pad.b);
+    ctx.closePath();
+    const smileGrad = ctx.createLinearGradient(0, pad.t, 0, H - pad.b);
+    smileGrad.addColorStop(0, rgba(C.purple, 0.25));
+    smileGrad.addColorStop(1, rgba(C.purple, 0.03));
+    ctx.fillStyle = smileGrad; ctx.fill();
+
+    // Smile curve
+    ctx.beginPath();
+    for (let k = kMin; k <= kMax; k += 0.005) {
+      const iv = smileIV(k);
+      const x = kToX(k), y = ivToY(iv);
+      k === kMin ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    const sGrad = ctx.createLinearGradient(kToX(kMin), 0, kToX(kMax), 0);
+    sGrad.addColorStop(0, C.red);
+    sGrad.addColorStop(0.5, C.purple);
+    sGrad.addColorStop(1, C.red);
+    ctx.strokeStyle = sGrad; ctx.lineWidth = 2.5; ctx.stroke();
+
+    // Annotate
+    ctx.fillStyle = C.purple; ctx.font = '10px Space Mono'; ctx.textAlign = 'center';
+    ctx.fillText(`SMILE  σ_min=${(sigmaMin*100).toFixed(0)}%  α=${alpha.toFixed(2)}`, kToX(1.0), ivToY(smileIV(0.7)) - 12);
+
+    // Gap annotation (difference from flat to smile at wing)
+    const wingK = 0.75;
+    const gap = smileIV(wingK) - flatIV;
+    if (gap > 0.01) {
+      ctx.strokeStyle = rgba(C.amber, 0.6); ctx.lineWidth = 1;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(kToX(wingK), ivToY(flatIV)); ctx.lineTo(kToX(wingK), ivToY(smileIV(wingK))); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = C.amber; ctx.font = '9px Space Mono'; ctx.textAlign = 'left';
+      ctx.fillText('Δ='+((gap)*100).toFixed(1)+'%', kToX(wingK) + 4, ivToY((flatIV + smileIV(wingK)) / 2));
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  EVENT WIRING
+// ─────────────────────────────────────────────────────────
+['sl-S','sl-K','sl-r','sl-sigma','sl-T'].forEach(id => {
+  document.getElementById(id).addEventListener('input', drawBS);
+});
+
+document.getElementById('sl-sigma-min').addEventListener('input', () => {
+  document.getElementById('val-sigma-min').textContent =
+    document.getElementById('sl-sigma-min').value + '%';
+  drawSmile();
+});
+document.getElementById('sl-alpha').addEventListener('input', () => {
+  document.getElementById('val-alpha').textContent =
+    parseFloat(document.getElementById('sl-alpha').value).toFixed(2);
+  drawSmile();
+});
+
+// Initial draw
+readSliders();
+drawBS();
+
+// ─────────────────────────────────────────────────────────
+//  KATEX INIT
+// ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) renderMathInElement(document.body, {
+    delimiters: [
+      { left: '\\[', right: '\\]', display: true },
+      { left: '\\(', right: '\\)', display: false }
+    ]
+  });
+});
+</script>
+</body>
+</html>
