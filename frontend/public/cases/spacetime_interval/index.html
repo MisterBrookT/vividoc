@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Spacetime Interval — Relativity &amp; Causality</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#050815;color:#f0ead0;font-family:'Crimson Pro',serif;line-height:1.8;padding:52px 20px 90px;}
+.wrapper{max-width:940px;margin:0 auto;}
+
+/* Header */
+.main-title{font-family:'Space Mono',monospace;font-size:2.4rem;color:#a78bfa;text-align:center;letter-spacing:4px;text-transform:uppercase;margin-bottom:10px;}
+.subtitle{text-align:center;font-size:1.15rem;color:#6e6040;font-style:italic;margin-bottom:64px;}
+
+/* Sections */
+.section{background:#0c0f28;border:1px solid #1c1f40;border-left:5px solid #a78bfa;border-radius:8px;padding:48px 52px;margin-bottom:64px;box-shadow:0 20px 60px rgba(0,0,0,0.8);}
+.section-number{font-family:'Space Mono',monospace;font-size:0.72rem;color:#6e6040;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;}
+.section-title{font-family:'Space Mono',monospace;font-size:1.35rem;color:#a78bfa;margin-bottom:28px;letter-spacing:1px;}
+.text{font-size:1.13rem;line-height:1.82;color:#ccc4e8;margin-bottom:20px;}
+.text strong{color:#f0ead0;font-weight:600;}
+.text em{color:#a78bfa;font-style:italic;}
+
+/* Math blocks */
+.math-block{background:#08091e;border:1px solid #1c1f40;border-left:3px solid #a78bfa;border-radius:4px;padding:20px 28px;margin:26px 0;text-align:center;font-size:1.1rem;color:#f0ead0;overflow-x:auto;}
+
+/* Widget container */
+.widget{background:#08091e;border:1px solid #161930;border-radius:8px;margin-top:36px;overflow:hidden;}
+.widget-header{background:#0a0d22;padding:14px 22px;font-family:'Space Mono',monospace;font-size:0.72rem;color:#6e6040;letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid #161930;}
+.widget-body{padding:24px;}
+
+/* Canvas */
+canvas{display:block;border-radius:4px;}
+
+/* Readout grid */
+.readout-grid{display:grid;gap:10px;margin-top:16px;}
+.readout{background:#0a0d22;border:1px solid #161930;border-radius:6px;padding:12px;text-align:center;}
+.readout-label{font-family:'Space Mono',monospace;font-size:0.6rem;color:#6e6040;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.readout-val{font-family:'Space Mono',monospace;font-size:1.05rem;color:#a78bfa;font-weight:700;}
+.readout-val.timelike{color:#f5c542;}
+.readout-val.lightlike{color:#ffffff;}
+.readout-val.spacelike{color:#c084fc;}
+
+/* Buttons */
+.btn-row{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+button{font-family:'Space Mono',monospace;font-size:0.72rem;padding:8px 16px;background:transparent;border:1px solid #a78bfa;color:#a78bfa;border-radius:4px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:all 0.2s;}
+button:hover{background:#a78bfa;color:#050815;}
+button.active{background:#a78bfa;color:#050815;}
+
+/* Hint text */
+.hint{font-family:'Space Mono',monospace;font-size:0.68rem;color:#6e6040;text-align:center;margin-top:10px;letter-spacing:1px;}
+
+/* Hover info panel */
+.info-panel{background:#0a0d22;border:1px solid #a78bfa;border-radius:6px;padding:14px 18px;margin-top:14px;font-family:'Space Mono',monospace;font-size:0.78rem;color:#ccc4e8;line-height:1.7;min-height:72px;}
+.info-panel .causal-yes{color:#f5c542;font-weight:700;}
+.info-panel .causal-no{color:#c084fc;font-weight:700;}
+.info-panel .causal-label{font-size:0.9rem;letter-spacing:1px;}
+
+/* Section 3 specific */
+.s3-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+.constraint-box{background:#0c0f28;border:1px solid #a78bfa;border-radius:6px;padding:16px 20px;margin-top:18px;font-size:1.05rem;color:#ccc4e8;line-height:1.7;}
+.constraint-box strong{color:#a78bfa;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <h1 class="main-title">Spacetime Interval</h1>
+  <p class="subtitle">The invariant geometry beneath space and time</p>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       SECTION 01 — The Invariant Interval
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-number">Section 01</div>
+    <h2 class="section-title">The Invariant Interval</h2>
+
+    <p class="text">
+      In Euclidean geometry, the distance between two points is <em>invariant</em> under rotation and translation: every observer, regardless of orientation, measures the same number for $\sqrt{\Delta x^2 + \Delta y^2}$. Special relativity destroys this comfortable picture. Two observers in relative motion will disagree on both the spatial distance $\Delta x$ and the time interval $\Delta t$ between any two events — this is the essence of length contraction and time dilation. But Einstein's theory does not abandon invariance; it <strong>relocates it</strong>. There exists a quantity that all inertial observers agree on, a true spacetime distance called the <em>spacetime interval</em>.
+    </p>
+    <p class="text">
+      The key is the <strong>Minkowski metric</strong>, which governs the geometry of spacetime. Unlike the Euclidean metric, which sums squares, the Minkowski metric subtracts: $ds^2 = -c^2\,\Delta t^2 + \Delta x^2 + \Delta y^2 + \Delta z^2$. In natural units where $c = 1$, this simplifies to $ds^2 = -\Delta t^2 + \Delta x^2$. The crucial minus sign — the signature $(-,+,+,+)$ — encodes the fundamental asymmetry between time and space. Time is not "just another dimension"; it enters with an opposite sign, and this is precisely why there is an absolute speed limit, why causality is protected, and why the universe has an arrow of time at all.
+    </p>
+
+    <div class="math-block" id="si1-math-interval"></div>
+
+    <p class="text">
+      The sign of $ds^2$ reveals the <em>causal character</em> of the separation between two events, and this sign is frame-independent. If $ds^2 < 0$ (timelike), the time interval dominates: a single inertial observer could be present at both events, and one can causally influence the other. If $ds^2 > 0$ (spacelike), the space interval dominates: no signal traveling at or below $c$ can connect the events, and their temporal order is not agreed upon by all observers. If $ds^2 = 0$ (lightlike or null), only a photon — traveling at exactly $c$ — can connect them. This trichotomy is the deepest structure of relativistic causality.
+    </p>
+    <p class="text">
+      For timelike separations, $\sqrt{|ds^2|} = \tau$ is the <em>proper time</em> — the time elapsed on a clock that travels between the two events. It is the maximum time any observer can measure between those events, and it is the same for all observers: a clock ticking away on a rocket ship between two events shows the same elapsed time regardless of which frame you compute it from. The interval thus replaces the fragmented, observer-dependent notions of distance and duration with a single geometric truth about the structure of spacetime.
+    </p>
+
+    <div class="widget">
+      <div class="widget-header">Interactive — Click Canvas to Place Event B (Event A fixed at origin)</div>
+      <div class="widget-body">
+        <canvas id="si1-canvas" style="width:100%;cursor:crosshair;border-radius:4px;"></canvas>
+        <div class="readout-grid" style="grid-template-columns:repeat(5,1fr);">
+          <div class="readout"><div class="readout-label">Δt (time)</div><div class="readout-val" id="si1-dt">—</div></div>
+          <div class="readout"><div class="readout-label">Δx (space)</div><div class="readout-val" id="si1-dx">—</div></div>
+          <div class="readout"><div class="readout-label">ds²</div><div class="readout-val" id="si1-ds2">—</div></div>
+          <div class="readout"><div class="readout-label">Proper Time τ</div><div class="readout-val" id="si1-tau">—</div></div>
+          <div class="readout"><div class="readout-label">Separation</div><div class="readout-val" id="si1-type">—</div></div>
+        </div>
+        <p class="hint">Click anywhere on the spacetime diagram to place Event B. Light cone = 45° lines at exact lightspeed.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       SECTION 02 — The Light Cone and Causality
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-number">Section 02</div>
+    <h2 class="section-title">The Light Cone and Causality</h2>
+
+    <p class="text">
+      The light cone is not merely a visualization aid — it is the physical boundary of causality. From any event O, the future light cone contains all events that O <em>could</em> causally influence: a signal emitted at O traveling at or below $c$ can reach any event inside the future cone. The past light cone contains all events that <em>could have</em> influenced O. Every event outside both cones — in the region relativists call <strong>Elsewhere</strong> — is spacelike-separated from O. No causal chain can connect O to an event in Elsewhere, not even in principle.
+    </p>
+    <p class="text">
+      The prohibition on faster-than-light communication is not merely a technical limitation — it is logically necessary to prevent <em>causal paradoxes</em>. Suppose observer Alice, at rest, uses an FTL signal to send a message from event O to a spacelike-separated event P. To another observer Bob, moving at high velocity relative to Alice, the Lorentz transformation will place P <em>before</em> O in time. Bob would say the message arrived before it was sent — effect preceded cause. If FTL signals were possible, you could always find a reference frame in which they travel backwards in time. The light cone is therefore the global structure that enforces consistency of the causal order of the universe.
+    </p>
+    <p class="text">
+      The causal structure of spacetime — the collection of all light cones at all events — is physically more fundamental than the metric itself. In general relativity, the metric can be deformed by mass and energy, but the light cone structure survives: even in strongly curved spacetime near a black hole, you can draw a light cone at each event, and nothing crosses it. The horizon of a black hole is precisely the surface where the future light cone is tipped so far inward that it no longer intersects the outside universe. Spacetime geometry is, at its core, the geometry of causal relationships.
+    </p>
+    <p class="text">
+      Perhaps the most philosophically striking implication is what is sometimes called the <strong>relativity of simultaneity</strong>. Two spacelike-separated events that appear simultaneous in one frame are not simultaneous in any other. There is no fact of the matter about which happened "first" — different inertial observers will give different, equally valid answers. This demolishes the Newtonian conception of a universal "now." The universe does not have a single present moment shared by all observers; it has a web of causal relationships, and only those connected by timelike or null intervals have an agreed-upon temporal order.
+    </p>
+
+    <div class="widget">
+      <div class="widget-header">Interactive — Hover Over Events to Inspect Causal Relationships</div>
+      <div class="widget-body">
+        <canvas id="si2-canvas" style="width:100%;cursor:crosshair;border-radius:4px;"></canvas>
+        <div class="info-panel" id="si2-info">
+          <span style="color:#6e6040;">Hover over any event to see its causal relationship to O…</span>
+        </div>
+        <p class="hint">Gold = absolute future · Amber = absolute past · Violet = elsewhere (spacelike)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       SECTION 03 — Proper Time and Worldlines
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-number">Section 03</div>
+    <h2 class="section-title">Proper Time and Worldlines</h2>
+
+    <p class="text">
+      The <strong>clock postulate</strong> states that the time elapsed on any clock depends only on its worldline through spacetime — the path it traces in the four-dimensional manifold — and not on its acceleration per se. More precisely, the proper time accumulated along any worldline is computed by integrating $d\tau = \sqrt{-ds^2} = \sqrt{dt^2 - dx^2/c^2}$ along the path. This integral is purely geometric: it measures the "length" of the worldline in Minkowski spacetime. Two clocks that start together and reunite will show different elapsed times if and only if their worldlines have different spacetime lengths — regardless of how they were accelerated along the way.
+    </p>
+    <p class="text">
+      Here is where Minkowski geometry reveals its most counterintuitive feature: in Euclidean space, the <em>shortest</em> path between two points is a straight line. In Minkowski spacetime, the <em>longest</em> proper time between two events is achieved by the <em>straight worldline</em> — the geodesic. Any deviation from the straight path, any "detour" through space, decreases the proper time. This is the geometric heart of the <strong>twin paradox</strong>: the twin who stays home traces a straight vertical worldline (the geodesic) and ages the most. The traveling twin takes a longer path through space but, because the Minkowski metric penalizes spatial displacement via the minus sign, accumulates <em>less</em> proper time. The asymmetry is not a paradox at all — it is a geometric fact about the shape of the worldlines.
+    </p>
+
+    <div class="math-block" id="si3-math-tau"></div>
+
+    <p class="text">
+      This geometric viewpoint is not merely pedagogical — it is the correct foundation for <strong>General Relativity</strong>. In GR, massive objects in free fall (with no non-gravitational forces) follow <em>geodesics</em> of curved spacetime. The curvature is caused by mass-energy. A geodesic in curved spacetime is the path that locally maximizes proper time — it is the "straightest possible" path in a curved geometry. The falling apple and the orbiting satellite are both following straight lines through a curved spacetime; gravity is not a force pulling them off their natural paths, but the curvature of spacetime itself defining what "straight" means. The interval, and the proper time it generates, is the thread connecting special and general relativity.
+    </p>
+    <p class="text">
+      The analogy with Fermat's principle in optics is instructive. Light takes the path of <em>least time</em> through media (or, more precisely, a stationary-phase path). In Minkowski spacetime, free-falling particles take the path of <em>most proper time</em>. Both are <em>variational principles</em>: nature extremizes a functional. The geodesic equation in general relativity is the Euler-Lagrange equation for the proper time functional $\tau = \int \sqrt{-g_{\mu\nu}\,dx^\mu dx^\nu}$, where $g_{\mu\nu}$ is the spacetime metric. Proper time is thus the action for relativistic mechanics — a profound unification of geometry and dynamics.
+    </p>
+
+    <div class="widget">
+      <div class="widget-header">Interactive — Click to Place Waypoints from A to B (Stay Inside Light Cone)</div>
+      <div class="widget-body">
+        <div class="btn-row">
+          <button id="si3-btn-straight">Straight Path</button>
+          <button id="si3-btn-twin">Twin Journey (0.8c)</button>
+          <button id="si3-btn-clear">Clear</button>
+        </div>
+        <canvas id="si3-canvas" style="width:100%;cursor:crosshair;border-radius:4px;"></canvas>
+        <div class="s3-stats">
+          <div class="readout"><div class="readout-label">τ (your path)</div><div class="readout-val" id="si3-tau-path">10.00</div></div>
+          <div class="readout"><div class="readout-label">τ (straight)</div><div class="readout-val" id="si3-tau-straight">10.00</div></div>
+          <div class="readout"><div class="readout-label">Ratio τ/τ₀</div><div class="readout-val" id="si3-ratio">1.000</div></div>
+        </div>
+        <div class="constraint-box">
+          <strong>Twin Paradox:</strong> The straight worldline (geodesic) <em>maximizes</em> proper time. Any spatial detour reduces it. The traveling twin ages less — not because of acceleration, but because their worldline through Minkowski spacetime is geometrically shorter in proper time.
+        </div>
+        <p class="hint">Click between A (bottom) and B (top) to place waypoints. Segments clamped to |Δx/Δt| ≤ 1 (speed of light).</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end wrapper -->
+
+<!-- KaTeX inline math rendering for math blocks -->
+<script>
+(function renderMath() {
+  // Section 1 math block
+  var el1 = document.getElementById('si1-math-interval');
+  if (el1) {
+    el1.innerHTML =
+      katex.renderToString('ds^2 = -\\Delta t^2 + \\Delta x^2', {displayMode: true, throwOnError: false}) +
+      '<div style="margin-top:14px;font-size:0.9rem;color:#6e6040;font-family:\'Space Mono\',monospace;letter-spacing:1px;">' +
+      'Timelike: ds² &lt; 0 &nbsp;|&nbsp; Lightlike: ds² = 0 &nbsp;|&nbsp; Spacelike: ds² &gt; 0' +
+      '</div>';
+  }
+  // Section 3 math block
+  var el3 = document.getElementById('si3-math-tau');
+  if (el3) {
+    el3.innerHTML =
+      katex.renderToString('\\tau = \\int_A^B \\sqrt{-ds^2} = \\int_A^B \\sqrt{dt^2 - dx^2} = \\sum_i \\sqrt{\\Delta t_i^2 - \\Delta x_i^2}', {displayMode: true, throwOnError: false});
+  }
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 01 CANVAS — The Invariant Interval
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function initSection1() {
+  var canvas = document.getElementById('si1-canvas');
+  var dpr = window.devicePixelRatio || 1;
+  var W_CSS = canvas.parentElement.offsetWidth - 48; // widget-body padding
+  var H_CSS = Math.round(W_CSS * 0.62);
+  canvas.style.width  = W_CSS + 'px';
+  canvas.style.height = H_CSS + 'px';
+  canvas.width  = Math.round(W_CSS * dpr);
+  canvas.height = Math.round(H_CSS * dpr);
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  var CX = W_CSS / 2;
+  var CY = H_CSS / 2;
+  var SCALE = Math.min(W_CSS, H_CSS) / 22; // ~30px per unit at typical width
+
+  // State
+  var eventB = null; // {x, t} in spacetime coords
+
+  function toScreen(sx, st) {
+    return { x: CX + sx * SCALE, y: CY - st * SCALE };
+  }
+
+  function fromScreen(px, py) {
+    return { x: (px - CX) / SCALE, t: (CY - py) / SCALE };
+  }
+
+  function drawAxes() {
+    ctx.strokeStyle = '#2a2d50';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 6]);
+
+    // Grid lines
+    for (var i = -10; i <= 10; i++) {
+      if (i === 0) continue;
+      var sx = CX + i * SCALE;
+      var sy = CY - i * SCALE;
+      ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H_CSS); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W_CSS, sy); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Main axes
+    ctx.strokeStyle = '#3a3f6e';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, CY); ctx.lineTo(W_CSS, CY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, 0); ctx.lineTo(CX, H_CSS); ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle = '#6e6040';
+    ctx.font = "11px 'Space Mono', monospace";
+    ctx.fillText('x', W_CSS - 18, CY - 8);
+    ctx.fillText('ct', CX + 8, 14);
+    ctx.fillText('0', CX + 5, CY + 14);
+
+    // Tick marks
+    ctx.fillStyle = '#4a4870';
+    for (var t = -9; t <= 9; t += 3) {
+      if (t === 0) continue;
+      ctx.fillText(t, CX + 4, CY - t * SCALE + 4);
+      ctx.fillText(t, CX + t * SCALE - 6, CY + 14);
+    }
+  }
+
+  function drawLightCone() {
+    // Future light cone
+    ctx.strokeStyle = 'rgba(167,139,250,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + 12 * SCALE, CY - 12 * SCALE); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX - 12 * SCALE, CY - 12 * SCALE); ctx.stroke();
+    // Past light cone
+    ctx.strokeStyle = 'rgba(167,139,250,0.25)';
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + 12 * SCALE, CY + 12 * SCALE); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX - 12 * SCALE, CY + 12 * SCALE); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Region labels
+    ctx.font = "10px 'Space Mono', monospace";
+    ctx.fillStyle = 'rgba(167,139,250,0.4)';
+    ctx.fillText('FUTURE', CX - 24, CY - H_CSS * 0.38);
+    ctx.fillStyle = 'rgba(167,139,250,0.2)';
+    ctx.fillText('PAST', CX - 16, CY + H_CSS * 0.42);
+  }
+
+  function drawEvent(sx, sy, color, label, radius) {
+    radius = radius || 6;
+    ctx.beginPath();
+    ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    if (label) {
+      ctx.fillStyle = '#f0ead0';
+      ctx.font = "bold 12px 'Space Mono', monospace";
+      ctx.fillText(label, sx + 10, sy - 6);
+    }
+  }
+
+  function classifyInterval(ds2) {
+    var eps = 1e-6;
+    if (Math.abs(ds2) < eps) return 'lightlike';
+    if (ds2 < 0) return 'timelike';
+    return 'spacelike';
+  }
+
+  function intervalColor(type) {
+    if (type === 'timelike')  return '#f5c542';
+    if (type === 'lightlike') return '#ffffff';
+    return '#c084fc';
+  }
+
+  function updateReadouts(bCoord) {
+    if (!bCoord) {
+      ['si1-dt','si1-dx','si1-ds2','si1-tau','si1-type'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el){el.textContent='—'; el.className='readout-val';}
+      });
+      return;
+    }
+    var dt = bCoord.t, dx = bCoord.x;
+    var ds2 = -dt * dt + dx * dx;
+    var type = classifyInterval(ds2);
+    var tau = type === 'timelike' ? Math.sqrt(Math.abs(ds2)).toFixed(3) : '—';
+    var typeLabel = type === 'timelike' ? 'TIMELIKE' : type === 'lightlike' ? 'LIGHTLIKE' : 'SPACELIKE';
+
+    var dtEl = document.getElementById('si1-dt');
+    var dxEl = document.getElementById('si1-dx');
+    var ds2El = document.getElementById('si1-ds2');
+    var tauEl = document.getElementById('si1-tau');
+    var typeEl = document.getElementById('si1-type');
+
+    if(dtEl) dtEl.textContent = dt.toFixed(3);
+    if(dxEl) dxEl.textContent = dx.toFixed(3);
+    if(ds2El){ ds2El.textContent = ds2.toFixed(3); ds2El.className = 'readout-val ' + type; }
+    if(tauEl) tauEl.textContent = tau;
+    if(typeEl){ typeEl.textContent = typeLabel; typeEl.className = 'readout-val ' + type; }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W_CSS, H_CSS);
+    ctx.fillStyle = '#08091e';
+    ctx.fillRect(0, 0, W_CSS, H_CSS);
+
+    drawAxes();
+    drawLightCone();
+
+    // Event A at origin
+    var aScreen = toScreen(0, 0);
+    drawEvent(aScreen.x, aScreen.y, '#a78bfa', 'A', 7);
+
+    // Event B (if placed)
+    if (eventB) {
+      var bScreen = toScreen(eventB.x, eventB.t);
+      var ds2 = -(eventB.t * eventB.t) + (eventB.x * eventB.x);
+      var type = classifyInterval(ds2);
+      var color = intervalColor(type);
+
+      // Connecting line
+      ctx.beginPath();
+      ctx.moveTo(aScreen.x, aScreen.y);
+      ctx.lineTo(bScreen.x, bScreen.y);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Δt and Δx projection lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 5]);
+      ctx.beginPath(); ctx.moveTo(bScreen.x, bScreen.y); ctx.lineTo(bScreen.x, aScreen.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(bScreen.x, bScreen.y); ctx.lineTo(aScreen.x, bScreen.y); ctx.stroke();
+      ctx.setLineDash([]);
+
+      drawEvent(bScreen.x, bScreen.y, color, 'B', 7);
+
+      // ds² label near midpoint
+      var mx = (aScreen.x + bScreen.x) / 2;
+      var my = (aScreen.y + bScreen.y) / 2;
+      ctx.font = "bold 13px 'Space Mono', monospace";
+      ctx.fillStyle = color;
+      var typeStr = type === 'timelike' ? 'TIMELIKE' : type === 'lightlike' ? 'NULL' : 'SPACELIKE';
+      ctx.fillText(typeStr, mx + 8, my - 8);
+    }
+  }
+
+  function handleClick(e) {
+    var rect = canvas.getBoundingClientRect();
+    var px = (e.clientX - rect.left);
+    var py = (e.clientY - rect.top);
+    var coord = fromScreen(px, py);
+    // Clamp to ±10 units
+    coord.x = Math.max(-10, Math.min(10, coord.x));
+    coord.t = Math.max(-10, Math.min(10, coord.t));
+    eventB = coord;
+    updateReadouts(eventB);
+    draw();
+  }
+
+  canvas.addEventListener('click', handleClick);
+  draw();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 02 CANVAS — Light Cone and Causality (Inspection)
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function initSection2() {
+  var canvas = document.getElementById('si2-canvas');
+  var dpr = window.devicePixelRatio || 1;
+  var W_CSS = canvas.parentElement.offsetWidth - 48;
+  var H_CSS = Math.round(W_CSS * 0.68);
+  canvas.style.width  = W_CSS + 'px';
+  canvas.style.height = H_CSS + 'px';
+  canvas.width  = Math.round(W_CSS * dpr);
+  canvas.height = Math.round(H_CSS * dpr);
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  var CX = W_CSS / 2;
+  var CY = H_CSS / 2;
+  var SCALE = Math.min(W_CSS, H_CSS) / 22;
+
+  // Pre-defined events: {x, t, label}
+  var events = [
+    // Absolute future (inside future cone, ds² < 0, t > 0)
+    { x:  1.0, t:  5.0, label: 'P1' },
+    { x: -2.5, t:  4.0, label: 'P2' },
+    { x:  3.0, t:  6.5, label: 'P3' },
+    // Absolute past (inside past cone, ds² < 0, t < 0)
+    { x:  0.5, t: -4.5, label: 'P4' },
+    { x: -1.5, t: -5.0, label: 'P5' },
+    { x:  2.0, t: -6.0, label: 'P6' },
+    // Elsewhere (spacelike, ds² > 0)
+    { x:  6.5, t:  2.0, label: 'P7' },
+    { x: -7.0, t: -1.0, label: 'P8' },
+    { x:  5.0, t: -3.0, label: 'P9' },
+    { x: -5.5, t:  2.5, label: 'P10' },
+  ];
+
+  var hovered = null;
+  var HOVER_RADIUS = 22; // px for hit testing
+
+  function toScreen(sx, st) {
+    return { x: CX + sx * SCALE, y: CY - st * SCALE };
+  }
+
+  function classifyDs2(ds2) {
+    var eps = 1e-6;
+    if (Math.abs(ds2) < eps) return 'lightlike';
+    if (ds2 < 0) return 'timelike';
+    return 'spacelike';
+  }
+
+  function eventType(ev) {
+    var ds2 = -(ev.t * ev.t) + (ev.x * ev.x);
+    var type = classifyDs2(ds2);
+    if (type === 'timelike') return ev.t > 0 ? 'future' : 'past';
+    return 'spacelike';
+  }
+
+  function eventColor(ev, isHovered) {
+    var et = eventType(ev);
+    if (et === 'future') return isHovered ? '#ffe066' : '#f5c542';
+    if (et === 'past')   return isHovered ? '#ffa040' : '#c07820';
+    return isHovered ? '#e040fb' : '#7c3aed';
+  }
+
+  function drawAxes() {
+    ctx.strokeStyle = '#1e2145';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 7]);
+    for (var i = -10; i <= 10; i++) {
+      if (i === 0) continue;
+      var sx = CX + i * SCALE;
+      var sy = CY - i * SCALE;
+      ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H_CSS); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W_CSS, sy); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.strokeStyle = '#2e3260';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, CY); ctx.lineTo(W_CSS, CY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, 0); ctx.lineTo(CX, H_CSS); ctx.stroke();
+
+    ctx.fillStyle = '#6e6040';
+    ctx.font = "11px 'Space Mono', monospace";
+    ctx.fillText('x', W_CSS - 18, CY - 8);
+    ctx.fillText('ct', CX + 8, 14);
+  }
+
+  function drawLightCone() {
+    // Filled future cone
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.lineTo(CX + 12 * SCALE, CY - 12 * SCALE);
+    ctx.lineTo(CX - 12 * SCALE, CY - 12 * SCALE);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(245,197,66,0.05)';
+    ctx.fill();
+
+    // Filled past cone
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.lineTo(CX + 12 * SCALE, CY + 12 * SCALE);
+    ctx.lineTo(CX - 12 * SCALE, CY + 12 * SCALE);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(192,120,32,0.05)';
+    ctx.fill();
+
+    // Cone borders
+    ctx.strokeStyle = 'rgba(167,139,250,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + 12*SCALE, CY - 12*SCALE); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX - 12*SCALE, CY - 12*SCALE); ctx.stroke();
+    ctx.strokeStyle = 'rgba(167,139,250,0.3)';
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + 12*SCALE, CY + 12*SCALE); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX - 12*SCALE, CY + 12*SCALE); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Region labels
+    ctx.font = "bold 11px 'Space Mono', monospace";
+    ctx.fillStyle = 'rgba(245,197,66,0.55)';
+    ctx.fillText('ABSOLUTE FUTURE', CX - 62, CY - H_CSS * 0.32);
+    ctx.fillStyle = 'rgba(192,120,32,0.5)';
+    ctx.fillText('ABSOLUTE PAST', CX - 57, CY + H_CSS * 0.38);
+    ctx.fillStyle = 'rgba(192,132,252,0.45)';
+    ctx.fillText('ELSEWHERE', W_CSS - 110, CY - 8);
+    ctx.fillText('ELSEWHERE', 8, CY - 8);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W_CSS, H_CSS);
+    ctx.fillStyle = '#08091e';
+    ctx.fillRect(0, 0, W_CSS, H_CSS);
+    drawAxes();
+    drawLightCone();
+
+    // Draw O at center
+    var oScreen = toScreen(0, 0);
+    ctx.beginPath();
+    ctx.arc(oScreen.x, oScreen.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#a78bfa';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#f0ead0';
+    ctx.font = "bold 12px 'Space Mono', monospace";
+    ctx.fillText('O', oScreen.x + 11, oScreen.y - 7);
+
+    // If hovering, draw connection line first (under events)
+    if (hovered !== null) {
+      var hev = events[hovered];
+      var hScreen = toScreen(hev.x, hev.t);
+      ctx.beginPath();
+      ctx.moveTo(oScreen.x, oScreen.y);
+      ctx.lineTo(hScreen.x, hScreen.y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Draw all events
+    events.forEach(function(ev, idx) {
+      var isH = (idx === hovered);
+      var sc = toScreen(ev.x, ev.t);
+      var col = eventColor(ev, isH);
+      var r = isH ? 9 : 6;
+
+      if (isH) {
+        ctx.beginPath();
+        ctx.arc(sc.x, sc.y, 18, 0, Math.PI * 2);
+        ctx.fillStyle = col.replace('#','rgba(').replace(/(..)(..)(..)/, function(m,r,g,b){
+          return parseInt(r,16)+','+parseInt(g,16)+','+parseInt(b,16)+',0.15)';
+        });
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.arc(sc.x, sc.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = col;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#f0ead0';
+      ctx.font = "11px 'Space Mono', monospace";
+      ctx.fillText(ev.label, sc.x + 10, sc.y - 4);
+    });
+  }
+
+  function updateInfo(idx) {
+    var panel = document.getElementById('si2-info');
+    if (!panel) return;
+    if (idx === null) {
+      panel.innerHTML = '<span style="color:#6e6040;">Hover over any event to see its causal relationship to O…</span>';
+      return;
+    }
+    var ev = events[idx];
+    var ds2 = -(ev.t * ev.t) + (ev.x * ev.x);
+    var et = eventType(ev);
+    var canCause = (et !== 'spacelike');
+    var ds2Str = ds2.toFixed(3);
+    var typeStr = et === 'future' ? 'TIMELIKE (future)' : et === 'past' ? 'TIMELIKE (past)' : 'SPACELIKE';
+    var typeColor = et === 'future' ? '#f5c542' : et === 'past' ? '#c07820' : '#c084fc';
+    var causeStr = canCause
+      ? (et === 'future' ? 'O can influence ' + ev.label : ev.label + ' could have influenced O')
+      : 'No causal link possible — temporal order is frame-dependent';
+    var causeClass = canCause ? 'causal-yes' : 'causal-no';
+    var causeAnswer = canCause ? 'YES' : 'NO';
+
+    panel.innerHTML =
+      '<span style="color:#6e6040;">Event </span>' +
+      '<span style="color:#f0ead0;font-weight:700;">' + ev.label + '</span>' +
+      '  &nbsp;  Δt = ' + ev.t.toFixed(1) + '  Δx = ' + ev.x.toFixed(1) +
+      '  &nbsp;  ds² = <span style="color:' + typeColor + '">' + ds2Str + '</span>' +
+      '  &nbsp;  <span style="color:' + typeColor + '">' + typeStr + '</span>' +
+      '<br/>' +
+      '<span style="color:#6e6040;">Can O cause ' + ev.label + '?</span> ' +
+      '<span class="' + causeClass + ' causal-label">' + causeAnswer + '</span>' +
+      '  <span style="color:#9988c0;font-size:0.9em;">— ' + causeStr + '</span>';
+  }
+
+  function handleMouseMove(e) {
+    var rect = canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var prevHovered = hovered;
+    hovered = null;
+    events.forEach(function(ev, idx) {
+      var sc = toScreen(ev.x, ev.t);
+      var dist = Math.sqrt((mx - sc.x)*(mx - sc.x) + (my - sc.y)*(my - sc.y));
+      if (dist < HOVER_RADIUS) hovered = idx;
+    });
+    if (hovered !== prevHovered) {
+      updateInfo(hovered);
+      draw();
+    }
+  }
+
+  function handleMouseLeave() {
+    hovered = null;
+    updateInfo(null);
+    draw();
+  }
+
+  canvas.addEventListener('mousemove', handleMouseMove);
+  canvas.addEventListener('mouseleave', handleMouseLeave);
+  draw();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 03 CANVAS — Proper Time and Worldlines
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function initSection3() {
+  var canvas = document.getElementById('si3-canvas');
+  var dpr = window.devicePixelRatio || 1;
+  var W_CSS = canvas.parentElement.offsetWidth - 48;
+  var H_CSS = Math.round(W_CSS * 0.72);
+  canvas.style.width  = W_CSS + 'px';
+  canvas.style.height = H_CSS + 'px';
+  canvas.width  = Math.round(W_CSS * dpr);
+  canvas.height = Math.round(H_CSS * dpr);
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Coordinate system: t goes 0..12, x goes -8..8
+  // Event A at (x=0, t=0), Event B at (x=0, t=10)
+  var T_MIN = 0, T_MAX = 12;
+  var X_MIN = -8, X_MAX = 8;
+  var MARGIN_L = 50, MARGIN_R = 20, MARGIN_T = 20, MARGIN_B = 36;
+  var PLOT_W = W_CSS - MARGIN_L - MARGIN_R;
+  var PLOT_H = H_CSS - MARGIN_T - MARGIN_B;
+
+  var T_STRAIGHT = 10; // coordinate time from A to B
+
+  function toScreen(x, t) {
+    var px = MARGIN_L + (x - X_MIN) / (X_MAX - X_MIN) * PLOT_W;
+    var py = MARGIN_T + (T_MAX - t) / (T_MAX - T_MIN) * PLOT_H;
+    return { x: px, y: py };
+  }
+
+  function fromScreen(px, py) {
+    var x = X_MIN + (px - MARGIN_L) / PLOT_W * (X_MAX - X_MIN);
+    var t = T_MAX - (py - MARGIN_T) / PLOT_H * (T_MAX - T_MIN);
+    return { x: x, t: t };
+  }
+
+  // State: list of waypoints (including A and B which are fixed endpoints)
+  var A = { x: 0, t: 0 };
+  var B = { x: 0, t: T_STRAIGHT };
+  var waypoints = []; // user-placed intermediate points
+
+  function clampWaypoint(prevPt, candidate) {
+    // Ensure |Δx/Δt| ≤ 1 (stay within light cone)
+    var dt = candidate.t - prevPt.t;
+    var dx = candidate.x - prevPt.x;
+
+    // t must be > prevPt.t and < B.t
+    if (candidate.t <= prevPt.t) candidate.t = prevPt.t + 0.1;
+    if (candidate.t >= B.t) candidate.t = B.t - 0.1;
+
+    // Re-read dt after clamping t
+    dt = candidate.t - prevPt.t;
+    dx = candidate.x - prevPt.x;
+    var maxDx = dt; // |Δx| ≤ Δt (c=1)
+    if (Math.abs(dx) > maxDx) {
+      candidate.x = prevPt.x + Math.sign(dx) * maxDx;
+    }
+    // Clamp x range
+    candidate.x = Math.max(X_MIN + 0.5, Math.min(X_MAX - 0.5, candidate.x));
+    return candidate;
+  }
+
+  function computeProperTime(pts) {
+    var tau = 0;
+    for (var i = 1; i < pts.length; i++) {
+      var dt = pts[i].t - pts[i-1].t;
+      var dx = pts[i].x - pts[i-1].x;
+      var ds2 = dt * dt - dx * dx;
+      if (ds2 > 0) tau += Math.sqrt(ds2);
+    }
+    return tau;
+  }
+
+  function getFullPath() {
+    // Includes A, all user waypoints, B
+    return [A].concat(waypoints).concat([B]);
+  }
+
+  function updateStats() {
+    var path = getFullPath();
+    var tau = computeProperTime(path);
+    var tauStraight = T_STRAIGHT; // straight vertical = τ = Δt since Δx=0
+
+    var tauEl = document.getElementById('si3-tau-path');
+    var tauSEl = document.getElementById('si3-tau-straight');
+    var ratioEl = document.getElementById('si3-ratio');
+    if (tauEl) tauEl.textContent = tau.toFixed(3);
+    if (tauSEl) tauSEl.textContent = tauStraight.toFixed(3);
+    if (ratioEl) ratioEl.textContent = (tau / tauStraight).toFixed(4);
+
+    // Color ratio based on value
+    if (ratioEl) {
+      var r = tau / tauStraight;
+      ratioEl.style.color = r > 0.999 ? '#f5c542' : r > 0.9 ? '#a78bfa' : '#c084fc';
+    }
+  }
+
+  function drawAxes() {
+    ctx.strokeStyle = '#1e2145';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 6]);
+    // Vertical grid lines
+    for (var xi = X_MIN; xi <= X_MAX; xi += 2) {
+      var sx = toScreen(xi, 0).x;
+      ctx.beginPath(); ctx.moveTo(sx, MARGIN_T); ctx.lineTo(sx, MARGIN_T + PLOT_H); ctx.stroke();
+    }
+    // Horizontal grid lines
+    for (var ti = 0; ti <= T_MAX; ti += 2) {
+      var sy = toScreen(0, ti).y;
+      ctx.beginPath(); ctx.moveTo(MARGIN_L, sy); ctx.lineTo(MARGIN_L + PLOT_W, sy); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Main axes
+    ctx.strokeStyle = '#2e3260';
+    ctx.lineWidth = 1.5;
+    var orig = toScreen(0, 0);
+    ctx.beginPath(); ctx.moveTo(MARGIN_L, orig.y); ctx.lineTo(MARGIN_L + PLOT_W, orig.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(orig.x, MARGIN_T); ctx.lineTo(orig.x, MARGIN_T + PLOT_H); ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = '#6e6040';
+    ctx.font = "11px 'Space Mono', monospace";
+    ctx.fillText('x', MARGIN_L + PLOT_W - 14, orig.y - 6);
+    ctx.fillText('ct', orig.x + 6, MARGIN_T + 10);
+
+    // t axis ticks
+    for (var tt = 0; tt <= 10; tt += 2) {
+      var tsy = toScreen(0, tt);
+      ctx.fillStyle = '#4a4870';
+      ctx.fillText(tt, MARGIN_L - 24, tsy.y + 4);
+    }
+    // x axis ticks
+    for (var xx = -6; xx <= 6; xx += 2) {
+      if (xx === 0) continue;
+      var tsx = toScreen(xx, 0);
+      ctx.fillStyle = '#4a4870';
+      ctx.fillText(xx, tsx.x - 6, orig.y + 14);
+    }
+  }
+
+  function drawLightConeFromA() {
+    // Light cone from A (just future upper portion)
+    ctx.strokeStyle = 'rgba(167,139,250,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    var aScreen = toScreen(A.x, A.t);
+    // Right cone line
+    var rEnd = toScreen(A.x + T_MAX, T_MAX);
+    ctx.beginPath(); ctx.moveTo(aScreen.x, aScreen.y); ctx.lineTo(rEnd.x, rEnd.y); ctx.stroke();
+    // Left cone line
+    var lEnd = toScreen(A.x - T_MAX, T_MAX);
+    ctx.beginPath(); ctx.moveTo(aScreen.x, aScreen.y); ctx.lineTo(lEnd.x, lEnd.y); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawStraightPath() {
+    var aS = toScreen(A.x, A.t);
+    var bS = toScreen(B.x, B.t);
+    ctx.beginPath();
+    ctx.moveTo(aS.x, aS.y);
+    ctx.lineTo(bS.x, bS.y);
+    ctx.strokeStyle = 'rgba(100,100,160,0.55)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    ctx.stroke();
+
+    // Label
+    ctx.font = "10px 'Space Mono', monospace";
+    ctx.fillStyle = 'rgba(100,100,160,0.7)';
+    ctx.fillText('geodesic', aS.x + 8, (aS.y + bS.y) / 2);
+  }
+
+  function drawUserPath() {
+    var path = getFullPath();
+    if (path.length < 2) return;
+    var aS = toScreen(path[0].x, path[0].t);
+    ctx.beginPath();
+    ctx.moveTo(aS.x, aS.y);
+    for (var i = 1; i < path.length; i++) {
+      var pS = toScreen(path[i].x, path[i].t);
+      ctx.lineTo(pS.x, pS.y);
+    }
+    ctx.strokeStyle = '#a78bfa';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([]);
+    ctx.stroke();
+
+    // Draw waypoint dots
+    waypoints.forEach(function(wp) {
+      var ws = toScreen(wp.x, wp.t);
+      ctx.beginPath();
+      ctx.arc(ws.x, ws.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#a78bfa';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+  }
+
+  function drawEndpoints() {
+    // Event A
+    var aS = toScreen(A.x, A.t);
+    ctx.beginPath();
+    ctx.arc(aS.x, aS.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#f5c542';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#f0ead0';
+    ctx.font = "bold 12px 'Space Mono', monospace";
+    ctx.fillText('A', aS.x + 12, aS.y + 4);
+
+    // Event B
+    var bS = toScreen(B.x, B.t);
+    ctx.beginPath();
+    ctx.arc(bS.x, bS.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#f5c542';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#f0ead0';
+    ctx.font = "bold 12px 'Space Mono', monospace";
+    ctx.fillText('B  Δt=10', bS.x + 12, bS.y + 4);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W_CSS, H_CSS);
+    ctx.fillStyle = '#08091e';
+    ctx.fillRect(0, 0, W_CSS, H_CSS);
+    drawAxes();
+    drawLightConeFromA();
+    drawStraightPath();
+    drawUserPath();
+    drawEndpoints();
+  }
+
+  function handleClick(e) {
+    var rect = canvas.getBoundingClientRect();
+    var px = e.clientX - rect.left;
+    var py = e.clientY - rect.top;
+    var coord = fromScreen(px, py);
+
+    // Ignore clicks outside the plot area or beyond B's time
+    if (coord.t <= A.t || coord.t >= B.t) return;
+    if (coord.x < X_MIN || coord.x > X_MAX) return;
+
+    // Clamp relative to last waypoint (or A)
+    var prevPt = waypoints.length > 0 ? waypoints[waypoints.length - 1] : A;
+    coord = clampWaypoint(prevPt, coord);
+
+    // Also check next segment to B won't violate causality
+    // (we only insert if the segment from new point to B is also causal)
+    var dtToB = B.t - coord.t;
+    var dxToB = Math.abs(B.x - coord.x);
+    if (dxToB > dtToB) {
+      // Clamp x so the segment to B is causal
+      coord.x = B.x + Math.sign(coord.x - B.x) * dtToB * 0.99;
+    }
+
+    waypoints.push(coord);
+    updateStats();
+    draw();
+  }
+
+  // Preset: Straight (reset to no waypoints)
+  document.getElementById('si3-btn-straight').addEventListener('click', function() {
+    waypoints = [];
+    updateStats();
+    draw();
+  });
+
+  // Preset: Twin Journey at 0.8c (go right then come back)
+  document.getElementById('si3-btn-twin').addEventListener('click', function() {
+    waypoints = [];
+    // Halfway point: t=5, x = 0.8*5 = 4.0 (travel at 0.8c for 5 coordinate seconds)
+    // Return: t=10, x=0 (come back at -0.8c for 5 coordinate seconds)
+    var p1 = { x: 4.0, t: 5.0 };
+    // Validate p1
+    p1 = clampWaypoint(A, p1);
+    waypoints.push(p1);
+    // p2 is B itself, no need to add
+    updateStats();
+    draw();
+  });
+
+  document.getElementById('si3-btn-clear').addEventListener('click', function() {
+    waypoints = [];
+    updateStats();
+    draw();
+  });
+
+  canvas.addEventListener('click', handleClick);
+  updateStats();
+  draw();
+})();
+</script>
+
+</body>
+</html>
