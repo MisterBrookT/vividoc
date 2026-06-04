@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Gradient Descent</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: #0d0619;
+  color: #ede9fe;
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0;
+  padding: 40px 20px 80px;
+  display: flex;
+  justify-content: center;
+}
+.wrapper { max-width: 900px; width: 100%; }
+
+h1.main-title {
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  text-align: center;
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, #a855f7 0%, #e879f9 50%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle {
+  text-align: center;
+  color: #6d5a9e;
+  font-size: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 48px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.section {
+  background: #130a28;
+  border: 1px solid #2d1b4e;
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 40px rgba(168,85,247,0.08);
+}
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #a855f7;
+  margin-bottom: 8px;
+}
+.section-title {
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: #ede9fe;
+  margin: 0 0 24px;
+  line-height: 1.3;
+}
+.section-divider {
+  border: none;
+  border-top: 1px solid #2d1b4e;
+  margin: 0 0 28px;
+}
+
+p {
+  font-size: 1.02rem;
+  line-height: 1.8;
+  color: #c4b5d4;
+  margin: 0 0 18px;
+  font-weight: 300;
+}
+p strong { color: #ede9fe; font-weight: 600; }
+p code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  background: #1e0f3a;
+  color: #e879f9;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.math-block {
+  background: #1a0c30;
+  border: 1px solid #3b2060;
+  border-radius: 10px;
+  padding: 18px 24px;
+  margin: 20px 0 28px;
+  text-align: center;
+  font-size: 1.1rem;
+  overflow-x: auto;
+}
+
+/* Widget */
+.widget {
+  background: #0d0619;
+  border: 1px solid #2d1b4e;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 28px;
+}
+.widget-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 2px;
+  color: #6d5a9e;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+canvas {
+  display: block;
+  border-radius: 8px;
+  cursor: crosshair;
+}
+.canvas-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.canvas-main { flex: 1; min-width: 280px; position: relative; }
+.canvas-side { flex: 0 0 180px; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-top: 14px;
+}
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #9d84c0;
+}
+.ctrl-group label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: #6d5a9e;
+  min-width: 28px;
+}
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 130px;
+  height: 4px;
+  background: #2d1b4e;
+  border-radius: 2px;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #a855f7;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(168,85,247,0.6);
+}
+.val-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: #e879f9;
+  min-width: 36px;
+}
+
+button {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  padding: 8px 18px;
+  background: transparent;
+  color: #a855f7;
+  border: 1px solid #a855f7;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+button:hover {
+  background: rgba(168,85,247,0.15);
+  box-shadow: 0 0 12px rgba(168,85,247,0.3);
+}
+button.active, button.primary {
+  background: #a855f7;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(168,85,247,0.4);
+}
+
+.info-strip {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #1a0c30;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+.info-item { color: #6d5a9e; }
+.info-item span { color: #e879f9; }
+
+.hint {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #4a3560;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* Optimizer buttons */
+.opt-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.opt-btn-sgd { border-color: #94a3b8; color: #94a3b8; }
+.opt-btn-sgd.active { background: #94a3b8; color: #0d0619; }
+.opt-btn-mom { border-color: #a855f7; color: #a855f7; }
+.opt-btn-mom.active { background: #a855f7; color: #fff; }
+.opt-btn-adam { border-color: #f59e0b; color: #f59e0b; }
+.opt-btn-adam.active { background: #f59e0b; color: #0d0619; }
+
+/* Schedule buttons */
+.sched-btn { border-color: #38bdf8; color: #38bdf8; font-size: 0.72rem; padding: 6px 10px; }
+.sched-btn.active { background: #38bdf8; color: #0d0619; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<h1 class="main-title">Gradient Descent</h1>
+<p class="subtitle">Optimization · Loss Landscapes · Adaptive Methods</p>
+
+<!-- ===== SECTION 1 ===== -->
+<div class="section" id="s1">
+  <div class="section-label">Section 01</div>
+  <h2 class="section-title">Descending the Loss Landscape</h2>
+  <hr class="section-divider"/>
+
+  <p>
+    At the heart of every learning algorithm lies an optimization problem: <strong>find the model parameters
+    that minimize a loss function</strong>. In deep learning, this loss function — measuring the gap between
+    predictions and ground truth — lives in a high-dimensional space. For a network with millions of parameters,
+    it forms a vast, rugged landscape of peaks, valleys, saddle points, and plateaus.
+  </p>
+  <p>
+    The gradient $\nabla L(\mathbf{w})$ points in the direction of <strong>steepest ascent</strong> — the direction
+    that most rapidly increases the loss. To minimize loss, we move in the <em>opposite</em> direction: we subtract
+    the gradient. This is the fundamental intuition of gradient descent. At each step, we measure the local slope
+    of the loss surface and take a small step downhill.
+  </p>
+  <p>
+    The size of that step is controlled by the <strong>learning rate</strong> $\eta$. Choose too large a value and
+    you overshoot — bouncing past minima or even diverging entirely. Choose too small a value and convergence
+    becomes glacially slow, especially in the early stages when gradients are large. The ideal learning rate
+    itself changes throughout training, motivating the scheduling strategies we explore in Section 3.
+  </p>
+  <p>
+    Non-convex loss landscapes (the norm in deep learning) introduce another crucial factor: <strong>initialization</strong>.
+    Where you start determines which minimum you reach. Strategies like <strong>Xavier initialization</strong>
+    (scaling weights by $\sqrt{1/n_{\text{in}}}$, preserving variance through layers) and <strong>He initialization</strong>
+    (scaling by $\sqrt{2/n_{\text{in}}}$, correcting for ReLU activations) are carefully designed to start gradient
+    descent in a regime where it can make rapid progress.
+  </p>
+
+  <div class="math-block">
+    $$\mathbf{w}_{t+1} = \mathbf{w}_t - \eta \cdot \nabla_{\mathbf{w}} L(\mathbf{w}_t)$$
+  </div>
+
+  <div class="widget">
+    <div class="widget-title">Interactive — Double-Well Loss Landscape</div>
+    <div class="canvas-row">
+      <div class="canvas-main">
+        <canvas id="c1-main" width="480" height="360"></canvas>
+        <div class="hint">Click canvas to set starting point — then Run GD</div>
+      </div>
+      <div class="canvas-side">
+        <canvas id="c1-loss" width="180" height="160"></canvas>
+        <div class="hint" style="margin-top:6px;">Loss over steps</div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>η</label>
+        <input type="range" id="s1-lr" min="1" max="50" value="10" step="1"/>
+        <span class="val-display" id="s1-lr-val">0.10</span>
+      </div>
+      <button id="s1-run" class="primary">▶ Run GD</button>
+      <button id="s1-reset">↺ Reset</button>
+    </div>
+    <div class="info-strip">
+      <div class="info-item">Step: <span id="s1-step">—</span></div>
+      <div class="info-item">Loss: <span id="s1-loss-val">—</span></div>
+      <div class="info-item">w₁: <span id="s1-w1">—</span></div>
+      <div class="info-item">w₂: <span id="s1-w2">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 2 ===== -->
+<div class="section" id="s2">
+  <div class="section-label">Section 02</div>
+  <h2 class="section-title">Comparing Optimizers</h2>
+  <hr class="section-divider"/>
+
+  <p>
+    Plain gradient descent struggles on loss surfaces with different curvatures along different directions — a common
+    situation in deep networks where some parameters are highly sensitive and others are nearly flat. On an
+    <strong>elongated bowl</strong>, where the gradient is steep in one direction and shallow in another, vanilla
+    SGD zigzags furiously while making slow progress along the valley floor.
+  </p>
+  <p>
+    <strong>Momentum</strong> addresses this by accumulating a velocity vector: instead of taking a step purely
+    based on the current gradient, we maintain a running average of past gradients. The parameter $\beta = 0.9$
+    means the velocity is a mix of 10% current gradient and 90% accumulated momentum. This has a beautiful physics
+    analogy: a ball rolling down a hill carries kinetic energy that helps it coast through flat regions and dampens
+    the oscillations caused by steep transverse gradients.
+  </p>
+  <p>
+    <strong>Adam</strong> (Adaptive Moment Estimation) goes further by maintaining per-parameter adaptive learning
+    rates. It tracks both the first moment (mean of gradients, like momentum) and the second moment (uncentered
+    variance). Parameters with consistently large gradients get smaller effective learning rates; rarely updated
+    parameters get larger steps. The <strong>bias correction</strong> terms — dividing by $(1 - \beta_1^t)$ and
+    $(1 - \beta_2^t)$ — correct for the fact that the moment estimates start near zero in early training.
+  </p>
+  <p>
+    Modern deep learning overwhelmingly defaults to Adam, but <strong>SGD with momentum often achieves better
+    generalization</strong> on well-tuned problems — the "sharp minimum" hypothesis suggests that adaptive methods
+    may converge to flatter, more generalizable minima less reliably. The choice is nuanced and task-dependent.
+  </p>
+
+  <div class="math-block">
+    $$\text{Adam: } \hat{m}_t = \frac{m_t}{1-\beta_1^t},\quad \hat{v}_t = \frac{v_t}{1-\beta_2^t},\quad \mathbf{w}_{t+1} = \mathbf{w}_t - \frac{\eta\, \hat{m}_t}{\sqrt{\hat{v}_t}+\varepsilon}$$
+  </div>
+
+  <div class="widget">
+    <div class="widget-title">Interactive — Optimizer Trajectories on Elongated Bowl</div>
+    <canvas id="c2-main" width="680" height="380" style="width:100%;border-radius:8px;cursor:default;"></canvas>
+    <div class="controls">
+      <span style="font-size:0.82rem;color:#6d5a9e;font-family:'JetBrains Mono',monospace;">SHOW:</span>
+      <div class="opt-buttons">
+        <button class="opt-btn-sgd active" id="btn-sgd">SGD</button>
+        <button class="opt-btn-mom active" id="btn-mom">Momentum</button>
+        <button class="opt-btn-adam active" id="btn-adam">Adam</button>
+      </div>
+      <button id="s2-restart" class="primary">▶ Animate</button>
+      <button id="s2-reset-btn">↺ Reset</button>
+    </div>
+    <div class="info-strip">
+      <div class="info-item">SGD Loss: <span id="s2-sgd-loss">—</span></div>
+      <div class="info-item">Momentum Loss: <span id="s2-mom-loss">—</span></div>
+      <div class="info-item">Adam Loss: <span id="s2-adam-loss">—</span></div>
+      <div class="info-item">Step: <span id="s2-step">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 3 ===== -->
+<div class="section" id="s3">
+  <div class="section-label">Section 03</div>
+  <h2 class="section-title">Learning Rate Schedules</h2>
+  <hr class="section-divider"/>
+
+  <p>
+    If there is one hyperparameter that dominates all others in its impact on training, it is the <strong>learning
+    rate</strong>. But no single fixed value works well throughout the entire course of training. Early on, large
+    gradients and uninformed parameters mean a moderate learning rate makes rapid progress. Later, as the optimizer
+    approaches a minimum, the same learning rate causes destructive oscillations around the solution.
+  </p>
+  <p>
+    <strong>Step decay</strong> — halving or reducing the learning rate by a factor of 10 at fixed epoch milestones —
+    was the original engineering heuristic, still widely used in computer vision. But it requires manual tuning of
+    the decay schedule. <strong>Cosine annealing</strong> provides a smooth, principled alternative: the learning
+    rate follows a half-cosine from $\eta_{\max}$ down to $\eta_{\min}$, allowing gradual deceleration without
+    abrupt transitions that can cause loss spikes.
+  </p>
+  <p>
+    <strong>Warmup</strong> schedules address a subtle problem in transformer training: in the first iterations,
+    the model's parameters are random, and the Adam moment estimates are unreliable (the bias correction is large).
+    A large initial learning rate can cause catastrophic divergence. Warmup linearly increases the learning rate
+    from near-zero to the target value over the first few hundred or thousand steps, allowing moment estimates
+    to stabilize before the optimizer makes large updates.
+  </p>
+  <p>
+    The <strong>1cycle policy</strong> (popularized by fast.ai and Leslie Smith's research) takes this further:
+    first increasing the learning rate to a peak, then annealing it down, and finishing with a brief phase at very
+    low LR. This aggressive schedule acts as a form of implicit regularization — the brief high-LR phase pushes
+    the model out of sharp minima toward wider, more generalizable basins.
+  </p>
+
+  <div class="math-block">
+    $$\eta_{\text{cosine}}(t) = \eta_{\min} + \frac{\eta_{\max} - \eta_{\min}}{2}\left(1 + \cos\!\left(\frac{t}{T}\pi\right)\right)$$
+  </div>
+
+  <div class="widget">
+    <div class="widget-title">Interactive — Learning Rate Schedule & Training Loss</div>
+    <div class="controls" style="margin-bottom:14px;">
+      <span style="font-size:0.82rem;color:#6d5a9e;font-family:'JetBrains Mono',monospace;">SCHEDULE:</span>
+      <button class="sched-btn active" id="sched-const" data-sched="constant">Constant</button>
+      <button class="sched-btn" id="sched-step" data-sched="step">Step Decay</button>
+      <button class="sched-btn" id="sched-cos" data-sched="cosine">Cosine</button>
+      <button class="sched-btn" id="sched-warm" data-sched="warmup">Warmup+Cosine</button>
+    </div>
+    <div class="controls" style="margin-bottom:14px;">
+      <div class="ctrl-group">
+        <label>η₀</label>
+        <input type="range" id="s3-lr0" min="1" max="20" value="5" step="1"/>
+        <span class="val-display" id="s3-lr0-val">0.05</span>
+      </div>
+      <div class="ctrl-group">
+        <label>Epochs</label>
+        <input type="range" id="s3-epochs" min="20" max="200" value="100" step="10"/>
+        <span class="val-display" id="s3-epochs-val">100</span>
+      </div>
+    </div>
+    <canvas id="c3-main" width="680" height="380" style="width:100%;border-radius:8px;"></canvas>
+    <div class="info-strip" style="margin-top:12px;">
+      <div class="info-item">Schedule: <span id="s3-sched-name">Constant</span></div>
+      <div class="info-item">Final Loss: <span id="s3-final-loss">—</span></div>
+      <div class="info-item">Min Loss: <span id="s3-min-loss">—</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ==========================================
+// SECTION 1: Double-Well Loss Landscape
+// ==========================================
+(function() {
+  const canvas = document.getElementById('c1-main');
+  const lossCanvas = document.getElementById('c1-loss');
+  const ctx = canvas.getContext('2d');
+  const lctx = lossCanvas.getContext('2d');
+
+  const dpr = window.devicePixelRatio || 1;
+  function initCanvas(c, w, h) {
+    c.width = w * dpr; c.height = h * dpr;
+    c.style.width = w + 'px'; c.style.height = h + 'px';
+    c.getContext('2d').scale(dpr, dpr);
+  }
+
+  let CW = 480, CH = 360;
+  let LW = 180, LH = 160;
+
+  function resizeCanvases() {
+    const container = canvas.parentElement;
+    CW = container.clientWidth || 480;
+    CH = Math.round(CW * 0.75);
+    canvas.width = CW * dpr; canvas.height = CH * dpr;
+    canvas.style.width = CW + 'px'; canvas.style.height = CH + 'px';
+    ctx.scale(dpr, dpr);
+    lossCanvas.width = LW * dpr; lossCanvas.height = LH * dpr;
+    lossCanvas.style.width = LW + 'px'; lossCanvas.style.height = LH + 'px';
+    lctx.scale(dpr, dpr);
+  }
+  resizeCanvases();
+
+  // Domain: w1 in [-2.5, 2.5], w2 in [-2, 2]
+  const W1_MIN = -2.5, W1_MAX = 2.5, W2_MIN = -2, W2_MAX = 2;
+
+  function loss(w1, w2) {
+    return w1*w1*w1*w1/4 - 2*w1*w1 + w2*w2 + 0.3;
+  }
+  function gradLoss(w1, w2) {
+    return { dw1: w1*w1*w1 - 4*w1, dw2: 2*w2 };
+  }
+  function toCanvas(w1, w2) {
+    const x = (w1 - W1_MIN) / (W1_MAX - W1_MIN) * CW;
+    const y = CH - (w2 - W2_MIN) / (W2_MAX - W2_MIN) * CH;
+    return {x, y};
+  }
+  function fromCanvas(cx, cy) {
+    const w1 = cx / CW * (W1_MAX - W1_MIN) + W1_MIN;
+    const w2 = (1 - cy / CH) * (W2_MAX - W2_MIN) + W2_MIN;
+    return {w1, w2};
+  }
+
+  // Precompute heatmap
+  let heatmapImage = null;
+  function buildHeatmap() {
+    const res = 120;
+    const offscreen = document.createElement('canvas');
+    offscreen.width = res; offscreen.height = res;
+    const octx = offscreen.getContext('2d');
+    const imgData = octx.createImageData(res, res);
+
+    let minL = Infinity, maxL = -Infinity;
+    const vals = [];
+    for (let j = 0; j < res; j++) {
+      for (let i = 0; i < res; i++) {
+        const w1 = W1_MIN + i / (res-1) * (W1_MAX - W1_MIN);
+        const w2 = W2_MIN + (1 - j/(res-1)) * (W2_MAX - W2_MIN);
+        const v = loss(w1, w2);
+        vals.push(v);
+        if (v < minL) minL = v;
+        if (v > maxL) maxL = v;
+      }
+    }
+    for (let idx = 0; idx < vals.length; idx++) {
+      const t = (vals[idx] - minL) / (maxL - minL);
+      const i = idx % res, j = Math.floor(idx / res);
+      // color: low=dark teal, mid=indigo, high=orange-red
+      let r, g, b;
+      if (t < 0.3) {
+        const s = t / 0.3;
+        r = Math.round(10 + s*30); g = Math.round(80 + s*20); b = Math.round(60 + s*40);
+      } else if (t < 0.6) {
+        const s = (t-0.3)/0.3;
+        r = Math.round(40 + s*80); g = Math.round(100 - s*50); b = Math.round(100 + s*60);
+      } else {
+        const s = (t-0.6)/0.4;
+        r = Math.round(120 + s*135); g = Math.round(50 - s*40); b = Math.round(160 - s*100);
+      }
+      const px = (j * res + i) * 4;
+      imgData.data[px] = r; imgData.data[px+1] = g; imgData.data[px+2] = b; imgData.data[px+3] = 200;
+    }
+    octx.putImageData(imgData, 0, 0);
+    heatmapImage = offscreen;
+  }
+  buildHeatmap();
+
+  let startPt = null;
+  let trajectory = [];
+  let animId = null;
+
+  function getLR() {
+    const raw = parseInt(document.getElementById('s1-lr').value);
+    return raw / 100;
+  }
+
+  function drawScene() {
+    ctx.clearRect(0, 0, CW, CH);
+    if (heatmapImage) {
+      ctx.globalAlpha = 1;
+      ctx.drawImage(heatmapImage, 0, 0, CW, CH);
+    }
+
+    // Draw axes labels
+    ctx.fillStyle = 'rgba(237,233,254,0.4)';
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillText('w₁', CW - 20, CH - 6);
+    ctx.fillText('w₂', 6, 14);
+
+    // Mark the two minima
+    const m1 = toCanvas(-Math.sqrt(4), 0);
+    const m2 = toCanvas(Math.sqrt(4), 0);
+    [m1, m2].forEach(m => {
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, 8, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(168,85,247,0.8)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(168,85,247,0.3)';
+      ctx.fill();
+    });
+
+    // Draw trajectory
+    if (trajectory.length > 1) {
+      ctx.beginPath();
+      const p0 = toCanvas(trajectory[0].w1, trajectory[0].w2);
+      ctx.moveTo(p0.x, p0.y);
+      for (let i = 1; i < trajectory.length; i++) {
+        const p = toCanvas(trajectory[i].w1, trajectory[i].w2);
+        ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = 'rgba(232,121,249,0.9)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Draw dots
+      trajectory.forEach((pt, idx) => {
+        const p = toCanvas(pt.w1, pt.w2);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, idx === trajectory.length-1 ? 5 : 3, 0, Math.PI*2);
+        ctx.fillStyle = idx === trajectory.length-1 ? '#e879f9' : 'rgba(168,85,247,0.6)';
+        ctx.fill();
+      });
+    }
+
+    // Starting point
+    if (startPt) {
+      const p = toCanvas(startPt.w1, startPt.w2);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 6, 0, Math.PI*2);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  function drawLossPlot() {
+    lctx.clearRect(0, 0, LW, LH);
+    lctx.fillStyle = '#0d0619';
+    lctx.fillRect(0, 0, LW, LH);
+
+    if (trajectory.length < 2) {
+      lctx.fillStyle = '#4a3560';
+      lctx.font = '10px JetBrains Mono, monospace';
+      lctx.fillText('Run GD to see', 14, LH/2 - 6);
+      lctx.fillText('loss curve', 20, LH/2 + 8);
+      return;
+    }
+    const losses = trajectory.map(pt => loss(pt.w1, pt.w2));
+    const minL = Math.min(...losses), maxL = Math.max(...losses);
+    const pad = 24;
+    const pw = LW - pad*2, ph = LH - pad*2;
+
+    lctx.strokeStyle = '#2d1b4e'; lctx.lineWidth = 1;
+    lctx.strokeRect(pad, pad, pw, ph);
+
+    lctx.beginPath();
+    losses.forEach((l, i) => {
+      const x = pad + i / (losses.length-1) * pw;
+      const y = pad + ph - (l - minL) / Math.max(maxL - minL, 0.001) * ph;
+      i === 0 ? lctx.moveTo(x, y) : lctx.lineTo(x, y);
+    });
+    lctx.strokeStyle = '#a855f7'; lctx.lineWidth = 2; lctx.stroke();
+
+    lctx.fillStyle = '#6d5a9e'; lctx.font = '9px JetBrains Mono, monospace';
+    lctx.fillText('Step 0', pad, LH - 5);
+    lctx.fillText('50', LW - 22, LH - 5);
+    lctx.fillText('Loss', 2, pad + 6);
+  }
+
+  function updateInfo() {
+    const last = trajectory[trajectory.length - 1];
+    if (!last) return;
+    document.getElementById('s1-step').textContent = trajectory.length - 1;
+    document.getElementById('s1-loss-val').textContent = loss(last.w1, last.w2).toFixed(4);
+    document.getElementById('s1-w1').textContent = last.w1.toFixed(3);
+    document.getElementById('s1-w2').textContent = last.w2.toFixed(3);
+  }
+
+  function runGD() {
+    if (!startPt) return;
+    trajectory = [{ ...startPt }];
+    const eta = getLR();
+    let w1 = startPt.w1, w2 = startPt.w2;
+    for (let i = 0; i < 50; i++) {
+      const g = gradLoss(w1, w2);
+      w1 -= eta * g.dw1;
+      w2 -= eta * g.dw2;
+      w1 = Math.max(W1_MIN+0.05, Math.min(W1_MAX-0.05, w1));
+      w2 = Math.max(W2_MIN+0.05, Math.min(W2_MAX-0.05, w2));
+      trajectory.push({ w1, w2 });
+    }
+
+    // Animate drawing
+    let step = 1;
+    const dispTrajectory = [];
+    dispTrajectory.push(trajectory[0]);
+    if (animId) cancelAnimationFrame(animId);
+    function frame() {
+      if (step < trajectory.length) {
+        dispTrajectory.push(trajectory[step]);
+        step++;
+        const savedTraj = trajectory;
+        trajectory = dispTrajectory.slice();
+        drawScene(); drawLossPlot(); updateInfo();
+        trajectory = savedTraj;
+        trajectory = dispTrajectory.slice();
+        animId = requestAnimationFrame(frame);
+      } else {
+        drawScene(); drawLossPlot(); updateInfo();
+      }
+    }
+    trajectory = dispTrajectory;
+    animId = requestAnimationFrame(frame);
+  }
+
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    startPt = fromCanvas(cx, cy);
+    trajectory = [];
+    drawScene(); drawLossPlot();
+    document.getElementById('s1-step').textContent = '0';
+    document.getElementById('s1-loss-val').textContent = loss(startPt.w1, startPt.w2).toFixed(4);
+    document.getElementById('s1-w1').textContent = startPt.w1.toFixed(3);
+    document.getElementById('s1-w2').textContent = startPt.w2.toFixed(3);
+  });
+
+  document.getElementById('s1-run').addEventListener('click', runGD);
+  document.getElementById('s1-reset').addEventListener('click', () => {
+    startPt = null; trajectory = [];
+    if (animId) cancelAnimationFrame(animId);
+    drawScene(); drawLossPlot();
+    ['s1-step','s1-loss-val','s1-w1','s1-w2'].forEach(id => document.getElementById(id).textContent = '—');
+  });
+  document.getElementById('s1-lr').addEventListener('input', (e) => {
+    document.getElementById('s1-lr-val').textContent = (parseInt(e.target.value)/100).toFixed(2);
+  });
+
+  drawScene(); drawLossPlot();
+})();
+
+// ==========================================
+// SECTION 2: Optimizer Comparison
+// ==========================================
+(function() {
+  const canvas = document.getElementById('c2-main');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  let CW, CH;
+  function resize() {
+    CW = canvas.parentElement.clientWidth || 680;
+    CH = Math.round(CW * 0.56);
+    canvas.width = CW * dpr; canvas.height = CH * dpr;
+    canvas.style.width = CW + 'px'; canvas.style.height = CH + 'px';
+    ctx.scale(dpr, dpr);
+    drawAll();
+  }
+
+  // Loss: L(w1,w2) = 0.1*w1^2 + w2^2
+  const W1_MIN = -9, W1_MAX = 9, W2_MIN = -5, W2_MAX = 5;
+  const START_W1 = 8, START_W2 = 4;
+  const ETA = 0.1;
+  const STEPS = 120;
+
+  function loss(w1, w2) { return 0.1*w1*w1 + w2*w2; }
+  function grad(w1, w2) { return {dw1: 0.2*w1, dw2: 2*w2}; }
+
+  function toCanvas(w1, w2) {
+    const x = (w1 - W1_MIN)/(W1_MAX-W1_MIN) * CW;
+    const y = CH - (w2 - W2_MIN)/(W2_MAX-W2_MIN) * CH;
+    return {x, y};
+  }
+
+  function computeSGD() {
+    const traj = [{w1:START_W1,w2:START_W2}];
+    let w1=START_W1, w2=START_W2;
+    for (let i=0; i<STEPS; i++) {
+      const g = grad(w1,w2);
+      w1 -= ETA * g.dw1;
+      w2 -= ETA * g.dw2;
+      traj.push({w1,w2});
+    }
+    return traj;
+  }
+  function computeMomentum() {
+    const traj = [{w1:START_W1,w2:START_W2}];
+    let w1=START_W1, w2=START_W2, v1=0, v2=0;
+    const beta=0.9;
+    for (let i=0; i<STEPS; i++) {
+      const g = grad(w1,w2);
+      v1 = beta*v1 + g.dw1;
+      v2 = beta*v2 + g.dw2;
+      w1 -= ETA * v1;
+      w2 -= ETA * v2;
+      traj.push({w1,w2});
+    }
+    return traj;
+  }
+  function computeAdam() {
+    const traj = [{w1:START_W1,w2:START_W2}];
+    let w1=START_W1, w2=START_W2;
+    let m1=0, m2=0, v1=0, v2=0;
+    const b1=0.9, b2=0.999, eps=1e-8;
+    for (let i=0; i<STEPS; i++) {
+      const g = grad(w1,w2);
+      m1 = b1*m1 + (1-b1)*g.dw1; m2 = b1*m2 + (1-b1)*g.dw2;
+      v1 = b2*v1 + (1-b2)*g.dw1*g.dw1; v2 = b2*v2 + (1-b2)*g.dw2*g.dw2;
+      const mh1 = m1/(1-Math.pow(b1,i+1)), mh2 = m2/(1-Math.pow(b1,i+1));
+      const vh1 = v1/(1-Math.pow(b2,i+1)), vh2 = v2/(1-Math.pow(b2,i+1));
+      w1 -= ETA * mh1/(Math.sqrt(vh1)+eps);
+      w2 -= ETA * mh2/(Math.sqrt(vh2)+eps);
+      traj.push({w1,w2});
+    }
+    return traj;
+  }
+
+  const trajSGD = computeSGD();
+  const trajMom = computeMomentum();
+  const trajAdam = computeAdam();
+
+  let showSGD = true, showMom = true, showAdam = true;
+  let animStep = 0, animId = null, running = false;
+
+  function drawContours() {
+    const nContours = 10;
+    for (let k = 1; k <= nContours; k++) {
+      const L = k * 1.5;
+      // Ellipse: 0.1*w1^2 + w2^2 = L => w1^2/(10L) + w2^2/L = 1
+      const a = Math.sqrt(10*L);
+      const b = Math.sqrt(L);
+      const center = toCanvas(0,0);
+      const edge1 = toCanvas(a, 0);
+      const edge2 = toCanvas(0, b);
+      const rx = Math.abs(edge1.x - center.x);
+      const ry = Math.abs(center.y - edge2.y);
+      ctx.beginPath();
+      ctx.ellipse(center.x, center.y, rx, ry, 0, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(168,85,247,${0.08 + k*0.03})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  function drawTraj(traj, color, steps) {
+    if (traj.length < 2 || steps < 1) return;
+    const n = Math.min(steps+1, traj.length);
+    ctx.beginPath();
+    const p0 = toCanvas(traj[0].w1, traj[0].w2);
+    ctx.moveTo(p0.x, p0.y);
+    for (let i=1; i<n; i++) {
+      const p = toCanvas(traj[i].w1, traj[i].w2);
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    if (n > 0) {
+      const last = toCanvas(traj[n-1].w1, traj[n-1].w2);
+      ctx.beginPath(); ctx.arc(last.x, last.y, 5, 0, Math.PI*2);
+      ctx.fillStyle = color; ctx.fill();
+    }
+  }
+
+  function drawAll() {
+    if (!CW) return;
+    ctx.clearRect(0,0,CW,CH);
+    ctx.fillStyle = '#0d0619';
+    ctx.fillRect(0,0,CW,CH);
+    drawContours();
+
+    // Origin marker
+    const origin = toCanvas(0,0);
+    ctx.beginPath(); ctx.arc(origin.x, origin.y, 6, 0, Math.PI*2);
+    ctx.fillStyle = '#a855f7'; ctx.fill();
+
+    const s = running ? animStep : STEPS;
+    if (showSGD) drawTraj(trajSGD, '#94a3b8', s);
+    if (showMom) drawTraj(trajMom, '#a855f7', s);
+    if (showAdam) drawTraj(trajAdam, '#f59e0b', s);
+
+    // Labels
+    ctx.font = '11px JetBrains Mono, monospace';
+    if (showSGD) { ctx.fillStyle='#94a3b8'; ctx.fillText('SGD', 10, 18); }
+    if (showMom) { ctx.fillStyle='#a855f7'; ctx.fillText('Momentum', 60, 18); }
+    if (showAdam) { ctx.fillStyle='#f59e0b'; ctx.fillText('Adam', 175, 18); }
+    ctx.fillStyle='rgba(168,85,247,0.5)'; ctx.fillText('min', origin.x+8, origin.y-4);
+
+    // Update info
+    const step = running ? animStep : STEPS;
+    document.getElementById('s2-step').textContent = step;
+    if (step < trajSGD.length) {
+      const sgdPt = trajSGD[step];
+      const momPt = trajMom[step];
+      const adamPt = trajAdam[step];
+      document.getElementById('s2-sgd-loss').textContent = loss(sgdPt.w1,sgdPt.w2).toFixed(3);
+      document.getElementById('s2-mom-loss').textContent = loss(momPt.w1,momPt.w2).toFixed(3);
+      document.getElementById('s2-adam-loss').textContent = loss(adamPt.w1,adamPt.w2).toFixed(3);
+    }
+  }
+
+  function animate() {
+    running = true; animStep = 0;
+    if (animId) cancelAnimationFrame(animId);
+    function frame() {
+      drawAll();
+      if (animStep < STEPS) {
+        animStep++;
+        animId = requestAnimationFrame(frame);
+      } else {
+        running = false;
+      }
+    }
+    frame();
+  }
+
+  document.getElementById('btn-sgd').addEventListener('click', function() {
+    showSGD = !showSGD; this.classList.toggle('active', showSGD); drawAll();
+  });
+  document.getElementById('btn-mom').addEventListener('click', function() {
+    showMom = !showMom; this.classList.toggle('active', showMom); drawAll();
+  });
+  document.getElementById('btn-adam').addEventListener('click', function() {
+    showAdam = !showAdam; this.classList.toggle('active', showAdam); drawAll();
+  });
+  document.getElementById('s2-restart').addEventListener('click', animate);
+  document.getElementById('s2-reset-btn').addEventListener('click', () => {
+    if (animId) cancelAnimationFrame(animId);
+    running = false; animStep = 0; drawAll();
+  });
+
+  window.addEventListener('load', resize);
+  window.addEventListener('resize', resize);
+  resize();
+})();
+
+// ==========================================
+// SECTION 3: Learning Rate Schedules
+// ==========================================
+(function() {
+  const canvas = document.getElementById('c3-main');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  let CW, CH;
+
+  function resize() {
+    CW = canvas.parentElement.clientWidth || 680;
+    CH = Math.round(CW * 0.56);
+    canvas.width = CW * dpr; canvas.height = CH * dpr;
+    canvas.style.width = CW + 'px'; canvas.style.height = CH + 'px';
+    ctx.scale(dpr, dpr);
+    redraw();
+  }
+
+  let schedType = 'constant';
+
+  function getLR0() { return parseInt(document.getElementById('s3-lr0').value) / 100; }
+  function getEpochs() { return parseInt(document.getElementById('s3-epochs').value); }
+
+  function computeLRSchedule(type, eta0, epochs) {
+    const lrs = [];
+    for (let t = 0; t < epochs; t++) {
+      let lr;
+      if (type === 'constant') {
+        lr = eta0;
+      } else if (type === 'step') {
+        lr = eta0 * Math.pow(0.1, Math.floor(t / 30));
+      } else if (type === 'cosine') {
+        lr = 0.001 + (eta0 - 0.001) * 0.5 * (1 + Math.cos(Math.PI * t / epochs));
+      } else if (type === 'warmup') {
+        const warmupEpochs = Math.round(epochs * 0.1);
+        if (t < warmupEpochs) {
+          lr = eta0 * t / warmupEpochs;
+        } else {
+          const t2 = t - warmupEpochs;
+          const T2 = epochs - warmupEpochs;
+          lr = 0.001 + (eta0 - 0.001) * 0.5 * (1 + Math.cos(Math.PI * t2 / T2));
+        }
+      }
+      lrs.push(lr);
+    }
+    return lrs;
+  }
+
+  function simulateLoss(lrs, epochs) {
+    // Synthetic loss: decreases faster with larger lr, but large lr introduces noise
+    const losses = [];
+    let L = 2.5;
+    const rng = mulberry32(42);
+    for (let t = 0; t < epochs; t++) {
+      const lr = lrs[t];
+      const rate = lr * 3.5;
+      const noise = (rng() - 0.5) * lr * 0.4;
+      L = L * Math.exp(-rate * 0.08) + noise;
+      L = Math.max(0.05, L);
+      losses.push(L);
+    }
+    return losses;
+  }
+
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+  }
+
+  function redraw() {
+    if (!CW) return;
+    const epochs = getEpochs();
+    const eta0 = getLR0();
+    const lrs = computeLRSchedule(schedType, eta0, epochs);
+    const losses = simulateLoss(lrs, epochs);
+
+    ctx.clearRect(0,0,CW,CH);
+    ctx.fillStyle = '#0d0619';
+    ctx.fillRect(0,0,CW,CH);
+
+    const padL=50, padR=20, padT=30, padB=30;
+    const halfH = (CH - padT - padB) / 2 - 8;
+    const topY = padT;
+    const botY = padT + halfH + 16;
+    const pw = CW - padL - padR;
+
+    // --- LR panel ---
+    ctx.fillStyle = 'rgba(45,27,78,0.4)';
+    ctx.fillRect(padL, topY, pw, halfH);
+
+    const maxLR = Math.max(...lrs) * 1.1;
+    // grid lines
+    ctx.strokeStyle = 'rgba(45,27,78,0.8)'; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    for (let g=0; g<=3; g++) {
+      const y = topY + halfH - g/3*halfH;
+      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+pw,y); ctx.stroke();
+      ctx.fillStyle='#4a3560'; ctx.font='9px JetBrains Mono, monospace';
+      ctx.fillText((g/3*maxLR).toFixed(3), 2, y+4);
+    }
+    ctx.setLineDash([]);
+
+    // LR curve
+    ctx.beginPath();
+    lrs.forEach((lr, i) => {
+      const x = padL + i/(epochs-1)*pw;
+      const y = topY + halfH - lr/maxLR*halfH;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth=2; ctx.stroke();
+
+    ctx.fillStyle='#6d5a9e'; ctx.font='10px JetBrains Mono, monospace';
+    ctx.fillText('Learning Rate', padL+4, topY+13);
+
+    // --- Loss panel ---
+    ctx.fillStyle = 'rgba(45,27,78,0.4)';
+    ctx.fillRect(padL, botY, pw, halfH);
+
+    const maxL = Math.max(...losses) * 1.05;
+    const minL = Math.min(...losses) * 0.95;
+    ctx.strokeStyle = 'rgba(45,27,78,0.8)'; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    for (let g=0; g<=3; g++) {
+      const y = botY + halfH - g/3*halfH;
+      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+pw,y); ctx.stroke();
+      const val = minL + g/3*(maxL-minL);
+      ctx.fillStyle='#4a3560'; ctx.font='9px JetBrains Mono, monospace';
+      ctx.fillText(val.toFixed(2), 2, y+4);
+    }
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    losses.forEach((l, i) => {
+      const x = padL + i/(epochs-1)*pw;
+      const y = botY + halfH - (l-minL)/(maxL-minL)*halfH;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle = '#a855f7'; ctx.lineWidth=2; ctx.stroke();
+
+    // Fill under loss curve
+    const lastX = padL + pw;
+    ctx.lineTo(lastX, botY+halfH); ctx.lineTo(padL, botY+halfH);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(168,85,247,0.08)'; ctx.fill();
+
+    ctx.fillStyle='#6d5a9e'; ctx.font='10px JetBrains Mono, monospace';
+    ctx.fillText('Training Loss', padL+4, botY+13);
+
+    // X axis labels
+    ctx.fillStyle='#4a3560'; ctx.font='9px JetBrains Mono, monospace';
+    ctx.fillText('0', padL, CH-4);
+    ctx.fillText(`${epochs} epochs`, padL+pw-50, CH-4);
+
+    // Update info
+    const schedNames = {constant:'Constant',step:'Step Decay ×0.1/30ep',cosine:'Cosine Annealing',warmup:'Warmup + Cosine'};
+    document.getElementById('s3-sched-name').textContent = schedNames[schedType];
+    document.getElementById('s3-final-loss').textContent = losses[losses.length-1].toFixed(4);
+    document.getElementById('s3-min-loss').textContent = Math.min(...losses).toFixed(4);
+  }
+
+  // Schedule buttons
+  document.querySelectorAll('.sched-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.sched-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      schedType = this.dataset.sched;
+      redraw();
+    });
+  });
+
+  document.getElementById('s3-lr0').addEventListener('input', function() {
+    document.getElementById('s3-lr0-val').textContent = (parseInt(this.value)/100).toFixed(2);
+    redraw();
+  });
+  document.getElementById('s3-epochs').addEventListener('input', function() {
+    document.getElementById('s3-epochs-val').textContent = this.value;
+    redraw();
+  });
+
+  window.addEventListener('load', resize);
+  window.addEventListener('resize', resize);
+  resize();
+})();
+</script>
+</body>
+</html>

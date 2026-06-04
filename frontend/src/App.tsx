@@ -79,6 +79,40 @@ const DOMAINS = [
       { slug: 'spring_mass',          title: 'Spring–Mass System',    category: 'Parameter Exploration', desc: 'Tune stiffness, mass, and damping to see underdamped oscillation, critical damping, and resonance.' },
     ],
   },
+  {
+    id: 'chemistry',
+    name: 'Chemistry',
+    cases: [
+      { slug: 'reaction_kinetics',    title: 'Reaction Kinetics',     category: 'Parameter Exploration', desc: 'Tune rate constants and activation energy to see how concentration evolves and temperature accelerates reactions.' },
+      { slug: 'molecular_orbitals',   title: 'Molecular Orbitals',    category: 'State Switching',       desc: 'Toggle bonding vs antibonding orbitals in H₂ and watch the MO diagram determine bond order and stability.' },
+      { slug: 'acid_base',            title: 'Acid–Base Chemistry',   category: 'Parameter Exploration', desc: 'Henderson-Hasselbalch in action: slide pKa and ratio to trace titration curves and buffer capacity.' },
+    ],
+  },
+  {
+    id: 'infotheory',
+    name: 'Information Theory',
+    cases: [
+      { slug: 'shannon_entropy',      title: 'Shannon Entropy',       category: 'Parameter Exploration', desc: 'Adjust symbol probabilities and watch entropy peak at maximum uncertainty — the mathematical surprise.' },
+      { slug: 'huffman_coding',       title: 'Huffman Coding',        category: 'Freeform Construction', desc: 'Edit symbol frequencies and watch the optimal prefix-free tree rebuild itself to minimize average code length.' },
+      { slug: 'channel_capacity',     title: 'Channel Capacity',      category: 'Parameter Exploration', desc: 'Shannon\'s noisy-channel theorem: slide SNR and bandwidth to see the fundamental limit of error-free communication.' },
+    ],
+  },
+  {
+    id: 'ml',
+    name: 'Machine Learning',
+    cases: [
+      { slug: 'gradient_descent',     title: 'Gradient Descent',      category: 'Direct Manipulation',   desc: 'Click to place the starting point on a 3D loss surface and watch SGD, momentum, and Adam navigate to minima.' },
+      { slug: 'bias_variance',        title: 'Bias–Variance Tradeoff', category: 'Parameter Exploration', desc: 'Fit polynomials to noisy data — as degree grows, watch bias collapse and variance explode into overfitting.' },
+    ],
+  },
+  {
+    id: 'relativity',
+    name: 'Relativity & Spacetime',
+    cases: [
+      { slug: 'time_dilation',        title: 'Time Dilation',         category: 'Parameter Exploration', desc: 'Drag a starship to near-light speed and watch proper time diverge from coordinate time on a live Lorentz factor curve.' },
+      { slug: 'lorentz_transform',    title: 'Lorentz Transformation', category: 'Direct Manipulation',  desc: 'Drag a moving frame on the Minkowski diagram to see simultaneity shatter and length-contracted rulers emerge.' },
+    ],
+  },
 ];
 
 const CATEGORY_DOT: Record<string, string> = {

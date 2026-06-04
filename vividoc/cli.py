@@ -168,6 +168,72 @@ def run(
     typer.echo(f"📁 Output directory: {output_dir}")
 
 
+@app.command()
+def video(
+    spec_file: str = typer.Argument(..., help="Path to document spec JSON file"),
+    llm_model: str = typer.Option(
+        ..., "--model", "-m", help="LLM model in format provider/model-name"
+    ),
+    output_dir: str = typer.Option("outputs", help="Output directory (video/main.py will be placed inside)"),
+    render: bool = typer.Option(
+        False, "--render", help="Render the generated Manim script to MP4 (requires manim>=0.18)"
+    ),
+    render_quality: str = typer.Option(
+        "medium",
+        "--quality",
+        help="Manim render quality: low | medium | high | production",
+    ),
+    style: str = typer.Option("", "--style", help="Optional free-text style instructions for the LLM"),
+):
+    """Generate a Manim video script from a document spec.
+
+    \b
+    Example:
+        vividoc video spec.json --model openrouter/google/gemini-2.5-pro
+        vividoc video spec.json --model openrouter/google/gemini-2.5-pro --render
+    """
+    from vividoc.core.video_codegen import VideoCodegen, manim_is_available
+    from vividoc.utils.llm.client import LLMClient
+    from pathlib import Path
+
+    typer.echo(f"🎬 Generating Manim video script from: {spec_file}")
+    typer.echo(f"🤖 Using model: {llm_model}")
+
+    # Load spec
+    doc_spec = load_json(spec_file, DocumentSpec)
+    typer.echo(f"📋 Loaded {len(doc_spec.knowledge_units)} knowledge units for topic: {doc_spec.topic}")
+
+    # Warn if render requested but manim missing
+    if render and not manim_is_available():
+        typer.echo(
+            "⚠️  Warning: --render was requested but manim is not installed.\n"
+            "   Install it with: pip install 'manim>=0.18.0'\n"
+            "   Continuing without rendering...",
+            err=True,
+        )
+        render = False
+
+    llm_client = LLMClient(llm_model)
+    codegen = VideoCodegen(llm_client=llm_client, style_instructions=style)
+
+    output_path = Path(output_dir)
+    main_py = codegen.generate(
+        doc_spec,
+        output_dir=output_path,
+        render=render,
+        render_quality=render_quality,
+    )
+
+    typer.echo(f"✅ Manim script written to: {main_py}")
+
+    if not render:
+        typer.echo(
+            "\nTo render the video, run:\n"
+            f"    manim render {main_py} --quality medium -a\n"
+            "    (requires: pip install 'manim>=0.18.0')"
+        )
+
+
 def main():
     """Entry point for the vividoc CLI."""
     app()

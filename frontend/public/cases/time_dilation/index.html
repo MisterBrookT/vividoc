@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Time Dilation — Special Relativity</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#050510;color:#f0ead0;font-family:'Crimson Pro',serif;line-height:1.75;padding:48px 20px 80px;}
+.wrapper{max-width:900px;margin:0 auto;}
+.main-title{font-family:'Space Mono',monospace;font-size:2.6rem;color:#e5b84a;text-align:center;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;}
+.subtitle{text-align:center;font-size:1.15rem;color:#6e6040;font-style:italic;margin-bottom:56px;font-family:'Crimson Pro',serif;}
+.section{background:#0a0a20;border:1px solid #1e1e40;border-left:5px solid #e5b84a;border-radius:6px;padding:44px 48px;margin-bottom:56px;box-shadow:0 16px 48px rgba(0,0,0,0.7);}
+.section-number{font-family:'Space Mono',monospace;font-size:0.75rem;color:#6e6040;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;}
+.section-title{font-family:'Space Mono',monospace;font-size:1.4rem;color:#e5b84a;margin-bottom:24px;letter-spacing:1px;}
+.text{font-size:1.12rem;line-height:1.8;color:#d8d0b8;margin-bottom:18px;}
+.text strong{color:#f0ead0;font-weight:600;}
+.math-block{background:#02020e;border:1px solid #2a2a50;border-left:3px solid #e5b84a;border-radius:4px;padding:18px 24px;margin:24px 0;text-align:center;font-size:1.2rem;color:#f0ead0;}
+.widget{background:#02020e;border:1px solid #1a1a38;border-radius:8px;margin-top:32px;overflow:hidden;}
+.widget-header{background:#07071a;padding:14px 20px;font-family:'Space Mono',monospace;font-size:0.75rem;color:#6e6040;letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid #1a1a38;}
+.widget-body{padding:24px;}
+.slider-row{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+.slider-label{font-family:'Space Mono',monospace;font-size:0.8rem;color:#6e6040;min-width:80px;}
+input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:#1e1e40;border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#e5b84a;cursor:pointer;box-shadow:0 0 8px rgba(229,184,74,0.6);}
+.slider-val{font-family:'Space Mono',monospace;font-size:0.85rem;color:#e5b84a;min-width:80px;text-align:right;}
+canvas{display:block;}
+.readout-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;}
+.readout{background:#07071a;border:1px solid #1e1e40;border-radius:6px;padding:14px;text-align:center;}
+.readout-label{font-family:'Space Mono',monospace;font-size:0.65rem;color:#6e6040;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.readout-val{font-family:'Space Mono',monospace;font-size:1.3rem;color:#e5b84a;font-weight:700;}
+.btn-row{display:flex;gap:12px;margin-bottom:16px;}
+button{font-family:'Space Mono',monospace;font-size:0.75rem;padding:8px 18px;background:transparent;border:1px solid #e5b84a;color:#e5b84a;border-radius:4px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:all 0.2s;}
+button:hover{background:#e5b84a;color:#050510;}
+button.active{background:#e5b84a;color:#050510;}
+.toggle-group{display:flex;gap:0;}
+.toggle-group button{border-radius:0;border-right-width:0;}
+.toggle-group button:first-child{border-radius:4px 0 0 4px;}
+.toggle-group button:last-child{border-radius:0 4px 4px 0;border-right-width:1px;}
+.scenario-desc{background:#07071a;border:1px solid #1e1e40;border-radius:6px;padding:16px;margin-top:12px;font-size:0.95rem;color:#a09070;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <h1 class="main-title">Time Dilation</h1>
+  <p class="subtitle">How motion through space trades against motion through time</p>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-number">Section 01</div>
+    <h2 class="section-title">The Lorentz Factor</h2>
+
+    <p class="text">
+      In 1905, Albert Einstein published his special theory of relativity — not as a minor correction to Newtonian mechanics, but as a fundamental rethinking of the nature of space and time. The single postulate at its heart is almost disarmingly simple: the speed of light in vacuum is the same for all inertial observers, regardless of their relative motion. From this, everything follows.
+    </p>
+    <p class="text">
+      The most direct consequence is <strong>time dilation</strong>: a clock in motion runs slow relative to a stationary clock. The quantitative factor that governs this slowing is the Lorentz factor $\gamma$, named for the Dutch physicist Hendrik Lorentz who first wrote down the transformation equations (though without Einstein's physical interpretation). The Lorentz factor depends only on the ratio of the object's speed to the speed of light, denoted $\beta = v/c$.
+    </p>
+    <div class="math-block">$$\gamma = \frac{1}{\sqrt{1 - \beta^2}} = \frac{1}{\sqrt{1 - v^2/c^2}}$$</div>
+    <p class="text">
+      The <strong>light clock thought experiment</strong> makes this vivid without any algebra. Imagine a clock consisting of two mirrors facing each other, with a photon bouncing back and forth between them. Each round trip is one "tick." In the rest frame of the clock, the photon simply bounces vertically. But for an observer watching the clock move past horizontally, the photon must travel a longer, diagonal path — yet it still travels at speed $c$. More path at the same speed means more time per tick. The moving clock runs slow by exactly $\gamma$.
+    </p>
+    <p class="text">
+      Experimental confirmation is overwhelming. Unstable muons produced by cosmic rays at altitudes of 15 km reach Earth's surface despite having a half-life of only 2.2 microseconds in their rest frame — corresponding to a path length of only 660 meters at $c$. They survive because in Earth's frame, their internal "clocks" run slow by $\gamma \approx 22$. GPS satellites orbit at ~14,000 km/h; without relativistic corrections, their atomic clocks would drift by 7.2 microseconds per day from special relativity alone, and the civilian GPS system would accumulate position errors exceeding 1 km daily within a week.
+    </p>
+
+    <div class="widget">
+      <div class="widget-header">Interactive — Lorentz Factor Explorer</div>
+      <div class="widget-body">
+        <div class="slider-row">
+          <span class="slider-label">v / c = β</span>
+          <input type="range" id="s1-beta-slider" min="0" max="9999" value="5000" step="1"/>
+          <span class="slider-val" id="s1-beta-disp">0.5000</span>
+        </div>
+        <canvas id="s1-canvas" width="840" height="320" style="width:100%;max-width:840px;border-radius:4px;"></canvas>
+        <div class="readout-grid">
+          <div class="readout"><div class="readout-label">β = v/c</div><div class="readout-val" id="s1-r-beta">0.5000</div></div>
+          <div class="readout"><div class="readout-label">γ (Lorentz factor)</div><div class="readout-val" id="s1-r-gamma">1.155</div></div>
+          <div class="readout"><div class="readout-label">1 year → Earth sees</div><div class="readout-val" id="s1-r-earth">1.155 yr</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-number">Section 02</div>
+    <h2 class="section-title">The Twin Paradox</h2>
+
+    <p class="text">
+      One of the most celebrated thought experiments in physics takes two twins, Alice and Bob. Alice boards a rocket ship and travels to a distant star at high speed, then turns around and returns. Bob stays on Earth. When Alice lands, she is younger than Bob — she has aged less. The time dilation is real, not an optical illusion, not a biological quirk. It is a geometrical fact about spacetime.
+    </p>
+    <p class="text">
+      But here is the apparent paradox: from Alice's perspective, it is Bob who is moving — so shouldn't Bob be the younger one? This is the famous "twin paradox," and it has a clean resolution. Special relativity's time dilation formula applies to <em>inertial</em> frames — frames in constant, straight-line motion. Alice's frame is <strong>not</strong> inertial: she must decelerate, stop, and accelerate back at the turnaround point. This acceleration is absolute and physically detectable (it's felt as a force). The symmetry between the twins is broken by the turnaround. Bob is always in a single inertial frame; Alice is not.
+    </p>
+    <p class="text">
+      The spacetime diagram makes this crystalline. In Minkowski spacetime, the "length" of a worldline (its proper time) is analogous to arc length, but with a crucial sign flip: <em>the straight worldline is the longest</em>. Bob's worldline is a straight vertical line; Alice's is a V-shape bent at the turnaround. Bob's path through spacetime is longer in the Minkowski sense, so he ages more. Any deviation from a straight worldline — any acceleration — reduces proper time. This is why every shortcut you take in space costs you time.
+    </p>
+    <p class="text">
+      This was confirmed experimentally in 1971 by Hafele and Keating, who flew cesium atomic clocks around the world on commercial airplanes. The clocks that flew east (faster relative to Earth's center) lost time relative to ground clocks by the amount predicted by special relativity (with an additional general relativistic correction). The experiment matched theory to within experimental uncertainty. Later, more precise tests using GPS satellites and particle accelerators have confirmed time dilation with extraordinary precision — the fractional accuracy is better than $10^{-14}$.
+    </p>
+
+    <div class="widget">
+      <div class="widget-header">Interactive — Twin Paradox Clock Animation</div>
+      <div class="widget-body">
+        <div class="slider-row">
+          <span class="slider-label">Speed β</span>
+          <input type="range" id="s2-beta-slider" min="50" max="99" value="80" step="1"/>
+          <span class="slider-val" id="s2-beta-disp">0.80</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Distance</span>
+          <input type="range" id="s2-dist-slider" min="1" max="20" value="8" step="1"/>
+          <span class="slider-val" id="s2-dist-disp">8 ly</span>
+        </div>
+        <div class="btn-row">
+          <button id="s2-play-btn">▶ Play</button>
+          <button id="s2-reset-btn">↺ Reset</button>
+        </div>
+        <canvas id="s2-canvas" width="840" height="340" style="width:100%;max-width:840px;border-radius:4px;"></canvas>
+        <div class="readout-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="readout"><div class="readout-label">γ</div><div class="readout-val" id="s2-r-gamma">1.667</div></div>
+          <div class="readout"><div class="readout-label">Earth time</div><div class="readout-val" id="s2-r-earth">20.0 yr</div></div>
+          <div class="readout"><div class="readout-label">Rocket time</div><div class="readout-val" id="s2-r-rocket">12.0 yr</div></div>
+          <div class="readout"><div class="readout-label">Age diff.</div><div class="readout-val" id="s2-r-diff">8.0 yr</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-number">Section 03</div>
+    <h2 class="section-title">Relativistic Effects at Real Velocities</h2>
+
+    <p class="text">
+      Special relativity is sometimes dismissed as a theory relevant only at extreme speeds — particle accelerators and hypothetical starships. The opposite is true. We already live inside relativistic technology. The Global Positioning System is the most consequential everyday application: every navigation app on every phone in the world depends on relativistic corrections that are calculated and applied continuously, 24 hours a day.
+    </p>
+    <p class="text">
+      GPS satellites orbit at an altitude of about 20,200 km at speeds of approximately 3.87 km/s. From special relativity, moving clocks run slow; their orbital velocity corresponds to $\gamma \approx 1 + 8.4 \times 10^{-11}$, causing a time loss of <strong>7.2 microseconds per day</strong> relative to ground clocks. But GPS satellites also orbit in a weaker gravitational field than Earth's surface — and according to general relativity, clocks in weaker gravity run <em>faster</em>. The GR effect is dominant: a gain of 45.9 μs/day. The net correction is $+38.7$ μs/day. This is hard-coded into the satellite hardware; without it, GPS position errors would grow by ~10 km per day.
+    </p>
+    <p class="text">
+      The Large Hadron Collider at CERN accelerates protons to $v = 0.9999991c$, corresponding to $\gamma = 7461$. At this speed, a proton's "internal clock" runs 7461 times slower than a ground clock. Unstable particles produced in collisions — pions, kaons, muons — have lifetimes extended by this factor, allowing them to travel meters to kilometers in the detector before decaying. Without time dilation, no particle physics experiment of this type would work.
+    </p>
+    <p class="text">
+      The muon story is perhaps the most elegant demonstration. Cosmic ray protons collide with nitrogen molecules at 15 km altitude, producing muons. In their rest frame, muons live for only 2.2 microseconds before decaying — at speed $c$, they could traverse at most 660 meters. Yet muons are detected abundantly at sea level, having traveled 15 km. With $\gamma \approx 22$, their proper lifetime is extended to about 48 microseconds in Earth's frame — enough to make the full journey. The muon flux at sea level is one of the oldest direct confirmations of special relativistic time dilation.
+    </p>
+
+    <div class="widget">
+      <div class="widget-header">Interactive — Real-World Relativistic Scenarios</div>
+      <div class="widget-body">
+        <div class="btn-row">
+          <div class="toggle-group">
+            <button id="s3-btn-gps" class="active" onclick="s3SetScenario('gps')">GPS Satellite</button>
+            <button id="s3-btn-lhc" onclick="s3SetScenario('lhc')">LHC Proton</button>
+            <button id="s3-btn-muon" onclick="s3SetScenario('muon')">Cosmic Muon</button>
+          </div>
+          <div class="toggle-group" style="margin-left:auto;">
+            <button id="s3-btn-with" class="active" onclick="s3SetRelativity(true)">With Relativity</button>
+            <button id="s3-btn-without" onclick="s3SetRelativity(false)">Without Relativity</button>
+          </div>
+        </div>
+        <canvas id="s3-canvas" width="840" height="340" style="width:100%;max-width:840px;border-radius:4px;"></canvas>
+        <div class="scenario-desc" id="s3-desc"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ========== SECTION 1 ==========
+(function(){
+  const slider = document.getElementById('s1-beta-slider');
+  const betaDisp = document.getElementById('s1-beta-disp');
+  const rBeta = document.getElementById('s1-r-beta');
+  const rGamma = document.getElementById('s1-r-gamma');
+  const rEarth = document.getElementById('s1-r-earth');
+  const canvas = document.getElementById('s1-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = 840 * DPR;
+  canvas.height = 320 * DPR;
+  canvas.style.width = '100%';
+  canvas.style.maxWidth = '840px';
+  ctx.scale(DPR, DPR);
+  const W = 840, H = 320;
+
+  let beta = 0.5;
+  let photonY = 0;
+  let photonDir = 1;
+  let animFrame = 0;
+
+  function gamma(b){ return 1/Math.sqrt(1-b*b); }
+
+  slider.addEventListener('input', ()=>{
+    beta = slider.value / 10000;
+    betaDisp.textContent = beta.toFixed(4);
+    update();
+  });
+
+  function update(){
+    const g = gamma(beta);
+    rBeta.textContent = beta.toFixed(4);
+    rGamma.textContent = g.toFixed(4);
+    rEarth.textContent = g.toFixed(3) + ' yr';
+  }
+
+  function drawCurve(){
+    const panelW = 360, panelH = H;
+    const padL = 60, padR = 30, padT = 30, padB = 50;
+    const plotW = panelW - padL - padR;
+    const plotH = panelH - padT - padB;
+
+    // Background
+    ctx.fillStyle = '#02020e';
+    ctx.fillRect(0, 0, panelW, panelH);
+
+    // Grid lines
+    ctx.strokeStyle = '#111130';
+    ctx.lineWidth = 1;
+    for(let i=0;i<=5;i++){
+      const x = padL + (i/5)*plotW;
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT+plotH); ctx.stroke();
+      const y = padT + (i/5)*plotH;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL+plotW, y); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#3a3a6a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle = '#6e6040';
+    ctx.font = '11px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('β = v/c', padL + plotW/2, padT + plotH + 38);
+    ctx.save(); ctx.translate(14, padT + plotH/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('γ (Lorentz factor)', 0, 0); ctx.restore();
+
+    // Tick marks
+    ctx.fillStyle = '#5a5040';
+    ctx.font = '9px Space Mono, monospace';
+    for(let i=0;i<=5;i++){
+      const xv = i*0.2;
+      ctx.textAlign = 'center';
+      ctx.fillText(xv.toFixed(1), padL + (xv/1)*plotW, padT+plotH+16);
+    }
+    const gammaMax = 15;
+    for(let i=0;i<=3;i++){
+      const gv = i*5;
+      const py = padT + plotH - (gv/gammaMax)*plotH;
+      ctx.textAlign = 'right';
+      ctx.fillText(gv.toFixed(0), padL-8, py+3);
+    }
+
+    // The curve γ vs β
+    ctx.strokeStyle = '#e5b84a';
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#e5b84a';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    let first = true;
+    for(let xi=0; xi<=plotW; xi++){
+      const bv = (xi/plotW)*0.9999;
+      const gv = gamma(bv);
+      if(gv > gammaMax) break;
+      const py = padT + plotH - (gv/gammaMax)*plotH;
+      if(first){ ctx.moveTo(padL+xi, py); first=false; }
+      else ctx.lineTo(padL+xi, py);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Current point
+    const gCur = gamma(beta);
+    if(gCur <= gammaMax){
+      const cx2 = padL + beta*plotW;
+      const cy2 = padT + plotH - (gCur/gammaMax)*plotH;
+      ctx.beginPath(); ctx.arc(cx2, cy2, 7, 0, Math.PI*2);
+      ctx.fillStyle = '#e5b84a';
+      ctx.shadowColor = '#e5b84a'; ctx.shadowBlur = 14;
+      ctx.fill(); ctx.shadowBlur = 0;
+      // Label
+      ctx.fillStyle = '#e5b84a';
+      ctx.font = 'bold 11px Space Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`γ = ${gCur.toFixed(3)}`, cx2+10, cy2-6);
+    }
+  }
+
+  function drawLightClock(){
+    const ox = 420, oy = 0;
+    const cW = W - 420, cH = H;
+
+    ctx.fillStyle = '#02020e';
+    ctx.fillRect(ox, oy, cW, cH);
+
+    // Label
+    ctx.fillStyle = '#6e6040';
+    ctx.font = '10px Space Mono, monospace';
+    ctx.textAlign = 'center';
+
+    const g = gamma(beta);
+    const mirrorGap = 90;
+    const mirrorY1 = (cH - mirrorGap)/2;
+    const mirrorY2 = mirrorY1 + mirrorGap;
+
+    // Draw rest frame clock (left half of panel)
+    const restX = ox + 100;
+    const movX = ox + 300;
+
+    // Rest frame
+    ctx.fillStyle = '#1a1a3a';
+    ctx.fillRect(restX - 20, mirrorY1 - 5, 40, 10);
+    ctx.fillRect(restX - 20, mirrorY2 - 5, 40, 10);
+    ctx.fillStyle = '#3a3a7a';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('REST FRAME', restX, mirrorY1 - 20);
+
+    // Mirror surfaces
+    ctx.strokeStyle = '#5a5aaa';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(restX-18, mirrorY1); ctx.lineTo(restX+18, mirrorY1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(restX-18, mirrorY2); ctx.lineTo(restX+18, mirrorY2); ctx.stroke();
+
+    // Photon in rest frame
+    const restPhotonY = mirrorY1 + (photonY * mirrorGap);
+    ctx.beginPath(); ctx.arc(restX, restPhotonY, 5, 0, Math.PI*2);
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 10; ctx.fill(); ctx.shadowBlur = 0;
+
+    // Path line
+    ctx.strokeStyle = '#4444aa44';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(restX, mirrorY1); ctx.lineTo(restX, mirrorY2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Moving frame
+    const squish = Math.min(beta * 30, 20);
+    ctx.fillStyle = '#3a3a7a';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('MOVING FRAME', movX, mirrorY1 - 20);
+
+    ctx.strokeStyle = '#5a5aaa';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(movX-18, mirrorY1); ctx.lineTo(movX+18, mirrorY1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(movX-18, mirrorY2); ctx.lineTo(movX+18, mirrorY2); ctx.stroke();
+
+    // Photon in moving frame — diagonal path
+    const diagOffset = squish * (photonDir > 0 ? photonY : (1-photonY));
+    const movPhotonY = mirrorY1 + (photonY * mirrorGap);
+    const movPhotonX = movX + (photonDir > 0 ? diagOffset : -diagOffset);
+
+    ctx.beginPath(); ctx.arc(movPhotonX, movPhotonY, 5, 0, Math.PI*2);
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 10; ctx.fill(); ctx.shadowBlur = 0;
+
+    // Diagonal path hint
+    ctx.strokeStyle = '#4444aa44';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(movX, mirrorY1); ctx.lineTo(movX+squish, mirrorY2); ctx.lineTo(movX+squish*2, mirrorY1); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Gamma label
+    ctx.fillStyle = '#e5b84a';
+    ctx.font = 'bold 12px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Δt' = γ · Δt₀`, ox + cW/2, cH - 18);
+    ctx.fillStyle = '#6e6040';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.fillText(`γ = ${g.toFixed(4)} — moving clock ticks ${g.toFixed(2)}× slower`, ox + cW/2, cH - 6);
+
+    // Arrow showing velocity
+    const arrowY = mirrorY2 + 28;
+    ctx.strokeStyle = '#e5b84a44';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(movX - 40, arrowY); ctx.lineTo(movX + 40 + squish, arrowY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(movX + 40 + squish - 6, arrowY - 4); ctx.lineTo(movX + 40 + squish, arrowY); ctx.lineTo(movX + 40 + squish - 6, arrowY + 4); ctx.stroke();
+    ctx.fillStyle = '#e5b84a88';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`v = ${(beta*100).toFixed(2)}% c`, movX + squish/2, arrowY + 14);
+  }
+
+  function animate(){
+    const g = gamma(beta);
+    const speed = 0.015 / g; // Moving frame photon appears slower
+    photonY += photonDir * speed;
+    if(photonY >= 1){ photonY = 1; photonDir = -1; }
+    if(photonY <= 0){ photonY = 0; photonDir = 1; }
+
+    ctx.clearRect(0, 0, W, H);
+    drawCurve();
+    drawLightClock();
+    requestAnimationFrame(animate);
+  }
+
+  update();
+  animate();
+})();
+
+// ========== SECTION 2 ==========
+(function(){
+  const betaSlider = document.getElementById('s2-beta-slider');
+  const distSlider = document.getElementById('s2-dist-slider');
+  const betaDisp = document.getElementById('s2-beta-disp');
+  const distDisp = document.getElementById('s2-dist-disp');
+  const playBtn = document.getElementById('s2-play-btn');
+  const resetBtn = document.getElementById('s2-reset-btn');
+  const rGamma = document.getElementById('s2-r-gamma');
+  const rEarth = document.getElementById('s2-r-earth');
+  const rRocket = document.getElementById('s2-r-rocket');
+  const rDiff = document.getElementById('s2-r-diff');
+  const canvas = document.getElementById('s2-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = 840 * DPR;
+  canvas.height = 340 * DPR;
+  canvas.style.width = '100%';
+  canvas.style.maxWidth = '840px';
+  ctx.scale(DPR, DPR);
+  const W = 840, H = 340;
+
+  let beta = 0.8;
+  let dist = 8;
+  let playing = false;
+  let progress = 0; // 0 to 1
+  let rafId = null;
+
+  function gamma(b){ return 1/Math.sqrt(1-b*b); }
+
+  function getParams(){
+    const g = gamma(beta);
+    const earthTime = 2 * dist / beta;
+    const rocketTime = earthTime / g;
+    const diff = earthTime - rocketTime;
+    return {g, earthTime, rocketTime, diff};
+  }
+
+  function updateReadouts(){
+    const {g, earthTime, rocketTime, diff} = getParams();
+    rGamma.textContent = g.toFixed(3);
+    rEarth.textContent = earthTime.toFixed(1) + ' yr';
+    rRocket.textContent = rocketTime.toFixed(1) + ' yr';
+    rDiff.textContent = diff.toFixed(1) + ' yr';
+  }
+
+  betaSlider.addEventListener('input', ()=>{
+    beta = betaSlider.value / 100;
+    betaDisp.textContent = beta.toFixed(2);
+    resetAnim();
+    updateReadouts();
+  });
+  distSlider.addEventListener('input', ()=>{
+    dist = parseInt(distSlider.value);
+    distDisp.textContent = dist + ' ly';
+    resetAnim();
+    updateReadouts();
+  });
+
+  playBtn.addEventListener('click', ()=>{
+    if(playing){ playing = false; playBtn.textContent = '▶ Play'; }
+    else { playing = true; playBtn.textContent = '⏸ Pause'; if(!rafId) animate(); }
+  });
+  resetBtn.addEventListener('click', ()=>{ resetAnim(); });
+
+  function resetAnim(){
+    playing = false; playBtn.textContent = '▶ Play';
+    progress = 0;
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    draw(0);
+  }
+
+  function drawClock(cx, cy, r, angleDeg, label, color){
+    // Clock face
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = '#07071a'; ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+
+    // Tick marks
+    for(let i=0;i<12;i++){
+      const a = (i/12)*Math.PI*2 - Math.PI/2;
+      const r1 = i%3===0 ? r-12 : r-7;
+      ctx.strokeStyle = i%3===0 ? color : color+'88';
+      ctx.lineWidth = i%3===0 ? 2 : 1;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a)*r1, cy + Math.sin(a)*r1);
+      ctx.lineTo(cx + Math.cos(a)*(r-3), cy + Math.sin(a)*(r-3));
+      ctx.stroke();
+    }
+
+    // Hour hand (slow)
+    const ha = (angleDeg/360)*Math.PI*2 - Math.PI/2;
+    ctx.strokeStyle = color; ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(ha)*(r*0.55), cy + Math.sin(ha)*(r*0.55));
+    ctx.stroke();
+
+    // Minute hand (fast)
+    const ma = (angleDeg*12/360)*Math.PI*2 - Math.PI/2;
+    ctx.strokeStyle = color+'cc'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(ma)*(r*0.78), cy + Math.sin(ma)*(r*0.78));
+    ctx.stroke();
+
+    // Center dot
+    ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+
+    // Label
+    ctx.fillStyle = color;
+    ctx.font = '10px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, cx, cy + r + 18);
+  }
+
+  function drawSpacetimeDiagram(t){
+    const {g, earthTime, rocketTime} = getParams();
+    const dW = 360, dH = H;
+    const padL = 50, padR = 20, padT = 25, padB = 40;
+    const plotW = dW - padL - padR;
+    const plotH = dH - padT - padB;
+
+    ctx.fillStyle = '#02020e';
+    ctx.fillRect(0, 0, dW, dH);
+
+    // Axes
+    ctx.strokeStyle = '#3a3a6a'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+
+    // ct axis label
+    ctx.fillStyle = '#6e6040'; ctx.font = '10px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('time →', padL+plotW, padT+plotH+28);
+    ctx.save(); ctx.translate(16, padT+plotH/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('ct (years)', 0, 0); ctx.restore();
+
+    // Earth worldline — vertical at x=padL
+    const totalT = earthTime || 20;
+    const pxPerYear = plotH / (totalT * 1.1);
+    const earthWLx = padL + 30;
+    ctx.strokeStyle = '#4a6aaa'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(earthWLx, padT+plotH); ctx.lineTo(earthWLx, padT+plotH - totalT*pxPerYear); ctx.stroke();
+    ctx.fillStyle = '#4a6aaa'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'left';
+    ctx.fillText('EARTH', earthWLx + 4, padT + 10);
+
+    // Rocket worldline — V shape
+    const rocketXpeak = plotW * 0.6;
+    const rocketDist = dist * pxPerYear; // space extent
+    const rocketPeakY = padT + plotH - (dist/beta)*pxPerYear;
+    const rocketWLx = earthWLx + 20;
+
+    const prog = Math.min(t, 1);
+    const halfT = 0.5;
+    ctx.strokeStyle = '#e5b84a'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(rocketWLx, padT+plotH);
+    if(prog <= halfT){
+      const mid_x = rocketWLx + rocketDist * (prog/halfT);
+      const mid_y = padT + plotH - (dist/beta)*(prog/halfT)*pxPerYear;
+      ctx.lineTo(mid_x, mid_y);
+    } else {
+      const p2 = (prog - halfT)/halfT;
+      ctx.lineTo(rocketWLx + rocketDist, rocketPeakY);
+      ctx.lineTo(rocketWLx + rocketDist - rocketDist*p2, rocketPeakY + (dist/beta)*p2*pxPerYear);
+    }
+    ctx.stroke();
+    ctx.fillStyle = '#e5b84a'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'left';
+    ctx.fillText('ROCKET', rocketWLx + rocketDist - 10, rocketPeakY - 8);
+
+    // Light cone hint
+    ctx.strokeStyle = '#ffffff22'; ctx.lineWidth = 1;
+    ctx.setLineDash([3,5]);
+    ctx.beginPath();
+    ctx.moveTo(earthWLx, padT+plotH);
+    ctx.lineTo(earthWLx + plotH*0.5, padT);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(earthWLx, padT+plotH);
+    ctx.lineTo(earthWLx - plotH*0.5, padT);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function draw(t){
+    const {g, earthTime, rocketTime} = getParams();
+    ctx.clearRect(0, 0, W, H);
+
+    drawSpacetimeDiagram(t);
+
+    // Clocks panel
+    const cx0 = 440;
+    ctx.fillStyle = '#02020e';
+    ctx.fillRect(cx0, 0, W-cx0, H);
+
+    // Earth clock — goes from 0 to earthTime
+    const earthAngle = t * earthTime * 36; // 36 deg per year (arbitrary visual)
+    drawClock(cx0 + 100, H/2, 70, earthAngle, 'EARTH CLOCK', '#4a6aaa');
+
+    // Rocket clock — goes from 0 to rocketTime (slower)
+    const rocketAngle = t * rocketTime * 36;
+    drawClock(cx0 + 280, H/2, 70, rocketAngle, 'ROCKET CLOCK', '#e5b84a');
+
+    // Ages
+    const earthAge = (t * earthTime).toFixed(1);
+    const rocketAge = (t * rocketTime).toFixed(1);
+    ctx.fillStyle = '#4a6aaa';
+    ctx.font = 'bold 11px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Age: ${earthAge} yr`, cx0 + 100, H - 30);
+    ctx.fillStyle = '#e5b84a';
+    ctx.fillText(`Age: ${rocketAge} yr`, cx0 + 280, H - 30);
+
+    if(t === 1){
+      const diff = (earthTime - rocketTime).toFixed(1);
+      ctx.fillStyle = '#f0ead0';
+      ctx.font = 'bold 10px Space Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Δ = ${diff} years younger`, cx0 + 190, H - 10);
+    }
+  }
+
+  function animate(){
+    if(!playing){ rafId = null; return; }
+    progress += 0.003;
+    if(progress >= 1){ progress = 1; playing = false; playBtn.textContent = '▶ Play'; }
+    draw(progress);
+    rafId = requestAnimationFrame(animate);
+  }
+
+  updateReadouts();
+  draw(0);
+})();
+
+// ========== SECTION 3 ==========
+let s3Scenario = 'gps';
+let s3WithRelativity = true;
+let s3AnimT = 0;
+let s3RafId = null;
+
+const s3Canvas = document.getElementById('s3-canvas');
+const s3Ctx = s3Canvas.getContext('2d');
+const DPR3 = window.devicePixelRatio || 1;
+s3Canvas.width = 840 * DPR3;
+s3Canvas.height = 340 * DPR3;
+s3Canvas.style.width = '100%';
+s3Canvas.style.maxWidth = '840px';
+s3Ctx.scale(DPR3, DPR3);
+const S3W = 840, S3H = 340;
+
+const s3Scenarios = {
+  gps: {
+    gamma: 1 + 8.4e-11,
+    betaStr: '3.87 km/s ≈ 0.0000129c',
+    gammaStr: '1 + 8.4×10⁻¹¹',
+    srEffect: '-7.2 μs/day (SR)',
+    grEffect: '+45.9 μs/day (GR)',
+    netEffect: '+38.7 μs/day correction',
+    withText: 'GPS clocks run +38.7 μs/day fast (GR dominates). Satellites are pre-programmed to tick slightly slow to compensate. Net result: sub-meter accuracy.',
+    withoutText: 'Without corrections, GPS clocks drift ~38.7 μs/day. At the speed of light, 38.7 μs corresponds to 11.6 km of error — accumulated daily, navigation fails within hours.',
+    desc: 'GPS satellites orbit at 20,200 km altitude at ~3.87 km/s. The net relativistic clock correction is +38.7 μs/day (GR effect dominates SR). This is hard-wired into every GPS satellite.'
+  },
+  lhc: {
+    gamma: 7461,
+    betaStr: 'v = 0.9999991c',
+    gammaStr: '7461',
+    srEffect: 'Particle lifetime ×7461',
+    grEffect: 'Circumference: 27 km',
+    netEffect: '11,177 laps per second',
+    withText: 'At γ = 7461, unstable particles live 7461× longer in the lab frame. Pions produced at collision points survive long enough to be reconstructed by detectors hundreds of meters away.',
+    withoutText: 'Without time dilation, pions (τ ≈ 26 ns) would decay in just 7.8 meters. Kaons and muons produced at the LHC would vanish before leaving the interaction point. Modern particle physics would be impossible.',
+    desc: 'LHC protons reach v = 0.9999991c, giving γ = 7461. Unstable products like pions and muons live thousands of times longer in the lab frame, enabling the tracking detectors that reconstruct particle decays.'
+  },
+  muon: {
+    gamma: 22,
+    betaStr: 'v ≈ 0.9979c',
+    gammaStr: '22',
+    srEffect: 'Lifetime: 2.2 μs × 22 = 48.4 μs',
+    grEffect: 'Altitude: 15 km',
+    netEffect: '~10,000 muons/m²/min at sea level',
+    withText: 'With γ ≈ 22, muon half-life extends to 48.4 μs. At 0.9979c they travel ~14.5 km before half decay — enough to reach sea level from 15 km altitude. Observed flux: correct.',
+    withoutText: 'Without time dilation, half-life is 2.2 μs → distance = 660 m. From 15 km altitude, the fraction surviving is (½)^(15000/660) ≈ 10^(-7). Essentially zero muons would reach the surface — yet we detect thousands per minute.',
+    desc: 'Cosmic-ray muons are created at ~15 km altitude with half-life 2.2 μs. Classical physics predicts virtually none reach sea level. With γ ≈ 22, their clocks run slow and they easily traverse the atmosphere — observed flux matches prediction perfectly.'
+  }
+};
+
+function s3SetScenario(name){
+  s3Scenario = name;
+  ['gps','lhc','muon'].forEach(s=>{
+    const b = document.getElementById('s3-btn-' + s);
+    b.classList.toggle('active', s===name);
+  });
+  s3AnimT = 0;
+  s3DrawAll();
+}
+function s3SetRelativity(val){
+  s3WithRelativity = val;
+  document.getElementById('s3-btn-with').classList.toggle('active', val);
+  document.getElementById('s3-btn-without').classList.toggle('active', !val);
+  s3DrawAll();
+}
+
+function s3DrawAll(){
+  const sc = s3Scenarios[s3Scenario];
+  const ctx = s3Ctx;
+  const W = S3W, H = S3H;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#02020e';
+  ctx.fillRect(0, 0, W, H);
+
+  const t = (Date.now() / 2000) % (Math.PI * 2);
+
+  if(s3Scenario === 'gps') drawGPS(ctx, W, H, t);
+  else if(s3Scenario === 'lhc') drawLHC(ctx, W, H, t);
+  else drawMuon(ctx, W, H, t);
+
+  // Stats panel
+  const px = 520;
+  ctx.fillStyle = '#07071a';
+  ctx.strokeStyle = '#1e1e40';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(px, 10, W-px-10, H-20, 6); ctx.fill(); ctx.stroke();
+
+  ctx.fillStyle = '#e5b84a';
+  ctx.font = 'bold 11px Space Mono, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText(s3Scenario.toUpperCase(), px+16, 34);
+
+  ctx.fillStyle = '#6e6040'; ctx.font = '10px Space Mono, monospace';
+  ctx.fillText('Speed:', px+16, 58); ctx.fillStyle = '#f0ead0'; ctx.fillText(sc.betaStr, px+70, 58);
+  ctx.fillStyle = '#6e6040'; ctx.fillText('γ:', px+16, 76); ctx.fillStyle = '#e5b84a'; ctx.font = 'bold 10px Space Mono, monospace'; ctx.fillText(sc.gammaStr, px+70, 76);
+  ctx.fillStyle = '#6e6040'; ctx.font = '10px Space Mono, monospace'; ctx.fillText(sc.srEffect, px+16, 96);
+  ctx.fillStyle = '#6e6040'; ctx.fillText(sc.grEffect, px+16, 112);
+  ctx.fillStyle = '#e5b84a88'; ctx.fillText(sc.netEffect, px+16, 128);
+
+  // Divider
+  ctx.strokeStyle = '#1e1e40'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(px+16, 140); ctx.lineTo(W-20, 140); ctx.stroke();
+
+  // Description
+  const descText = s3WithRelativity ? sc.withText : sc.withoutText;
+  ctx.fillStyle = s3WithRelativity ? '#b0c8a0' : '#c08080';
+  ctx.font = '9.5px Crimson Pro, serif';
+  wrapText(ctx, descText, px+16, 160, W-px-32, 14);
+
+  // Description box
+  document.getElementById('s3-desc').textContent = sc.desc;
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH){
+  const words = text.split(' ');
+  let line = '';
+  let cy = y;
+  for(let i=0;i<words.length;i++){
+    const test = line + words[i] + ' ';
+    if(ctx.measureText(test).width > maxW && i > 0){
+      ctx.fillText(line.trim(), x, cy);
+      line = words[i] + ' ';
+      cy += lineH;
+    } else { line = test; }
+  }
+  ctx.fillText(line.trim(), x, cy);
+}
+
+function drawGPS(ctx, W, H, t){
+  const cx = 200, cy = H/2 + 10;
+  const earthR = 60;
+
+  // Earth glow
+  ctx.beginPath(); ctx.arc(cx, cy, earthR+20, 0, Math.PI*2);
+  const eg = ctx.createRadialGradient(cx,cy,earthR-10,cx,cy,earthR+20);
+  eg.addColorStop(0,'#1a3a6a44'); eg.addColorStop(1,'transparent');
+  ctx.fillStyle = eg; ctx.fill();
+
+  // Earth
+  ctx.beginPath(); ctx.arc(cx, cy, earthR, 0, Math.PI*2);
+  const eg2 = ctx.createRadialGradient(cx-15, cy-15, 5, cx, cy, earthR);
+  eg2.addColorStop(0,'#2a5aaa'); eg2.addColorStop(1,'#0a1a4a');
+  ctx.fillStyle = eg2; ctx.fill();
+  ctx.strokeStyle = '#4a7add'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(cx, cy, earthR, 0, Math.PI*2); ctx.stroke();
+  ctx.fillStyle = '#f0ead0'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+  ctx.fillText('Earth', cx, cy+4);
+
+  // Orbit
+  const orbitR = earthR + 80;
+  ctx.strokeStyle = '#e5b84a22'; ctx.lineWidth = 1;
+  ctx.setLineDash([4,6]);
+  ctx.beginPath(); ctx.arc(cx, cy, orbitR, 0, Math.PI*2); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Satellite
+  const satX = cx + Math.cos(t) * orbitR;
+  const satY = cy + Math.sin(t) * orbitR;
+  ctx.beginPath(); ctx.arc(satX, satY, 8, 0, Math.PI*2);
+  ctx.fillStyle = '#e5b84a'; ctx.shadowColor = '#e5b84a'; ctx.shadowBlur = 10; ctx.fill(); ctx.shadowBlur = 0;
+
+  // Signal beam
+  ctx.strokeStyle = '#e5b84a44'; ctx.lineWidth = 1;
+  ctx.setLineDash([2,4]);
+  ctx.beginPath(); ctx.moveTo(satX, satY); ctx.lineTo(cx, cy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Solar panels
+  ctx.strokeStyle = '#6888cc'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(satX-14, satY); ctx.lineTo(satX-22, satY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(satX+14, satY); ctx.lineTo(satX+22, satY); ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = '#e5b84a'; ctx.font = '8px Space Mono, monospace'; ctx.textAlign = 'left';
+  ctx.fillText('GPS Sat.', satX + 10, satY - 10);
+  ctx.fillText('20,200 km', satX + 10, satY + 2);
+
+  // Clock comparison
+  const clockY = H - 55;
+  ctx.fillStyle = '#6e6040'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+  ctx.fillText('Satellite clock vs ground:', cx, clockY);
+
+  if(s3WithRelativity){
+    ctx.fillStyle = '#b0c8a0';
+    ctx.font = 'bold 10px Space Mono, monospace';
+    ctx.fillText('+38.7 μs/day (corrected → accurate)', cx, clockY + 14);
+  } else {
+    ctx.fillStyle = '#c08080';
+    ctx.font = 'bold 10px Space Mono, monospace';
+    ctx.fillText('+38.7 μs/day UNCORRECTED → 11 km/day error', cx, clockY + 14);
+  }
+
+  // Drift bar
+  const barW = 300, barX = cx - barW/2;
+  const barY = clockY + 28;
+  ctx.fillStyle = '#1a1a3a';
+  ctx.fillRect(barX, barY, barW, 8);
+  const fill = s3WithRelativity ? 0.02 : Math.min(1, (Date.now()/3000)%1);
+  ctx.fillStyle = s3WithRelativity ? '#b0c8a0' : '#c08080';
+  ctx.fillRect(barX, barY, barW * fill, 8);
+  ctx.strokeStyle = '#3a3a6a'; ctx.lineWidth = 1;
+  ctx.strokeRect(barX, barY, barW, 8);
+}
+
+function drawLHC(ctx, W, H, t){
+  const cx = 220, cy = H/2 + 10;
+  const ringR = 120;
+
+  // Accelerator ring
+  ctx.strokeStyle = '#2a2a5a'; ctx.lineWidth = 8;
+  ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI*2); ctx.stroke();
+  ctx.strokeStyle = '#4a4a9a'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI*2); ctx.stroke();
+
+  // LHC label
+  ctx.fillStyle = '#6e6040'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+  ctx.fillText('LHC @ CERN', cx, cy+4);
+  ctx.fillText('27 km circumference', cx, cy+16);
+
+  // Proton(s) — two beams going opposite directions
+  const numProtons = 4;
+  for(let i=0; i<numProtons; i++){
+    const angle1 = t + (i/numProtons)*Math.PI*2;
+    const angle2 = -t + (i/numProtons)*Math.PI*2;
+
+    const px1 = cx + Math.cos(angle1)*ringR;
+    const py1 = cy + Math.sin(angle1)*ringR;
+    ctx.beginPath(); ctx.arc(px1, py1, 4, 0, Math.PI*2);
+    ctx.fillStyle = '#e5b84a'; ctx.shadowColor = '#e5b84a'; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+
+    const px2 = cx + Math.cos(angle2)*(ringR-4);
+    const py2 = cy + Math.sin(angle2)*(ringR-4);
+    ctx.beginPath(); ctx.arc(px2, py2, 4, 0, Math.PI*2);
+    ctx.fillStyle = '#6a8aff'; ctx.shadowColor = '#6a8aff'; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+  }
+
+  // Collision flash
+  const collAngle = t * 3;
+  if(Math.abs(Math.sin(collAngle)) > 0.95){
+    const cflash = ctx.createRadialGradient(cx+ringR*0.7, cy, 0, cx+ringR*0.7, cy, 25);
+    cflash.addColorStop(0,'#ffffff88'); cflash.addColorStop(1,'transparent');
+    ctx.fillStyle = cflash;
+    ctx.beginPath(); ctx.arc(cx+ringR*0.7, cy, 25, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Stats
+  const withR = s3WithRelativity;
+  ctx.fillStyle = '#6e6040'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+  const statsY = H - 65;
+  ctx.fillText('Pion (π⁺) rest half-life: 26 ns', cx, statsY);
+  if(withR){
+    ctx.fillStyle = '#b0c8a0'; ctx.font = 'bold 10px Space Mono, monospace';
+    ctx.fillText('Lab half-life: 26 ns × 7461 = 193 μs', cx, statsY+14);
+    ctx.fillText('Travel distance: ~58 m — detected ✓', cx, statsY+28);
+  } else {
+    ctx.fillStyle = '#c08080'; ctx.font = 'bold 10px Space Mono, monospace';
+    ctx.fillText('Lab half-life (classical): 26 ns', cx, statsY+14);
+    ctx.fillText('Travel distance: 7.8 m — lost ✗', cx, statsY+28);
+  }
+}
+
+function drawMuon(ctx, W, H, t){
+  const atmosphereTop = 30;
+  const groundY = H - 40;
+  const atmosphereH = groundY - atmosphereTop;
+
+  // Atmosphere layers
+  for(let i=0;i<5;i++){
+    const ly = atmosphereTop + (i/5)*atmosphereH;
+    const lh = atmosphereH/5;
+    ctx.fillStyle = `rgba(30,30,80,${0.05 + i*0.04})`;
+    ctx.fillRect(0, ly, 450, lh);
+  }
+  ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, groundY, 450, H-groundY);
+
+  // Ground label
+  ctx.fillStyle = '#6e6040'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'left';
+  ctx.fillText('Earth surface (sea level)', 10, groundY + 15);
+  ctx.fillText('15 km', 10, atmosphereTop + 15);
+  ctx.strokeStyle = '#3a3a6a'; ctx.lineWidth = 1;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(0, atmosphereTop+20); ctx.lineTo(450, atmosphereTop+20); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Cosmic ray hit
+  const flashT = t % (Math.PI*2);
+  if(flashT < 0.3){
+    ctx.fillStyle = '#ffffffcc';
+    ctx.beginPath(); ctx.arc(120, atmosphereTop+20, 12, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#f0ead0'; ctx.font = 'bold 9px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('cosmic ray', 120, atmosphereTop+8);
+  }
+
+  // Muon falling
+  const muonFraction = (flashT < 0.3 ? 0 : (flashT-0.3)/(Math.PI*2-0.3));
+  const maxDist = s3WithRelativity ? atmosphereH : atmosphereH * (660/15000);
+  const muonY = atmosphereTop + 20 + muonFraction * maxDist;
+  const stillAlive = muonY < groundY + 5;
+
+  if(stillAlive || muonFraction > 0.95){
+    const glow = ctx.createRadialGradient(120, muonY, 0, 120, muonY, 12);
+    glow.addColorStop(0, s3WithRelativity ? '#e5b84aff' : '#cc4444ff');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(120, muonY, 12, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(120, muonY, 4, 0, Math.PI*2);
+    ctx.fillStyle = s3WithRelativity ? '#e5b84a' : '#cc4444'; ctx.fill();
+  } else {
+    // Decay flash
+    ctx.fillStyle = '#cc444488';
+    ctx.beginPath(); ctx.arc(120, muonY, 18, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#cc4444'; ctx.font = 'bold 9px Space Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText('DECAY', 120, muonY+4);
+  }
+
+  // Result
+  const resY = groundY - 10;
+  ctx.fillStyle = '#6e6040'; ctx.font = '9px Space Mono, monospace'; ctx.textAlign = 'center';
+  if(s3WithRelativity){
+    ctx.fillStyle = '#b0c8a0'; ctx.font = 'bold 10px Space Mono, monospace';
+    ctx.fillText('γ ≈ 22 → survives 15 km → detected ✓', 220, resY);
+    ctx.fillStyle = '#6e6040'; ctx.font = '9px Space Mono, monospace';
+    ctx.fillText('~10,000 muons/m²/min observed at sea level', 220, resY+14);
+  } else {
+    ctx.fillStyle = '#c08080'; ctx.font = 'bold 10px Space Mono, monospace';
+    ctx.fillText('Classical: decays in 660 m → not detected ✗', 220, resY);
+    ctx.fillStyle = '#6e6040'; ctx.font = '9px Space Mono, monospace';
+    ctx.fillText('Prediction: <1 in 10 million reach surface', 220, resY+14);
+  }
+}
+
+// Init s3 description
+s3SetScenario('gps');
+
+// Continuous animation for s3
+function s3Loop(){
+  s3DrawAll();
+  requestAnimationFrame(s3Loop);
+}
+s3Loop();
+</script>
+</body>
+</html>

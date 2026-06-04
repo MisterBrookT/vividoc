@@ -20,6 +20,9 @@ dependencies = [
 ]
 
 
+[project.optional-dependencies]
+video = ["manim>=0.18.0", "pydub>=0.25.1"]
+
 [tool.setuptools]
 packages = ["vividoc", "prompts", "benchmark", "benchmark.baselines", "benchmark.baselines.naive_agent", "benchmark.evals"]
 

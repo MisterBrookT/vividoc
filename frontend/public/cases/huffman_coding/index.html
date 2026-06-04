@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huffman Coding</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0a0804;
+            --card: #120f08;
+            --surface: #1a1409;
+            --accent: #f59e0b;
+            --accent2: #d97706;
+            --green: #4ade80;
+            --red: #f87171;
+            --blue: #60a5fa;
+            --text: #fef3c7;
+            --muted: #92663a;
+            --dim: #3d2e18;
+            --border: #1f1a0e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.75;
+            padding: 0 0 80px;
+        }
+        header {
+            text-align: center;
+            padding: 60px 40px 48px;
+            background: radial-gradient(ellipse at 50% 0%, #1f1506 0%, var(--bg) 70%);
+            border-bottom: 1px solid var(--border);
+        }
+        header .tag {
+            display: inline-block;
+            font-size: 10px; letter-spacing: 0.2em; color: var(--accent);
+            text-transform: uppercase; border: 1px solid rgba(245,158,11,0.25);
+            padding: 3px 12px; border-radius: 20px; margin-bottom: 20px;
+        }
+        h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 3rem; font-weight: 600; color: var(--text);
+            line-height: 1.15; margin-bottom: 16px;
+        }
+        h1 em { color: var(--accent); font-style: italic; }
+        header p { color: var(--muted); font-size: 13px; max-width: 560px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+        section { max-width: 900px; margin: 60px auto 0; padding: 0 32px; }
+        .section-label {
+            font-size: 10px; letter-spacing: 0.2em; color: var(--accent);
+            text-transform: uppercase; margin-bottom: 20px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        h2 { font-family: 'Inter', sans-serif; font-size: 1.65rem; font-weight: 600; margin-bottom: 14px; color: var(--text); }
+        .prose {
+            font-size: 13px; color: var(--muted); line-height: 1.9;
+            margin-bottom: 16px; font-family: 'Inter', sans-serif;
+        }
+        .prose strong { color: var(--text); }
+        .prose em { color: var(--accent); font-style: normal; }
+        .math-block {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); padding: 14px 20px;
+            border-radius: 4px; margin: 18px 0; font-size: 13px; overflow-x: auto;
+        }
+        .canvas-wrap {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden; margin: 24px 0;
+        }
+        canvas { display: block; width: 100%; }
+        .controls {
+            display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+            padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border);
+        }
+        .btn {
+            padding: 6px 14px; border: 1px solid var(--dim); background: transparent;
+            color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            border-radius: 3px; cursor: pointer; transition: all 0.15s;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.accent { background: var(--accent); color: #0a0804; border-color: var(--accent); font-weight: 600; }
+        .btn.active { background: var(--accent); color: #0a0804; border-color: var(--accent); font-weight: 600; }
+        label { font-size: 11px; color: var(--muted); }
+        input[type=range] { width: 100px; accent-color: var(--accent); cursor: pointer; }
+        .val { font-size: 12px; color: var(--accent); min-width: 32px; font-family: 'JetBrains Mono', monospace; }
+        .stats-bar {
+            display: flex; gap: 24px; flex-wrap: wrap;
+            padding: 10px 16px; border-top: 1px solid var(--border);
+            font-size: 11px; color: var(--muted); background: var(--card);
+        }
+        .stat-val { color: var(--accent); }
+        .infobox {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 16px 20px; margin: 16px 0;
+            font-size: 12px; color: var(--muted); line-height: 1.8;
+            font-family: 'Inter', sans-serif;
+        }
+        .infobox strong { color: var(--text); }
+        .code-table {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; overflow: hidden; margin: 16px 0;
+            font-size: 11px; width: 100%;
+        }
+        .code-table th {
+            background: var(--surface); color: var(--accent);
+            padding: 8px 12px; text-align: left; font-size: 10px;
+            letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        .code-table td { padding: 6px 12px; color: var(--muted); border-top: 1px solid var(--border); }
+        .code-table td:nth-child(3) { color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+        .toggle-group { display: flex; gap: 0; }
+        .toggle-group .btn { border-radius: 0; border-right-width: 0; }
+        .toggle-group .btn:first-child { border-radius: 3px 0 0 3px; }
+        .toggle-group .btn:last-child { border-radius: 0 3px 3px 0; border-right-width: 1px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="tag">Data Compression · Huffman 1952</div>
+    <h1>Huffman <em>Coding</em></h1>
+    <p>A greedy algorithm that assigns shorter bit strings to more frequent symbols, achieving provably optimal prefix-free compression. The foundation of ZIP, PNG, JPEG, and MP3.</p>
+</header>
+
+<!-- Section 1 -->
+<section>
+    <div class="section-label">01 — Building the Optimal Tree</div>
+    <h2>Greedy Merging, Optimal Result</h2>
+
+    <div class="prose">
+        In 1952, MIT doctoral student David Huffman was offered a choice by his professor Robert Fano: take a final exam, or find the optimal prefix-free code. Working late one night, Huffman realized that the key was to work <em>bottom-up</em> rather than top-down. His algorithm is elegantly simple: repeatedly merge the two least-frequent symbols into a single "super-symbol," building a binary tree from the leaves up.
+    </div>
+    <div class="prose">
+        The <strong>prefix-free</strong> property is critical. In a prefix-free code, no codeword is a prefix of any other. This means encoded symbols can be decoded unambiguously without separators — just follow the tree from root to leaf. The Kraft inequality guarantees that a prefix-free code exists for any set of lengths \(\{l_i\}\) satisfying \(\sum_i 2^{-l_i} \leq 1\). Huffman codes achieve equality.
+    </div>
+    <div class="prose">
+        The algorithm's optimality can be proven by induction. At each step, the two least-probable symbols will have the longest codes in any optimal encoding, and they can always be given codes that differ only in the last bit (sibling leaves). Merging them into a combined node with probability \(p_i + p_j\) and solving the sub-problem recursively produces an optimal code for the original problem.
+    </div>
+    <div class="prose">
+        Adjust the symbol frequencies below, then click <strong>Build Tree</strong> to watch the algorithm execute step by step. Notice how higher-frequency symbols bubble up to shorter paths in the tree, while rare symbols sink to deeper leaves.
+    </div>
+
+    <div class="math-block">
+        \[\text{Algorithm: while } |Q| > 1: \quad z = \text{new node},\; z.freq = x.freq + y.freq\; (x,y = \text{two min-freq nodes})\]
+        \[\text{Kraft: } \sum_{i=1}^{n} 2^{-l_i} = 1 \quad \text{(Huffman achieves equality)}\]
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="hf1-canvas" height="380"></canvas>
+        <div class="controls">
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <label style="width:14px;color:var(--accent)">A</label>
+                    <input type="range" id="hf1-fa" min="1" max="100" value="45" oninput="hf1FreqChange()">
+                    <span class="val" id="hf1-fav">45</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <label style="width:14px;color:var(--accent)">B</label>
+                    <input type="range" id="hf1-fb" min="1" max="100" value="25" oninput="hf1FreqChange()">
+                    <span class="val" id="hf1-fbv">25</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <label style="width:14px;color:var(--accent)">C</label>
+                    <input type="range" id="hf1-fc" min="1" max="100" value="15" oninput="hf1FreqChange()">
+                    <span class="val" id="hf1-fcv">15</span>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <label style="width:14px;color:var(--accent)">D</label>
+                    <input type="range" id="hf1-fd" min="1" max="100" value="10" oninput="hf1FreqChange()">
+                    <span class="val" id="hf1-fdv">10</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <label style="width:14px;color:var(--accent)">E</label>
+                    <input type="range" id="hf1-fe" min="1" max="100" value="5" oninput="hf1FreqChange()">
+                    <span class="val" id="hf1-fev">5</span>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-left:auto;">
+                <button class="btn accent" onclick="hf1BuildStep()">▶ Step</button>
+                <button class="btn" onclick="hf1BuildAll()">⏩ Build All</button>
+                <button class="btn" onclick="hf1Reset()">↺ Reset</button>
+            </div>
+        </div>
+        <div class="stats-bar" id="hf1-stats">
+            <span>step: <span class="stat-val" id="hf1-step">0 / 4</span></span>
+            <span>merging: <span class="stat-val" id="hf1-merge">—</span></span>
+        </div>
+    </div>
+
+    <div id="hf1-table-wrap" style="display:none;">
+        <table class="code-table" id="hf1-table">
+            <thead><tr><th>Symbol</th><th>Frequency</th><th>Code</th><th>Length</th></tr></thead>
+            <tbody id="hf1-tbody"></tbody>
+        </table>
+    </div>
+
+    <div class="infobox">
+        <strong>Prefix-free decoding:</strong> Because no codeword is a prefix of another, a Huffman-encoded bitstream can be decoded left-to-right by traversing the tree. At each bit, go left (0) or right (1). When you reach a leaf, emit the symbol and return to the root. No lookahead or separators needed — this property is what makes Huffman codes practical for streaming data.
+    </div>
+</section>
+
+<!-- Section 2 -->
+<section>
+    <div class="section-label">02 — Average Code Length vs Entropy Bound</div>
+    <h2>How Close Can We Get to Entropy?</h2>
+
+    <div class="prose">
+        Shannon's <strong>source coding theorem</strong> tells us the entropy \(H\) is the theoretical minimum average code length. Huffman coding, despite its simplicity, comes remarkably close. For any source with entropy \(H\), the average Huffman code length \(\bar{L}\) satisfies: \(H \leq \bar{L} < H + 1\). At most one extra bit is wasted per symbol — no other prefix-free code can do better.
+    </div>
+    <div class="prose">
+        The gap \(\bar{L} - H\) arises because Huffman must assign integer-length codewords, but the optimal (non-integer) lengths are \(-\log_2 p_i\) bits. For a symbol with \(p_i = 0.4\), the ideal length is \(-\log_2(0.4) \approx 1.32\) bits — but we must round to 1 or 2. Arithmetic coding sidesteps this by encoding entire sequences at once, asymptotically achieving \(H\) with increasing block length.
+    </div>
+    <div class="prose">
+        The comparison to <strong>fixed-length encoding</strong> is striking. For 5 symbols, we need \(\lceil \log_2 5 \rceil = 3\) bits per symbol regardless of frequency. If one symbol appears 90% of the time, fixed encoding wastes nearly all its capacity. Huffman adapts: give that symbol a 1-bit code and distribute the savings across rare symbols that appear infrequently anyway.
+    </div>
+    <div class="prose">
+        In practice, <strong>DEFLATE</strong> (used in ZIP, PNG, zlib) combines Huffman coding with LZ77, a dictionary-based compressor that replaces repeated byte sequences with back-references. The result far exceeds letter-level Huffman because it exploits long-range redundancy. But at the core, Huffman codes are still there — compressing the LZ77 tokens.
+    </div>
+
+    <div class="math-block">
+        \[H(X) \leq \bar{L}_{\text{Huffman}} < H(X) + 1 \qquad \bar{L} = \sum_i p_i l_i \qquad H = -\sum_i p_i \log_2 p_i\]
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="hf2-canvas" height="340"></canvas>
+        <div class="controls">
+            <span style="font-size:11px;color:var(--muted);">Uses same frequencies as Section 1 — adjust sliders above</span>
+            <button class="btn" onclick="hf2Refresh()">↺ Refresh</button>
+        </div>
+        <div class="stats-bar">
+            <span>H = <span class="stat-val" id="hf2-h">—</span> bits</span>
+            <span>L̄ (Huffman) = <span class="stat-val" id="hf2-l">—</span> bits</span>
+            <span>Fixed = <span class="stat-val">3.000</span> bits</span>
+            <span>savings vs fixed = <span class="stat-val" id="hf2-save">—</span>%</span>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Why we can't beat entropy:</strong> Any lossless scheme must map distinct messages to distinct bitstrings. There are \(2^k\) bitstrings of length \(k\), so on average you need at least \(\log_2 N\) bits to represent \(N\) equally likely messages. For non-uniform distributions, the entropy is the weighted average of the optimal lengths. Compression below entropy would require two different messages to share the same codeword — making decoding impossible.
+    </div>
+</section>
+
+<!-- Section 3 -->
+<section>
+    <div class="section-label">03 — English Letter Frequencies</div>
+    <h2>Real-World Compression</h2>
+
+    <div class="prose">
+        English text is far from uniform. The letter 'e' appears in about 12.7% of typed text; 'z' and 'q' appear in fewer than 0.1% each. A Huffman tree built on these frequencies gives 'e' a short code (2–3 bits) while 'z' and 'q' earn long codes (8–10 bits). Since short codes are used most often, the average drops well below 8 bits — the ASCII fixed-length encoding.
+    </div>
+    <div class="prose">
+        Applying Huffman to English letter frequencies yields an average code length of about <em>4.12 bits</em>, compared to ASCII's 8 bits — roughly a <strong>48% reduction</strong>. But this only scratches the surface of English's redundancy. Shannon estimated the true entropy of English (accounting for word-level statistics and grammar) at 1–1.5 bits per character. Modern compressors achieve near this bound by operating on blocks and using context models.
+    </div>
+    <div class="prose">
+        The Lempel-Ziv family of algorithms (LZ77, LZ78, LZW — used in ZIP, gzip, GIF) replaces repeated substrings with pointers to previous occurrences, effectively capturing multi-character statistics. The combination of LZ-style back-references with Huffman coding of the symbols produces DEFLATE — used in gzip, zlib, PNG, and WebP. BZIP2 uses Burrows-Wheeler transform plus Huffman, squeezing even further.
+    </div>
+    <div class="prose">
+        <strong>Adaptive Huffman coding</strong> dynamically updates the tree as symbols are observed, eliminating the need to transmit the code table as side information. This is used in real-time compression scenarios. More powerful adaptive schemes (PPM, CM) model conditional probabilities and approach Shannon's true entropy of English.
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="hf3-canvas" height="420"></canvas>
+        <div class="controls">
+            <div class="toggle-group">
+                <button class="btn active" id="hf3-btn-en" onclick="hf3Switch('english')">English (26 letters)</button>
+                <button class="btn" id="hf3-btn-cu" onclick="hf3Switch('custom')">Custom (5 symbols)</button>
+            </div>
+        </div>
+        <div class="stats-bar">
+            <span>avg length = <span class="stat-val" id="hf3-avg">—</span> bits</span>
+            <span>ASCII = <span class="stat-val">8.000</span> bits</span>
+            <span>savings = <span class="stat-val" id="hf3-save">—</span>%</span>
+            <span>entropy = <span class="stat-val" id="hf3-ent">—</span> bits</span>
+        </div>
+    </div>
+
+    <div class="infobox">
+        <strong>Real-world compression benchmarks:</strong> Plain text with gzip: ~60–70% size reduction. PNG images (lossless): 20–50% smaller than BMP depending on content. JPEG uses Huffman to compress DCT coefficients after lossy quantization. H.264/H.265 video use CABAC (context-adaptive binary arithmetic coding) for the residual after motion prediction. In all cases, Huffman's 1952 insight remains at the core.
+    </div>
+</section>
+
+<script>
+// ─── Huffman algorithm ──────────────────────────────────────────────────────
+function buildHuffman(freqs, labels) {
+    let nodes = freqs.map((f, i) => ({ freq: f, label: labels[i], left: null, right: null, code: '' }));
+    const steps = [];
+    while (nodes.length > 1) {
+        nodes.sort((a, b) => a.freq - b.freq);
+        const x = nodes.shift();
+        const y = nodes.shift();
+        const parent = { freq: x.freq + y.freq, label: null, left: x, right: y, code: '' };
+        steps.push({ merged: [x.label || '?', y.label || '?'], result: x.freq + y.freq });
+        nodes.push(parent);
+    }
+    const root = nodes[0];
+    // Assign codes
+    function assignCodes(node, code) {
+        node.code = code;
+        if (node.left) assignCodes(node.left, code + '0');
+        if (node.right) assignCodes(node.right, code + '1');
+    }
+    assignCodes(root, '');
+    return { root, steps };
+}
+
+function getLeafCodes(root) {
+    const result = {};
+    function traverse(node) {
+        if (!node.left && !node.right) { result[node.label] = node.code; return; }
+        if (node.left) traverse(node.left);
+        if (node.right) traverse(node.right);
+    }
+    traverse(root);
+    return result;
+}
+
+// ─── Section 1 ─────────────────────────────────────────────────────────────
+const hf1Canvas = document.getElementById('hf1-canvas');
+const hf1Ctx = hf1Canvas.getContext('2d');
+const hf1Labels = ['A', 'B', 'C', 'D', 'E'];
+let hf1Freqs = [45, 25, 15, 10, 5];
+let hf1Tree = null;
+let hf1Steps = [];
+let hf1CurrentStep = 0;
+let hf1AnimNodes = [];
+let hf1AnimTarget = null;
+let hf1FinalTree = null;
+
+function hf1GetFreqs() {
+    return ['a','b','c','d','e'].map(l => parseInt(document.getElementById(`hf1-f${l}`).value));
+}
+
+function hf1FreqChange() {
+    ['a','b','c','d','e'].forEach(l => {
+        document.getElementById(`hf1-f${l}v`).textContent = document.getElementById(`hf1-f${l}`).value;
+    });
+    hf1Reset();
+}
+
+function hf1Reset() {
+    hf1Freqs = hf1GetFreqs();
+    hf1Tree = null;
+    hf1Steps = [];
+    hf1CurrentStep = 0;
+    hf1FinalTree = null;
+    document.getElementById('hf1-step').textContent = `0 / 4`;
+    document.getElementById('hf1-merge').textContent = '—';
+    document.getElementById('hf1-table-wrap').style.display = 'none';
+    hf1DrawInitial();
+}
+
+function hf1DrawInitial() {
+    const W = hf1Canvas.offsetWidth;
+    const H = 380;
+    const ctx = hf1Ctx;
+    const dpr = window.devicePixelRatio || 1;
+    hf1Canvas.width = W * dpr;
+    hf1Canvas.height = H * dpr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+
+    ctx.fillStyle = '#120f08';
+    ctx.fillRect(0, 0, W, H);
+
+    const freqs = hf1GetFreqs();
+    const total = freqs.reduce((a, b) => a + b, 0);
+    const nodeR = 28;
+    const spacing = W / (freqs.length + 1);
+
+    for (let i = 0; i < freqs.length; i++) {
+        const x = spacing * (i + 1);
+        const y = H - 60;
+        const alpha = 0.4 + 0.6 * (freqs[i] / Math.max(...freqs));
+        drawNode(ctx, x, y, nodeR, hf1Labels[i], freqs[i], `rgba(245,158,11,${alpha})`, '#120f08');
+    }
+
+    ctx.fillStyle = '#3d2e18';
+    ctx.font = '11px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText('Adjust frequencies and click ▶ Step to build the Huffman tree', W / 2, 30);
+    ctx.textAlign = 'left';
+}
+
+function drawNode(ctx, x, y, r, label, freq, fillColor, bgColor) {
+    ctx.fillStyle = bgColor || '#1a1409';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = fillColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = fillColor;
+    ctx.font = 'bold 13px JetBrains Mono';
+    ctx.textAlign = 'center';
+    if (label) ctx.fillText(label, x, y - 4);
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = '#fef3c7';
+    ctx.fillText(freq, x, y + 10);
+    ctx.textAlign = 'left';
+}
+
+function hf1BuildStep() {
+    if (hf1FinalTree) return;
+    hf1Freqs = hf1GetFreqs();
+
+    if (!hf1Tree) {
+        // Initialize the step-by-step state
+        hf1Tree = hf1Freqs.map((f, i) => ({
+            freq: f, label: hf1Labels[i], left: null, right: null,
+            x: 0, y: 0, code: ''
+        }));
+        hf1Steps = [];
+        hf1CurrentStep = 0;
+    }
+
+    if (hf1Tree.length <= 1) {
+        hf1BuildFinish();
+        return;
+    }
+
+    hf1Tree.sort((a, b) => a.freq - b.freq);
+    const x = hf1Tree.shift();
+    const y = hf1Tree.shift();
+    const parent = {
+        freq: x.freq + y.freq,
+        label: null,
+        left: x, right: y, code: '',
+        highlighted: true
+    };
+    hf1Tree.push(parent);
+    hf1CurrentStep++;
+
+    document.getElementById('hf1-step').textContent = `${hf1CurrentStep} / 4`;
+    const xLabel = x.label || `(${x.freq})`;
+    const yLabel = y.label || `(${y.freq})`;
+    document.getElementById('hf1-merge').textContent = `${xLabel}(${x.freq}) + ${yLabel}(${y.freq}) → (${parent.freq})`;
+
+    if (hf1Tree.length === 1) {
+        hf1BuildFinish();
+    } else {
+        hf1DrawTree(hf1Tree[hf1Tree.length - 1], true);
+    }
+}
+
+function hf1BuildAll() {
+    while (!hf1FinalTree && (!hf1Tree || hf1Tree.length > 1)) {
+        hf1BuildStep();
+    }
+}
+
+function hf1BuildFinish() {
+    // Build complete tree for display
+    let nodes = hf1GetFreqs().map((f, i) => ({
+        freq: f, label: hf1Labels[i], left: null, right: null, code: ''
+    }));
+
+    const steps = [];
+    while (nodes.length > 1) {
+        nodes.sort((a, b) => a.freq - b.freq);
+        const x = nodes.shift();
+        const y = nodes.shift();
+        const parent = { freq: x.freq + y.freq, label: null, left: x, right: y, code: '' };
+        nodes.push(parent);
+    }
+    hf1FinalTree = nodes[0];
+
+    function assignCodes(node, code) {
+        node.code = code;
+        if (node.left) assignCodes(node.left, code + '0');
+        if (node.right) assignCodes(node.right, code + '1');
+    }
+    assignCodes(hf1FinalTree, '');
+
+    hf1DrawFinalTree();
+    hf1ShowTable();
+}
+
+function hf1DrawFinalTree() {
+    const W = hf1Canvas.offsetWidth;
+    const H = 380;
+    const ctx = hf1Ctx;
+    const dpr = window.devicePixelRatio || 1;
+    hf1Canvas.width = W * dpr;
+    hf1Canvas.height = H * dpr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = '#120f08';
+    ctx.fillRect(0, 0, W, H);
+
+    // Layout the tree
+    function countLeaves(node) {
+        if (!node.left && !node.right) return 1;
+        return countLeaves(node.left) + countLeaves(node.right);
+    }
+    function getDepth(node) {
+        if (!node.left && !node.right) return 0;
+        return 1 + Math.max(getDepth(node.left), getDepth(node.right));
+    }
+
+    const depth = getDepth(hf1FinalTree);
+    const levelH = Math.min(70, (H - 60) / (depth + 1));
+    const nodeR = 22;
+
+    function layoutNode(node, xMin, xMax, level) {
+        const x = (xMin + xMax) / 2;
+        const y = 40 + level * levelH;
+        node.px = x; node.py = y;
+        if (node.left) {
+            layoutNode(node.left, xMin, (xMin + xMax) / 2, level + 1);
+        }
+        if (node.right) {
+            layoutNode(node.right, (xMin + xMax) / 2, xMax, level + 1);
+        }
+    }
+
+    layoutNode(hf1FinalTree, 20, W - 20, 0);
+
+    function drawTreeNode(node) {
+        if (node.left) {
+            // Edge left (0)
+            ctx.strokeStyle = '#3d2e18';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(node.px, node.py + nodeR);
+            ctx.lineTo(node.left.px, node.left.py - nodeR);
+            ctx.stroke();
+            ctx.fillStyle = '#92663a';
+            ctx.font = '10px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.fillText('0', (node.px + node.left.px) / 2 - 8, (node.py + node.left.py) / 2);
+        }
+        if (node.right) {
+            ctx.strokeStyle = '#3d2e18';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(node.px, node.py + nodeR);
+            ctx.lineTo(node.right.px, node.right.py - nodeR);
+            ctx.stroke();
+            ctx.fillStyle = '#92663a';
+            ctx.font = '10px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.fillText('1', (node.px + node.right.px) / 2 + 8, (node.py + node.right.py) / 2);
+        }
+        const isLeaf = !node.left && !node.right;
+        const color = isLeaf ? '#f59e0b' : '#92663a';
+        drawNode(ctx, node.px, node.py, nodeR, node.label || '', node.freq, color, '#1a1409');
+        if (isLeaf && node.code) {
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = '10px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.fillText(node.code, node.px, node.py + nodeR + 14);
+        }
+        if (node.left) drawTreeNode(node.left);
+        if (node.right) drawTreeNode(node.right);
+    }
+    drawTreeNode(hf1FinalTree);
+    ctx.textAlign = 'left';
+}
+
+function hf1DrawTree(partial, showHighlight) {
+    hf1DrawInitial();
+}
+
+function hf1ShowTable() {
+    if (!hf1FinalTree) return;
+    const freqs = hf1GetFreqs();
+    const total = freqs.reduce((a, b) => a + b, 0);
+    const codes = getLeafCodes(hf1FinalTree);
+    const tbody = document.getElementById('hf1-tbody');
+    tbody.innerHTML = '';
+    hf1Labels.forEach((lbl, i) => {
+        const code = codes[lbl] || '';
+        const freq = freqs[i];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style="color:var(--accent)">${lbl}</td><td>${freq} (${(freq/total*100).toFixed(1)}%)</td><td>${code}</td><td>${code.length}</td>`;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('hf1-table-wrap').style.display = 'block';
+}
+
+// ─── Section 2 ─────────────────────────────────────────────────────────────
+const hf2Canvas = document.getElementById('hf2-canvas');
+const hf2Ctx = hf2Canvas.getContext('2d');
+
+function hf2Refresh() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = hf2Canvas.offsetWidth;
+    hf2Canvas.width = W * dpr;
+    hf2Canvas.height = 340 * dpr;
+    hf2Ctx.setTransform(1, 0, 0, 1, 0, 0);
+    hf2Ctx.scale(dpr, dpr);
+    hf2Draw();
+}
+
+function hf2Draw() {
+    const freqs = hf1GetFreqs();
+    const total = freqs.reduce((a, b) => a + b, 0);
+    const probs = freqs.map(f => f / total);
+
+    // Build Huffman tree
+    let nodes = probs.map((p, i) => ({ freq: p, label: hf1Labels[i], left: null, right: null, code: '' }));
+    while (nodes.length > 1) {
+        nodes.sort((a, b) => a.freq - b.freq);
+        const x = nodes.shift();
+        const y = nodes.shift();
+        nodes.push({ freq: x.freq + y.freq, label: null, left: x, right: y, code: '' });
+    }
+    function assignCodes(node, code) {
+        node.code = code;
+        if (node.left) assignCodes(node.left, code + '0');
+        if (node.right) assignCodes(node.right, code + '1');
+    }
+    assignCodes(nodes[0], '');
+    const leafCodes = getLeafCodes(nodes[0]);
+
+    const lengths = hf1Labels.map(l => (leafCodes[l] || '').length);
+    const H = probs.reduce((acc, p) => acc + (p > 0 ? -p * Math.log2(p) : 0), 0);
+    const Lbar = probs.reduce((acc, p, i) => acc + p * lengths[i], 0);
+    const fixed = Math.ceil(Math.log2(hf1Labels.length));
+    const savings = (1 - Lbar / fixed) * 100;
+
+    document.getElementById('hf2-h').textContent = H.toFixed(3);
+    document.getElementById('hf2-l').textContent = Lbar.toFixed(3);
+    document.getElementById('hf2-save').textContent = savings.toFixed(1);
+
+    const W = hf2Canvas.offsetWidth;
+    const H_px = 340;
+    const ctx = hf2Ctx;
+    ctx.fillStyle = '#120f08';
+    ctx.fillRect(0, 0, W, H_px);
+
+    const n = hf1Labels.length;
+    const plotW = W - 180;
+    const barW = Math.floor((plotW - 20) / n) - 8;
+    const maxL = fixed + 0.5;
+    const chartH = H_px - 100;
+    const baseY = chartH + 30;
+
+    // Draw bars
+    for (let i = 0; i < n; i++) {
+        const bx = 16 + i * (barW + 8);
+        const huffL = lengths[i];
+        const idealL = probs[i] > 0 ? -Math.log2(probs[i]) : 0;
+
+        // Fixed-length (gray)
+        const fixedBarH = chartH * (fixed / maxL);
+        ctx.fillStyle = 'rgba(100,80,40,0.3)';
+        ctx.fillRect(bx, baseY - fixedBarH, barW, fixedBarH);
+
+        // Huffman bar (amber)
+        const huffBarH = chartH * (huffL / maxL);
+        ctx.fillStyle = `rgba(245,158,11,0.85)`;
+        ctx.fillRect(bx + barW * 0.1, baseY - huffBarH, barW * 0.4, huffBarH);
+
+        // Ideal bar (green, −log₂ pᵢ)
+        const idealBarH = chartH * (Math.min(idealL, maxL) / maxL);
+        ctx.fillStyle = `rgba(74,222,128,0.7)`;
+        ctx.fillRect(bx + barW * 0.5, baseY - idealBarH, barW * 0.4, idealBarH);
+
+        // Labels
+        ctx.fillStyle = '#fef3c7'; ctx.font = '11px JetBrains Mono'; ctx.textAlign = 'center';
+        ctx.fillText(hf1Labels[i], bx + barW / 2, baseY + 14);
+        ctx.fillStyle = '#f59e0b'; ctx.font = '9px JetBrains Mono';
+        ctx.fillText(`${huffL}b`, bx + barW / 2 - 4, baseY - huffBarH - 4);
+    }
+
+    // Y-axis
+    ctx.strokeStyle = '#1f1a0e'; ctx.lineWidth = 1;
+    for (let v = 1; v <= fixed; v++) {
+        const y = baseY - chartH * (v / maxL);
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(12, y); ctx.lineTo(plotW, y); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#3d2e18'; ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'left';
+        ctx.fillText(`${v}b`, 0, y + 3);
+    }
+
+    // Fixed reference line
+    const fixedY = baseY - chartH * (fixed / maxL);
+    ctx.strokeStyle = 'rgba(100,80,40,0.6)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(12, fixedY); ctx.lineTo(plotW, fixedY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Right panel: summary
+    const rx = plotW + 8;
+    const rpW = W - plotW - 16;
+    ctx.fillStyle = '#1a1409';
+    ctx.fillRect(rx, 16, rpW, H_px - 32);
+    ctx.strokeStyle = '#1f1a0e'; ctx.lineWidth = 1;
+    ctx.strokeRect(rx, 16, rpW, H_px - 32);
+
+    ctx.textAlign = 'center';
+    const rcx = rx + rpW / 2;
+
+    ctx.fillStyle = '#3d2e18'; ctx.font = '9px JetBrains Mono';
+    ctx.fillText('BOUNDS', rcx, 34);
+
+    const rows = [
+        { label: 'Fixed', val: fixed.toFixed(3), color: 'rgba(100,80,40,0.8)' },
+        { label: 'Huffman L̄', val: Lbar.toFixed(3), color: '#f59e0b' },
+        { label: 'Entropy H', val: H.toFixed(3), color: '#4ade80' },
+    ];
+    rows.forEach((r, i) => {
+        const ry = 50 + i * 40;
+        ctx.fillStyle = r.color; ctx.font = '9px JetBrains Mono';
+        ctx.fillText(r.label, rcx, ry);
+        ctx.font = 'bold 14px JetBrains Mono';
+        ctx.fillText(r.val, rcx, ry + 16);
+    });
+
+    // Efficiency gauge
+    const eff = H / Lbar;
+    const gaugeY = 190;
+    const gW = rpW - 20;
+    ctx.fillStyle = '#120f08'; ctx.fillRect(rx + 10, gaugeY, gW, 12);
+    ctx.fillStyle = '#4ade80'; ctx.fillRect(rx + 10, gaugeY, gW * eff, 12);
+    ctx.fillStyle = '#3d2e18'; ctx.font = '9px JetBrains Mono';
+    ctx.fillText(`efficiency: ${(eff * 100).toFixed(1)}%`, rcx, gaugeY + 26);
+
+    // Gap label
+    const gap = Lbar - H;
+    ctx.fillStyle = '#f87171'; ctx.font = '9px JetBrains Mono';
+    ctx.fillText(`gap = ${gap.toFixed(3)} bits`, rcx, gaugeY + 42);
+    ctx.fillStyle = '#3d2e18';
+    ctx.fillText('(always < 1 bit)', rcx, gaugeY + 56);
+
+    ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 11px JetBrains Mono';
+    ctx.fillText(`saves ${savings.toFixed(1)}%`, rcx, gaugeY + 78);
+    ctx.fillStyle = '#3d2e18'; ctx.font = '9px JetBrains Mono';
+    ctx.fillText('vs fixed-length', rcx, gaugeY + 92);
+
+    // Legend
+    ctx.fillStyle = '#f59e0b'; ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'left';
+    ctx.fillText('■ Huffman', rx + 8, H_px - 48);
+    ctx.fillStyle = '#4ade80';
+    ctx.fillText('■ Ideal (−log₂pᵢ)', rx + 8, H_px - 36);
+    ctx.fillStyle = 'rgba(100,80,40,0.8)';
+    ctx.fillText('■ Fixed', rx + 8, H_px - 24);
+
+    ctx.textAlign = 'left';
+}
+
+// ─── Section 3: English frequencies ────────────────────────────────────────
+const hf3Canvas = document.getElementById('hf3-canvas');
+const hf3Ctx = hf3Canvas.getContext('2d');
+
+const englishFreqs = {
+    'E': 12.70, 'T': 9.06, 'A': 8.17, 'O': 7.51, 'I': 6.97, 'N': 6.75,
+    'S': 6.33, 'H': 6.09, 'R': 5.99, 'D': 4.25, 'L': 4.03, 'C': 2.78,
+    'U': 2.76, 'M': 2.41, 'W': 2.36, 'F': 2.23, 'G': 2.02, 'Y': 1.97,
+    'P': 1.93, 'B': 1.29, 'V': 0.98, 'K': 0.77, 'J': 0.15, 'X': 0.15,
+    'Q': 0.10, 'Z': 0.07
+};
+
+let hf3Mode = 'english';
+
+function hf3Switch(mode) {
+    hf3Mode = mode;
+    document.getElementById('hf3-btn-en').classList.toggle('active', mode === 'english');
+    document.getElementById('hf3-btn-cu').classList.toggle('active', mode === 'custom');
+    hf3Refresh();
+}
+
+function hf3Refresh() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = hf3Canvas.offsetWidth;
+    hf3Canvas.width = W * dpr;
+    hf3Canvas.height = 420 * dpr;
+    hf3Ctx.setTransform(1, 0, 0, 1, 0, 0);
+    hf3Ctx.scale(dpr, dpr);
+    hf3Draw();
+}
+
+function hf3Draw() {
+    let labels, freqs;
+    if (hf3Mode === 'english') {
+        labels = Object.keys(englishFreqs);
+        freqs = Object.values(englishFreqs);
+    } else {
+        labels = hf1Labels;
+        freqs = hf1GetFreqs();
+    }
+
+    const total = freqs.reduce((a, b) => a + b, 0);
+    const probs = freqs.map(f => f / total);
+
+    // Build Huffman
+    let nodes = probs.map((p, i) => ({ freq: p, label: labels[i], left: null, right: null, code: '' }));
+    while (nodes.length > 1) {
+        nodes.sort((a, b) => a.freq - b.freq);
+        const x = nodes.shift();
+        const y = nodes.shift();
+        nodes.push({ freq: x.freq + y.freq, label: null, left: x, right: y, code: '' });
+    }
+    function assignCodes(node, code) {
+        node.code = code;
+        if (node.left) assignCodes(node.left, code + '0');
+        if (node.right) assignCodes(node.right, code + '1');
+    }
+    assignCodes(nodes[0], '');
+    const leafCodes = getLeafCodes(nodes[0]);
+    const codeLengths = labels.map(l => (leafCodes[l] || '').length);
+
+    const H = probs.reduce((acc, p) => acc + (p > 0 ? -p * Math.log2(p) : 0), 0);
+    const Lbar = probs.reduce((acc, p, i) => acc + p * codeLengths[i], 0);
+    const fixed = hf3Mode === 'english' ? 8 : 3; // ASCII 8 bits vs fixed 3 bits
+    const savings = (1 - Lbar / fixed) * 100;
+
+    document.getElementById('hf3-avg').textContent = Lbar.toFixed(3);
+    document.getElementById('hf3-save').textContent = savings.toFixed(1);
+    document.getElementById('hf3-ent').textContent = H.toFixed(3);
+
+    const W = hf3Canvas.offsetWidth;
+    const H_px = 420;
+    const ctx = hf3Ctx;
+    ctx.fillStyle = '#120f08';
+    ctx.fillRect(0, 0, W, H_px);
+
+    // Bar chart of frequencies sorted by code length
+    const sorted = labels.map((l, i) => ({ label: l, prob: probs[i], code: leafCodes[l] || '', len: codeLengths[i] }));
+    sorted.sort((a, b) => b.prob - a.prob);
+
+    const n = sorted.length;
+    const barAreaH = 200;
+    const barAreaY = 20;
+    const maxProb = sorted[0].prob;
+    const bw = Math.max(8, Math.floor((W - 20) / n) - 2);
+
+    for (let i = 0; i < n; i++) {
+        const item = sorted[i];
+        const bx = 10 + i * (bw + 2);
+        const barH = barAreaH * (item.prob / maxProb);
+        const by = barAreaY + barAreaH - barH;
+
+        // Color by code length
+        const maxLen = Math.max(...codeLengths);
+        const minLen = Math.min(...codeLengths);
+        const t = maxLen > minLen ? (item.len - minLen) / (maxLen - minLen) : 0;
+        const r = Math.round(245 * (1 - t) + 100 * t);
+        const g = Math.round(158 * (1 - t) + 50 * t);
+        const b2 = Math.round(11 * (1 - t) + 20 * t);
+        ctx.fillStyle = `rgb(${r},${g},${b2})`;
+        ctx.fillRect(bx, by, bw, barH);
+
+        if (bw >= 10) {
+            ctx.fillStyle = '#fef3c7';
+            ctx.font = `${Math.min(10, bw)}px JetBrains Mono`;
+            ctx.textAlign = 'center';
+            ctx.fillText(item.label, bx + bw / 2, barAreaY + barAreaH + 12);
+            ctx.fillStyle = '#92663a';
+            ctx.font = '8px JetBrains Mono';
+            ctx.fillText(`${item.len}`, bx + bw / 2, by - 2);
+        }
+    }
+
+    // Axis label
+    ctx.fillStyle = '#3d2e18'; ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'left';
+    ctx.fillText('frequency (sorted high→low) / code length (bits, above bar)', 10, barAreaY + barAreaH + 28);
+
+    // Code table (top-10 most frequent)
+    const tableY = barAreaY + barAreaH + 44;
+    const showN = Math.min(n, hf3Mode === 'english' ? 13 : n);
+    const colW = Math.floor((W - 20) / Math.min(showN, 13));
+
+    ctx.fillStyle = '#1a1409'; ctx.fillRect(10, tableY, W - 20, 16);
+    ['Symbol', 'Freq%', 'Code', 'Len'].forEach((h, ci) => {
+        // header row
+    });
+    const headers = ['SYM', 'FREQ%', 'CODE', 'LEN'];
+
+    const tc = Math.min(showN, Math.floor((W - 20) / 70));
+    const tcW = Math.floor((W - 20) / tc);
+    ctx.fillStyle = '#1a1409';
+    ctx.fillRect(10, tableY, W - 20, (Math.ceil(showN / tc) + 1) * 18 + 4);
+
+    ctx.fillStyle = '#3d2e18'; ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'center';
+    ctx.fillText('SYMBOL', 10 + tcW * 0.1, tableY + 12);
+    ctx.fillText('FREQ%', 10 + tcW * 0.35, tableY + 12);
+    ctx.fillText('CODE', 10 + tcW * 0.62, tableY + 12);
+    ctx.fillText('LEN', 10 + tcW * 0.88, tableY + 12);
+
+    for (let i = 0; i < showN; i++) {
+        const item = sorted[i];
+        const col = i % tc;
+        const row = Math.floor(i / tc);
+        const rx2 = 10 + col * tcW;
+        const ry2 = tableY + 18 + row * 18;
+        const isShort = item.len <= 3;
+        ctx.fillStyle = isShort ? '#f59e0b' : '#92663a';
+        ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'center';
+        ctx.fillText(item.label, rx2 + tcW * 0.1, ry2 + 10);
+        ctx.fillStyle = '#3d2e18';
+        ctx.fillText(`${(item.prob * 100).toFixed(2)}`, rx2 + tcW * 0.35, ry2 + 10);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText(item.code.length <= 8 ? item.code : item.code.slice(0, 7) + '…', rx2 + tcW * 0.62, ry2 + 10);
+        ctx.fillStyle = '#92663a';
+        ctx.fillText(item.len, rx2 + tcW * 0.88, ry2 + 10);
+    }
+
+    // Savings readout
+    const summaryY = H_px - 50;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 13px JetBrains Mono';
+    ctx.fillText(`Avg Huffman: ${Lbar.toFixed(2)} bits  |  ${hf3Mode === 'english' ? 'ASCII' : 'Fixed'}: ${fixed} bits  |  Savings: ${savings.toFixed(1)}%`, W / 2, summaryY + 14);
+    ctx.fillStyle = '#3d2e18'; ctx.font = '9px JetBrains Mono';
+    ctx.fillText(`Entropy: ${H.toFixed(3)} bits  (gap to Huffman: ${(Lbar - H).toFixed(3)} bits)`, W / 2, summaryY + 30);
+
+    ctx.textAlign = 'left';
+}
+
+// ─── Init ───────────────────────────────────────────────────────────────────
+function initAll() {
+    hf1DrawInitial();
+    hf2Refresh();
+    hf3Refresh();
+}
+
+const ro = new ResizeObserver(() => {
+    hf1DrawInitial();
+    if (hf1FinalTree) hf1DrawFinalTree();
+    hf2Refresh();
+    hf3Refresh();
+});
+ro.observe(document.body);
+
+window.addEventListener('DOMContentLoaded', initAll);
+window.addEventListener('load', initAll);
+</script>
+</body>
+</html>
