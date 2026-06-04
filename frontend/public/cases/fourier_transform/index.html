@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fourier Transform</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0d0617;
+            --card: #1a0f2e;
+            --surface: #251540;
+            --accent: #f472b6;
+            --accent-dim: rgba(244,114,182,0.15);
+            --accent-glow: rgba(244,114,182,0.4);
+            --purple: #c084fc;
+            --text: #fdf2f8;
+            --muted: #9d7fb5;
+            --border: #3d1f5e;
+            --border-bright: #7c3aed;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            line-height: 1.7;
+            padding: 0 0 80px 0;
+        }
+        header {
+            text-align: center;
+            padding: 60px 40px 40px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, #1a0f2e 0%, var(--bg) 100%);
+        }
+        h1 {
+            font-family: 'VT323', monospace;
+            font-size: 4rem;
+            color: var(--accent);
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px var(--accent-glow), 0 0 60px rgba(244,114,182,0.2);
+            margin-bottom: 8px;
+        }
+        header p {
+            font-family: 'Space Mono', monospace;
+            color: var(--muted);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .knowledge-unit {
+            max-width: 900px;
+            margin: 48px auto 0;
+            padding: 0 24px;
+        }
+        .ku-title {
+            font-family: 'VT323', monospace;
+            font-size: 1.6rem;
+            color: var(--purple);
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .text-content { margin-bottom: 28px; }
+        .text-content p {
+            color: #d8c8e8;
+            font-size: 0.88rem;
+            line-height: 1.9;
+            margin-bottom: 14px;
+        }
+        .text-content strong { color: var(--accent); font-weight: 700; }
+        .math-block {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            padding: 16px 20px;
+            margin: 16px 0;
+            border-radius: 4px;
+            overflow-x: auto;
+            text-align: center;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-top: 3px solid var(--accent);
+            border-radius: 6px;
+            padding: 20px;
+        }
+        .ctrl-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .ctrl-label {
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        .seg-btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
+        .seg-btn {
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            padding: 4px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+            border-radius: 3px;
+        }
+        .seg-btn:hover { border-color: var(--accent); color: var(--text); }
+        .seg-btn.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 160px;
+            height: 4px;
+            background: var(--border-bright);
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px; height: 14px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent);
+        }
+        .toggle-btn {
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            padding: 4px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            cursor: pointer;
+            letter-spacing: 1px;
+            border-radius: 3px;
+            transition: all 0.15s;
+        }
+        .toggle-btn.on {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        .readout {
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            color: var(--accent);
+            letter-spacing: 2px;
+            padding: 4px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+        }
+        .play-btn {
+            font-family: 'VT323', monospace;
+            font-size: 1.4rem;
+            padding: 6px 20px;
+            background: var(--accent);
+            color: var(--bg);
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            letter-spacing: 2px;
+            border-radius: 3px;
+            box-shadow: 0 0 12px var(--accent-glow);
+            transition: all 0.15s;
+        }
+        .play-btn:hover { box-shadow: 0 0 20px var(--accent); }
+        canvas {
+            display: block;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+        }
+        .canvas-label {
+            font-family: 'VT323', monospace;
+            font-size: 0.85rem;
+            color: var(--muted);
+            text-align: center;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>FOURIER TRANSFORM</h1>
+        <p>Decomposing signals into their harmonic components</p>
+    </header>
+
+    <!-- ── KU1: Signal Decomposition ── -->
+    <section class="knowledge-unit" id="ku1">
+        <h2 class="ku-title">Any periodic signal is built from sinusoidal harmonics at integer-multiple frequencies.</h2>
+        <div class="text-content">
+            <p>
+                The <strong>Fourier Transform</strong> is one of the most powerful ideas in mathematics:
+                every periodic waveform — no matter how sharp, jagged, or complex — is secretly
+                a sum of pure sine waves. Each sine wave vibrates at a specific frequency, carries
+                its own amplitude, and arrives at its own phase.
+            </p>
+            <p>
+                A square wave, a sawtooth, a triangle — each has a characteristic <strong>harmonic signature</strong>.
+                The general formula for the Fourier series is:
+            </p>
+            <div class="math-block">
+                $$ f(t) = \sum_{n=1}^{\infty} \left[ a_n \cos(2\pi n f_0 t) + b_n \sin(2\pi n f_0 t) \right] $$
+            </div>
+            <p>
+                Select a waveform below. The left panel shows the composite signal;
+                the right panel shows each harmonic stacked by frequency.
+                The frequency spectrum at the bottom reveals which harmonics are present —
+                <strong>different waveforms have entirely different spectral signatures</strong>.
+            </p>
+        </div>
+        <div class="interactive-content">
+
+        <style>
+            #ku1-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        </style>
+
+        <div class="card">
+            <div class="ctrl-row">
+                <span class="ctrl-label">WAVEFORM:</span>
+                <div class="seg-btn-group" id="ku1-wave-btns">
+                    <button class="seg-btn active" data-wave="square">SQUARE</button>
+                    <button class="seg-btn" data-wave="sawtooth">SAWTOOTH</button>
+                    <button class="seg-btn" data-wave="triangle">TRIANGLE</button>
+                    <button class="seg-btn" data-wave="pulse">PULSE</button>
+                </div>
+            </div>
+            <div id="ku1-grid">
+                <div>
+                    <canvas id="ku1-composite" width="390" height="160"></canvas>
+                    <div class="canvas-label">COMPOSITE WAVEFORM</div>
+                </div>
+                <div>
+                    <canvas id="ku1-harmonics" width="390" height="160"></canvas>
+                    <div class="canvas-label">HARMONIC COMPONENTS</div>
+                </div>
+            </div>
+            <canvas id="ku1-spectrum" width="792" height="70"></canvas>
+            <div class="canvas-label">FREQUENCY SPECTRUM</div>
+        </div>
+
+        <script>
+        (function() {
+            const composite = document.getElementById('ku1-composite');
+            const harmonicsCanvas = document.getElementById('ku1-harmonics');
+            const spectrum = document.getElementById('ku1-spectrum');
+            const cc = composite.getContext('2d');
+            const hc = harmonicsCanvas.getContext('2d');
+            const sc = spectrum.getContext('2d');
+
+            const ACCENT = '#f472b6';
+            const BG = '#0d0617';
+            const BORDER = '#3d1f5e';
+            const MUTED = '#9d7fb5';
+            const HCOLORS = ['#f472b6','#c084fc','#60a5fa','#34d399','#fbbf24','#f87171','#a78bdb'];
+
+            const waves = {
+                square:   { fn: t => Math.sin(t) >= 0 ? 1 : -1,
+                            coeff: n => n%2===1 ? 4/(Math.PI*n) : 0 },
+                sawtooth: { fn: t => ((t%(2*Math.PI))+2*Math.PI)%(2*Math.PI) < Math.PI
+                                ? ((t%(2*Math.PI))+2*Math.PI)%(2*Math.PI)/Math.PI
+                                : (((t%(2*Math.PI))+2*Math.PI)%(2*Math.PI))/Math.PI - 2,
+                            coeff: n => (n%2===1?1:-1)*2/(Math.PI*n) },
+                triangle: { fn: t => { const x=((t%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+                                        return x<Math.PI ? -1+2*x/Math.PI : 3-2*x/Math.PI; },
+                            coeff: n => n%2===1 ? (n%4===1?1:-1)*8/(Math.PI*Math.PI*n*n) : 0 },
+                pulse:    { fn: t => ((t%(2*Math.PI))+2*Math.PI)%(2*Math.PI) < Math.PI/2 ? 1 : -0.35,
+                            coeff: n => (2/Math.PI)*Math.sin(n*Math.PI/2)/n }
+            };
+
+            let curWave = 'square';
+
+            function grid(ctx, w, h) {
+                ctx.save();
+                ctx.strokeStyle = BORDER; ctx.lineWidth = 0.5; ctx.setLineDash([2,4]);
+                for (let x=0; x<=w; x+=w/8) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+                ctx.beginPath(); ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.stroke();
+                ctx.setLineDash([]); ctx.restore();
+            }
+
+            function drawComposite() {
+                const w=composite.width, h=composite.height;
+                cc.fillStyle=BG; cc.fillRect(0,0,w,h);
+                grid(cc,w,h);
+                const wf=waves[curWave]; const pts=500;
+                cc.beginPath(); cc.strokeStyle=ACCENT; cc.lineWidth=2.5;
+                for (let i=0;i<=pts;i++) {
+                    const t=(i/pts)*4*Math.PI;
+                    const y=h/2-wf.fn(t)*(h*0.4);
+                    i===0?cc.moveTo(i*(w/pts),y):cc.lineTo(i*(w/pts),y);
+                }
+                cc.shadowColor=ACCENT; cc.shadowBlur=8; cc.stroke(); cc.shadowBlur=0;
+            }
+
+            function drawHarmonics() {
+                const N=7, w=harmonicsCanvas.width, h=harmonicsCanvas.height;
+                hc.fillStyle=BG; hc.fillRect(0,0,w,h);
+                const rH=h/N; const pts=300; const wf=waves[curWave];
+                for (let k=0;k<N;k++) {
+                    const n=k+1, amp=Math.abs(wf.coeff(n)), sign=wf.coeff(n)<0?-1:1;
+                    if (amp<0.001) {
+                        hc.strokeStyle=BORDER; hc.lineWidth=0.5;
+                        hc.beginPath(); hc.moveTo(0,(k+0.5)*rH); hc.lineTo(w,(k+0.5)*rH); hc.stroke();
+                        continue;
+                    }
+                    hc.strokeStyle=HCOLORS[k%HCOLORS.length]; hc.lineWidth=1.5;
+                    hc.globalAlpha=0.5+0.5*amp/(4/Math.PI);
+                    hc.beginPath();
+                    for (let i=0;i<=pts;i++) {
+                        const t=(i/pts)*4*Math.PI;
+                        const y=(k+0.5)*rH-sign*amp*Math.sin(n*t)*(rH*0.4);
+                        i===0?hc.moveTo(i*(w/pts),y):hc.lineTo(i*(w/pts),y);
+                    }
+                    hc.stroke(); hc.globalAlpha=1;
+                    hc.fillStyle=HCOLORS[k%HCOLORS.length]; hc.font='10px Space Mono';
+                    hc.fillText('n='+n, 4, k*rH+12);
+                }
+            }
+
+            function drawSpectrum() {
+                const N=13, w=spectrum.width, h=spectrum.height;
+                sc.fillStyle=BG; sc.fillRect(0,0,w,h);
+                const barW=w/(N+1); const wf=waves[curWave]; const maxA=4/Math.PI;
+                sc.strokeStyle=BORDER; sc.lineWidth=0.5;
+                sc.beginPath(); sc.moveTo(0,h-16); sc.lineTo(w,h-16); sc.stroke();
+                for (let n=1;n<=N;n++) {
+                    const amp=Math.abs(wf.coeff(n));
+                    const x=n*barW, bH=(amp/maxA)*(h-20);
+                    const col=HCOLORS[(n-1)%HCOLORS.length];
+                    sc.fillStyle=col; sc.globalAlpha=amp>0.01?0.85:0.12;
+                    sc.fillRect(x-6,h-16-bH,12,bH);
+                    if(amp>0.01){sc.shadowColor=col;sc.shadowBlur=6;sc.fillRect(x-6,h-16-bH,12,bH);sc.shadowBlur=0;}
+                    sc.globalAlpha=1;
+                    sc.fillStyle=MUTED; sc.font='9px Space Mono'; sc.textAlign='center';
+                    sc.fillText(n,x,h-3);
+                }
+                sc.textAlign='left';
+            }
+
+            function render() { drawComposite(); drawHarmonics(); drawSpectrum(); }
+
+            document.querySelectorAll('#ku1-wave-btns .seg-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#ku1-wave-btns .seg-btn').forEach(b=>b.classList.remove('active'));
+                    btn.classList.add('active');
+                    curWave=btn.dataset.wave;
+                    render();
+                });
+            });
+
+            function resize() {
+                const cW=document.querySelector('#ku1 .card').clientWidth-40;
+                const half=Math.floor((cW-12)/2);
+                composite.width=half; harmonicsCanvas.width=half;
+                spectrum.width=cW; render();
+            }
+            window.addEventListener('resize', resize);
+            setTimeout(resize, 50);
+            render();
+        })();
+        </script>
+
+        </div>
+    </section>
+
+    <!-- ── KU2: Gibbs Phenomenon ── -->
+    <section class="knowledge-unit" id="ku2">
+        <h2 class="ku-title">Adding more harmonics approximates the target wave — but corners always cause a ~9% Gibbs overshoot.</h2>
+        <div class="text-content">
+            <p>
+                Start with just the fundamental frequency and you have a sine wave.
+                Add the 3rd harmonic (three times the frequency, a third of the amplitude) and the
+                shape begins to square off. Keep adding odd harmonics — 5th, 7th, 9th — and the
+                approximation sharpens dramatically.
+            </p>
+            <p>
+                But something strange happens at the sharp jumps. No matter how many terms you add,
+                the approximation always <strong>overshoots by about 9%</strong>. This is the
+                <strong>Gibbs phenomenon</strong>: a ringing artifact that never disappears, it only
+                narrows. The partial sum is:
+            </p>
+            <div class="math-block">
+                $$ S_N(t) = \frac{4}{\pi} \sum_{\substack{k=1 \\ k \text{ odd}}}^{N} \frac{1}{k} \sin(kt) $$
+            </div>
+            <p>
+                The overshoot converges to exactly $\frac{\text{Si}(\pi)}{\pi/2} - 1 \approx 8.9\%$,
+                where $\text{Si}$ is the sine integral — a constant of nature, not a computational error.
+                Drag the slider and watch the <span style="color:#f87171">red Gibbs marker</span>:
+                it narrows but never vanishes.
+            </p>
+        </div>
+        <div class="interactive-content">
+        <div class="card">
+            <div class="ctrl-row">
+                <span class="ctrl-label">HARMONICS (N):</span>
+                <input type="range" id="ku2-slider" min="1" max="21" step="2" value="1">
+                <span class="readout" id="ku2-n-read">N = 1</span>
+                <span class="ctrl-label" style="margin-left:4px">COMPONENTS:</span>
+                <button class="toggle-btn" id="ku2-toggle">OFF</button>
+                <span class="readout" id="ku2-overshoot" style="color:#9d7fb5">OVERSHOOT: —</span>
+            </div>
+            <canvas id="ku2-canvas" width="820" height="200"></canvas>
+            <div id="ku2-gibbs-msg" style="font-family:'VT323',monospace;font-size:0.9rem;color:#f87171;letter-spacing:1px;margin-top:6px;min-height:20px;text-align:center;"></div>
+        </div>
+
+        <script>
+        (function() {
+            const canvas = document.getElementById('ku2-canvas');
+            const ctx = canvas.getContext('2d');
+            const slider = document.getElementById('ku2-slider');
+            const nRead = document.getElementById('ku2-n-read');
+            const overshootEl = document.getElementById('ku2-overshoot');
+            const toggleBtn = document.getElementById('ku2-toggle');
+            const gibbsMsg = document.getElementById('ku2-gibbs-msg');
+
+            const ACCENT='#f472b6', RED='#f87171', BG='#0d0617', BORDER='#3d1f5e', MUTED='#9d7fb5';
+            const HCOLORS=['#f472b6','#c084fc','#60a5fa','#34d399','#fbbf24','#f87171','#a78bdb','#7dd3fc','#6ee7b7','#fb923c','#e879f9'];
+
+            let showComp=false, N=1;
+
+            function S(t,n) {
+                let s=0; for(let k=1;k<=n;k+=2) s+=(4/(Math.PI*k))*Math.sin(k*t); return s;
+            }
+
+            function render() {
+                const w=canvas.width, h=canvas.height;
+                ctx.fillStyle=BG; ctx.fillRect(0,0,w,h);
+                const M=30, plotW=w-2*M, midY=h/2, sY=h*0.36, pts=700;
+
+                // Grid
+                ctx.save(); ctx.strokeStyle=BORDER; ctx.lineWidth=0.5; ctx.setLineDash([2,4]);
+                [midY-sY,midY,midY+sY].forEach(y=>{ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(w-M,y);ctx.stroke();});
+                ctx.setLineDash([]); ctx.restore();
+
+                // Target square wave
+                ctx.save(); ctx.strokeStyle=MUTED; ctx.lineWidth=1; ctx.setLineDash([6,4]);
+                const segs=4;
+                for(let s=0;s<segs;s++){
+                    const x0=M+(s/segs)*plotW, x1=M+((s+1)/segs)*plotW;
+                    const yV=s%2===0?midY-sY:midY+sY;
+                    ctx.beginPath(); ctx.moveTo(x0,yV); ctx.lineTo(x1,yV); ctx.stroke();
+                    if(s<segs-1){ctx.beginPath();ctx.moveTo(x1,midY-sY);ctx.lineTo(x1,midY+sY);ctx.stroke();}
+                }
+                ctx.setLineDash([]); ctx.restore();
+
+                // Component waves
+                if(showComp){
+                    let ci=0;
+                    for(let k=1;k<=N;k+=2){
+                        ctx.save(); ctx.strokeStyle=HCOLORS[ci%HCOLORS.length]; ctx.lineWidth=0.8; ctx.globalAlpha=0.3;
+                        ctx.beginPath();
+                        for(let i=0;i<=pts;i++){
+                            const t=(i/pts)*4*Math.PI;
+                            const y=midY-(4/(Math.PI*k))*Math.sin(k*t)*sY;
+                            i===0?ctx.moveTo(M+(i/pts)*plotW,y):ctx.lineTo(M+(i/pts)*plotW,y);
+                        }
+                        ctx.stroke(); ctx.restore(); ci++;
+                    }
+                }
+
+                // Compute Fourier approx
+                const ys=[]; for(let i=0;i<=pts;i++) ys.push(S((i/pts)*4*Math.PI,N));
+                const maxVal=Math.max(...ys), ovPct=((maxVal-1)/1)*100;
+
+                // Approx line
+                ctx.save(); ctx.strokeStyle=ACCENT; ctx.lineWidth=2.5; ctx.shadowColor=ACCENT; ctx.shadowBlur=6;
+                ctx.beginPath();
+                for(let i=0;i<=pts;i++){
+                    const x=M+(i/pts)*plotW, y=midY-ys[i]*sY;
+                    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+                }
+                ctx.stroke(); ctx.restore();
+
+                // Gibbs marker
+                if(ovPct>2&&N>1){
+                    let maxIdx=ys.indexOf(maxVal);
+                    const gx=M+(maxIdx/pts)*plotW, gy=midY-maxVal*sY, tY=midY-sY;
+                    ctx.save(); ctx.strokeStyle=RED; ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
+                    ctx.beginPath(); ctx.moveTo(gx,gy); ctx.lineTo(gx,tY); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle=RED; ctx.beginPath(); ctx.moveTo(gx,gy-6); ctx.lineTo(gx-4,gy+2); ctx.lineTo(gx+4,gy+2); ctx.closePath(); ctx.fill();
+                    ctx.font='bold 11px Space Mono'; ctx.fillStyle=RED;
+                    ctx.fillText('+'+ovPct.toFixed(1)+'%', gx+6, gy+4);
+                    ctx.restore();
+                }
+
+                nRead.textContent='N = '+N;
+                if(N>1&&ovPct>1){
+                    overshootEl.textContent='OVERSHOOT: +'+ovPct.toFixed(1)+'%';
+                    overshootEl.style.color=RED;
+                    gibbsMsg.textContent=ovPct>8?'⚡ GIBBS PHENOMENON — overshoot locks at ~8.9% regardless of N':'';
+                } else {
+                    overshootEl.textContent='OVERSHOOT: —'; overshootEl.style.color=MUTED;
+                    gibbsMsg.textContent='';
+                }
+            }
+
+            slider.addEventListener('input',()=>{ N=parseInt(slider.value); render(); });
+            toggleBtn.addEventListener('click',()=>{
+                showComp=!showComp;
+                toggleBtn.textContent=showComp?'ON':'OFF';
+                toggleBtn.classList.toggle('on',showComp);
+                render();
+            });
+
+            function resize(){
+                canvas.width=document.querySelector('#ku2 .card').clientWidth-40; render();
+            }
+            window.addEventListener('resize',resize);
+            setTimeout(resize,50); render();
+        })();
+        </script>
+        </div>
+    </section>
+
+    <!-- ── KU3: Epicycles ── -->
+    <section class="knowledge-unit" id="ku3">
+        <h2 class="ku-title">The Fourier series is equivalent to a set of rotating circles — epicycles — whose tip traces the waveform.</h2>
+        <div class="text-content">
+            <p>
+                There is a beautiful geometric interpretation hiding inside the Fourier series.
+                Every harmonic can be visualized as a <strong>rotating circle (an epicycle)</strong>:
+                it spins at its harmonic frequency with a radius proportional to its amplitude.
+                Mount the second circle on the tip of the first, the third on the tip of the second —
+                and let them all rotate simultaneously.
+            </p>
+            <p>
+                The tip of the last circle traces the waveform. In complex notation:
+            </p>
+            <div class="math-block">
+                $$ f(t) = \sum_{n=-\infty}^{\infty} c_n \, e^{i n \omega_0 t} $$
+            </div>
+            <p>
+                Each term $c_n e^{in\omega_0 t}$ is a <strong>phasor</strong> — a point rotating in the
+                complex plane at frequency $n\omega_0$. This is exactly how Ptolemy modelled
+                planetary orbits in 150 AD, and exactly how a Fourier synthesizer works.
+                Add more epicycles and the traced curve converges to a square wave.
+            </p>
+        </div>
+        <div class="interactive-content">
+        <style>
+            #ku3-canvases { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        </style>
+        <div class="card">
+            <div class="ctrl-row">
+                <button class="play-btn" id="ku3-play">▶ PLAY</button>
+                <span class="ctrl-label">CIRCLES:</span>
+                <input type="range" id="ku3-circles" min="1" max="9" step="2" value="3">
+                <span class="readout" id="ku3-n-read">N = 3</span>
+                <span class="ctrl-label">SPEED:</span>
+                <input type="range" id="ku3-speed" min="0.2" max="3" step="0.1" value="1">
+                <span class="readout" id="ku3-speed-read">1.0×</span>
+            </div>
+            <div id="ku3-canvases">
+                <div>
+                    <canvas id="ku3-circles-canvas" width="380" height="280"></canvas>
+                    <div class="canvas-label">EPICYCLES</div>
+                </div>
+                <div>
+                    <canvas id="ku3-wave-canvas" width="380" height="280"></canvas>
+                    <div class="canvas-label">WAVEFORM TRACE</div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        (function() {
+            const cC = document.getElementById('ku3-circles-canvas');
+            const wC = document.getElementById('ku3-wave-canvas');
+            const cc = cC.getContext('2d');
+            const wc = wC.getContext('2d');
+            const playBtn = document.getElementById('ku3-play');
+            const circSlider = document.getElementById('ku3-circles');
+            const speedSlider = document.getElementById('ku3-speed');
+            const nRead = document.getElementById('ku3-n-read');
+            const speedRead = document.getElementById('ku3-speed-read');
+
+            const ACCENT='#f472b6', BG='#0d0617', BORDER='#3d1f5e', MUTED='#9d7fb5';
+            const COLS=['#f472b6','#c084fc','#60a5fa','#34d399','#fbbf24','#f87171','#a78bdb','#7dd3fc','#6ee7b7'];
+
+            let t=0, playing=false, N=3, speed=1, wavePoints=[], animId=null, lastTs=null;
+
+            function getHarmonics(n){ const h=[]; for(let i=0;i<n;i++){const k=2*i+1; h.push({freq:k,amp:4/(Math.PI*k)});} return h; }
+
+            function drawBg(ctx,w,h){
+                ctx.fillStyle=BG; ctx.fillRect(0,0,w,h);
+                ctx.save(); ctx.strokeStyle=BORDER; ctx.lineWidth=0.5; ctx.setLineDash([2,4]);
+                for(let x=0;x<=w;x+=w/6){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+                for(let y=0;y<=h;y+=h/4){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+                ctx.setLineDash([]); ctx.restore();
+            }
+
+            function drawFrame() {
+                const w=cC.width, h=cC.height;
+                drawBg(cc,w,h);
+                const harmonics=getHarmonics(N);
+                const scale=Math.min(w,h)*0.34;
+                let x=w*0.45, y=h*0.5;
+
+                for(let i=0;i<harmonics.length;i++){
+                    const {freq,amp}=harmonics[i];
+                    const r=amp*scale, angle=freq*t;
+                    const nx=x+r*Math.cos(angle), ny=y-r*Math.sin(angle);
+                    // circle
+                    cc.beginPath(); cc.arc(x,y,r,0,2*Math.PI);
+                    cc.strokeStyle=COLS[i%COLS.length]; cc.globalAlpha=0.2; cc.lineWidth=1; cc.stroke(); cc.globalAlpha=1;
+                    // arm
+                    cc.beginPath(); cc.moveTo(x,y); cc.lineTo(nx,ny);
+                    cc.strokeStyle=COLS[i%COLS.length]; cc.lineWidth=1.5; cc.stroke();
+                    // dot
+                    cc.beginPath(); cc.arc(nx,ny,3,0,2*Math.PI); cc.fillStyle=COLS[i%COLS.length]; cc.fill();
+                    x=nx; y=ny;
+                }
+                // tip glow
+                cc.beginPath(); cc.arc(x,y,5,0,2*Math.PI);
+                cc.fillStyle=ACCENT; cc.shadowColor=ACCENT; cc.shadowBlur=14; cc.fill(); cc.shadowBlur=0;
+
+                // connector to right canvas
+                cc.save(); cc.strokeStyle=MUTED; cc.lineWidth=1; cc.setLineDash([4,4]);
+                cc.beginPath(); cc.moveTo(x,y); cc.lineTo(w,y); cc.stroke();
+                cc.setLineDash([]); cc.restore();
+
+                // wave canvas
+                const ww=wC.width, wh=wC.height;
+                drawBg(wc,ww,wh);
+                const maxPts=ww-10;
+                const normalY=(y-h*0.5)/(h*0.5);
+                if(wavePoints.length>=maxPts) wavePoints.shift();
+                wavePoints.push(normalY);
+
+                if(wavePoints.length>1){
+                    wc.beginPath(); wc.strokeStyle=ACCENT; wc.lineWidth=2; wc.shadowColor=ACCENT; wc.shadowBlur=4;
+                    for(let i=0;i<wavePoints.length;i++){
+                        const px=10+(i/maxPts)*(ww-20), py=wh*0.5+wavePoints[i]*(wh*0.38);
+                        i===0?wc.moveTo(px,py):wc.lineTo(px,py);
+                    }
+                    wc.stroke(); wc.shadowBlur=0;
+                }
+
+                // current dot on wave
+                if(wavePoints.length>0){
+                    const lx=10+((wavePoints.length-1)/maxPts)*(ww-20);
+                    const ly=wh*0.5+wavePoints[wavePoints.length-1]*(wh*0.38);
+                    wc.beginPath(); wc.arc(lx,ly,5,0,2*Math.PI);
+                    wc.fillStyle=ACCENT; wc.shadowColor=ACCENT; wc.shadowBlur=12; wc.fill(); wc.shadowBlur=0;
+                    // connector from left edge
+                    wc.save(); wc.strokeStyle=MUTED; wc.lineWidth=1; wc.setLineDash([4,4]);
+                    wc.beginPath(); wc.moveTo(0,ly); wc.lineTo(lx,ly); wc.stroke();
+                    wc.setLineDash([]); wc.restore();
+                }
+            }
+
+            function loop(ts){
+                if(!playing) return;
+                if(lastTs===null) lastTs=ts;
+                const dt=Math.min((ts-lastTs)/1000,0.05); lastTs=ts;
+                t+=dt*speed;
+                drawFrame();
+                animId=requestAnimationFrame(loop);
+            }
+
+            function start(){ playing=true; playBtn.textContent='⏸ PAUSE'; lastTs=null; animId=requestAnimationFrame(loop); }
+            function stop(){ playing=false; playBtn.textContent='▶ PLAY'; if(animId){cancelAnimationFrame(animId);animId=null;} }
+            function reset(){ wavePoints=[]; t=0; drawFrame(); }
+
+            playBtn.addEventListener('click',()=>{ if(playing) stop(); else start(); });
+            circSlider.addEventListener('input',()=>{ N=parseInt(circSlider.value); nRead.textContent='N = '+N; reset(); if(playing){lastTs=null;} });
+            speedSlider.addEventListener('input',()=>{ speed=parseFloat(speedSlider.value); speedRead.textContent=speed.toFixed(1)+'×'; });
+
+            function resize(){
+                const cW=document.querySelector('#ku3 .card').clientWidth-40;
+                const half=Math.floor((cW-12)/2), h=Math.round(half*0.74);
+                cC.width=half; cC.height=h; wC.width=half; wC.height=h;
+                reset();
+            }
+            window.addEventListener('resize',resize);
+            setTimeout(()=>{ resize(); start(); },150);
+        })();
+        </script>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

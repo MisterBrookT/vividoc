@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Thermodynamic Entropy</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@800&family=Merriweather:ital,wght@0,300;0,700;1,300&family=Space+Mono&display=swap" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+<style>
+body { background: #09090b; color: #a1a1aa; font-family: 'Merriweather', serif; margin:0; padding:40px; display:flex; justify-content:center; }
+.wrapper { max-width: 850px; width: 100%; position: relative; }
+.main-title { font-family: 'Roboto Slab', serif; font-size: 2.8rem; text-transform: uppercase; color: #f4f4f5; text-align: center; border-bottom: 4px solid #3f3f46; padding-bottom: 10px; margin: 0 0 35px 0; letter-spacing: 2px; }
+.card { background: #18181b; border: 1px solid #3f3f46; border-radius: 4px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); position: relative; border-left: 6px solid #f4f4f5; }
+.section-title { font-size: 1.4rem; font-weight: 700; color: #f4f4f5; margin: 0 0 15px 0; line-height: 1.4; text-transform: uppercase; letter-spacing: 1px; }
+.divider { border: none; border-top: 1px solid #3f3f46; margin: 0 0 20px 0; }
+.text-box { font-size: 1.1rem; line-height: 1.7; font-weight: 300; margin-bottom: 25px; color: #d4d4d8; }
+.math-box { font-size: 1.3rem; margin: 25px 0; text-align: center; color: #f4f4f5; background: #000; padding: 15px; border-radius: 4px; font-family: 'Space Mono', monospace; border-left: 4px solid #ef4444; }
+ul { font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; padding-left: 20px; color: #a1a1aa; }
+li { margin-bottom: 8px; }
+.strong-text { font-weight: 700; color: #f4f4f5; font-family: 'Space Mono', monospace; font-size: 1.1rem; }
+
+/* Widget Specific */
+.widget { background: #13081e; border: 1px solid #3f3f46; border-radius: 6px; padding: 0; position: relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.8); display: flex; }
+.scroll-track { width: 50px; background: #000; border-right: 1px solid #27272a; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 15px 0; }
+.scroll-fill { position: absolute; top: 0; left: 0; width: 100%; background: #ef4444; height: 0%; z-index: 1; transition: height 0.1s; }
+.scroll-track span { z-index: 2; font-family: 'Space Mono', monospace; color: #fff; font-size: 0.8rem; font-weight: bold; transform: rotate(-90deg); white-space: nowrap; margin-top: 40px;}
+
+.canvas-wrapper { flex: 1; height: 350px; background: #09090b; position: relative; overflow: hidden; }
+canvas { display: block; width: 100%; height: 100%; }
+
+.drag-prompt { position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 0.85rem; color: #f4f4f5; font-weight: bold; border: 1px solid #3f3f46; pointer-events: none; text-transform: uppercase; }
+.entropy-disp { position: absolute; top: 20px; left: 20px; font-family: 'Space Mono', monospace; color: #ef4444; font-size: 1.4rem; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+    <h1 class="main-title">What is The Arrow of Time?</h1>
+    <div class="card">
+        <h2 class="section-title">Thermodynamic Entropy and the Irreversible March Towards Disorder.</h2>
+        <hr class="divider">
+        
+        <div class="text-box">
+            A broken egg never reassembles itself. Hot coffee always cools to room temperature, never the reverse. These everyday observations point to an asymmetry baked into the universe itself. Time flows in one direction because disorder—entropy—can only ever increase. The Second Law is not merely a physical rule; it is the arrow that gives time its direction.
+        </div>
+        
+        <div class="math-box">$$ \Delta S \ge 0 \quad \text{where} \quad S = k_B \ln \Omega $$</div>
+        
+        <ul>
+            <li><span class="strong-text">S</span>: Total macroscopic entropy evaluating disorder.</li>
+            <li><span class="strong-text">k_B</span>: The Boltzmann universal constant.</li>
+            <li><span class="strong-text">Ω (Omega)</span>: The quantity of valid microscopic internal microstates.</li>
+        </ul>
+        
+        <div class="widget">
+            <div class="scroll-track" id="wheel-zone">
+                <div class="scroll-fill" id="s-fill"></div>
+                <span style="margin-top:20px;">SCROLL</span>
+                <span style="margin-bottom:20px;">TIME &rarr;</span>
+            </div>
+            <div class="canvas-wrapper">
+                <canvas id="gas-canvas"></canvas>
+                <div class="entropy-disp">S = <span id="s-val">0.00</span></div>
+                <div class="drag-prompt">ROLL MOUSE WHEEL TO ADVANCE TIME</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const canvas = document.getElementById('gas-canvas');
+    const ctx = canvas.getContext('2d');
+    const wheelZone = document.querySelector('.widget');
+    const sFill = document.getElementById('s-fill');
+    const sVal = document.getElementById('s-val');
+
+    function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * 2;
+        canvas.height = rect.height * 2;
+        ctx.scale(2, 2);
+    }
+    resize();
+
+    let timeProgress = 0; // 0 to 1
+
+    wheelZone.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        timeProgress += e.deltaY * 0.002;
+        if(timeProgress < 0) timeProgress = 0;
+        if(timeProgress > 1) timeProgress = 1;
+        sFill.style.height = `${timeProgress * 100}%`;
+    });
+
+    const particles = [];
+    const num = 150;
+    for(let i=0; i<num; i++) {
+        // Red on left
+        particles.push({
+            x: Math.random() * 150 + 20, y: Math.random() * 310 + 20,
+            vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
+            t: 'A'
+        });
+        // Blue on right
+        particles.push({
+            x: Math.random() * 150 + 400, y: Math.random() * 310 + 20,
+            vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
+            t: 'B'
+        });
+    }
+
+    function draw() {
+        const w = canvas.width/2;
+        const h = canvas.height/2;
+        ctx.clearRect(0,0,w,h);
+
+        const partitionY = h * timeProgress; // Wall lowers as time progresses
+
+        // Wall
+        ctx.fillStyle = '#3f3f46';
+        ctx.fillRect(w/2 - 2, partitionY, 4, h - partitionY);
+
+        let mixCount = 0;
+
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            
+            // Bounds collision
+            if(p.x < 5 || p.x > w-5) p.vx *= -1;
+            if(p.y < 5 || p.y > h-5) p.vy *= -1;
+
+            // Wall collision
+            if (p.y > partitionY) {
+                if (p.x > w/2 - 5 && p.x < w/2 + 5) {
+                    p.vx *= -1; // Bounce off wall
+                    // correct pos
+                    p.x = p.x < w/2 ? w/2 - 5 : w/2 + 5;
+                }
+            }
+
+            // Measurement
+            if (p.t === 'A' && p.x > w/2) mixCount++;
+            if (p.t === 'B' && p.x < w/2) mixCount++;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+            ctx.fillStyle = p.t === 'A' ? '#ef4444' : '#3b82f6';
+            ctx.fill();
+        });
+
+        // Entropy metric roughly based on mixing
+        const maxMix = num; // Half on left, half on right
+        const entropy = (mixCount / maxMix) * 100;
+        sVal.textContent = entropy.toFixed(2);
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+</script>
+</body>
+</html>

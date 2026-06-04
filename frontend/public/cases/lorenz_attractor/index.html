@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorenz Attractor</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --card: #111827;
+            --surface: #1a2235;
+            --accent: #22d3ee;
+            --accent-dim: rgba(34,211,238,0.12);
+            --accent-glow: rgba(34,211,238,0.35);
+            --dim: #67e8f9;
+            --text: #e2f8fc;
+            --muted: #4d7a85;
+            --border: #1e3a45;
+            --border-bright: #0e7490;
+            --red: #f87171;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:'Space Mono',monospace; line-height:1.7; padding:0 0 80px; }
+
+        header { text-align:center; padding:60px 40px 40px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,#111827 0%,var(--bg) 100%); }
+        h1 { font-size:2.4rem; font-weight:700; color:var(--accent); letter-spacing:3px; text-shadow:0 0 20px var(--accent-glow); margin-bottom:8px; text-transform:uppercase; }
+        header p { color:var(--muted); font-size:0.8rem; letter-spacing:2px; text-transform:uppercase; }
+
+        .knowledge-unit { max-width:900px; margin:48px auto 0; padding:0 24px; }
+        .ku-title { font-size:1rem; font-weight:700; color:var(--dim); letter-spacing:0.5px; margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid var(--border); line-height:1.5; }
+        .text-content { margin-bottom:28px; }
+        .text-content p { color:#9cbfc8; font-size:0.85rem; line-height:1.9; margin-bottom:14px; }
+        .text-content strong { color:var(--accent); }
+        .math-block { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); padding:16px 20px; margin:16px 0; border-radius:4px; overflow-x:auto; text-align:center; }
+
+        .card { background:var(--card); border:1px solid var(--border); border-top:3px solid var(--accent); border-radius:6px; padding:20px; }
+        .ctrl-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+        .ctrl-label { font-size:0.75rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; white-space:nowrap; }
+        .readout { font-size:0.85rem; color:var(--accent); letter-spacing:1px; padding:4px 10px; background:var(--bg); border:1px solid var(--border); border-radius:3px; font-weight:700; }
+        .play-btn { font-size:0.85rem; font-weight:700; padding:6px 18px; background:var(--accent); color:var(--bg); border:2px solid var(--accent); cursor:pointer; letter-spacing:2px; border-radius:3px; box-shadow:0 0 12px var(--accent-glow); transition:all 0.15s; text-transform:uppercase; }
+        .play-btn:hover { box-shadow:0 0 20px var(--accent); }
+        input[type=range] { -webkit-appearance:none; width:160px; height:4px; background:var(--border-bright); border-radius:2px; outline:none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; background:var(--accent); border-radius:50%; cursor:pointer; box-shadow:0 0 8px var(--accent); }
+        canvas { display:block; background:var(--bg); border:1px solid var(--border); border-radius:3px; }
+        .canvas-label { font-size:0.72rem; color:var(--muted); text-align:center; letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+        .twin-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Lorenz Attractor</h1>
+        <p>Deterministic chaos and the butterfly effect</p>
+    </header>
+
+    <!-- KU1: The Attractor -->
+    <section class="knowledge-unit" id="ku1">
+        <h2 class="ku-title">A simple deterministic system can produce infinitely complex, never-repeating trajectories — the Lorenz attractor.</h2>
+        <div class="text-content">
+            <p>
+                In 1963, Edward Lorenz derived a simplified model of atmospheric convection.
+                Three coupled differential equations — deceptively simple — but the trajectory
+                never repeats and is exquisitely sensitive to initial conditions.
+                This was the first mathematical demonstration of <strong>deterministic chaos</strong>.
+            </p>
+            <div class="math-block">
+                $$ \frac{dx}{dt} = \sigma(y - x), \quad \frac{dy}{dt} = x(\rho - z) - y, \quad \frac{dz}{dt} = xy - \beta z $$
+            </div>
+            <p>
+                With the classic parameters $\sigma = 10$, $\rho = 28$, $\beta = \tfrac{8}{3}$,
+                the trajectory spirals outward on one lobe, then unpredictably switches to the other —
+                forever, without ever crossing itself.
+                Press play and watch the attractor emerge from a single initial point.
+            </p>
+        </div>
+        <div class="interactive-content">
+        <div class="card">
+            <div class="ctrl-row">
+                <button class="play-btn" id="ku1-play">▶ Play</button>
+                <span class="ctrl-label">SPEED:</span>
+                <input type="range" id="ku1-speed" min="1" max="20" step="1" value="8">
+                <span class="readout" id="ku1-speed-read">8×</span>
+                <button class="play-btn" id="ku1-reset" style="background:transparent;color:var(--accent);box-shadow:none;border-color:var(--border);">RESET</button>
+                <span class="readout" id="ku1-t-read">t = 0.00</span>
+            </div>
+            <div class="twin-grid">
+                <div>
+                    <canvas id="ku1-xz" width="390" height="300"></canvas>
+                    <div class="canvas-label">X–Z projection</div>
+                </div>
+                <div>
+                    <canvas id="ku1-xy" width="390" height="300"></canvas>
+                    <div class="canvas-label">X–Y projection</div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        (function(){
+            const xzC=document.getElementById('ku1-xz'), xyC=document.getElementById('ku1-xy');
+            const xzCtx=xzC.getContext('2d'), xyCtx=xyC.getContext('2d');
+            const playBtn=document.getElementById('ku1-play'), resetBtn=document.getElementById('ku1-reset');
+            const speedSlider=document.getElementById('ku1-speed'), speedRead=document.getElementById('ku1-speed-read');
+            const tRead=document.getElementById('ku1-t-read');
+
+            const ACCENT='#22d3ee', BG='#0b0f19', BORDER='#1e3a45', MUTED='#4d7a85';
+            const σ=10, ρ=28, β=8/3;
+
+            let pts=[], playing=false, animId=null, lastTs=null, speed=8;
+            let x=0.1, y=0, z=0, t=0;
+
+            function rk4(x,y,z,dt){
+                const k1x=σ*(y-x), k1y=x*(ρ-z)-y, k1z=x*y-β*z;
+                const x2=x+k1x*dt/2, y2=y+k1y*dt/2, z2=z+k1z*dt/2;
+                const k2x=σ*(y2-x2), k2y=x2*(ρ-z2)-y2, k2z=x2*y2-β*z2;
+                const x3=x+k2x*dt/2, y3=y+k2y*dt/2, z3=z+k2z*dt/2;
+                const k3x=σ*(y3-x3), k3y=x3*(ρ-z3)-y3, k3z=x3*y3-β*z3;
+                const x4=x+k3x*dt, y4=y+k3y*dt, z4=z+k3z*dt;
+                const k4x=σ*(y4-x4), k4y=x4*(ρ-z4)-y4, k4z=x4*y4-β*z4;
+                return {
+                    nx:x+(k1x+2*k2x+2*k3x+k4x)*dt/6,
+                    ny:y+(k1y+2*k2y+2*k3y+k4y)*dt/6,
+                    nz:z+(k1z+2*k2z+2*k3z+k4z)*dt/6
+                };
+            }
+
+            function mapXZ(px,pz,w,h){ return {x:w/2+(px/35)*w*0.42, y:h-20-(pz/50)*(h-30)}; }
+            function mapXY(px,py,w,h){ return {x:w/2+(px/35)*w*0.42, y:h/2-(py/30)*(h*0.42)}; }
+
+            function drawBg(ctx,w,h){
+                ctx.fillStyle=BG; ctx.fillRect(0,0,w,h);
+                ctx.save(); ctx.strokeStyle=BORDER; ctx.lineWidth=0.5; ctx.setLineDash([2,4]);
+                for(let gx=0;gx<=w;gx+=w/8){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke();}
+                for(let gy=0;gy<=h;gy+=h/6){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke();}
+                ctx.setLineDash([]); ctx.restore();
+            }
+
+            function redraw(){
+                const w=xzC.width, h=xzC.height, w2=xyC.width, h2=xyC.height;
+                drawBg(xzCtx,w,h); drawBg(xyCtx,w2,h2);
+                if(pts.length<2) return;
+                const maxLen=6000, start=Math.max(0,pts.length-maxLen);
+                for(let i=start+1;i<pts.length;i++){
+                    const age=(i-start)/(pts.length-start);
+                    const alpha=Math.max(0.05, age*0.9);
+                    const p0=pts[i-1], p1=pts[i];
+                    const hue=200+age*60;
+                    // XZ
+                    const a0=mapXZ(p0.x,p0.z,w,h), a1=mapXZ(p1.x,p1.z,w,h);
+                    xzCtx.beginPath(); xzCtx.moveTo(a0.x,a0.y); xzCtx.lineTo(a1.x,a1.y);
+                    xzCtx.strokeStyle=`hsla(${hue},90%,65%,${alpha})`; xzCtx.lineWidth=1; xzCtx.stroke();
+                    // XY
+                    const b0=mapXY(p0.x,p0.y,w2,h2), b1=mapXY(p1.x,p1.y,w2,h2);
+                    xyCtx.beginPath(); xyCtx.moveTo(b0.x,b0.y); xyCtx.lineTo(b1.x,b1.y);
+                    xyCtx.strokeStyle=`hsla(${hue},90%,65%,${alpha})`; xyCtx.lineWidth=1; xyCtx.stroke();
+                }
+                // Current dot
+                const last=pts[pts.length-1];
+                const lXZ=mapXZ(last.x,last.z,w,h), lXY=mapXY(last.x,last.y,w2,h2);
+                [xzCtx,xyCtx].forEach((ctx,ci)=>{
+                    const p=ci===0?lXZ:lXY;
+                    ctx.beginPath(); ctx.arc(p.x,p.y,4,0,2*Math.PI);
+                    ctx.fillStyle=ACCENT; ctx.shadowColor=ACCENT; ctx.shadowBlur=12; ctx.fill(); ctx.shadowBlur=0;
+                });
+            }
+
+            const DT=0.005;
+            function step(n){
+                for(let i=0;i<n;i++){
+                    const {nx,ny,nz}=rk4(x,y,z,DT);
+                    x=nx; y=ny; z=nz; t+=DT;
+                    pts.push({x,y,z});
+                }
+            }
+
+            function loop(ts){
+                if(!playing) return;
+                if(lastTs===null) lastTs=ts;
+                const elapsed=Math.min((ts-lastTs)/1000,0.05); lastTs=ts;
+                const steps=Math.ceil(elapsed*1000/DT*speed*0.0001*20);
+                step(Math.min(steps,100));
+                redraw();
+                tRead.textContent='t = '+t.toFixed(2);
+                animId=requestAnimationFrame(loop);
+            }
+
+            function start(){ playing=true; playBtn.textContent='⏸ Pause'; lastTs=null; animId=requestAnimationFrame(loop); }
+            function stop(){ playing=false; playBtn.textContent='▶ Play'; if(animId){cancelAnimationFrame(animId);animId=null;} }
+            function reset(){ stop(); pts=[]; x=0.1; y=0; z=0; t=0; tRead.textContent='t = 0.00'; redraw(); }
+
+            playBtn.addEventListener('click',()=>{ if(playing)stop(); else start(); });
+            resetBtn.addEventListener('click',reset);
+            speedSlider.addEventListener('input',()=>{ speed=parseInt(speedSlider.value); speedRead.textContent=speed+'×'; });
+
+            function resize(){
+                const cW=document.querySelector('#ku1 .card').clientWidth-40;
+                const half=Math.floor((cW-12)/2), h=Math.round(half*0.77);
+                xzC.width=half; xzC.height=h; xyC.width=half; xyC.height=h;
+                redraw();
+            }
+            window.addEventListener('resize',resize);
+            setTimeout(()=>{ resize(); start(); },150);
+        })();
+        </script>
+        </div>
+    </section>
+
+    <!-- KU2: Sensitive dependence -->
+    <section class="knowledge-unit" id="ku2">
+        <h2 class="ku-title">Two trajectories starting arbitrarily close together diverge exponentially — the butterfly effect.</h2>
+        <div class="text-content">
+            <p>
+                The defining property of chaos is <strong>sensitive dependence on initial conditions</strong>.
+                Start two trajectories at positions separated by a tiny distance $\varepsilon$ —
+                far smaller than any physical measurement error — and watch them quickly diverge to
+                completely different regions of the attractor.
+            </p>
+            <p>
+                The rate of divergence is characterized by the <strong>Lyapunov exponent</strong> $\lambda$:
+            </p>
+            <div class="math-block">
+                $$ \|x_1(t) - x_2(t)\| \approx \varepsilon \, e^{\lambda t}, \quad \lambda \approx 0.906 \text{ for the Lorenz system} $$
+            </div>
+            <p>
+                This means that any uncertainty in measurement — no matter how small — doubles
+                roughly every $\ln 2 / \lambda \approx 0.76$ time units. Adjust the initial separation
+                and observe how quickly the two trajectories lose synchrony.
+            </p>
+        </div>
+        <div class="interactive-content">
+        <div class="card">
+            <div class="ctrl-row">
+                <span class="ctrl-label">INITIAL SEPARATION (ε):</span>
+                <input type="range" id="ku2-eps" min="-6" max="-1" step="0.1" value="-3">
+                <span class="readout" id="ku2-eps-read">ε = 1.0e-3</span>
+                <button class="play-btn" id="ku2-run">▶ Run</button>
+                <span class="readout" id="ku2-div-read" style="color:var(--muted)">DIVERGED: —</span>
+            </div>
+            <canvas id="ku2-canvas" width="820" height="260"></canvas>
+            <div id="ku2-dist-canvas-wrap">
+                <canvas id="ku2-dist" width="820" height="80" style="margin-top:8px"></canvas>
+                <div class="canvas-label">LOG DISTANCE OVER TIME</div>
+            </div>
+        </div>
+
+        <script>
+        (function(){
+            const canvas=document.getElementById('ku2-canvas'), distC=document.getElementById('ku2-dist');
+            const ctx=canvas.getContext('2d'), dCtx=distC.getContext('2d');
+            const epsSlider=document.getElementById('ku2-eps'), epsRead=document.getElementById('ku2-eps-read');
+            const runBtn=document.getElementById('ku2-run'), divRead=document.getElementById('ku2-div-read');
+
+            const ACCENT='#22d3ee', RED='#f87171', BG='#0b0f19', BORDER='#1e3a45', MUTED='#4d7a85';
+            const σ=10,ρ=28,β=8/3;
+
+            function rk4(x,y,z,dt){
+                const k1x=σ*(y-x),k1y=x*(ρ-z)-y,k1z=x*y-β*z;
+                const x2=x+k1x*dt/2,y2=y+k1y*dt/2,z2=z+k1z*dt/2;
+                const k2x=σ*(y2-x2),k2y=x2*(ρ-z2)-y2,k2z=x2*y2-β*z2;
+                const x3=x+k2x*dt/2,y3=y+k2y*dt/2,z3=z+k2z*dt/2;
+                const k3x=σ*(y3-x3),k3y=x3*(ρ-z3)-y3,k3z=x3*y3-β*z3;
+                const x4=x+k3x*dt,y4=y+k3y*dt,z4=z+k3z*dt;
+                return{nx:x+(k1x+2*k2x+2*k3x+k4x)*dt/6,ny:y+(k1y+2*k2y+2*k3y+k4y)*dt/6,nz:z+(k1z+2*k2z+2*k3z+k4z)*dt/6};
+            }
+
+            function mapXZ(px,pz,w,h){ return{x:w/2+(px/35)*w*0.42,y:h-10-(pz/50)*(h-20)}; }
+
+            let pts1=[],pts2=[],dists=[],animId=null,running=false;
+
+            function getEps(){ return Math.pow(10, parseFloat(epsSlider.value)); }
+
+            function simulate(){
+                const eps=getEps(), DT=0.005, NSTEPS=3000;
+                pts1=[]; pts2=[]; dists=[];
+                let x1=0.1,y1=0,z1=0, x2=0.1+eps,y2=0,z2=0;
+                for(let i=0;i<NSTEPS;i++){
+                    pts1.push({x:x1,z:z1}); pts2.push({x:x2,z:z2});
+                    const d=Math.sqrt((x1-x2)**2+(y1-y2)**2+(z1-z2)**2);
+                    dists.push(d);
+                    const r1=rk4(x1,y1,z1,DT); x1=r1.nx;y1=r1.ny;z1=r1.nz;
+                    const r2=rk4(x2,y2,z2,DT); x2=r2.nx;y2=r2.ny;z2=r2.nz;
+                }
+            }
+
+            let drawIdx=0;
+            function drawFrame(){
+                const w=canvas.width,h=canvas.height;
+                if(drawIdx===0){ ctx.fillStyle=BG; ctx.fillRect(0,0,w,h); }
+
+                const chunk=30;
+                const end=Math.min(drawIdx+chunk, pts1.length);
+                for(let i=Math.max(1,drawIdx);i<end;i++){
+                    const age=i/pts1.length;
+                    const a0=mapXZ(pts1[i-1].x,pts1[i-1].z,w,h), a1=mapXZ(pts1[i].x,pts1[i].z,w,h);
+                    const b0=mapXZ(pts2[i-1].x,pts2[i-1].z,w,h), b1=mapXZ(pts2[i].x,pts2[i].z,w,h);
+                    ctx.globalAlpha=0.4+age*0.5;
+                    ctx.strokeStyle=ACCENT; ctx.lineWidth=1;
+                    ctx.beginPath(); ctx.moveTo(a0.x,a0.y); ctx.lineTo(a1.x,a1.y); ctx.stroke();
+                    ctx.strokeStyle=RED; ctx.lineWidth=1;
+                    ctx.beginPath(); ctx.moveTo(b0.x,b0.y); ctx.lineTo(b1.x,b1.y); ctx.stroke();
+                    ctx.globalAlpha=1;
+                }
+                drawIdx=end;
+
+                if(drawIdx>=pts1.length){
+                    running=false; runBtn.textContent='▶ Run';
+                    // find divergence time (dist > 5)
+                    const divIdx=dists.findIndex(d=>d>5);
+                    divRead.textContent=divIdx>0?'DIVERGED at t='+((divIdx*0.005).toFixed(2)):'NOT DIVERGED';
+                    divRead.style.color=divIdx>0?RED:MUTED;
+                    drawDistPlot();
+                    return;
+                }
+                animId=requestAnimationFrame(drawFrame);
+            }
+
+            function drawDistPlot(){
+                const w=distC.width, h=distC.height;
+                dCtx.fillStyle=BG; dCtx.fillRect(0,0,w,h);
+                const eps=getEps();
+                const logMin=Math.log10(eps)-0.5, logMax=2;
+                dCtx.strokeStyle=BORDER; dCtx.lineWidth=0.5; dCtx.setLineDash([2,4]);
+                dCtx.beginPath(); dCtx.moveTo(0,h*0.5); dCtx.lineTo(w,h*0.5); dCtx.stroke();
+                dCtx.setLineDash([]);
+                dCtx.strokeStyle=ACCENT; dCtx.lineWidth=1.5;
+                dCtx.beginPath();
+                for(let i=0;i<dists.length;i++){
+                    const x=(i/dists.length)*w;
+                    const logD=Math.log10(Math.max(dists[i],1e-15));
+                    const y=h-(logD-logMin)/(logMax-logMin)*h;
+                    i===0?dCtx.moveTo(x,Math.max(0,Math.min(h,y))):dCtx.lineTo(x,Math.max(0,Math.min(h,y)));
+                }
+                dCtx.stroke();
+                // Expected exp growth line
+                dCtx.strokeStyle='rgba(248,113,113,0.4)'; dCtx.lineWidth=1; dCtx.setLineDash([6,4]);
+                dCtx.beginPath();
+                const λ=0.906, dt=0.005;
+                for(let i=0;i<dists.length;i++){
+                    const x=(i/dists.length)*w;
+                    const expectedLogD=Math.log10(eps*Math.exp(λ*i*dt));
+                    const y=h-(expectedLogD-logMin)/(logMax-logMin)*h;
+                    if(expectedLogD>logMax) break;
+                    i===0?dCtx.moveTo(x,y):dCtx.lineTo(x,y);
+                }
+                dCtx.stroke(); dCtx.setLineDash([]);
+                dCtx.fillStyle=RED; dCtx.font='10px Space Mono';
+                dCtx.fillText('— expected e^(λt)', 10, 14);
+                dCtx.fillStyle=ACCENT;
+                dCtx.fillText('— actual distance', 10, 28);
+            }
+
+            function run(){
+                if(running){ running=false; cancelAnimationFrame(animId); runBtn.textContent='▶ Run'; return; }
+                simulate();
+                drawIdx=0; running=true;
+                runBtn.textContent='⏸ Running...';
+                animId=requestAnimationFrame(drawFrame);
+            }
+
+            epsSlider.addEventListener('input',()=>{
+                const eps=getEps();
+                epsRead.textContent='ε = '+eps.toExponential(1);
+            });
+            runBtn.addEventListener('click', run);
+
+            function resize(){
+                const cW=document.querySelector('#ku2 .card').clientWidth-40;
+                canvas.width=cW; distC.width=cW;
+                ctx.fillStyle=BG; ctx.fillRect(0,0,canvas.width,canvas.height);
+                dCtx.fillStyle=BG; dCtx.fillRect(0,0,distC.width,distC.height);
+            }
+            window.addEventListener('resize',resize);
+            setTimeout(()=>{ resize(); run(); },200);
+        })();
+        </script>
+        </div>
+    </section>
+
+    <!-- KU3: Rho parameter -->
+    <section class="knowledge-unit" id="ku3">
+        <h2 class="ku-title">The parameter ρ controls the system's behavior — from stable equilibrium, through limit cycles, to full chaos.</h2>
+        <div class="text-content">
+            <p>
+                Not all parameters produce chaos. The Lorenz system transitions through
+                qualitatively different regimes as $\rho$ increases:
+            </p>
+            <p>
+                <strong>ρ &lt; 1:</strong> All trajectories converge to the origin — stable equilibrium.<br>
+                <strong>1 &lt; ρ &lt; 13.93:</strong> Two stable fixed points emerge (the "butterfly wings" centers).<br>
+                <strong>ρ ≈ 24.74:</strong> The fixed points become unstable — <strong>chaos begins</strong>.<br>
+                <strong>ρ = 28:</strong> The classic Lorenz attractor — fully chaotic, never repeating.
+            </p>
+            <p>
+                Drag the slider to move through these regimes. Watch the attractor shape change
+                from a single point, to two isolated spirals, to the iconic butterfly.
+            </p>
+        </div>
+        <div class="interactive-content">
+        <div class="card">
+            <div class="ctrl-row">
+                <span class="ctrl-label">ρ (RHO):</span>
+                <input type="range" id="ku3-rho" min="0.5" max="30" step="0.1" value="28">
+                <span class="readout" id="ku3-rho-read">ρ = 28.0</span>
+                <span class="readout" id="ku3-regime" style="color:var(--accent)">CHAOTIC</span>
+            </div>
+            <canvas id="ku3-canvas" width="820" height="300"></canvas>
+        </div>
+
+        <script>
+        (function(){
+            const canvas=document.getElementById('ku3-canvas'), ctx=canvas.getContext('2d');
+            const rhoSlider=document.getElementById('ku3-rho'), rhoRead=document.getElementById('ku3-rho-read');
+            const regimeEl=document.getElementById('ku3-regime');
+
+            const ACCENT='#22d3ee', BG='#0b0f19', BORDER='#1e3a45', MUTED='#4d7a85';
+            const σ=10, β=8/3;
+
+            function rk4(x,y,z,ρ,dt){
+                const k1x=σ*(y-x),k1y=x*(ρ-z)-y,k1z=x*y-β*z;
+                const x2=x+k1x*dt/2,y2=y+k1y*dt/2,z2=z+k1z*dt/2;
+                const k2x=σ*(y2-x2),k2y=x2*(ρ-z2)-y2,k2z=x2*y2-β*z2;
+                const x3=x+k2x*dt/2,y3=y+k2y*dt/2,z3=z+k2z*dt/2;
+                const k3x=σ*(y3-x3),k3y=x3*(ρ-z3)-y3,k3z=x3*y3-β*z3;
+                const x4=x+k3x*dt,y4=y+k3y*dt,z4=z+k3z*dt;
+                return{nx:x+(k1x+2*k2x+2*k3x+k4x)*dt/6,ny:y+(k1y+2*k2y+2*k3y+k4y)*dt/6,nz:z+(k1z+2*k2z+2*k3z+k4z)*dt/6};
+            }
+
+            function compute(ρ){
+                const DT=0.005, WARMUP=1000, NPTS=5000;
+                let x=0.1,y=0,z=0;
+                for(let i=0;i<WARMUP;i++){ const r=rk4(x,y,z,ρ,DT); x=r.nx;y=r.ny;z=r.nz; }
+                const pts=[];
+                for(let i=0;i<NPTS;i++){
+                    pts.push({x,z});
+                    const r=rk4(x,y,z,ρ,DT); x=r.nx;y=r.ny;z=r.nz;
+                }
+                return pts;
+            }
+
+            function render(){
+                const ρ=parseFloat(rhoSlider.value);
+                rhoRead.textContent='ρ = '+ρ.toFixed(1);
+                let regime, color;
+                if(ρ<1){ regime='STABLE ORIGIN'; color='#34d399'; }
+                else if(ρ<13.93){ regime='FIXED POINTS'; color='#fbbf24'; }
+                else if(ρ<24.74){ regime='TRANSIENT CHAOS'; color='#f97316'; }
+                else { regime='CHAOTIC'; color=ACCENT; }
+                regimeEl.textContent=regime; regimeEl.style.color=color;
+
+                const pts=compute(ρ);
+                const w=canvas.width, h=canvas.height;
+                ctx.fillStyle=BG; ctx.fillRect(0,0,w,h);
+
+                // Draw grid
+                ctx.save(); ctx.strokeStyle=BORDER; ctx.lineWidth=0.5; ctx.setLineDash([2,4]);
+                for(let gx=0;gx<=w;gx+=w/8){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke();}
+                for(let gy=0;gy<=h;gy+=h/6){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke();}
+                ctx.setLineDash([]); ctx.restore();
+
+                // Determine data range
+                let xMin=Infinity,xMax=-Infinity,zMin=Infinity,zMax=-Infinity;
+                pts.forEach(p=>{xMin=Math.min(xMin,p.x);xMax=Math.max(xMax,p.x);zMin=Math.min(zMin,p.z);zMax=Math.max(zMax,p.z);});
+                const pad=0.1, xR=xMax-xMin||1, zR=zMax-zMin||1;
+                function toScreen(px,pz){
+                    return{x:(px-xMin)/xR*(w*(1-2*pad))+w*pad, y:h-(pz-zMin)/zR*(h*(1-2*pad))-h*pad};
+                }
+
+                ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=0.8; ctx.globalAlpha=0.6;
+                pts.forEach((p,i)=>{ const s=toScreen(p.x,p.z); i===0?ctx.moveTo(s.x,s.y):ctx.lineTo(s.x,s.y); });
+                ctx.stroke(); ctx.globalAlpha=1;
+                // Glow pass
+                ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.globalAlpha=0.25;
+                ctx.shadowColor=color; ctx.shadowBlur=8;
+                pts.forEach((p,i)=>{ if(i%5===0){ const s=toScreen(p.x,p.z); i===0?ctx.moveTo(s.x,s.y):ctx.lineTo(s.x,s.y); }});
+                ctx.stroke(); ctx.shadowBlur=0; ctx.globalAlpha=1;
+
+                // Axis labels
+                ctx.fillStyle=MUTED; ctx.font='11px Space Mono';
+                ctx.fillText('X: ['+xMin.toFixed(1)+', '+xMax.toFixed(1)+']', 10, h-10);
+                ctx.fillText('Z: ['+zMin.toFixed(1)+', '+zMax.toFixed(1)+']', 10, 18);
+            }
+
+            let debounce;
+            rhoSlider.addEventListener('input',()=>{ clearTimeout(debounce); debounce=setTimeout(render,80); rhoRead.textContent='ρ = '+parseFloat(rhoSlider.value).toFixed(1); });
+
+            function resize(){ canvas.width=document.querySelector('#ku3 .card').clientWidth-40; render(); }
+            window.addEventListener('resize',resize);
+            setTimeout(resize,250);
+        })();
+        </script>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],
+                throwOnError:false
+            });
+        });
+    </script>
+</body>
+</html>
