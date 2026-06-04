@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Potential</title>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #080c0e;
+            --card: #0e1316;
+            --surface: #141a1e;
+            --accent: #2dd4bf;
+            --na: #f97316;
+            --k: #818cf8;
+            --cl: #34d399;
+            --red: #f87171;
+            --text: #e2f4f2;
+            --muted: #6b8a88;
+            --dim: #304240;
+            --border: #162320;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'IBM Plex Mono', monospace;
+            line-height: 1.75;
+            padding: 0 0 80px;
+        }
+        header {
+            text-align: center;
+            padding: 60px 40px 48px;
+            background: radial-gradient(ellipse at 50% 0%, #0d2420 0%, var(--bg) 70%);
+            border-bottom: 1px solid var(--border);
+        }
+        header .tag {
+            display: inline-block;
+            font-size: 10px; letter-spacing: 0.2em; color: var(--accent);
+            text-transform: uppercase; border: 1px solid rgba(45,212,191,0.25);
+            padding: 3px 12px; border-radius: 20px; margin-bottom: 20px;
+        }
+        h1 {
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 3.5rem; font-weight: 700;
+            color: var(--text); line-height: 1.1; margin-bottom: 16px;
+        }
+        h1 em { color: var(--accent); font-style: normal; }
+        header p { color: var(--muted); font-size: 13px; max-width: 520px; margin: 0 auto; }
+        section { max-width: 900px; margin: 60px auto 0; padding: 0 32px; }
+        .section-label {
+            font-size: 10px; letter-spacing: 0.2em; color: var(--dim);
+            text-transform: uppercase; margin-bottom: 20px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        h2 { font-family: 'IBM Plex Sans', sans-serif; font-size: 1.75rem; font-weight: 700; margin-bottom: 14px; }
+        .prose { font-size: 13px; color: var(--muted); line-height: 1.9; margin-bottom: 18px; }
+        .math-block {
+            background: var(--card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); padding: 14px 20px;
+            border-radius: 4px; margin: 18px 0; font-size: 13px; overflow-x: auto;
+        }
+        .canvas-wrap {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden; margin: 24px 0;
+        }
+        canvas { display: block; }
+        .controls {
+            display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+            padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border);
+        }
+        .btn {
+            padding: 6px 14px; border: 1px solid var(--dim); background: transparent;
+            color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+            border-radius: 3px; cursor: pointer; transition: all 0.15s;
+        }
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.accent { background: var(--accent); color: #080c0e; border-color: var(--accent); font-weight: 600; }
+        label { font-size: 11px; color: var(--dim); }
+        input[type=range] { width: 90px; accent-color: var(--accent); }
+        .val { font-size: 12px; color: var(--accent); min-width: 40px; }
+        .legend {
+            display: flex; gap: 16px; flex-wrap: wrap;
+            padding: 8px 16px; border-top: 1px solid var(--border); font-size: 11px;
+        }
+        .li { display: flex; align-items: center; gap: 6px; color: var(--dim); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .phase-label {
+            font-size: 12px; color: var(--accent); font-weight: 600;
+            padding: 6px 16px; border-top: 1px solid var(--border);
+            background: var(--card); min-height: 30px;
+        }
+        .ion-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0;
+        }
+        .ion-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 16px;
+        }
+        .ion-card h4 { font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+        .ion-card p { font-size: 12px; color: var(--dim); line-height: 1.7; }
+        .infobox {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 16px 20px; margin: 16px 0;
+            font-size: 12px; color: var(--dim); line-height: 1.8;
+        }
+        .infobox strong { color: var(--text); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="tag">Temporal Control · Neuroscience</div>
+    <h1>Action <em>Potential</em></h1>
+    <p>The electrical impulse that lets neurons communicate. Explore how ion channels open and close to produce the all-or-nothing spike, governed by the Hodgkin–Huxley equations.</p>
+</header>
+
+<!-- Section 1: The Spike -->
+<section>
+    <div class="section-label">01 — The Voltage Trace</div>
+    <h2>The All-or-Nothing Law</h2>
+    <div class="prose">
+        A neuron at rest sits at about −70 mV. When an incoming stimulus depolarizes the membrane
+        past a <strong style="color:var(--red)">threshold</strong> of roughly −55 mV, the cell fires:
+        a rapid, stereotyped voltage spike that reaches +40 mV before repolarizing.
+        Below threshold, nothing happens — <em>all or nothing</em>.
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="cv" width="836" height="300"></canvas>
+        <div class="controls">
+            <button class="btn accent" id="btnFire" onclick="fire()">⚡ Fire</button>
+            <button class="btn" onclick="resetAP()">↺ Reset</button>
+            <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+                <label>stimulus</label>
+                <input type="range" id="stim" min="1" max="20" value="10">
+                <span class="val" id="stimVal">10 µA</span>
+                <label>speed</label>
+                <input type="range" id="speed" min="1" max="8" value="4">
+            </div>
+        </div>
+        <div class="phase-label" id="phaseLabel">Press "Fire" to inject a stimulus current →</div>
+        <div class="legend">
+            <div class="li"><div class="dot" style="background:var(--accent)"></div> membrane voltage Vm</div>
+            <div class="li"><div class="dot" style="background:var(--red)"></div> threshold (−55 mV)</div>
+            <div class="li"><div class="dot" style="background:var(--dim)"></div> resting potential (−70 mV)</div>
+        </div>
+    </div>
+
+    <div class="prose">
+        The voltage trace passes through four phases. Hover over the chart to see each annotated.
+    </div>
+</section>
+
+<!-- Section 2: Ion channels -->
+<section>
+    <div class="section-label">02 — Ion Channels</div>
+    <h2>Na⁺ and K⁺ Conductances</h2>
+    <div class="prose">
+        The spike is driven by voltage-gated ion channels. The Hodgkin–Huxley model (Nobel Prize 1963)
+        describes membrane conductance using three gating variables: <strong>m</strong> (Na⁺ activation),
+        <strong>h</strong> (Na⁺ inactivation), and <strong>n</strong> (K⁺ activation).
+    </div>
+    <div class="math-block">
+        \[C_m \frac{dV}{dt} = -\bar{g}_{\text{Na}}\,m^3 h\,(V - E_{\text{Na}}) - \bar{g}_{\text{K}}\,n^4(V-E_{\text{K}}) - g_L(V-E_L) + I_{\text{ext}}\]
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="cg" width="836" height="260"></canvas>
+        <div class="legend">
+            <div class="li"><div class="dot" style="background:var(--na)"></div> g_Na (sodium conductance)</div>
+            <div class="li"><div class="dot" style="background:var(--k)"></div> g_K (potassium conductance)</div>
+            <div class="li"><div class="dot" style="background:var(--cl)"></div> g_L (leak)</div>
+        </div>
+    </div>
+
+    <div class="ion-grid">
+        <div class="ion-card">
+            <h4 style="color:var(--na)">Na⁺ — Depolarization</h4>
+            <p>Voltage-gated Na⁺ channels open rapidly when threshold is crossed. Na⁺ floods in (E_Na ≈ +55 mV), pulling the membrane toward +40 mV. Inactivation gates close within 1 ms, stopping the influx.</p>
+        </div>
+        <div class="ion-card">
+            <h4 style="color:var(--k)">K⁺ — Repolarization</h4>
+            <p>Slower voltage-gated K⁺ channels open after Na⁺ inactivation. K⁺ flows out (E_K ≈ −77 mV), pulling voltage back below rest — a brief <em>hyperpolarization</em> (refractory period).</p>
+        </div>
+    </div>
+</section>
+
+<!-- Section 3: Gating variables & threshold -->
+<section>
+    <div class="section-label">03 — Threshold Dynamics</div>
+    <h2>Why All-or-Nothing?</h2>
+    <div class="prose">
+        The threshold emerges from a race between Na⁺ activation (fast, positive feedback)
+        and the combined K⁺ + Na⁺ inactivation (slow, negative feedback).
+        Below threshold, the slower processes win and the perturbation decays.
+        Above threshold, the fast Na⁺ feedback wins explosively.
+    </div>
+
+    <div class="canvas-wrap">
+        <canvas id="ct" width="836" height="280"></canvas>
+        <div class="controls">
+            <label>stimulus amplitude</label>
+            <input type="range" id="stimT" min="0" max="30" value="8" oninput="updateThresh()">
+            <span class="val" id="stimTVal">8 µA</span>
+            <div style="margin-left:8px;">
+                <span style="font-size:11px; color:var(--dim)" id="threshMsg">Below threshold — no spike</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="math-block">
+        Gating variable steady-states: \(m_\infty(V) = \dfrac{1}{1+e^{-(V+40)/5}}\) ,
+        \(n_\infty(V) = \dfrac{1}{1+e^{-(V+55)/14}}\)
+    </div>
+
+    <div class="infobox">
+        <strong>Refractory period:</strong> After a spike, Na⁺ channels are inactivated and K⁺ channels
+        are still open, making a second spike impossible (absolute refractory, ~1 ms) or
+        requiring a larger stimulus (relative refractory, ~4 ms). This limits firing rates
+        to ~500–1000 Hz and ensures one-way propagation along axons.
+    </div>
+</section>
+
+<script>
+// ── Hodgkin–Huxley simulation (simplified) ───────────────────────────────────
+const Cm=1, gNaMax=120, gKMax=36, gL=0.3;
+const ENa=55, EK=-77, EL=-54.4;
+
+function alphaM(v){return 0.1*(v+40)/(1-Math.exp(-(v+40)/10));}
+function betaM(v){return 4*Math.exp(-(v+65)/18);}
+function alphaH(v){return 0.07*Math.exp(-(v+65)/20);}
+function betaH(v){return 1/(1+Math.exp(-(v+35)/10));}
+function alphaN(v){return 0.01*(v+55)/(1-Math.exp(-(v+55)/10));}
+function betaN(v){return 0.125*Math.exp(-(v+65)/80);}
+
+function initState(v0) {
+    let am=alphaM(v0),bm=betaM(v0);
+    let ah=alphaH(v0),bh=betaH(v0);
+    let an=alphaN(v0),bn=betaN(v0);
+    return {v:v0, m:am/(am+bm), h:ah/(ah+bh), n:an/(an+bn)};
+}
+
+function step(s, dt, I) {
+    let {v,m,h,n}=s;
+    let gNa=gNaMax*m*m*m*h;
+    let gK=gKMax*n*n*n*n;
+    let INa=gNa*(v-ENa);
+    let IK=gK*(v-EK);
+    let IL=gL*(v-EL);
+    let dv=(I-INa-IK-IL)/Cm;
+    let dm=alphaM(v)*(1-m)-betaM(v)*m;
+    let dh=alphaH(v)*(1-h)-betaH(v)*h;
+    let dn=alphaN(v)*(1-n)-betaN(v)*n;
+    return {v:v+dv*dt, m:m+dm*dt, h:h+dh*dt, n:n+dn*dt};
+}
+
+// ── Pre-simulate with stimulus ────────────────────────────────────────────────
+let simData = null;
+let rafId = null;
+let animFrame = 0;
+
+function simulate(stimAmp, stimDuration=1) {
+    let dt=0.01, T=50;
+    let N=Math.round(T/dt);
+    let s=initState(-65);
+    let vTrace=[], gNaTrace=[], gKTrace=[], mTrace=[], hTrace=[], nTrace=[];
+    for(let i=0;i<N;i++){
+        let t=i*dt;
+        let I = (t>=5&&t<5+stimDuration) ? stimAmp : 0;
+        s=step(s,dt,I);
+        vTrace.push(s.v);
+        gNaTrace.push(gNaMax*s.m*s.m*s.m*s.h);
+        gKTrace.push(gKMax*s.n*s.n*s.n*s.n);
+        mTrace.push(s.m); hTrace.push(s.h); nTrace.push(s.n);
+    }
+    return {vTrace,gNaTrace,gKTrace,mTrace,hTrace,nTrace,N,dt,T};
+}
+
+function fire() {
+    let stim = parseInt(document.getElementById('stim').value);
+    simData = simulate(stim, 0.5);
+    animFrame = 0;
+    if (rafId) cancelAnimationFrame(rafId);
+    animate();
+}
+
+function resetAP() {
+    simData = null; animFrame = 0;
+    if (rafId) cancelAnimationFrame(rafId);
+    drawVoltage(null, 0);
+    drawConductance(null, 0);
+    document.getElementById('phaseLabel').textContent = 'Press "Fire" to inject a stimulus current →';
+}
+
+document.getElementById('stim').addEventListener('input', e=>{
+    document.getElementById('stimVal').textContent = e.target.value+' µA';
+});
+
+function animate() {
+    let spd = parseInt(document.getElementById('speed').value);
+    animFrame += spd;
+    if (!simData) return;
+    let pct = Math.min(animFrame / simData.N, 1);
+    let showN = Math.floor(pct*simData.N);
+    drawVoltage(simData, showN);
+    drawConductance(simData, showN);
+    if (pct < 1) rafId = requestAnimationFrame(animate);
+}
+
+// Phase labels
+function getPhase(vArr, i) {
+    if (i===0||!vArr) return '';
+    let v=vArr[i], vPrev=i>0?vArr[i-1]:v;
+    if (v < -60) return 'Resting / Hyperpolarization';
+    if (v >= -60 && v < -55) return 'Subthreshold depolarization';
+    if (v >= -55 && v < 0 && v > vPrev) return '↑ Rising phase — Na⁺ influx (depolarization)';
+    if (v >= 0 && v > vPrev) return '↑ Overshoot — approaching Na⁺ equilibrium (+55 mV)';
+    if (v > -55 && v < vPrev && v > 0) return '↓ Falling phase — Na⁺ inactivation + K⁺ efflux';
+    if (v <= -55 && v < vPrev) return '↓ Repolarization — K⁺ efflux restores resting potential';
+    return '';
+}
+
+// ── Canvas: Voltage trace ───────────────────────────────────────────────────
+const cv = document.getElementById('cv');
+const ctx_v = cv.getContext('2d');
+
+function drawVoltage(data, showN) {
+    const W=cv.width, H=cv.height;
+    const pad={l:54,r:20,t:20,b:30};
+    const W2=W-pad.l-pad.r, H2=H-pad.t-pad.b;
+    ctx_v.clearRect(0,0,W,H);
+    ctx_v.fillStyle='#0e1316'; ctx_v.fillRect(0,0,W,H);
+
+    // Grid
+    ctx_v.strokeStyle='#162320'; ctx_v.lineWidth=1;
+    [-70,-55,-40,-20,0,20,40].forEach(mv=>{
+        let y=pad.t+H2-(mv+80)/130*H2;
+        ctx_v.beginPath(); ctx_v.moveTo(pad.l,y); ctx_v.lineTo(pad.l+W2,y); ctx_v.stroke();
+        ctx_v.fillStyle='#304240'; ctx_v.font='9px IBM Plex Mono';
+        ctx_v.fillText(mv+'mV',pad.l-50,y+3);
+    });
+
+    // Resting line
+    let yRest = pad.t+H2-((-70+80)/130)*H2;
+    ctx_v.strokeStyle='rgba(48,66,64,0.8)'; ctx_v.lineWidth=1; ctx_v.setLineDash([4,6]);
+    ctx_v.beginPath(); ctx_v.moveTo(pad.l,yRest); ctx_v.lineTo(pad.l+W2,yRest); ctx_v.stroke();
+    ctx_v.setLineDash([]);
+
+    // Threshold line
+    let yThresh = pad.t+H2-((-55+80)/130)*H2;
+    ctx_v.strokeStyle='rgba(248,113,113,0.4)'; ctx_v.lineWidth=1; ctx_v.setLineDash([3,5]);
+    ctx_v.beginPath(); ctx_v.moveTo(pad.l,yThresh); ctx_v.lineTo(pad.l+W2,yThresh); ctx_v.stroke();
+    ctx_v.setLineDash([]);
+    ctx_v.fillStyle='rgba(248,113,113,0.6)'; ctx_v.font='9px IBM Plex Mono';
+    ctx_v.fillText('threshold', pad.l+4, yThresh-4);
+
+    if (!data || showN===0) return;
+    let {vTrace, N} = data;
+
+    // Voltage trace
+    ctx_v.strokeStyle='#2dd4bf'; ctx_v.lineWidth=2;
+    ctx_v.beginPath();
+    for (let i=0; i<showN; i++) {
+        let x=pad.l+(i/N)*W2;
+        let y=pad.t+H2-((vTrace[i]+80)/130)*H2;
+        i===0?ctx_v.moveTo(x,y):ctx_v.lineTo(x,y);
+    }
+    ctx_v.stroke();
+
+    // Current point
+    if (showN > 1) {
+        let i=showN-1;
+        let x=pad.l+(i/N)*W2;
+        let y=pad.t+H2-((vTrace[i]+80)/130)*H2;
+        ctx_v.beginPath(); ctx_v.arc(x,y,4,0,Math.PI*2);
+        ctx_v.fillStyle='#fff'; ctx_v.fill();
+        ctx_v.shadowBlur=8; ctx_v.shadowColor='#2dd4bf'; ctx_v.fill(); ctx_v.shadowBlur=0;
+
+        let phase = getPhase(vTrace, i);
+        document.getElementById('phaseLabel').textContent = phase || '—';
+    }
+
+    // X axis labels
+    ctx_v.fillStyle='#304240'; ctx_v.font='9px IBM Plex Mono';
+    [0,10,20,30,40,50].forEach(t=>{
+        let x=pad.l+(t/data.T)*W2;
+        ctx_v.fillText(t+'ms',x-8,pad.t+H2+14);
+    });
+}
+
+// ── Canvas: Conductance ─────────────────────────────────────────────────────
+const cg = document.getElementById('cg');
+const ctx_g = cg.getContext('2d');
+
+function drawConductance(data, showN) {
+    const W=cg.width, H=cg.height;
+    const pad={l:54,r:20,t:20,b:30};
+    const W2=W-pad.l-pad.r, H2=H-pad.t-pad.b;
+    ctx_g.clearRect(0,0,W,H);
+    ctx_g.fillStyle='#0e1316'; ctx_g.fillRect(0,0,W,H);
+
+    ctx_g.strokeStyle='#162320'; ctx_g.lineWidth=1;
+    [0,40,80,120].forEach(g=>{
+        let y=pad.t+H2-(g/130)*H2;
+        ctx_g.beginPath(); ctx_g.moveTo(pad.l,y); ctx_g.lineTo(pad.l+W2,y); ctx_g.stroke();
+        ctx_g.fillStyle='#304240'; ctx_g.font='9px IBM Plex Mono';
+        ctx_g.fillText(g+'mS',pad.l-46,y+3);
+    });
+
+    if (!data || showN===0) return;
+    let {gNaTrace,gKTrace,N} = data;
+    let maxG=130;
+
+    [[gNaTrace,'#f97316'],[gKTrace,'#818cf8']].forEach(([tr,col])=>{
+        ctx_g.strokeStyle=col; ctx_g.lineWidth=2;
+        ctx_g.beginPath();
+        for(let i=0;i<showN;i++){
+            let x=pad.l+(i/N)*W2;
+            let y=pad.t+H2-(tr[i]/maxG)*H2;
+            i===0?ctx_g.moveTo(x,y):ctx_g.lineTo(x,y);
+        }
+        ctx_g.stroke();
+    });
+    // leak
+    ctx_g.strokeStyle='#34d399'; ctx_g.lineWidth=1.5; ctx_g.setLineDash([3,5]);
+    ctx_g.beginPath(); ctx_g.moveTo(pad.l, pad.t+H2-(0.3/maxG)*H2); ctx_g.lineTo(pad.l+W2, pad.t+H2-(0.3/maxG)*H2); ctx_g.stroke();
+    ctx_g.setLineDash([]);
+}
+
+// ── Canvas 3: Threshold sweep ────────────────────────────────────────────────
+const ct = document.getElementById('ct');
+const ctx_t = ct.getContext('2d');
+
+function updateThresh() {
+    let s=parseInt(document.getElementById('stimT').value);
+    document.getElementById('stimTVal').textContent=s+' µA';
+    let data=simulate(s, 0.5);
+    let maxV=Math.max(...data.vTrace);
+    let fired = maxV > 0;
+    document.getElementById('threshMsg').textContent = fired ? '✓ Spike! above threshold' : 'Below threshold — subthreshold response';
+    document.getElementById('threshMsg').style.color = fired ? 'var(--accent)' : 'var(--red)';
+    drawThreshold(data);
+}
+
+function drawThreshold(data) {
+    const W=ct.width, H=ct.height;
+    const pad={l:54,r:20,t:20,b:30};
+    const W2=W-pad.l-pad.r, H2=H-pad.t-pad.b;
+    ctx_t.clearRect(0,0,W,H);
+    ctx_t.fillStyle='#0e1316'; ctx_t.fillRect(0,0,W,H);
+
+    [-70,-55,-40,-20,0,20,40].forEach(mv=>{
+        let y=pad.t+H2-(mv+80)/130*H2;
+        ctx_t.strokeStyle='#162320'; ctx_t.lineWidth=1;
+        ctx_t.beginPath(); ctx_t.moveTo(pad.l,y); ctx_t.lineTo(pad.l+W2,y); ctx_t.stroke();
+        ctx_t.fillStyle='#304240'; ctx_t.font='9px IBM Plex Mono';
+        ctx_t.fillText(mv+'mV',pad.l-50,y+3);
+    });
+
+    let yThresh = pad.t+H2-((-55+80)/130)*H2;
+    ctx_t.strokeStyle='rgba(248,113,113,0.4)'; ctx_t.lineWidth=1; ctx_t.setLineDash([3,5]);
+    ctx_t.beginPath(); ctx_t.moveTo(pad.l,yThresh); ctx_t.lineTo(pad.l+W2,yThresh); ctx_t.stroke();
+    ctx_t.setLineDash([]);
+
+    let {vTrace,N}=data;
+    ctx_t.strokeStyle='#2dd4bf'; ctx_t.lineWidth=2;
+    ctx_t.beginPath();
+    for(let i=0;i<N;i++){
+        let x=pad.l+(i/N)*W2;
+        let y=pad.t+H2-((vTrace[i]+80)/130)*H2;
+        i===0?ctx_t.moveTo(x,y):ctx_t.lineTo(x,y);
+    }
+    ctx_t.stroke();
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+drawVoltage(null,0);
+drawConductance(null,0);
+updateThresh();
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    if (window.renderMathInElement) {
+        renderMathInElement(document.body,{delimiters:[
+            {left:'\\[',right:'\\]',display:true},
+            {left:'\\(',right:'\\)',display:false}
+        ]});
+    }
+});
+</script>
+</body>
+</html>
