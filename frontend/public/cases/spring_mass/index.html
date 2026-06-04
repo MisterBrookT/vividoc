@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring–Mass Oscillator — An Interactive Exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0e10;
+  --surface: #111416;
+  --surface2: #161a1d;
+  --border: #1f2729;
+  --green: #4ade80;
+  --green-dim: #2fa85a;
+  --green-glow: rgba(74,222,128,0.12);
+  --amber: #fbbf24;
+  --blue: #60a5fa;
+  --red: #f87171;
+  --text: #dde6ec;
+  --text-dim: #7a9aaa;
+  --text-muted: #3d5562;
+  --white: #ffffff;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Work Sans', system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.78;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  padding: 5rem 2rem 3.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(74,222,128,0.05) 0%, transparent 70%);
+}
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 1.2rem;
+  opacity: 0.75;
+}
+
+h1 {
+  font-size: clamp(2.3rem, 5vw, 3.6rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: var(--white);
+  line-height: 1.15;
+  margin-bottom: 1.2rem;
+}
+
+h1 strong { color: var(--green); font-weight: 500; }
+
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  max-width: 580px;
+  margin: 0 auto;
+  font-weight: 300;
+}
+
+/* ── Layout ── */
+main { max-width: 920px; margin: 0 auto; padding: 0 2rem 6rem; }
+
+section {
+  padding: 4.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+section:last-child { border-bottom: none; }
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 0.6rem;
+  opacity: 0.65;
+}
+
+h2 {
+  font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+  font-weight: 400;
+  color: var(--white);
+  margin-bottom: 1.7rem;
+  line-height: 1.2;
+}
+
+p { margin-bottom: 1.3rem; color: var(--text); }
+p:last-of-type { margin-bottom: 0; }
+
+.math-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  padding: 1.3rem 1.8rem;
+  margin: 1.8rem 0;
+  border-radius: 0 6px 6px 0;
+  overflow-x: auto;
+}
+
+.math-block .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 0.6rem;
+  display: block;
+  opacity: 0.75;
+}
+
+/* ── Canvas panels ── */
+.canvas-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 2.5rem 0 1.5rem;
+}
+
+.panel-header {
+  padding: 0.85rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.panel-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+canvas { display: block; width: 100%; }
+
+/* ── Controls ── */
+.controls {
+  padding: 1.2rem 1.4rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.ctrl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ctrl label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ctrl label span { color: var(--green); font-weight: 600; }
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--green);
+  cursor: pointer;
+  box-shadow: 0 0 7px rgba(74,222,128,0.5);
+}
+
+/* ── Stat row ── */
+.stat-row {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.9rem 1.4rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  flex-wrap: wrap;
+}
+
+.stat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+}
+
+.stat .key { color: var(--text-muted); }
+.stat .val { color: var(--green); margin-left: 0.4rem; font-weight: 600; }
+.stat .val.amber { color: var(--amber); }
+.stat .val.red { color: var(--red); }
+.stat .val.blue { color: var(--blue); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 2.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  letter-spacing: 0.1em;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Mechanics · Oscillations · Dynamics</div>
+  <h1>Spring–<strong>Mass</strong> Oscillator</h1>
+  <p class="subtitle">From Hooke's restoring force to resonance catastrophe — the equations of oscillatory motion govern everything from atomic bonds to suspension bridges.</p>
+</header>
+
+<main>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SECTION 01: SIMPLE HARMONIC MOTION -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section id="shm">
+  <div class="section-label">Section 01</div>
+  <h2>Simple Harmonic Motion</h2>
+
+  <p>Attach a mass \(m\) to a spring of stiffness \(k\), pull the mass aside by amplitude \(A\), and release. The spring pulls back proportionally to displacement: \(F = -kx\). Newton's second law then gives \(m\ddot{x} + kx = 0\), a second-order linear ODE whose general solution is \(x(t) = A\cos(\omega_0 t + \varphi)\), with \(\omega_0 = \sqrt{k/m}\) rad/s. The angular frequency \(\omega_0\) — and hence the period \(T = 2\pi/\omega_0\) — depends only on the spring-to-mass ratio. A stiffer spring or lighter mass oscillates faster; a softer spring or heavier mass oscillates slower. Crucially, neither the period nor the frequency depends on amplitude. This <em>isochronism</em> is what makes the oscillator useful as a clock.</p>
+
+  <p>Energy is the other lens. The total mechanical energy \(E = \tfrac{1}{2}kA^2\) is fixed throughout the motion (no friction). At maximum displacement \(x = A\), all energy is elastic potential; the mass is instantaneously at rest. At the equilibrium position \(x = 0\), all energy is kinetic; the mass moves at its maximum speed \(v_{\max} = A\omega_0\). Between these extremes, energy sloshes back and forth between \(\tfrac{1}{2}kx^2\) and \(\tfrac{1}{2}mv^2\). The position and velocity are \(90°\) out of phase — when \(x = A\cos(\omega_0 t)\), the velocity is \(v = -A\omega_0\sin(\omega_0 t)\).</p>
+
+  <p>Plotting \(x\) against \(v\) traces out an ellipse in phase space — a closed curve whose size encodes the total energy. A larger amplitude means a larger ellipse. Friction shrinks the ellipse inward spirally. An undamped oscillator traverses its ellipse forever, making exactly \(f_0 = \omega_0/(2\pi)\) full circuits per second. The visualization on the right scrolls the position (green) and velocity (blue) time series in real time as the spring-mass system animates on the left.</p>
+
+  <div class="math-block">
+    <span class="label">SHM Equations of Motion</span>
+    \[m\ddot{x} + kx = 0 \implies x(t) = A\cos(\omega_0 t + \varphi)\]
+    \[\omega_0 = \sqrt{\frac{k}{m}}, \qquad T = \frac{2\pi}{\omega_0} = 2\pi\sqrt{\frac{m}{k}}\]
+    \[E = \underbrace{\tfrac{1}{2}kx^2}_{U} + \underbrace{\tfrac{1}{2}mv^2}_{K} = \tfrac{1}{2}kA^2 = \text{const}\]
+  </div>
+
+  <div class="canvas-panel">
+    <div class="panel-header">
+      <div class="status-dot"></div>
+      <span class="panel-title">Animated Spring–Mass + Live Time Series</span>
+    </div>
+    <canvas id="canvas1" height="360"></canvas>
+    <div class="stat-row">
+      <div class="stat"><span class="key">ω₀</span><span class="val" id="omega0-val">—</span></div>
+      <div class="stat"><span class="key">T</span><span class="val" id="T-val">—</span></div>
+      <div class="stat"><span class="key">f₀</span><span class="val" id="f0-val">—</span></div>
+      <div class="stat"><span class="key">E</span><span class="val" id="E-val">—</span></div>
+    </div>
+    <div class="controls">
+      <div class="ctrl">
+        <label>Spring k <span id="k-val">8.0</span> N/m</label>
+        <input type="range" id="kSlider" min="1" max="20" step="0.5" value="8">
+      </div>
+      <div class="ctrl">
+        <label>Mass m <span id="m-val">1.0</span> kg</label>
+        <input type="range" id="mSlider" min="0.1" max="5" step="0.1" value="1">
+      </div>
+      <div class="ctrl">
+        <label>Amplitude A <span id="A-val">0.5</span> m</label>
+        <input type="range" id="ASlider" min="0.1" max="1" step="0.05" value="0.5">
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SECTION 02: DAMPING -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section id="damping">
+  <div class="section-label">Section 02</div>
+  <h2>Damped Oscillations</h2>
+
+  <p>Real springs and masses lose energy to friction, air resistance, and internal dissipation. We model all of these as a velocity-proportional drag force \(-b\dot{x}\), giving the damped oscillator equation \(m\ddot{x} + b\dot{x} + kx = 0\). The character of the solution changes radically depending on how large the damping coefficient \(b\) is relative to the critical value \(b_c = 2\sqrt{km}\). We define the dimensionless damping ratio \(\zeta = b / b_c = b/(2\sqrt{km})\), and the natural frequency \(\omega_0 = \sqrt{k/m}\).</p>
+
+  <p>When \(\zeta < 1\) — the <em>underdamped</em> regime — the system oscillates but with exponentially shrinking amplitude: \(x(t) = Ae^{-\zeta\omega_0 t}\cos(\omega_d t + \varphi)\), where the damped frequency \(\omega_d = \omega_0\sqrt{1-\zeta^2}\) is slightly lower than \(\omega_0\). The exponential factor \(e^{-\zeta\omega_0 t}\) forms a decaying envelope that hugs the oscillation from above and below. When \(\zeta = 1\) — <em>critically damped</em> — the system returns to equilibrium in the shortest possible time without oscillating, following \(x(t) = (C_1 + C_2 t)e^{-\omega_0 t}\). When \(\zeta > 1\) — <em>overdamped</em> — the system returns even more sluggishly, and critically, never overshoots. Car suspension systems are typically designed close to \(\zeta \approx 0.7\), a balance between rapid settling and minimal oscillation.</p>
+
+  <p>The three regimes aren't just mathematically distinct — they're physically observable. Tap an underdamped wine glass and it rings for seconds. A door closer that slams is underdamped; one that drifts shut frustratingly slowly is overdamped; a well-adjusted one that swings firmly closed without bouncing is critically damped. Adjust the damping ratio \(\zeta\) below and watch the behavior transition continuously through these three regimes.</p>
+
+  <div class="math-block">
+    <span class="label">Damped Oscillator Solution</span>
+    \[m\ddot{x} + b\dot{x} + kx = 0, \qquad \zeta = \frac{b}{2\sqrt{km}}\]
+    \[\text{Underdamped } (\zeta < 1): \quad x(t) = A\,e^{-\zeta\omega_0 t}\cos(\omega_d t),\quad \omega_d = \omega_0\sqrt{1-\zeta^2}\]
+    \[\text{Critical } (\zeta = 1): \quad x(t) = (C_1+C_2 t)\,e^{-\omega_0 t}\]
+    \[\text{Overdamped } (\zeta > 1): \quad x(t) = e^{-\zeta\omega_0 t}\!\left[C_1 e^{\omega_0\sqrt{\zeta^2-1}\,t} + C_2 e^{-\omega_0\sqrt{\zeta^2-1}\,t}\right]\]
+  </div>
+
+  <div class="canvas-panel">
+    <div class="panel-header">
+      <div class="status-dot"></div>
+      <span class="panel-title">Damped Response — animated mass + decay plot</span>
+    </div>
+    <canvas id="canvas2" height="300"></canvas>
+    <div class="stat-row">
+      <div class="stat"><span class="key">ζ</span><span class="val" id="zeta-val">0.10</span></div>
+      <div class="stat"><span class="key">Regime</span><span class="val" id="regime-val">Underdamped</span></div>
+      <div class="stat"><span class="key">ω_d</span><span class="val" id="omegad-val">—</span></div>
+      <div class="stat"><span class="key">Decay τ</span><span class="val" id="tau-val">—</span></div>
+    </div>
+    <div class="controls">
+      <div class="ctrl">
+        <label>Damping ζ <span id="zeta-disp">0.10</span></label>
+        <input type="range" id="zetaSlider" min="0.01" max="2" step="0.01" value="0.1">
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- SECTION 03: RESONANCE -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<section id="resonance">
+  <div class="section-label">Section 03</div>
+  <h2>Driven Oscillator and Resonance</h2>
+
+  <p>Add a periodic driving force \(F(t) = F_0\cos(\Omega t)\) to a damped oscillator, and after the transient decays, the system settles into a steady-state oscillation at the driving frequency \(\Omega\). The steady-state amplitude is \(A(\Omega) = (F_0/m) / \sqrt{(\omega_0^2 - \Omega^2)^2 + (2\zeta\omega_0\Omega)^2}\). This is the <em>frequency response function</em> — arguably the most important equation in applied mechanics. It tells you how vigorously a system responds to excitation at each frequency. When \(\Omega = 0\) (static load), \(A = F_0/(m\omega_0^2) = F_0/k\), which is just Hooke's law. As \(\Omega\) increases toward \(\omega_0\), the denominator shrinks and \(A\) grows dramatically.</p>
+
+  <p>The resonance peak occurs at \(\Omega_r = \omega_0\sqrt{1 - 2\zeta^2}\) (slightly below \(\omega_0\) for nonzero damping). For small \(\zeta\), the peak amplitude is approximately \(F_0/(2\zeta\, m\omega_0^2)\), and the quality factor \(Q = 1/(2\zeta)\) measures the sharpness of the resonance peak — both how large the peak amplitude is and how narrow the peak frequency band is. A tuning fork has \(Q \sim 1000\); a guitar string \(Q \sim 200\); a car suspension \(Q \sim 0.7\). The famous 1940 Tacoma Narrows bridge collapse involved aeroelastic forcing near a structural resonance at low effective damping.</p>
+
+  <p>Equally important is the <em>phase lag</em> \(\delta = \arctan(2\zeta\omega_0\Omega / (\omega_0^2 - \Omega^2))\). Below resonance, the mass follows the force nearly in phase. At resonance, the response lags the force by exactly \(90°\) — the mass moves through equilibrium just as the force is maximum, maximizing energy transfer. Above resonance, the phase lag approaches \(180°\) — the mass moves opposite to the driving force, and the response amplitude falls off as \(\Omega^{-2}\). Adjust the sliders below to explore the frequency response curve and watch the resonance peak evolve.</p>
+
+  <div class="math-block">
+    <span class="label">Frequency Response &amp; Phase</span>
+    \[A(\Omega) = \frac{F_0/m}{\sqrt{(\omega_0^2-\Omega^2)^2 + (2\zeta\omega_0\Omega)^2}}\]
+    \[\Omega_r = \omega_0\sqrt{1-2\zeta^2}, \qquad Q = \frac{1}{2\zeta}, \qquad A_{\max} \approx \frac{F_0}{2\zeta m\omega_0^2}\]
+    \[\delta(\Omega) = \arctan\!\left(\frac{2\zeta\omega_0\Omega}{\omega_0^2-\Omega^2}\right) \in [0°, 180°]\]
+  </div>
+
+  <div class="canvas-panel">
+    <div class="panel-header">
+      <div class="status-dot"></div>
+      <span class="panel-title">Frequency Response Curve — amplitude &amp; phase vs Ω/ω₀</span>
+    </div>
+    <canvas id="canvas3" height="280"></canvas>
+    <div class="stat-row">
+      <div class="stat"><span class="key">ζ</span><span class="val" id="res-zeta">0.15</span></div>
+      <div class="stat"><span class="key">Ω/ω₀</span><span class="val amber" id="res-omega">1.00</span></div>
+      <div class="stat"><span class="key">A(Ω)</span><span class="val" id="res-A">—</span></div>
+      <div class="stat"><span class="key">Phase δ</span><span class="val blue" id="res-phase">—</span></div>
+      <div class="stat"><span class="key">Q</span><span class="val" id="res-Q">—</span></div>
+    </div>
+    <div class="controls">
+      <div class="ctrl">
+        <label>Damping ζ <span id="res-zeta-disp">0.15</span></label>
+        <input type="range" id="res-zetaSlider" min="0.05" max="1" step="0.01" value="0.15">
+      </div>
+      <div class="ctrl">
+        <label>Drive Ω/ω₀ <span id="res-omega-disp">1.00</span></label>
+        <input type="range" id="res-omegaSlider" min="0.05" max="3" step="0.01" value="1.0">
+      </div>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<footer>Spring–Mass Oscillator · Interactive Mechanics · Built with Canvas API &amp; KaTeX</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ]
+    });
+  }
+  initSHM();
+  initDamping();
+  initResonance();
+});
+
+/* ═══════════════════════════════════════════════════
+   SECTION 01: SIMPLE HARMONIC MOTION
+═══════════════════════════════════════════════════ */
+function initSHM() {
+  const canvas = document.getElementById('canvas1');
+  const ctx = canvas.getContext('2d');
+  let k = 8, m = 1, A = 0.5;
+  let t = 0;
+
+  // Scrolling time series buffer
+  const HISTORY = 500;
+  const xHistory = new Float32Array(HISTORY);
+  const vHistory = new Float32Array(HISTORY);
+  let histIdx = 0;
+
+  function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 360;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function updateParams() {
+    const omega0 = Math.sqrt(k / m);
+    const T = 2 * Math.PI / omega0;
+    document.getElementById('omega0-val').textContent = omega0.toFixed(3) + ' rad/s';
+    document.getElementById('T-val').textContent = T.toFixed(3) + ' s';
+    document.getElementById('f0-val').textContent = (1 / T).toFixed(3) + ' Hz';
+    document.getElementById('E-val').textContent = (0.5 * k * A * A).toFixed(3) + ' J';
+  }
+
+  document.getElementById('kSlider').addEventListener('input', e => {
+    k = +e.target.value;
+    document.getElementById('k-val').textContent = k.toFixed(1);
+    updateParams();
+  });
+  document.getElementById('mSlider').addEventListener('input', e => {
+    m = +e.target.value;
+    document.getElementById('m-val').textContent = m.toFixed(1);
+    updateParams();
+  });
+  document.getElementById('ASlider').addEventListener('input', e => {
+    A = +e.target.value;
+    document.getElementById('A-val').textContent = A.toFixed(2);
+    t = 0;
+    updateParams();
+  });
+
+  function drawSpring(ctx, x0, y0, x1, y1, coils, color) {
+    const dx = x1 - x0, dy = y1 - y0;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const ux = dx / len, uy = dy / len;
+    const nx = -uy, ny = ux;
+    const coilWidth = 12;
+    const nPoints = coils * 4 + 1;
+
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Lead-in
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x0 + ux * len * 0.05, y0 + uy * len * 0.05);
+
+    for (let i = 0; i <= nPoints; i++) {
+      const frac = 0.05 + (i / nPoints) * 0.9;
+      const tx = x0 + ux * frac * len;
+      const ty = y0 + uy * frac * len;
+      const side = (i % 2 === 0 ? 1 : -1) * coilWidth;
+      ctx.lineTo(tx + nx * side, ty + ny * side);
+    }
+
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+  }
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#111416';
+    ctx.fillRect(0, 0, W, H);
+
+    const omega0 = Math.sqrt(k / m);
+    const x = A * Math.cos(omega0 * t);
+    const v = -A * omega0 * Math.sin(omega0 * t);
+
+    // Store history
+    xHistory[histIdx % HISTORY] = x;
+    vHistory[histIdx % HISTORY] = v;
+    histIdx++;
+
+    const leftW = Math.min(260, W * 0.32);
+    const rightW = W - leftW - 2;
+
+    // ── Left: Spring-mass animation ──
+    const ceilY = 28;
+    const equilibY = H * 0.55;
+    const scale = (H * 0.3) / A; // pixels per meter
+    const massY = equilibY + x * scale;
+    const massH = 44, massW = 52;
+    const massCX = leftW / 2;
+
+    // Ceiling
+    ctx.fillStyle = '#1f2729';
+    ctx.fillRect(0, 0, leftW, ceilY);
+    ctx.strokeStyle = '#2a3840';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, ceilY); ctx.lineTo(leftW, ceilY); ctx.stroke();
+
+    // Ceiling hatch
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    for (let xi = 0; xi < leftW; xi += 12) {
+      ctx.beginPath(); ctx.moveTo(xi, 0); ctx.lineTo(xi - 10, ceilY); ctx.stroke();
+    }
+
+    // Spring
+    drawSpring(ctx, massCX, ceilY, massCX, massY - massH / 2, 10, '#4ade80');
+
+    // Mass (rectangle)
+    const grad = ctx.createLinearGradient(massCX - massW/2, massY - massH/2, massCX + massW/2, massY + massH/2);
+    grad.addColorStop(0, '#2a3f30');
+    grad.addColorStop(0.5, '#3a5840');
+    grad.addColorStop(1, '#1f2f24');
+    ctx.fillStyle = grad;
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(massCX - massW/2, massY - massH/2, massW, massH, 5);
+    ctx.fill();
+    ctx.stroke();
+
+    // Mass label
+    ctx.fillStyle = '#4ade80';
+    ctx.font = '500 12px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('m = ' + m.toFixed(1), massCX, massY + 4);
+    ctx.textAlign = 'left';
+
+    // Equilibrium dashed line
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(74,222,128,0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(8, equilibY); ctx.lineTo(leftW - 8, equilibY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(74,222,128,0.4)';
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillText('x = 0', 8, equilibY - 5);
+
+    // Displacement arrow
+    if (Math.abs(x) > 0.01) {
+      const arrowStart = equilibY;
+      const arrowEnd = massY - massH / 2;
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(massCX + massW/2 + 10, arrowStart);
+      ctx.lineTo(massCX + massW/2 + 10, arrowEnd);
+      ctx.stroke();
+      const arrowDir = arrowEnd > arrowStart ? 1 : -1;
+      ctx.beginPath();
+      ctx.moveTo(massCX + massW/2 + 10, arrowEnd);
+      ctx.lineTo(massCX + massW/2 + 5, arrowEnd - arrowDir * 8);
+      ctx.lineTo(massCX + massW/2 + 15, arrowEnd - arrowDir * 8);
+      ctx.closePath();
+      ctx.fillStyle = '#fbbf24';
+      ctx.fill();
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText(x.toFixed(3) + 'm', massCX + massW/2 + 18, (arrowStart + arrowEnd) / 2 + 4);
+    }
+
+    // Divider
+    ctx.strokeStyle = '#1f2729';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(leftW, 0); ctx.lineTo(leftW, H); ctx.stroke();
+
+    // ── Right: Time series ──
+    const rx = leftW + 2;
+    const rPlotH = (H - 40) / 2;
+
+    // Background for plot
+    ctx.fillStyle = '#0e1215';
+    ctx.fillRect(rx, 0, rightW, H);
+
+    const drawTimeSeries = (data, cyFrac, color, label, scale_) => {
+      const cy = cyFrac * H;
+      const ampPx = rPlotH * 0.4;
+
+      // Grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 4]);
+      for (let g = -1; g <= 1; g++) {
+        ctx.beginPath();
+        ctx.moveTo(rx, cy + g * ampPx);
+        ctx.lineTo(rx + rightW, cy + g * ampPx);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // Zero line
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(rx, cy);
+      ctx.lineTo(rx + rightW, cy);
+      ctx.stroke();
+
+      // Label
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.65;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText(label, rx + 8, cy - ampPx + 16);
+      ctx.globalAlpha = 1;
+
+      // Curve
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      const N = Math.min(histIdx, HISTORY);
+      for (let i = 0; i < N; i++) {
+        const bufIdx = (histIdx - N + i) % HISTORY;
+        const px = rx + (i / HISTORY) * rightW;
+        const py = cy - data[bufIdx] * scale_ * ampPx;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    };
+
+    const maxX = Math.max(A, 0.01);
+    const maxV = Math.max(A * omega0, 0.01);
+
+    drawTimeSeries(xHistory, 0.28, '#4ade80', 'x(t)  [position]', 1 / maxX);
+    drawTimeSeries(vHistory, 0.72, '#60a5fa', 'v(t)  [velocity]', 1 / maxV);
+
+    // Horizontal divider between plots
+    ctx.strokeStyle = '#1f2729';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(rx, H / 2); ctx.lineTo(rx + rightW, H / 2); ctx.stroke();
+
+    t += 0.016;
+    requestAnimationFrame(draw);
+  }
+
+  updateParams();
+  draw();
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION 02: DAMPING
+═══════════════════════════════════════════════════ */
+function initDamping() {
+  const canvas = document.getElementById('canvas2');
+  const ctx = canvas.getContext('2d');
+  const k0 = 9, m0 = 1, A0 = 1;
+  let zeta = 0.1;
+  let animT = 0;
+
+  function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 300;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function updateStats() {
+    const omega0 = Math.sqrt(k0 / m0);
+    let regime, color, omegaD;
+    if (zeta < 0.999) {
+      regime = 'Underdamped';
+      color = '#4ade80';
+      omegaD = omega0 * Math.sqrt(1 - zeta * zeta);
+    } else if (zeta < 1.001) {
+      regime = 'Critical';
+      color = '#fbbf24';
+      omegaD = 0;
+    } else {
+      regime = 'Overdamped';
+      color = '#f87171';
+      omegaD = 0;
+    }
+    const tau = 1 / (zeta * omega0);
+    document.getElementById('zeta-val').textContent = zeta.toFixed(2);
+    const regEl = document.getElementById('regime-val');
+    regEl.textContent = regime;
+    regEl.className = zeta < 0.999 ? 'val' : zeta < 1.001 ? 'val amber' : 'val red';
+    document.getElementById('omegad-val').textContent = zeta < 1 ? omegaD.toFixed(3) + ' rad/s' : 'n/a';
+    document.getElementById('tau-val').textContent = tau.toFixed(3) + ' s';
+  }
+
+  document.getElementById('zetaSlider').addEventListener('input', e => {
+    zeta = +e.target.value;
+    document.getElementById('zeta-disp').textContent = zeta.toFixed(2);
+    animT = 0;
+    updateStats();
+  });
+
+  function xDamped(t) {
+    const omega0 = Math.sqrt(k0 / m0);
+    if (zeta < 0.999) {
+      const wd = omega0 * Math.sqrt(1 - zeta * zeta);
+      return A0 * Math.exp(-zeta * omega0 * t) * Math.cos(wd * t);
+    } else if (zeta < 1.001) {
+      return A0 * (1 + omega0 * t) * Math.exp(-omega0 * t);
+    } else {
+      const alpha = omega0 * Math.sqrt(zeta * zeta - 1);
+      const r1 = -zeta * omega0 + alpha;
+      const r2 = -zeta * omega0 - alpha;
+      return A0 * (r2 * Math.exp(r1 * t) - r1 * Math.exp(r2 * t)) / (r2 - r1);
+    }
+  }
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#111416';
+    ctx.fillRect(0, 0, W, H);
+
+    const omega0 = Math.sqrt(k0 / m0);
+    const leftW = Math.min(220, W * 0.27);
+    const rightW = W - leftW - 2;
+    const rx = leftW + 2;
+
+    // ── Left: animated spring-mass ──
+    const ceilY = 20;
+    const equilibY = H * 0.52;
+    const xCurr = xDamped(animT * 0.04);
+    const scale = H * 0.25;
+    const massY = equilibY + xCurr * scale;
+    const mCX = leftW / 2;
+    const massW = 44, massH = 38;
+
+    ctx.fillStyle = '#1a2228';
+    ctx.fillRect(0, 0, leftW, ceilY);
+    ctx.strokeStyle = '#2a3840';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, ceilY); ctx.lineTo(leftW, ceilY); ctx.stroke();
+
+    // Spring zigzag
+    const springTop = ceilY;
+    const springBot = massY - massH / 2;
+    const nCoils = 10;
+    const coilW = 14;
+    const segH = (springBot - springTop) / (nCoils * 2 + 2);
+    ctx.beginPath();
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 1.8;
+    ctx.moveTo(mCX, springTop);
+    ctx.lineTo(mCX, springTop + segH);
+    for (let i = 0; i < nCoils * 2; i++) {
+      const sign = i % 2 === 0 ? 1 : -1;
+      ctx.lineTo(mCX + sign * coilW, springTop + segH * (i + 1.5));
+      ctx.lineTo(mCX, springTop + segH * (i + 2));
+    }
+    ctx.lineTo(mCX, springBot);
+    ctx.stroke();
+
+    // Mass
+    const mColor = zeta < 0.999 ? '#4ade80' : zeta < 1.001 ? '#fbbf24' : '#f87171';
+    ctx.strokeStyle = mColor;
+    ctx.fillStyle = 'rgba(74,222,128,0.08)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(mCX - massW/2, massY - massH/2, massW, massH, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = mColor;
+    ctx.font = '500 10px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('m', mCX, massY + 4);
+    ctx.textAlign = 'left';
+
+    // Equilibrium
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = 'rgba(74,222,128,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(4, equilibY); ctx.lineTo(leftW - 4, equilibY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Divider
+    ctx.strokeStyle = '#1f2729';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(leftW, 0); ctx.lineTo(leftW, H); ctx.stroke();
+
+    // ── Right: decay curve ──
+    ctx.fillStyle = '#0e1215';
+    ctx.fillRect(rx, 0, rightW, H);
+
+    const cy = H / 2;
+    const plotA = H * 0.38;
+    const tEnd = Math.max(10, 6 / (zeta * omega0 + 0.1));
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 5]);
+    [-1, 0, 1].forEach(g => {
+      ctx.beginPath();
+      ctx.moveTo(rx, cy + g * plotA);
+      ctx.lineTo(rx + rightW, cy + g * plotA);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // Envelope (underdamped only)
+    if (zeta < 0.999) {
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(74,222,128,0.4)';
+      for (const sign of [1, -1]) {
+        ctx.beginPath();
+        for (let px = 0; px < rightW; px++) {
+          const tVal = (px / rightW) * tEnd;
+          const env = sign * A0 * Math.exp(-zeta * omega0 * tVal);
+          const py = cy - env * plotA;
+          if (px === 0) ctx.moveTo(rx + px, py);
+          else ctx.lineTo(rx + px, py);
+        }
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+
+    // Main curve
+    const curveColor = zeta < 0.999 ? '#4ade80' : zeta < 1.001 ? '#fbbf24' : '#f87171';
+    ctx.beginPath();
+    ctx.strokeStyle = curveColor;
+    ctx.lineWidth = 2.5;
+    for (let px = 0; px <= rightW; px++) {
+      const tVal = (px / rightW) * tEnd;
+      const xv = xDamped(tVal);
+      const py = cy - xv * plotA;
+      if (px === 0) ctx.moveTo(rx + px, py);
+      else ctx.lineTo(rx + px, py);
+    }
+    ctx.stroke();
+
+    // Regime badge
+    const regime = zeta < 0.999 ? 'UNDERDAMPED' : zeta < 1.001 ? 'CRITICAL' : 'OVERDAMPED';
+    ctx.fillStyle = curveColor;
+    ctx.globalAlpha = 0.85;
+    ctx.font = 'bold 13px JetBrains Mono, monospace';
+    ctx.fillText(regime, rx + 12, 24);
+    ctx.globalAlpha = 1;
+
+    // ζ label
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillText('ζ = ' + zeta.toFixed(2), rx + 12, 44);
+
+    animT++;
+    requestAnimationFrame(draw);
+  }
+
+  updateStats();
+  draw();
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION 03: RESONANCE
+═══════════════════════════════════════════════════ */
+function initResonance() {
+  const canvas = document.getElementById('canvas3');
+  const ctx = canvas.getContext('2d');
+  let zeta = 0.15, omegaRatio = 1.0;
+
+  function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 280;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function updateStats() {
+    const omega0 = 1;
+    const Omega = omegaRatio * omega0;
+    const denom = Math.sqrt((omega0*omega0 - Omega*Omega)**2 + (2*zeta*omega0*Omega)**2);
+    const A_val = (1 / (omega0*omega0)) / denom * omega0*omega0; // normalized F0/m=omega0^2
+    const normalizedA = 1 / Math.sqrt((1 - omegaRatio*omegaRatio)**2 + (2*zeta*omegaRatio)**2);
+    let phaseRad = Math.atan2(2*zeta*omegaRatio, 1 - omegaRatio*omegaRatio);
+    if (phaseRad < 0) phaseRad += Math.PI;
+    const phaseDeg = phaseRad * 180 / Math.PI;
+    const Q = 1 / (2 * zeta);
+    document.getElementById('res-zeta').textContent = zeta.toFixed(2);
+    document.getElementById('res-omega').textContent = omegaRatio.toFixed(2);
+    document.getElementById('res-A').textContent = normalizedA.toFixed(3);
+    document.getElementById('res-phase').textContent = phaseDeg.toFixed(1) + '°';
+    document.getElementById('res-Q').textContent = Q.toFixed(2);
+  }
+
+  document.getElementById('res-zetaSlider').addEventListener('input', e => {
+    zeta = +e.target.value;
+    document.getElementById('res-zeta-disp').textContent = zeta.toFixed(2);
+    updateStats();
+  });
+
+  document.getElementById('res-omegaSlider').addEventListener('input', e => {
+    omegaRatio = +e.target.value;
+    document.getElementById('res-omega-disp').textContent = omegaRatio.toFixed(2);
+    updateStats();
+  });
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#111416';
+    ctx.fillRect(0, 0, W, H);
+
+    const pad = { top: 30, bottom: 42, left: 52, right: 20 };
+    const plotW = W - pad.left - pad.right;
+    const plotH = (H - pad.top - pad.bottom) / 2 - 8;
+    const ampTop = pad.top;
+    const phaseTop = pad.top + plotH + 16;
+    const omegaMax = 3;
+
+    function toScreenX(r) { return pad.left + (r / omegaMax) * plotW; }
+
+    // ── Amplitude plot ──
+    const maxA_display = Math.min(1 / (2 * zeta * Math.sqrt(1 - zeta*zeta) + 0.001), 12);
+    function ampNorm(r) {
+      return 1 / Math.sqrt((1 - r*r)**2 + (2*zeta*r)**2);
+    }
+    function toScreenAmpY(a) {
+      return ampTop + plotH - Math.min(a / maxA_display, 1) * plotH;
+    }
+
+    // Axes
+    ctx.strokeStyle = '#2a3840';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, ampTop);
+    ctx.lineTo(pad.left, ampTop + plotH);
+    ctx.lineTo(pad.left + plotW, ampTop + plotH);
+    ctx.stroke();
+
+    // Gridlines
+    ctx.setLineDash([2, 4]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    for (let r = 0.5; r <= 3; r += 0.5) {
+      const sx = toScreenX(r);
+      ctx.beginPath(); ctx.moveTo(sx, ampTop); ctx.lineTo(sx, ampTop + plotH); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Amplitude curve
+    ctx.beginPath();
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 2.5;
+    for (let px = 0; px <= plotW; px++) {
+      const r = (px / plotW) * omegaMax;
+      const a = ampNorm(r);
+      const py = toScreenAmpY(a);
+      if (px === 0) ctx.moveTo(pad.left + px, py);
+      else ctx.lineTo(pad.left + px, py);
+    }
+    ctx.stroke();
+
+    // Static (ζ=0 guide)
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(74,222,128,0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 5]);
+    for (let px = 0; px <= plotW; px++) {
+      const r = (px / plotW) * omegaMax;
+      const a = 1 / Math.sqrt((1-r*r)**2 + (0.02*r)**2);
+      const py = toScreenAmpY(a);
+      if (px === 0) ctx.moveTo(pad.left + px, py);
+      else ctx.lineTo(pad.left + px, py);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Vertical line for current Ω
+    const cx = toScreenX(omegaRatio);
+    const currA = ampNorm(omegaRatio);
+    ctx.strokeStyle = 'rgba(251,191,36,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(cx, ampTop);
+    ctx.lineTo(cx, ampTop + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Dot on curve
+    const dotY = toScreenAmpY(currA);
+    ctx.beginPath();
+    ctx.arc(cx, dotY, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Amplitude axis label
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.save();
+    ctx.translate(12, ampTop + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.fillText('A(Ω) normalized', 0, 0);
+    ctx.restore();
+    ctx.textAlign = 'left';
+
+    ctx.fillStyle = '#4ade80';
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillText('Amplitude', pad.left + 5, ampTop + 15);
+
+    // ── Phase plot ──
+    const phaseH = plotH * 0.9;
+
+    ctx.strokeStyle = '#2a3840';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, phaseTop);
+    ctx.lineTo(pad.left, phaseTop + phaseH);
+    ctx.lineTo(pad.left + plotW, phaseTop + phaseH);
+    ctx.stroke();
+
+    // Grid
+    ctx.setLineDash([2, 4]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    [0.25, 0.5, 0.75, 1].forEach(f => {
+      const py = phaseTop + phaseH * (1 - f);
+      ctx.beginPath(); ctx.moveTo(pad.left, py); ctx.lineTo(pad.left + plotW, py); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // Phase labels
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '10px JetBrains Mono, monospace';
+    ['180°', '90°', '0°'].forEach((lbl, i) => {
+      const py = phaseTop + (i / 2) * phaseH;
+      ctx.fillText(lbl, pad.left - 36, py + 4);
+    });
+
+    // Phase curve
+    ctx.beginPath();
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 2;
+    for (let px = 0; px <= plotW; px++) {
+      const r = (px / plotW) * omegaMax;
+      let phase = Math.atan2(2 * zeta * r, 1 - r * r);
+      if (phase < 0) phase += Math.PI;
+      const py = phaseTop + phaseH - (phase / Math.PI) * phaseH;
+      if (px === 0) ctx.moveTo(pad.left + px, py);
+      else ctx.lineTo(pad.left + px, py);
+    }
+    ctx.stroke();
+
+    // Current phase dot
+    let currPhase = Math.atan2(2 * zeta * omegaRatio, 1 - omegaRatio * omegaRatio);
+    if (currPhase < 0) currPhase += Math.PI;
+    const phaseDotY = phaseTop + phaseH - (currPhase / Math.PI) * phaseH;
+    ctx.strokeStyle = 'rgba(251,191,36,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(cx, phaseTop);
+    ctx.lineTo(cx, phaseTop + phaseH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    ctx.arc(cx, phaseDotY, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Phase axis label
+    ctx.fillStyle = '#60a5fa';
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillText('Phase lag δ', pad.left + 5, phaseTop + 15);
+
+    // X axis labels
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    [0, 0.5, 1, 1.5, 2, 2.5, 3].forEach(r => {
+      const sx = toScreenX(r);
+      ctx.fillText(r.toFixed(1), sx, H - 6);
+    });
+    ctx.fillText('Ω / ω₀', pad.left + plotW / 2, H - 6);
+    ctx.textAlign = 'left';
+
+    // Legend
+    ctx.fillStyle = '#4ade80';
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillText('— A(Ω)', W - 100, 20);
+    ctx.fillStyle = '#60a5fa';
+    ctx.fillText('— Phase δ', W - 100, 34);
+    ctx.fillStyle = 'rgba(74,222,128,0.4)';
+    ctx.setLineDash([3,5]);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillText('·· ζ≈0 (ref)', W - 100, 48);
+    ctx.setLineDash([]);
+
+    requestAnimationFrame(draw);
+  }
+
+  updateStats();
+  draw();
+}
+</script>
+</body>
+</html>
