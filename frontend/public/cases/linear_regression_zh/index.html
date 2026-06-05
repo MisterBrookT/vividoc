@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>线性回归：机器学习的第一课</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Inter:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #fafaf8;
+    --card: #ffffff;
+    --accent: #059669;
+    --accent-light: #d1fae5;
+    --accent-mid: #6ee7b7;
+    --border: #e5e7eb;
+    --text: #111827;
+    --muted: #6b7280;
+    --red: #ef4444;
+    --red-light: #fee2e2;
+    --font-body: 'Noto Sans SC', 'Inter', sans-serif;
+    --font-ui: 'Inter', 'Noto Sans SC', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Page layout ── */
+  .page-header {
+    max-width: 720px;
+    margin: 64px auto 0;
+    padding: 0 24px;
+  }
+
+  .page-header h1 {
+    font-family: var(--font-ui);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.25;
+  }
+
+  .page-header .subtitle {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-family: var(--font-ui);
+  }
+
+  .page-divider {
+    max-width: 720px;
+    margin: 32px auto;
+    padding: 0 24px;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .section {
+    max-width: 720px;
+    margin: 0 auto 80px;
+    padding: 0 24px;
+  }
+
+  .section-header {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: var(--font-ui);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+    line-height: 1.3;
+  }
+
+  /* ── Widget card ── */
+  .widget-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .widget-body {
+    padding: 20px;
+  }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    border-radius: 6px;
+  }
+
+  /* ── Controls ── */
+  .controls-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .control-label {
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+    min-width: 60px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(5,150,105,0.3);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(5,150,105,0.3);
+  }
+
+  .readout {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  .readout.red {
+    color: var(--red);
+    background: var(--red-light);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ── Caption & insight ── */
+  .caption {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-family: var(--font-ui);
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  .insight {
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.75;
+  }
+
+  .insight p { margin-bottom: 10px; }
+  .insight p:last-child { margin-bottom: 0; }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #f3f4f6;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: #374151;
+    overflow-x: auto;
+  }
+
+  .code-block .comment { color: var(--muted); }
+  .code-block .keyword { color: var(--accent); font-weight: 700; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: 7px;
+    border: 1.5px solid var(--accent);
+    background: var(--accent);
+    color: white;
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    user-select: none;
+  }
+
+  .btn:hover { background: #047857; }
+  .btn:active { transform: scale(0.97); }
+
+  .btn.secondary {
+    background: white;
+    color: var(--accent);
+  }
+  .btn.secondary:hover { background: var(--accent-light); }
+
+  /* ── Two-panel layout for section 3 ── */
+  .two-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .two-panel { grid-template-columns: 1fr; }
+    .page-header h1 { font-size: 1.5rem; }
+    .section-title { font-size: 1.1rem; }
+  }
+
+  .panel-label {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  /* ── Convergence indicator ── */
+  .conv-indicator {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #f3f4f6;
+    color: var(--muted);
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .conv-indicator.converged {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 12px;
+  }
+
+  .stat-chip {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: #f3f4f6;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .stat-chip span {
+    color: var(--accent);
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ PAGE HEADER ═══ -->
+<header class="page-header">
+  <h1>线性回归：机器学习的第一课</h1>
+  <p class="subtitle">改编自 Andrew Ng CS229 讲义</p>
+</header>
+<hr class="page-divider">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 1 — 假设函数：用数据拟合直线
+     Interaction: Direct Manipulation (drag line endpoints + sliders)
+     ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="ku1">
+  <div class="section-header">01</div>
+  <h2 class="section-title">假设函数：用数据拟合直线</h2>
+
+  <div class="widget-card">
+    <div class="widget-body">
+      <!-- Canvas -->
+      <canvas id="ku1-canvas" width="660" height="320"
+        style="width:100%;max-width:660px;cursor:crosshair;"></canvas>
+
+      <!-- Cost badge -->
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;">
+        <span style="font-family:var(--font-ui);font-size:0.8rem;color:var(--muted);">当前代价</span>
+        <span class="badge" id="ku1-cost-badge">J(θ) = 0.000</span>
+        <span style="font-family:var(--font-ui);font-size:0.78rem;color:var(--muted);margin-left:4px;">（越小越好）</span>
+      </div>
+
+      <!-- Sliders -->
+      <div class="controls-row">
+        <div class="control-group">
+          <span class="control-label">截距 θ₀</span>
+          <input type="range" id="ku1-theta0" min="-50" max="350" step="1" value="50">
+          <span class="readout" id="ku1-t0-val">50</span>
+        </div>
+        <div class="control-group">
+          <span class="control-label">斜率 θ₁</span>
+          <input type="range" id="ku1-theta1" min="-1" max="3" step="0.01" value="0.5">
+          <span class="readout" id="ku1-t1-val">0.50</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="caption">
+    拖动滑块调整截距 θ₀ 和斜率 θ₁；画布上的<strong style="color:var(--red)">红色竖线</strong>是每个数据点的残差（预测值与真实值之差）。试着让残差尽可能短——即最小化代价 J(θ)。
+  </p>
+
+  <div class="insight">
+    <p><strong>线性回归的目标就是找到一组参数 (θ₀, θ₁)，使假设函数 $h_\theta(x) = \theta_0 + \theta_1 x$ 与所有数据点的距离平方和最小。</strong>这个唯一的最优解就是经典的最小二乘解。</p>
+    <p>注意：当代价接近最小值时，残差几乎均匀分布在直线两侧，正负相消。但手动调整既费时又不精确——这正是梯度下降要解决的问题。</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 2 — 代价函数：误差的地形图
+     Interaction: Parameter Exploration (slider → parabola + tangent)
+     ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="ku2">
+  <div class="section-header">02</div>
+  <h2 class="section-title">代价函数：误差的地形图</h2>
+
+  <div class="widget-card">
+    <div class="widget-body">
+      <canvas id="ku2-canvas" width="660" height="300"
+        style="width:100%;max-width:660px;"></canvas>
+
+      <div class="controls-row">
+        <div class="control-group">
+          <span class="control-label">θ₁ 位置</span>
+          <input type="range" id="ku2-theta1" min="-0.5" max="2.5" step="0.01" value="2.2">
+          <span class="readout" id="ku2-t1-val">2.20</span>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-chip">J(θ₁) = <span id="ku2-j-val">—</span></div>
+        <div class="stat-chip">梯度 ∂J/∂θ₁ = <span id="ku2-grad-val">—</span></div>
+        <div class="stat-chip" id="ku2-direction-chip" style="border-color:var(--muted)">方向：—</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="caption">
+    拖动滑块改变 θ₁ 的位置，观察曲线上当前点的<strong style="color:var(--accent)">切线斜率</strong>（即梯度）如何变化。梯度为正时应向左更新，梯度为负时应向右更新——这就是梯度下降的核心直觉。
+  </p>
+
+  <div class="insight">
+    <p><strong>代价函数 $J(\theta)$ 的形状决定了"学习"的轨迹：它是一个光滑的碗形抛物面，唯一的最小值对应最优参数。</strong>梯度 $\partial J/\partial\theta_1$ 告诉我们当前所处位置的坡度——正值意味着向左走能下降，负值意味着向右走能下降。</p>
+    <p>梯度的大小也很重要：离最优解越远，坡度越陡，更新步伐越大；越靠近最优解，坡度趋向零，更新自然减慢。现在让算法自动沿梯度下山。</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 3 — 梯度下降：自动学习的引擎
+     Interaction: Temporal Control (play/pause + learning rate)
+     ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="ku3">
+  <div class="section-header">03</div>
+  <h2 class="section-title">梯度下降：自动学习的引擎</h2>
+
+  <div class="widget-card">
+    <div class="widget-body">
+
+      <!-- Code block -->
+      <div class="code-block">
+        <span class="comment"># 梯度下降更新规则（同步更新 θ₀ 和 θ₁）</span><br>
+        θ₁ := θ₁ - α · (1/m) · Σ(h(xᵢ) - yᵢ) · xᵢ<br>
+        θ₀ := θ₀ - α · (1/m) · Σ(h(xᵢ) - yᵢ)
+      </div>
+
+      <!-- Two canvases -->
+      <div class="two-panel">
+        <div>
+          <div class="panel-label">回归线收敛过程</div>
+          <canvas id="ku3-scatter" width="300" height="250"
+            style="width:100%;border-radius:6px;"></canvas>
+        </div>
+        <div>
+          <div class="panel-label">代价函数 J(θ₁) 下降轨迹</div>
+          <canvas id="ku3-cost" width="300" height="250"
+            style="width:100%;border-radius:6px;"></canvas>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row" style="margin-top:14px;">
+        <div class="stat-chip">迭代 <span id="ku3-epoch">0</span></div>
+        <div class="stat-chip">J = <span id="ku3-j">—</span></div>
+        <div class="stat-chip">θ₁ = <span id="ku3-t1">—</span></div>
+        <div class="conv-indicator" id="ku3-conv">未收敛</div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-row" style="margin-top:14px;">
+        <button class="btn" id="ku3-play">▶ 播放</button>
+        <button class="btn secondary" id="ku3-reset">↺ 重置</button>
+        <div class="control-group">
+          <span class="control-label">学习率 α</span>
+          <input type="range" id="ku3-alpha" min="0.001" max="0.55" step="0.001" value="0.05">
+          <span class="readout" id="ku3-alpha-val">0.050</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="caption">
+    点击<strong>播放</strong>，观察回归线和代价曲线同步收敛。将学习率 α 调到 <strong>0.3 以上</strong>再重置播放，看看代价函数会发生什么——振荡或发散就是步长过大的代价。
+  </p>
+
+  <div class="insight">
+    <p><strong>梯度下降是深度学习所有优化算法的基础：它把"如何学习"这件事简化为沿负梯度方向迭代更新参数。</strong>学习率 α 是整个算法最重要的超参数——太小收敛慢，太大则跨过最优解反而发散。</p>
+    <p>现代深度学习中的 Adam、RMSProp 等优化器，本质上都是对这个简单规则的精细改进：自适应地为每个参数选择合适的步长。理解了梯度下降，就掌握了理解它们的钥匙。</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS
+     ══════════════════════════════════════════════════════════════ -->
+
+<!-- ─── KU1: Direct Manipulation ─── -->
+<script>
+(function() {
+  'use strict';
+
+  const canvas = document.getElementById('ku1-canvas');
+  const ctx = canvas.getContext('2d');
+  const sliderT0 = document.getElementById('ku1-theta0');
+  const sliderT1 = document.getElementById('ku1-theta1');
+  const valT0 = document.getElementById('ku1-t0-val');
+  const valT1 = document.getElementById('ku1-t1-val');
+  const costBadge = document.getElementById('ku1-cost-badge');
+
+  // ── Housing data (size in 100sqft, price in $10k) ──
+  const rawData = [
+    [6.5, 155], [8.0, 190], [10.2, 235], [12.0, 260],
+    [14.5, 310], [16.0, 340], [18.2, 375], [20.0, 410],
+    [22.5, 450], [24.0, 475], [26.5, 510], [28.0, 540]
+  ];
+
+  // Canvas logical size
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // Data ranges for mapping
+  const xMin = 4, xMax = 32;
+  const yMin = 80, yMax = 620;
+  const PAD = { left: 56, right: 20, top: 20, bottom: 44 };
+
+  function mapX(v) {
+    return PAD.left + (v - xMin) / (xMax - xMin) * (W - PAD.left - PAD.right);
+  }
+  function mapY(v) {
+    return H - PAD.bottom - (v - yMin) / (yMax - yMin) * (H - PAD.top - PAD.bottom);
+  }
+
+  function getParams() {
+    return {
+      theta0: parseFloat(sliderT0.value),
+      theta1: parseFloat(sliderT1.value)
+    };
+  }
+
+  function computeCost(theta0, theta1) {
+    const m = rawData.length;
+    let sum = 0;
+    for (const [x, y] of rawData) {
+      const pred = theta0 + theta1 * x;
+      sum += (pred - y) ** 2;
+    }
+    return sum / (2 * m);
+  }
+
+  function draw() {
+    const { theta0, theta1 } = getParams();
+    ctx.clearRect(0, 0, W, H);
+
+    // ── Background ──
+    ctx.fillStyle = '#fafaf8';
+    ctx.fillRect(0, 0, W, H);
+
+    // ── Grid ──
+    ctx.strokeStyle = '#f0f0ee';
+    ctx.lineWidth = 1;
+    for (let v = 100; v <= 600; v += 100) {
+      const y = mapY(v);
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+    }
+    for (let x = 5; x <= 30; x += 5) {
+      const px = mapX(x);
+      ctx.beginPath(); ctx.moveTo(px, PAD.top); ctx.lineTo(px, H - PAD.bottom); ctx.stroke();
+    }
+
+    // ── Axes ──
+    ctx.strokeStyle = '#d1d5db';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, PAD.top);
+    ctx.lineTo(PAD.left, H - PAD.bottom);
+    ctx.lineTo(W - PAD.right, H - PAD.bottom);
+    ctx.stroke();
+
+    // ── Axis labels ──
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    for (let x = 5; x <= 30; x += 5) {
+      ctx.fillText(x * 100 + '㎡', mapX(x), H - PAD.bottom + 16);
+    }
+    ctx.textAlign = 'right';
+    for (let v = 100; v <= 600; v += 100) {
+      ctx.fillText(v + 'k', PAD.left - 6, mapY(v) + 4);
+    }
+
+    // Axis title
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '10.5px Noto Sans SC, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('房屋面积', W / 2, H - 4);
+    ctx.save();
+    ctx.translate(12, H / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('价格 ($万)', 0, 0);
+    ctx.restore();
+
+    // ── Regression line ──
+    const x0 = xMin, x1 = xMax;
+    const y0 = theta0 + theta1 * x0;
+    const y1 = theta0 + theta1 * x1;
+
+    ctx.strokeStyle = '#059669';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(mapX(x0), mapY(y0));
+    ctx.lineTo(mapX(x1), mapY(y1));
+    ctx.stroke();
+
+    // ── Residuals (red vertical lines) ──
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    for (const [x, y] of rawData) {
+      const pred = theta0 + theta1 * x;
+      const px = mapX(x);
+      const pyTrue = mapY(y);
+      const pyPred = mapY(pred);
+      ctx.beginPath();
+      ctx.moveTo(px, pyTrue);
+      ctx.lineTo(px, pyPred);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // ── Data points ──
+    for (const [x, y] of rawData) {
+      const px = mapX(x);
+      const py = mapY(y);
+      ctx.beginPath();
+      ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#1d4ed8';
+      ctx.fill();
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // ── Formula annotation ──
+    const sigStr = theta1 >= 0 ? '+' : '';
+    ctx.fillStyle = '#059669';
+    ctx.font = '700 12px Space Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(
+      `h(x) = ${theta0.toFixed(0)} ${sigStr}${theta1.toFixed(2)}x`,
+      PAD.left + 10, PAD.top + 18
+    );
+
+    // ── Cost ──
+    const J = computeCost(theta0, theta1);
+    costBadge.textContent = `J(θ) = ${J.toFixed(1)}`;
+
+    // Color badge based on J magnitude
+    if (J < 800) {
+      costBadge.style.background = '#d1fae5';
+      costBadge.style.color = '#059669';
+    } else if (J < 3000) {
+      costBadge.style.background = '#fef3c7';
+      costBadge.style.color = '#d97706';
+    } else {
+      costBadge.style.background = '#fee2e2';
+      costBadge.style.color = '#ef4444';
+    }
+  }
+
+  function updateReadouts() {
+    const t0 = parseFloat(sliderT0.value);
+    const t1 = parseFloat(sliderT1.value);
+    valT0.textContent = t0.toFixed(0);
+    valT1.textContent = t1.toFixed(2);
+  }
+
+  sliderT0.addEventListener('input', () => { updateReadouts(); draw(); });
+  sliderT1.addEventListener('input', () => { updateReadouts(); draw(); });
+
+  // ── Drag endpoints on canvas ──
+  let dragging = null;
+
+  function getCanvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width;
+    const scaleY = H / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
+
+  function dataXFromCanvasX(px) {
+    return xMin + (px - PAD.left) / (W - PAD.left - PAD.right) * (xMax - xMin);
+  }
+  function dataYFromCanvasY(py) {
+    return yMin + (H - PAD.bottom - py) / (H - PAD.top - PAD.bottom) * (yMax - yMin);
+  }
+
+  canvas.addEventListener('mousedown', onStart);
+  canvas.addEventListener('touchstart', onStart, { passive: true });
+
+  function onStart(e) {
+    const pos = getCanvasPos(e);
+    const theta0 = parseFloat(sliderT0.value);
+    const theta1 = parseFloat(sliderT1.value);
+
+    // Check if near left or right endpoint
+    const leftX = mapX(xMin), leftY = mapY(theta0 + theta1 * xMin);
+    const rightX = mapX(xMax), rightY = mapY(theta0 + theta1 * xMax);
+
+    const dLeft = Math.hypot(pos.x - leftX, pos.y - leftY);
+    const dRight = Math.hypot(pos.x - rightX, pos.y - rightY);
+
+    if (dLeft < 22) dragging = 'left';
+    else if (dRight < 22) dragging = 'right';
+    else dragging = 'line';
+
+    if (dragging) {
+      canvas.style.cursor = 'grabbing';
+    }
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, { passive: true });
+
+  function onMove(e) {
+    if (!dragging) return;
+    const pos = getCanvasPos(e);
+    const dy = dataYFromCanvasY(pos.y);
+    const theta1 = parseFloat(sliderT1.value);
+    const theta0 = parseFloat(sliderT0.value);
+
+    if (dragging === 'left') {
+      // Keep right endpoint fixed: theta1 changes, theta0 changes
+      const xLeft = xMin;
+      const yLeft = dy;
+      const xRight = xMax;
+      const yRight = theta0 + theta1 * xRight;
+      const newT1 = (yRight - yLeft) / (xRight - xLeft);
+      const newT0 = yLeft - newT1 * xLeft;
+      setSliders(newT0, newT1);
+    } else if (dragging === 'right') {
+      const xLeft = xMin;
+      const yLeft = theta0 + theta1 * xLeft;
+      const xRight = xMax;
+      const yRight = dy;
+      const newT1 = (yRight - yLeft) / (xRight - xLeft);
+      const newT0 = yLeft - newT1 * xLeft;
+      setSliders(newT0, newT1);
+    } else if (dragging === 'line') {
+      // Translate: only theta0 shifts
+      const newT0 = theta0 + (dy - dataYFromCanvasY(pos.y - 1));
+      setSliders(newT0, theta1);
+    }
+    updateReadouts();
+    draw();
+  }
+
+  document.addEventListener('mouseup', () => { dragging = null; canvas.style.cursor = 'crosshair'; });
+  document.addEventListener('touchend', () => { dragging = null; canvas.style.cursor = 'crosshair'; });
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function setSliders(t0, t1) {
+    sliderT0.value = clamp(t0, -50, 350);
+    sliderT1.value = clamp(t1, -1, 3);
+  }
+
+  updateReadouts();
+  draw();
+})();
+</script>
+
+<!-- ─── KU2: Parameter Exploration ─── -->
+<script>
+(function() {
+  'use strict';
+
+  const canvas = document.getElementById('ku2-canvas');
+  const ctx = canvas.getContext('2d');
+  const slider = document.getElementById('ku2-theta1');
+  const valEl = document.getElementById('ku2-t1-val');
+  const jValEl = document.getElementById('ku2-j-val');
+  const gradValEl = document.getElementById('ku2-grad-val');
+  const dirChip = document.getElementById('ku2-direction-chip');
+
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // Using the same housing data as KU1, fix theta0 = 50
+  const rawData = [
+    [6.5, 155], [8.0, 190], [10.2, 235], [12.0, 260],
+    [14.5, 310], [16.0, 340], [18.2, 375], [20.0, 410],
+    [22.5, 450], [24.0, 475], [26.5, 510], [28.0, 540]
+  ];
+  const THETA0_FIXED = 50;
+  const m = rawData.length;
+
+  // J(theta1) = (1/2m) * sum((theta0 + theta1*xi - yi)^2)
+  function computeJ(t1) {
+    let s = 0;
+    for (const [x, y] of rawData) {
+      s += (THETA0_FIXED + t1 * x - y) ** 2;
+    }
+    return s / (2 * m);
+  }
+
+  // Gradient dJ/dtheta1 = (1/m) * sum((theta0 + theta1*xi - yi) * xi)
+  function computeGrad(t1) {
+    let s = 0;
+    for (const [x, y] of rawData) {
+      s += (THETA0_FIXED + t1 * x - y) * x;
+    }
+    return s / m;
+  }
+
+  // Range for theta1 axis
+  const T1_MIN = -0.5, T1_MAX = 2.5;
+  // Compute J range
+  const jSamples = [];
+  for (let i = 0; i <= 100; i++) {
+    const t1 = T1_MIN + i / 100 * (T1_MAX - T1_MIN);
+    jSamples.push(computeJ(t1));
+  }
+  const jMin = Math.min(...jSamples);
+  const jMax = Math.max(...jSamples);
+  const jRange = jMax - jMin;
+
+  const PAD = { left: 60, right: 24, top: 24, bottom: 48 };
+
+  function mapT1(t1) {
+    return PAD.left + (t1 - T1_MIN) / (T1_MAX - T1_MIN) * (W - PAD.left - PAD.right);
+  }
+  function mapJ(j) {
+    return H - PAD.bottom - (j - jMin) / (jRange * 1.05) * (H - PAD.top - PAD.bottom);
+  }
+
+  function draw() {
+    const t1 = parseFloat(slider.value);
+    ctx.clearRect(0, 0, W, H);
+
+    ctx.fillStyle = '#fafaf8';
+    ctx.fillRect(0, 0, W, H);
+
+    // ── Grid ──
+    ctx.strokeStyle = '#f0f0ee';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = PAD.top + i * (H - PAD.top - PAD.bottom) / 4;
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+    }
+
+    // ── Axis ──
+    ctx.strokeStyle = '#d1d5db';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, PAD.top);
+    ctx.lineTo(PAD.left, H - PAD.bottom);
+    ctx.lineTo(W - PAD.right, H - PAD.bottom);
+    ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    for (let t = -0.5; t <= 2.5; t += 0.5) {
+      ctx.fillText(t.toFixed(1), mapT1(t), H - PAD.bottom + 16);
+    }
+
+    ctx.textAlign = 'center';
+    ctx.fillText('θ₁', W / 2, H - 4);
+    ctx.save();
+    ctx.translate(13, H / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('J(θ₁)', 0, 0);
+    ctx.restore();
+
+    // ── Parabola ──
+    ctx.beginPath();
+    ctx.strokeStyle = '#1d4ed8';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([]);
+    for (let i = 0; i <= 200; i++) {
+      const t = T1_MIN + i / 200 * (T1_MAX - T1_MIN);
+      const j = computeJ(t);
+      const px = mapT1(t);
+      const py = mapJ(j);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // ── Minimum marker ──
+    // Find optimal t1 analytically: dJ/dt1 = 0
+    // Not needed — just mark visually near minimum
+    const optT1 = rawData.reduce((acc, [x, y]) => {
+      return { numX: acc.numX + (y - THETA0_FIXED) * x, denX: acc.denX + x * x };
+    }, { numX: 0, denX: 0 });
+    const t1Star = optT1.numX / optT1.denX;
+    const jStar = computeJ(t1Star);
+
+    ctx.beginPath();
+    ctx.arc(mapT1(t1Star), mapJ(jStar), 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#059669';
+    ctx.fill();
+    ctx.fillStyle = '#059669';
+    ctx.font = '700 10px Space Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('最优 θ₁*', mapT1(t1Star) + 8, mapJ(jStar) + 4);
+
+    // ── Current J and gradient ──
+    const jCurr = computeJ(t1);
+    const grad = computeGrad(t1);
+    const px = mapT1(t1);
+    const py = mapJ(jCurr);
+
+    // Tangent line ±0.6 range
+    const dT = 0.5;
+    const t1L = t1 - dT, t1R = t1 + dT;
+    const jL = jCurr + grad * (t1L - t1);
+    const jR = jCurr + grad * (t1R - t1);
+
+    // Clip tangent to canvas bounds
+    const txL = Math.max(PAD.left, mapT1(t1L));
+    const txR = Math.min(W - PAD.right, mapT1(t1R));
+    const tyL = mapJ(jL);
+    const tyR = mapJ(jR);
+
+    const isPositive = grad > 0.5;
+    const isNegative = grad < -0.5;
+    const tangentColor = isPositive ? '#ef4444' : isNegative ? '#059669' : '#f59e0b';
+
+    ctx.strokeStyle = tangentColor;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(txL, tyL);
+    ctx.lineTo(txR, tyR);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Direction arrow along tangent
+    const arrowDx = txR - txL;
+    const arrowDy = tyR - tyL;
+    const arrowLen = Math.hypot(arrowDx, arrowDy);
+    if (arrowLen > 0) {
+      const ax = arrowDx / arrowLen * 10;
+      const ay = arrowDy / arrowLen * 10;
+      const midX = (txL + txR) / 2;
+      const midY = (tyL + tyR) / 2;
+      ctx.strokeStyle = tangentColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(midX, midY);
+      ctx.lineTo(midX + ax, midY + ay);
+      ctx.stroke();
+    }
+
+    // ── Current point ──
+    ctx.beginPath();
+    ctx.arc(px, py, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fill();
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Gradient annotation
+    const gradStr = grad.toFixed(1);
+    ctx.fillStyle = tangentColor;
+    ctx.font = '700 11px Space Mono, monospace';
+    ctx.textAlign = px > W * 0.6 ? 'right' : 'left';
+    const labelX = px > W * 0.6 ? px - 14 : px + 14;
+    ctx.fillText(`∂J/∂θ₁ = ${gradStr}`, labelX, py - 14);
+
+    // ── Update readouts ──
+    valEl.textContent = t1.toFixed(2);
+    jValEl.textContent = jCurr.toFixed(1);
+    gradValEl.textContent = grad.toFixed(1);
+
+    if (isPositive) {
+      dirChip.textContent = '方向：向左 ←';
+      dirChip.style.color = '#ef4444';
+      dirChip.style.borderColor = '#ef4444';
+      dirChip.style.background = '#fee2e2';
+    } else if (isNegative) {
+      dirChip.textContent = '方向：向右 →';
+      dirChip.style.color = '#059669';
+      dirChip.style.borderColor = '#059669';
+      dirChip.style.background = '#d1fae5';
+    } else {
+      dirChip.textContent = '方向：已到底部 ✓';
+      dirChip.style.color = '#059669';
+      dirChip.style.borderColor = '#059669';
+      dirChip.style.background = '#d1fae5';
+    }
+  }
+
+  slider.addEventListener('input', draw);
+  draw();
+})();
+</script>
+
+<!-- ─── KU3: Temporal Control ─── -->
+<script>
+(function() {
+  'use strict';
+
+  const scatterCanvas = document.getElementById('ku3-scatter');
+  const costCanvas = document.getElementById('ku3-cost');
+  const sCtx = scatterCanvas.getContext('2d');
+  const cCtx = costCanvas.getContext('2d');
+
+  const epochEl = document.getElementById('ku3-epoch');
+  const jEl = document.getElementById('ku3-j');
+  const t1El = document.getElementById('ku3-t1');
+  const convEl = document.getElementById('ku3-conv');
+  const playBtn = document.getElementById('ku3-play');
+  const resetBtn = document.getElementById('ku3-reset');
+  const alphaSlider = document.getElementById('ku3-alpha');
+  const alphaValEl = document.getElementById('ku3-alpha-val');
+
+  // Housing data
+  const rawData = [
+    [6.5, 155], [8.0, 190], [10.2, 235], [12.0, 260],
+    [14.5, 310], [16.0, 340], [18.2, 375], [20.0, 410],
+    [22.5, 450], [24.0, 475], [26.5, 510], [28.0, 540]
+  ];
+  const m = rawData.length;
+
+  // Normalize x for numerical stability
+  const xs = rawData.map(d => d[0]);
+  const ys = rawData.map(d => d[1]);
+  const xMean = xs.reduce((a, b) => a + b, 0) / m;
+  const xStd = Math.sqrt(xs.map(x => (x - xMean) ** 2).reduce((a, b) => a + b, 0) / m);
+  const xsN = xs.map(x => (x - xMean) / xStd);  // normalized
+
+  // State
+  let theta0 = 0, theta1 = 0;
+  let epoch = 0;
+  let playing = false;
+  let rafId = null;
+  let jHistory = [];
+  let prevJ = Infinity;
+  let converged = false;
+  const MAX_HISTORY = 150;
+  const EPSILON = 0.01;
+
+  function computeJ(t0, t1) {
+    let s = 0;
+    for (let i = 0; i < m; i++) {
+      s += (t0 + t1 * xsN[i] - ys[i]) ** 2;
+    }
+    return s / (2 * m);
+  }
+
+  function gradientStep(alpha) {
+    let dT0 = 0, dT1 = 0;
+    for (let i = 0; i < m; i++) {
+      const err = (theta0 + theta1 * xsN[i]) - ys[i];
+      dT0 += err;
+      dT1 += err * xsN[i];
+    }
+    theta0 -= alpha * dT0 / m;
+    theta1 -= alpha * dT1 / m;
+  }
+
+  // ── Canvas dimensions ──
+  const SW = scatterCanvas.width, SH = scatterCanvas.height;
+  const CW = costCanvas.width, CH = costCanvas.height;
+
+  // Scatter plot bounds
+  const xMin = 4, xMax = 32;
+  const yMin = 80, yMax = 620;
+  const SPAD = { left: 48, right: 16, top: 16, bottom: 40 };
+
+  function sMapX(v) {
+    return SPAD.left + (v - xMin) / (xMax - xMin) * (SW - SPAD.left - SPAD.right);
+  }
+  function sMapY(v) {
+    return SH - SPAD.bottom - (v - yMin) / (yMax - yMin) * (SH - SPAD.top - SPAD.bottom);
+  }
+
+  // For the line on scatter: convert normalized theta back to original scale
+  function predOriginal(xOrig) {
+    const xn = (xOrig - xMean) / xStd;
+    return theta0 + theta1 * xn;
+  }
+
+  function drawScatter() {
+    sCtx.clearRect(0, 0, SW, SH);
+    sCtx.fillStyle = '#fafaf8';
+    sCtx.fillRect(0, 0, SW, SH);
+
+    // Grid
+    sCtx.strokeStyle = '#f0f0ee';
+    sCtx.lineWidth = 1;
+    for (let v = 100; v <= 600; v += 100) {
+      const y = sMapY(v);
+      sCtx.beginPath(); sCtx.moveTo(SPAD.left, y); sCtx.lineTo(SW - SPAD.right, y); sCtx.stroke();
+    }
+
+    // Axes
+    sCtx.strokeStyle = '#d1d5db';
+    sCtx.lineWidth = 1.5;
+    sCtx.beginPath();
+    sCtx.moveTo(SPAD.left, SPAD.top);
+    sCtx.lineTo(SPAD.left, SH - SPAD.bottom);
+    sCtx.lineTo(SW - SPAD.right, SH - SPAD.bottom);
+    sCtx.stroke();
+
+    sCtx.fillStyle = '#9ca3af';
+    sCtx.font = '9px Inter, sans-serif';
+    sCtx.textAlign = 'center';
+    for (let x = 10; x <= 30; x += 10) {
+      sCtx.fillText(x * 100 + '㎡', sMapX(x), SH - SPAD.bottom + 14);
+    }
+    sCtx.textAlign = 'right';
+    for (let v = 200; v <= 500; v += 100) {
+      sCtx.fillText(v, SPAD.left - 4, sMapY(v) + 3);
+    }
+
+    // Regression line (current theta)
+    const yL = predOriginal(xMin);
+    const yR = predOriginal(xMax);
+
+    const alpha = parseFloat(alphaSlider.value);
+    const jNow = computeJ(theta0, theta1);
+    const isDiverging = jNow > 1e7;
+
+    sCtx.strokeStyle = isDiverging ? '#ef4444' : converged ? '#059669' : '#059669';
+    sCtx.lineWidth = 2.5;
+    sCtx.setLineDash([]);
+    sCtx.beginPath();
+    sCtx.moveTo(sMapX(xMin), sMapY(Math.max(yMin, Math.min(yMax, yL))));
+    sCtx.lineTo(sMapX(xMax), sMapY(Math.max(yMin, Math.min(yMax, yR))));
+    sCtx.stroke();
+
+    // Data points
+    for (let i = 0; i < m; i++) {
+      const px = sMapX(xs[i]);
+      const py = sMapY(ys[i]);
+      sCtx.beginPath();
+      sCtx.arc(px, py, 4.5, 0, Math.PI * 2);
+      sCtx.fillStyle = '#1d4ed8';
+      sCtx.fill();
+      sCtx.strokeStyle = 'white';
+      sCtx.lineWidth = 1.5;
+      sCtx.stroke();
+    }
+
+    // Label
+    sCtx.fillStyle = '#9ca3af';
+    sCtx.font = '9px Noto Sans SC, sans-serif';
+    sCtx.textAlign = 'center';
+    sCtx.fillText('房屋面积', SW / 2, SH - 4);
+  }
+
+  // Cost canvas: J vs theta1 curve + moving dot
+  // We'll show J(t1) for normalized scale
+  const T1_MIN = -200, T1_MAX = 200;
+  const CPAD = { left: 52, right: 16, top: 20, bottom: 40 };
+
+  function getJCurve() {
+    // Sample J over theta1 range, keeping theta0 = 0 for visualization
+    // Actually, use stored theta0; we fix theta0 to optimal value on the curve
+    const pts = [];
+    for (let i = 0; i <= 100; i++) {
+      const t1 = T1_MIN + i / 100 * (T1_MAX - T1_MIN);
+      // We'll use current theta0 for the curve
+      let s = 0;
+      for (let j = 0; j < m; j++) {
+        s += (theta0 + t1 * xsN[j] - ys[j]) ** 2;
+      }
+      pts.push(s / (2 * m));
+    }
+    return pts;
+  }
+
+  function drawCost() {
+    cCtx.clearRect(0, 0, CW, CH);
+    cCtx.fillStyle = '#fafaf8';
+    cCtx.fillRect(0, 0, CW, CH);
+
+    const jCurr = computeJ(theta0, theta1);
+    const isDiverging = jCurr > 1e7;
+
+    // J history path
+    if (jHistory.length > 1) {
+      const jMax = Math.max(...jHistory.slice(0, Math.min(50, jHistory.length)));
+      const jMin2 = Math.min(...jHistory);
+      const jRange = Math.max(jMax - jMin2, 1);
+
+      const histPad = { left: CPAD.left, right: CPAD.right, top: CPAD.top, bottom: CPAD.bottom };
+
+      function mapHistJ(j) {
+        const clipped = Math.min(j, jMax);
+        return CH - histPad.bottom - (clipped - jMin2) / (jRange * 1.1) * (CH - histPad.top - histPad.bottom);
+      }
+
+      // Axes
+      cCtx.strokeStyle = '#d1d5db';
+      cCtx.lineWidth = 1.5;
+      cCtx.beginPath();
+      cCtx.moveTo(histPad.left, histPad.top);
+      cCtx.lineTo(histPad.left, CH - histPad.bottom);
+      cCtx.lineTo(CW - histPad.right, CH - histPad.bottom);
+      cCtx.stroke();
+
+      // Axis labels
+      cCtx.fillStyle = '#9ca3af';
+      cCtx.font = '9px Inter, sans-serif';
+      cCtx.textAlign = 'left';
+      cCtx.fillText('J', histPad.left - 14, histPad.top + 4);
+      cCtx.textAlign = 'center';
+      cCtx.fillText('迭代次数', CW / 2, CH - 4);
+
+      // J history curve
+      cCtx.beginPath();
+      cCtx.strokeStyle = isDiverging ? '#ef4444' : '#1d4ed8';
+      cCtx.lineWidth = 2;
+      cCtx.setLineDash([]);
+      const startIdx = Math.max(0, jHistory.length - MAX_HISTORY);
+      const visLen = jHistory.length - startIdx;
+      for (let i = 0; i < visLen; i++) {
+        const x = histPad.left + i / (MAX_HISTORY - 1) * (CW - histPad.left - histPad.right);
+        const y = mapHistJ(jHistory[startIdx + i]);
+        if (i === 0) cCtx.moveTo(x, y);
+        else cCtx.lineTo(x, y);
+      }
+      cCtx.stroke();
+
+      // Current dot
+      const dotX = histPad.left + Math.min(visLen - 1, MAX_HISTORY - 1) / (MAX_HISTORY - 1) * (CW - histPad.left - histPad.right);
+      const dotY = mapHistJ(jCurr);
+      cCtx.beginPath();
+      cCtx.arc(dotX, dotY, 6, 0, Math.PI * 2);
+      cCtx.fillStyle = isDiverging ? '#ef4444' : converged ? '#059669' : '#f59e0b';
+      cCtx.fill();
+      cCtx.strokeStyle = 'white';
+      cCtx.lineWidth = 2;
+      cCtx.stroke();
+
+      // J label
+      cCtx.fillStyle = isDiverging ? '#ef4444' : '#6b7280';
+      cCtx.font = '700 10px Space Mono, monospace';
+      cCtx.textAlign = 'left';
+      const jLabel = isDiverging ? 'DIVERGING' : `J = ${jCurr.toFixed(1)}`;
+      cCtx.fillText(jLabel, histPad.left + 8, histPad.top + 16);
+
+    } else {
+      // Blank axes
+      cCtx.strokeStyle = '#d1d5db';
+      cCtx.lineWidth = 1.5;
+      cCtx.beginPath();
+      cCtx.moveTo(CPAD.left, CPAD.top);
+      cCtx.lineTo(CPAD.left, CH - CPAD.bottom);
+      cCtx.lineTo(CW - CPAD.right, CH - CPAD.bottom);
+      cCtx.stroke();
+
+      cCtx.fillStyle = '#9ca3af';
+      cCtx.font = '10px Noto Sans SC, sans-serif';
+      cCtx.textAlign = 'center';
+      cCtx.fillText('点击播放开始', CW / 2, CH / 2);
+    }
+  }
+
+  function updateStats() {
+    const jNow = computeJ(theta0, theta1);
+    epochEl.textContent = epoch;
+    jEl.textContent = jNow > 1e7 ? '∞ (发散)' : jNow.toFixed(2);
+    t1El.textContent = theta1.toFixed(3);
+
+    if (converged) {
+      convEl.textContent = '已收敛 ✓';
+      convEl.classList.add('converged');
+    } else if (jNow > 1e7) {
+      convEl.textContent = '发散 ✗';
+      convEl.classList.remove('converged');
+      convEl.style.color = '#ef4444';
+      convEl.style.background = '#fee2e2';
+    } else {
+      convEl.textContent = '收敛中…';
+      convEl.classList.remove('converged');
+      convEl.style.color = '';
+      convEl.style.background = '';
+    }
+  }
+
+  function step() {
+    if (!playing) return;
+    const alpha = parseFloat(alphaSlider.value);
+    const jBefore = computeJ(theta0, theta1);
+
+    gradientStep(alpha);
+
+    const jAfter = computeJ(theta0, theta1);
+    jHistory.push(jAfter);
+    epoch++;
+
+    const deltaJ = Math.abs(jBefore - jAfter);
+    if (deltaJ < EPSILON && epoch > 5 && jAfter < 1e6) {
+      converged = true;
+    }
+
+    drawScatter();
+    drawCost();
+    updateStats();
+
+    const isDiverging = jAfter > 1e8;
+    if (converged || isDiverging || epoch >= 2000) {
+      playing = false;
+      playBtn.textContent = '▶ 播放';
+      if (isDiverging) {
+        convEl.textContent = '发散 ✗';
+        convEl.style.color = '#ef4444';
+        convEl.style.background = '#fee2e2';
+      }
+      return;
+    }
+
+    // Speed: faster early, slower when converging
+    const delay = epoch < 50 ? 30 : epoch < 200 ? 50 : 80;
+    rafId = setTimeout(() => requestAnimationFrame(step), delay);
+  }
+
+  function reset() {
+    playing = false;
+    if (rafId) { clearTimeout(rafId); rafId = null; }
+    playBtn.textContent = '▶ 播放';
+    theta0 = 0; theta1 = 0;
+    epoch = 0;
+    jHistory = [];
+    prevJ = Infinity;
+    converged = false;
+    convEl.textContent = '未收敛';
+    convEl.classList.remove('converged');
+    convEl.style.color = '';
+    convEl.style.background = '';
+    drawScatter();
+    drawCost();
+    updateStats();
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (converged || computeJ(theta0, theta1) > 1e8) reset();
+    playing = !playing;
+    playBtn.textContent = playing ? '⏸ 暂停' : '▶ 播放';
+    if (playing) requestAnimationFrame(step);
+  });
+
+  resetBtn.addEventListener('click', reset);
+
+  alphaSlider.addEventListener('input', () => {
+    alphaValEl.textContent = parseFloat(alphaSlider.value).toFixed(3);
+  });
+
+  reset();
+})();
+</script>
+
+</body>
+</html>

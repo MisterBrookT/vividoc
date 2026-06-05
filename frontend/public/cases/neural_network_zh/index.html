@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>神经网络：从感知机到深度学习</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Inter:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false}
+            ]
+          });"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #f8f8f6;
+      --surface: #ffffff;
+      --accent:  #2563eb;
+      --border:  #e5e7eb;
+      --text:    #111827;
+      --muted:   #6b7280;
+      --radius:  10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      padding: 0 0 80px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 64px 24px 40px;
+    }
+    .page-header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--text);
+    }
+    .page-header .subtitle {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+    }
+    .page-header .meta {
+      margin-top: 24px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .meta-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    /* ── Section layout ── */
+    .section {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px 72px;
+    }
+
+    .section-header {
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .section-header h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .section-header .section-tag {
+      margin-top: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 28px 22px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Canvas wrapper ── */
+    .canvas-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    canvas {
+      border-radius: 8px;
+      display: block;
+      max-width: 100%;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .control-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .control-label .val {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--accent);
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    input[type=range]::-moz-range-thumb {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+    }
+
+    /* ── Badge / readout ── */
+    .badge-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      align-items: center;
+    }
+    .badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: #eff6ff;
+      color: var(--accent);
+      border: 1px solid #bfdbfe;
+    }
+    .badge.warn {
+      background: #fff7ed;
+      color: #c2410c;
+      border-color: #fed7aa;
+    }
+
+    /* ── Formula display ── */
+    .formula-display {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+
+    /* ── Code block ── */
+    pre.code-block {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 20px 22px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 20px 0;
+      tab-size: 2;
+    }
+    pre.code-block .cm { color: #94a3b8; }
+    pre.code-block .kw { color: #93c5fd; }
+    pre.code-block .op { color: #f472b6; }
+    pre.code-block .id { color: #a5f3fc; }
+    pre.code-block .nm { color: #fde68a; }
+
+    /* ── Caption ── */
+    .caption {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.55;
+      font-style: italic;
+    }
+
+    /* ── Insight ── */
+    .insight {
+      margin-top: 22px;
+      padding: 18px 22px;
+      background: #eff6ff;
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+    }
+    .insight p {
+      font-size: 0.92rem;
+      line-height: 1.75;
+      color: #1e3a5f;
+    }
+    .insight p + p { margin-top: 10px; }
+
+    /* ── Button ── */
+    .btn {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.82rem;
+      padding: 7px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: #d1d5db; }
+
+    /* ── Toggle ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .toggle-row label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      display: inline-block;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 11px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      left: 3px; top: 3px;
+      width: 16px; height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-track::after { transform: translateX(18px); }
+
+    /* ── Network section specifics ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 600px) {
+      .two-col { grid-template-columns: 1fr; }
+      canvas { width: 100% !important; height: auto !important; }
+    }
+    .node-vals {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-top: 8px;
+    }
+    .node-vals span { color: var(--accent); }
+
+    /* ── Loss chart ── */
+    .loss-readouts {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .readout {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .readout-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .readout-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* ── Divider ── */
+    .section-divider {
+      max-width: 780px;
+      margin: 0 auto 24px;
+      padding: 0 24px;
+    }
+    .section-divider hr {
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     PAGE HEADER
+     ════════════════════════════════════════════ -->
+<header class="page-header">
+  <h1>神经网络：从感知机到深度学习</h1>
+  <p class="subtitle">一个神经元如何演变为万亿参数的模型</p>
+  <div class="meta">
+    <span class="meta-tag">交互探索</span>
+    <span class="meta-tag">深度学习</span>
+    <span class="meta-tag">中文</span>
+  </div>
+</header>
+
+
+<!-- ════════════════════════════════════════════
+     SECTION 1 — 感知机：决策的几何
+     ════════════════════════════════════════════ -->
+<section class="section" id="ku1">
+  <div class="section-header">
+    <h2>01 — 感知机：决策的几何</h2>
+    <div class="section-tag">参数探索 · Parameter Exploration</div>
+  </div>
+
+  <div class="card">
+    <div class="canvas-wrap">
+      <canvas id="ku1-canvas" width="520" height="300"
+              style="background:#f9fafb; border:1px solid var(--border);"></canvas>
+    </div>
+
+    <div id="ku1-formula" class="formula-display">σ(w₁·x₁ + w₂·x₂ + b) = —</div>
+
+    <div class="badge-row">
+      <span class="badge" id="ku1-acc">准确率：—</span>
+      <span class="badge" id="ku1-correct">正确：—</span>
+      <span class="badge warn" id="ku1-wrong">错误：—</span>
+    </div>
+
+    <div class="controls">
+      <div class="control-row">
+        <div class="control-label">
+          <span>权重 w₁</span>
+          <span class="val" id="ku1-w1-val">1.00</span>
+        </div>
+        <input type="range" id="ku1-w1" min="-2" max="2" step="0.05" value="1" />
+      </div>
+      <div class="control-row">
+        <div class="control-label">
+          <span>权重 w₂</span>
+          <span class="val" id="ku1-w2-val">-1.00</span>
+        </div>
+        <input type="range" id="ku1-w2" min="-2" max="2" step="0.05" value="-1" />
+      </div>
+      <div class="control-row">
+        <div class="control-label">
+          <span>偏置 b</span>
+          <span class="val" id="ku1-b-val">0.00</span>
+        </div>
+        <input type="range" id="ku1-b" min="-2" max="2" step="0.05" value="0" />
+      </div>
+    </div>
+  </div>
+
+  <p class="caption">
+    拖动 w₁、w₂ 改变决策直线的斜率；调节 b 平移它。尝试让准确率达到 100%——看看什么情况下不可能做到。
+  </p>
+
+  <div class="insight">
+    <p>感知机的本质是在特征空间里画一条直线：调整 w₁ 和 w₂ 决定直线的方向，调整 b 决定它的位置。对于线性可分的数据集，你总能找到一组参数让准确率达到 100%；但面对右侧的 XOR 型数据分布，无论如何旋转或平移那条线，都至少有一类点被错误划分。</p>
+    <p>这个局限并非调参失误，而是单个神经元的结构性边界——它只能表达线性函数。要打破这一限制，需要将多个神经元层叠堆砌，让网络学会弯曲自己的"决策面"。这正是下一节要讨论的主题。</p>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SECTION 2 — 多层网络：非线性的涌现
+     ════════════════════════════════════════════ -->
+<section class="section" id="ku2">
+  <div class="section-header">
+    <h2>02 — 多层网络：非线性的涌现</h2>
+    <div class="section-tag">时序控制 · Temporal Control</div>
+  </div>
+
+  <div class="card">
+    <div class="canvas-wrap">
+      <canvas id="ku2-canvas" width="520" height="300"
+              style="background:#f9fafb; border:1px solid var(--border);"></canvas>
+    </div>
+
+    <div id="ku2-nodevals" class="node-vals">
+      输入层：x₁ = <span id="ku2-x1-disp">0.50</span>，x₂ = <span id="ku2-x2-disp">0.50</span>
+      &nbsp;|&nbsp; 隐藏层：<span id="ku2-h-disp">h₁=—, h₂=—, h₃=—</span>
+      &nbsp;|&nbsp; 输出：<span id="ku2-o-disp">—</span>
+    </div>
+
+    <div class="controls">
+      <div class="control-row">
+        <div class="control-label">
+          <span>输入 x₁</span>
+          <span class="val" id="ku2-x1-val">0.50</span>
+        </div>
+        <input type="range" id="ku2-x1" min="-1" max="1" step="0.05" value="0.5" />
+      </div>
+      <div class="control-row">
+        <div class="control-label">
+          <span>输入 x₂</span>
+          <span class="val" id="ku2-x2-val">0.50</span>
+        </div>
+        <input type="range" id="ku2-x2" min="-1" max="1" step="0.05" value="0.5" />
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <label for="ku2-actToggle">激活函数：</label>
+      <label class="toggle-switch">
+        <input type="checkbox" id="ku2-actToggle" checked />
+        <span class="toggle-track"></span>
+      </label>
+      <label for="ku2-actToggle" id="ku2-act-label"
+             style="font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--accent)">ReLU</label>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="ku2-playBtn">前向传播</button>
+      <button class="btn btn-secondary" id="ku2-resetBtn">重置</button>
+    </div>
+  </div>
+
+  <p class="caption">
+    调节 x₁ 和 x₂，点击"前向传播"观察激活值的流动。切换激活函数，看线性网络与 ReLU 网络的本质区别。
+  </p>
+
+  <div class="insight">
+    <p>非线性激活函数是深度网络的灵魂。当你切换到"线性激活"模式时，无论隐藏层有多少个神经元，整个网络的输出依然只是输入的一个线性组合——层叠的矩阵乘法最终可以被化简为单个矩阵，深度完全失去意义。而 ReLU 将负值截断为零，正是这个看似简单的非线性操作，让每个神经元能够"选择性激活"，网络整体才具备了拟合任意复杂曲面的能力。</p>
+    <p>但仅仅有了正确的网络结构还不够——权重的初始值几乎是随机的，网络需要从错误中学习、反复调整。怎样把输出层的误差传递回每一个权重，让它们都知道"该往哪个方向调"？这就是下一节反向传播要解决的核心问题。</p>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SECTION 3 — 反向传播：梯度如何流回
+     ════════════════════════════════════════════ -->
+<section class="section" id="ku3">
+  <div class="section-header">
+    <h2>03 — 反向传播：梯度如何流回</h2>
+    <div class="section-tag">时序控制 · Temporal Control</div>
+  </div>
+
+  <div class="card">
+    <!-- Loss curve -->
+    <div class="canvas-wrap">
+      <canvas id="ku3-loss-canvas" width="520" height="200"
+              style="background:#f9fafb; border:1px solid var(--border);"></canvas>
+    </div>
+
+    <!-- Decision boundary -->
+    <div class="canvas-wrap" style="margin-top:12px;">
+      <canvas id="ku3-boundary-canvas" width="260" height="260"
+              style="background:#f9fafb; border:1px solid var(--border); border-radius:8px;"></canvas>
+    </div>
+
+    <div class="loss-readouts">
+      <div class="readout">
+        <div class="readout-label">Loss</div>
+        <div class="readout-val" id="ku3-loss-val">—</div>
+      </div>
+      <div class="readout">
+        <div class="readout-label">Epoch</div>
+        <div class="readout-val" id="ku3-epoch-val">0 / 200</div>
+      </div>
+      <div class="readout">
+        <div class="readout-label">准确率</div>
+        <div class="readout-val" id="ku3-acc-val">—</div>
+      </div>
+    </div>
+
+    <div class="controls" style="margin-top:16px;">
+      <div class="control-row">
+        <div class="control-label">
+          <span>学习率 lr</span>
+          <span class="val" id="ku3-lr-val">0.10</span>
+        </div>
+        <input type="range" id="ku3-lr" min="0.01" max="2.0" step="0.01" value="0.1" />
+      </div>
+      <div class="control-row">
+        <div class="control-label">
+          <span>动画速度</span>
+          <span class="val" id="ku3-speed-val">5</span>
+        </div>
+        <input type="range" id="ku3-speed" min="1" max="20" step="1" value="5" />
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="ku3-playBtn">▶ 播放</button>
+      <button class="btn btn-secondary" id="ku3-resetBtn">重置</button>
+    </div>
+  </div>
+
+  <p class="caption">
+    点击播放，观察损失曲线与决策边界的同步演化。调节学习率——找到收敛最快的那个值。
+  </p>
+
+  <pre class="code-block"><span class="cm"># 链式法则：反向传播的核心</span>
+<span class="cm"># 损失对权重的梯度 = 三段偏导的乘积</span>
+
+<span class="id">dL_da</span>  <span class="op">=</span> <span class="id">output</span> <span class="op">-</span> <span class="id">target</span>            <span class="cm"># ∂L/∂a  (MSE 损失梯度)</span>
+<span class="id">da_dz</span>  <span class="op">=</span> <span class="id">sigmoid</span><span class="op">(</span><span class="id">z</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="nm">1</span> <span class="op">-</span> <span class="id">sigmoid</span><span class="op">(</span><span class="id">z</span><span class="op">))</span>  <span class="cm"># ∂a/∂z  (激活函数梯度)</span>
+<span class="id">dz_dw</span>  <span class="op">=</span> <span class="id">x</span>                         <span class="cm"># ∂z/∂w  (线性变换梯度)</span>
+
+<span class="id">dL_dw</span>  <span class="op">=</span> <span class="id">dL_da</span> <span class="op">*</span> <span class="id">da_dz</span> <span class="op">*</span> <span class="id">dz_dw</span>    <span class="cm"># 链式法则</span>
+<span class="id">w</span>      <span class="op">=</span> <span class="id">w</span> <span class="op">-</span> <span class="id">lr</span> <span class="op">*</span> <span class="id">dL_dw</span>             <span class="cm"># 梯度下降更新</span></pre>
+
+  <div class="insight">
+    <p>反向传播是链式法则的计算实现，让误差信号从输出层逆向流回每一个权重。网络的每个连接都能知道自己"该向哪个方向调整、调整多少"——这正是学习的本质。学习率是控制步长的关键超参数：太大，梯度在最优点附近反复震荡，损失曲线如锯齿般抖动；太小，网络如蜗牛前行，需要数倍的迭代才能收敛。</p>
+    <p>感知机的那条直线，在反向传播的驱动下，演变为多层网络中弯曲的决策曲面——它可以是识别猫狗的图像分类器，可以是翻译语言的 Transformer，也可以是生成文字的大语言模型。从一个神经元到万亿参数，改变的是规模，不变的是梯度沿链式法则流动的本质逻辑。</p>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     SCRIPTS
+     ════════════════════════════════════════════ -->
+
+<!-- KU1: Perceptron -->
+<script>
+(function() {
+  'use strict';
+
+  const canvas = document.getElementById('ku1-canvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Data: two "blobs" + XOR-like arrangement (mix of both)
+  // Each point: [x1, x2, label]  where x1,x2 in [0,1] (data space)
+  const POINTS = [
+    // Class 0 — lower-left cluster
+    [0.15,0.20,0],[0.22,0.15,0],[0.18,0.32,0],[0.28,0.22,0],[0.12,0.40,0],
+    [0.32,0.12,0],[0.08,0.28,0],[0.25,0.35,0],[0.35,0.18,0],[0.20,0.10,0],
+    // Class 1 — upper-right cluster
+    [0.72,0.75,1],[0.80,0.68,1],[0.68,0.82,1],[0.85,0.78,1],[0.75,0.88,1],
+    [0.65,0.70,1],[0.78,0.60,1],[0.88,0.85,1],[0.70,0.65,1],[0.82,0.90,1],
+    // XOR "intruders" — make it unsolvable
+    [0.15,0.75,1],[0.25,0.82,1],
+    [0.75,0.20,0],[0.82,0.15,0],
+  ];
+
+  // Map data [0,1] to canvas pixels (with padding)
+  const PAD = 36;
+  function toCanvas(x, y) {
+    return [PAD + x * (W - 2*PAD), H - PAD - y * (H - 2*PAD)];
+  }
+  function fromCanvas(px, py) {
+    return [(px - PAD) / (W - 2*PAD), (H - PAD - py) / (H - 2*PAD)];
+  }
+
+  let w1 = 1.0, w2 = -1.0, b = 0.0;
+
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function classify(x1, x2) {
+    return w1 * x1 + w2 * x2 + b;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background regions
+    const imgData = ctx.createImageData(W, H);
+    for (let py = 0; py < H; py++) {
+      for (let px = 0; px < W; px++) {
+        const [dx, dy] = fromCanvas(px, py);
+        const z = classify(dx, dy);
+        const p = sigmoid(z);
+        const i = (py * W + px) * 4;
+        if (p > 0.5) {
+          imgData.data[i]   = 219; // #dbeafe blue tint
+          imgData.data[i+1] = 234;
+          imgData.data[i+2] = 254;
+          imgData.data[i+3] = 120;
+        } else {
+          imgData.data[i]   = 252; // #fce7f3 red tint
+          imgData.data[i+1] = 231;
+          imgData.data[i+2] = 243;
+          imgData.data[i+3] = 120;
+        }
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // Axes
+    ctx.strokeStyle = '#d1d5db';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD, PAD); ctx.lineTo(PAD, H-PAD);
+    ctx.moveTo(PAD, H-PAD); ctx.lineTo(W-PAD, H-PAD);
+    ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('x₁', W-PAD+12, H-PAD+4);
+    ctx.textAlign = 'right';
+    ctx.fillText('x₂', PAD-6, PAD-6);
+
+    // Decision boundary: w1*x + w2*y + b = 0  →  y = -(w1*x + b) / w2
+    ctx.save();
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    let drawn = false;
+    if (Math.abs(w2) > 0.001) {
+      // y = -(w1*x + b) / w2
+      const y0 = -(w1*0 + b) / w2;
+      const y1 = -(w1*1 + b) / w2;
+      const [cx0, cy0] = toCanvas(0, y0);
+      const [cx1, cy1] = toCanvas(1, y1);
+      ctx.moveTo(cx0, cy0);
+      ctx.lineTo(cx1, cy1);
+      drawn = true;
+    } else if (Math.abs(w1) > 0.001) {
+      // x = -b/w1 (vertical line)
+      const x0 = -b / w1;
+      const [cxv] = toCanvas(x0, 0);
+      ctx.moveTo(cxv, PAD);
+      ctx.lineTo(cxv, H-PAD);
+      drawn = true;
+    }
+    if (drawn) ctx.stroke();
+    ctx.restore();
+
+    // Data points
+    let correct = 0;
+    POINTS.forEach(([px, py, label]) => {
+      const [cx, cy] = toCanvas(px, py);
+      const pred = classify(px, py) > 0 ? 1 : 0;
+      const isCorrect = pred === label;
+      if (isCorrect) correct++;
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 7, 0, Math.PI*2);
+      ctx.fillStyle = label === 1 ? '#2563eb' : '#ef4444';
+      ctx.fill();
+      ctx.strokeStyle = isCorrect ? '#fff' : '#fbbf24';
+      ctx.lineWidth = isCorrect ? 1.5 : 2.5;
+      ctx.stroke();
+    });
+
+    // Update badges
+    const total = POINTS.length;
+    const wrong = total - correct;
+    const acc = Math.round(correct / total * 100);
+    document.getElementById('ku1-acc').textContent     = `准确率：${acc}%`;
+    document.getElementById('ku1-correct').textContent = `正确：${correct}`;
+    document.getElementById('ku1-wrong').textContent   = `错误：${wrong}`;
+
+    // Update formula
+    const mid = POINTS.reduce((s,p)=>[s[0]+p[0]/POINTS.length, s[1]+p[1]/POINTS.length],[0,0]);
+    const zMid = classify(mid[0], mid[1]);
+    const pMid = sigmoid(zMid).toFixed(3);
+    const w1s = w1.toFixed(2), w2s = w2.toFixed(2), bs = b >= 0 ? `+${b.toFixed(2)}` : b.toFixed(2);
+    document.getElementById('ku1-formula').textContent =
+      `σ(${w1s}·x₁ + ${w2s}·x₂ ${bs})  →  σ(${zMid.toFixed(2)}) = ${pMid}  [centroid]`;
+  }
+
+  function sync() {
+    w1 = parseFloat(document.getElementById('ku1-w1').value);
+    w2 = parseFloat(document.getElementById('ku1-w2').value);
+    b  = parseFloat(document.getElementById('ku1-b').value);
+    document.getElementById('ku1-w1-val').textContent = w1.toFixed(2);
+    document.getElementById('ku1-w2-val').textContent = w2.toFixed(2);
+    document.getElementById('ku1-b-val').textContent  = b.toFixed(2);
+    draw();
+  }
+
+  ['ku1-w1','ku1-w2','ku1-b'].forEach(id =>
+    document.getElementById(id).addEventListener('input', sync)
+  );
+
+  draw();
+})();
+</script>
+
+
+<!-- KU2: Multi-layer Network -->
+<script>
+(function() {
+  'use strict';
+
+  const canvas = document.getElementById('ku2-canvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Fixed weights (pre-trained-feel, not random)
+  const W1 = [
+    [ 0.8, -0.5],
+    [-0.7,  1.2],
+    [ 0.4,  0.9],
+  ]; // 3×2
+  const b1 = [0.1, -0.2, 0.3];
+
+  const W2 = [
+    [ 0.6, -0.8,  0.5],
+  ]; // 1×3
+  const b2 = [-0.1];
+
+  // Additional hidden → output weights for display
+  // Node positions
+  const layerX = [60, 210, 370, 500];
+  const layerY = {
+    input:  [H*0.35, H*0.65],
+    hidden: [H*0.18, H*0.50, H*0.82],
+    output: [H*0.50],
+  };
+
+  function relu(x)    { return Math.max(0, x); }
+  function sigmoid(x) { return 1 / (1 + Math.exp(-x)); }
+
+  function forward(x1, x2, useRelu) {
+    const inp = [x1, x2];
+    // Hidden layer
+    const z1 = W1.map((row,i) => row[0]*inp[0] + row[1]*inp[1] + b1[i]);
+    const a1 = z1.map(z => useRelu ? relu(z) : z);
+    // Output layer
+    const z2 = W2.map((row,i) => row.reduce((s,w,j) => s + w*a1[j], 0) + b2[i]);
+    const a2 = z2.map(z => sigmoid(z));
+    return {inp, z1, a1, z2, a2};
+  }
+
+  let animStep = -1;  // -1=idle, 0..3 = animation frames
+  let animTimer = null;
+  let currentFwd = null;
+  let useRelu = true;
+
+  function clamp01(v) { return Math.max(0,Math.min(1,v)); }
+
+  function valToColor(v, isGrey) {
+    if (isGrey) return '#d1d5db';
+    const t = clamp01((v + 1) / 2); // map ~[-1,1] → [0,1]
+    const r = Math.round(37  + (239-37)*t);
+    const g = Math.round(99  + (68 -99)*t);
+    const bv= Math.round(235 + (68-235)*t);
+    return `rgb(${r},${g},${bv})`;
+  }
+
+  function drawNode(cx, cy, value, label, active, greyed) {
+    const radius = 22;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI*2);
+    ctx.fillStyle = active
+      ? (greyed ? '#e5e7eb' : valToColor(value, false))
+      : '#f3f4f6';
+    ctx.fill();
+    ctx.strokeStyle = active ? (greyed ? '#9ca3af' : '#2563eb') : '#d1d5db';
+    ctx.lineWidth = active ? 2 : 1;
+    ctx.stroke();
+
+    if (label) {
+      ctx.fillStyle = '#374151';
+      ctx.font = '11px Space Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, cx, cy);
+    }
+    if (active && value !== undefined) {
+      ctx.fillStyle = greyed ? '#9ca3af' : '#1e40af';
+      ctx.font = '9px Space Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(value.toFixed(2), cx, cy);
+    }
+  }
+
+  function drawEdge(x1,y1,x2,y2, active, strength) {
+    ctx.beginPath();
+    ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+    if (active) {
+      ctx.strokeStyle = `rgba(37,99,235,${0.15 + 0.65*clamp01(Math.abs(strength))})`;
+      ctx.lineWidth = 1 + 2*clamp01(Math.abs(strength));
+    } else {
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 1;
+    }
+    ctx.stroke();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const fwd = currentFwd;
+    const step = animStep;
+
+    const inputActive  = step >= 0;
+    const hiddenActive = step >= 1;
+    const outputActive = step >= 3;
+
+    // Layer labels
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ['输入层','隐藏层 (ReLU)','输出层'].forEach((lbl,i) => {
+      ctx.fillText(lbl, [layerX[0], layerX[2], layerX[3]][i], H-10);
+    });
+
+    // Edges: input → hidden
+    layerY.input.forEach((iy, ii) => {
+      layerY.hidden.forEach((hy, hi) => {
+        const active = step >= 2;
+        const str = active && fwd ? W1[hi][ii] * fwd.inp[ii] : 0;
+        drawEdge(layerX[0]+22, iy, layerX[2]-22, hy, active, str);
+      });
+    });
+
+    // Edges: hidden → output
+    layerY.hidden.forEach((hy, hi) => {
+      layerY.output.forEach((oy) => {
+        const active = step >= 3;
+        const str = active && fwd ? W2[0][hi] * fwd.a1[hi] : 0;
+        drawEdge(layerX[2]+22, hy, layerX[3]-22, oy, active, str);
+      });
+    });
+
+    // Input nodes
+    layerY.input.forEach((iy, i) => {
+      const v = fwd ? fwd.inp[i] : 0;
+      const lbl = fwd && inputActive ? '' : `x${i+1}`;
+      drawNode(layerX[0], iy, v, lbl, inputActive, false);
+      if (fwd && inputActive) {
+        ctx.fillStyle = '#1e40af';
+        ctx.font = '9px Space Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(v.toFixed(2), layerX[0], iy);
+      }
+    });
+
+    // Hidden nodes
+    layerY.hidden.forEach((hy, i) => {
+      const v = fwd ? fwd.a1[i] : 0;
+      const greyed = useRelu && fwd && fwd.z1[i] < 0 && hiddenActive;
+      drawNode(layerX[2], hy, v, hiddenActive?'':(`h${i+1}`), hiddenActive, greyed);
+      if (hiddenActive && fwd) {
+        ctx.fillStyle = greyed ? '#9ca3af' : '#1e40af';
+        ctx.font = '9px Space Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(v.toFixed(2), layerX[2], hy);
+      }
+    });
+
+    // Output node
+    layerY.output.forEach((oy) => {
+      const v = fwd ? fwd.a2[0] : 0;
+      drawNode(layerX[3], oy, v, outputActive?'':'ŷ', outputActive, false);
+      if (outputActive && fwd) {
+        ctx.fillStyle = '#1e40af';
+        ctx.font = '9px Space Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(v.toFixed(2), layerX[3], oy);
+      }
+    });
+
+    // Activation label
+    const actLabel = useRelu ? 'ReLU' : 'Linear';
+    ctx.fillStyle = useRelu ? '#2563eb' : '#6b7280';
+    ctx.font = 'bold 11px Space Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`激活: ${actLabel}`, 8, 16);
+
+    // Animation step indicator
+    if (step >= 0) {
+      const labels = ['输入就绪','计算边权','隐藏激活','输出完成'];
+      ctx.fillStyle = '#2563eb';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(labels[Math.min(step,3)], W-8, 16);
+    }
+  }
+
+  function updateNodeDisplay() {
+    if (!currentFwd) return;
+    const f = currentFwd;
+    document.getElementById('ku2-x1-disp').textContent = f.inp[0].toFixed(2);
+    document.getElementById('ku2-x2-disp').textContent = f.inp[1].toFixed(2);
+    document.getElementById('ku2-h-disp').textContent =
+      f.a1.map((v,i) => `h${i+1}=${v.toFixed(2)}`).join(', ');
+    document.getElementById('ku2-o-disp').textContent = `ŷ=${f.a2[0].toFixed(3)}`;
+  }
+
+  function runAnimation() {
+    if (animTimer) clearInterval(animTimer);
+    animStep = 0;
+    draw();
+    animTimer = setInterval(() => {
+      animStep++;
+      draw();
+      if (animStep >= 3) {
+        clearInterval(animTimer);
+        animTimer = null;
+        updateNodeDisplay();
+      }
+    }, 380);
+  }
+
+  function getInputs() {
+    return [
+      parseFloat(document.getElementById('ku2-x1').value),
+      parseFloat(document.getElementById('ku2-x2').value),
+    ];
+  }
+
+  document.getElementById('ku2-playBtn').addEventListener('click', () => {
+    const [x1, x2] = getInputs();
+    currentFwd = forward(x1, x2, useRelu);
+    runAnimation();
+  });
+
+  document.getElementById('ku2-resetBtn').addEventListener('click', () => {
+    if (animTimer) { clearInterval(animTimer); animTimer = null; }
+    animStep = -1;
+    currentFwd = null;
+    document.getElementById('ku2-h-disp').textContent = 'h₁=—, h₂=—, h₃=—';
+    document.getElementById('ku2-o-disp').textContent = '—';
+    draw();
+  });
+
+  document.getElementById('ku2-actToggle').addEventListener('change', function() {
+    useRelu = this.checked;
+    document.getElementById('ku2-act-label').textContent = useRelu ? 'ReLU' : '线性';
+    if (currentFwd) {
+      const [x1, x2] = getInputs();
+      currentFwd = forward(x1, x2, useRelu);
+      updateNodeDisplay();
+    }
+    draw();
+  });
+
+  ['ku2-x1','ku2-x2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('input', () => {
+      const v = parseFloat(el.value);
+      const key = id === 'ku2-x1' ? 'ku2-x1-val' : 'ku2-x2-val';
+      document.getElementById(key).textContent = v.toFixed(2);
+      if (animStep < 0) {
+        const [x1,x2] = getInputs();
+        document.getElementById('ku2-x1-disp').textContent = x1.toFixed(2);
+        document.getElementById('ku2-x2-disp').textContent = x2.toFixed(2);
+      }
+    });
+  });
+
+  draw();
+})();
+</script>
+
+
+<!-- KU3: Backpropagation / Training Loop -->
+<script>
+(function() {
+  'use strict';
+
+  const lossCanvas = document.getElementById('ku3-loss-canvas');
+  const lctx       = lossCanvas.getContext('2d');
+  const LW = lossCanvas.width, LH = lossCanvas.height;
+
+  const bCanvas = document.getElementById('ku3-boundary-canvas');
+  const bctx    = bCanvas.getContext('2d');
+  const BW = bCanvas.width, BH = bCanvas.height;
+
+  // XOR dataset
+  const XOR_DATA = [
+    [0,0,0],[1,0,1],[0,1,1],[1,1,0],
+    [0.1,0.1,0],[0.9,0.1,1],[0.1,0.9,1],[0.9,0.9,0],
+    [0.2,0.2,0],[0.8,0.2,1],[0.2,0.8,1],[0.8,0.8,0],
+  ];
+
+  const MAX_EPOCH = 200;
+
+  // Network: 2→4→1 (sigmoid throughout for smooth gradients)
+  function initNet() {
+    function rand() { return (Math.random()-0.5)*1.6; }
+    return {
+      W1: Array.from({length:4},()=>[rand(),rand()]),
+      b1: Array.from({length:4},()=>rand()*0.3),
+      W2: Array.from({length:4},()=>rand()),
+      b2: rand()*0.3,
+    };
+  }
+
+  function sigmoid(z)  { return 1/(1+Math.exp(-z)); }
+  function dsigmoid(a) { return a*(1-a); }
+
+  function fwd(net, x1, x2) {
+    const z1 = net.W1.map((w,i) => w[0]*x1 + w[1]*x2 + net.b1[i]);
+    const a1 = z1.map(sigmoid);
+    const z2 = net.W2.reduce((s,w,i)=>s+w*a1[i],0) + net.b2;
+    const a2 = sigmoid(z2);
+    return {z1,a1,z2,a2};
+  }
+
+  function trainStep(net, lr) {
+    let totalLoss = 0;
+    // Accumulate gradients
+    const dW1 = net.W1.map(()=>[0,0]);
+    const db1 = net.b1.map(()=>0);
+    const dW2 = net.W2.map(()=>0);
+    let   db2 = 0;
+
+    XOR_DATA.forEach(([x1,x2,y]) => {
+      const {a1,a2} = fwd(net,x1,x2);
+      totalLoss += 0.5*(a2-y)**2;
+
+      // Output layer
+      const dL_da2 = a2 - y;
+      const da2_dz2 = dsigmoid(a2);
+      const delta2 = dL_da2 * da2_dz2;
+
+      // Hidden layer
+      const delta1 = a1.map((a,i) => delta2 * net.W2[i] * dsigmoid(a));
+
+      // Accumulate
+      net.W2.forEach((_,i) => { dW2[i] += delta2 * a1[i]; });
+      db2 += delta2;
+      delta1.forEach((d,i) => {
+        dW1[i][0] += d * x1;
+        dW1[i][1] += d * x2;
+        db1[i]    += d;
+      });
+    });
+
+    const n = XOR_DATA.length;
+    net.W2.forEach((_,i) => { net.W2[i] -= lr * dW2[i]/n; });
+    net.b2 -= lr * db2/n;
+    net.W1.forEach((_,i) => {
+      net.W1[i][0] -= lr * dW1[i][0]/n;
+      net.W1[i][1] -= lr * dW1[i][1]/n;
+      net.b1[i]    -= lr * db1[i]/n;
+    });
+
+    return totalLoss / n;
+  }
+
+  function computeAccuracy(net) {
+    let c = 0;
+    XOR_DATA.forEach(([x1,x2,y])=>{
+      const {a2} = fwd(net,x1,x2);
+      if ((a2>0.5?1:0)===y) c++;
+    });
+    return c/XOR_DATA.length;
+  }
+
+  let net, epoch, lossHistory, playing, timer, lr, stepsPerFrame;
+
+  function reset() {
+    net         = initNet();
+    epoch       = 0;
+    lossHistory = [];
+    playing     = false;
+    if (timer) { clearInterval(timer); timer = null; }
+    document.getElementById('ku3-playBtn').textContent = '▶ 播放';
+    document.getElementById('ku3-loss-val').textContent  = '—';
+    document.getElementById('ku3-epoch-val').textContent = `0 / ${MAX_EPOCH}`;
+    document.getElementById('ku3-acc-val').textContent   = '—';
+    drawLoss();
+    drawBoundary();
+  }
+
+  function drawLoss() {
+    lctx.clearRect(0, 0, LW, LH);
+
+    const PAD = {l:48, r:20, t:20, b:36};
+    const plotW = LW - PAD.l - PAD.r;
+    const plotH = LH - PAD.t - PAD.b;
+
+    // Grid
+    lctx.strokeStyle = '#f3f4f6';
+    lctx.lineWidth = 1;
+    for (let i=0;i<=4;i++) {
+      const y = PAD.t + plotH - i*(plotH/4);
+      lctx.beginPath(); lctx.moveTo(PAD.l,y); lctx.lineTo(PAD.l+plotW,y); lctx.stroke();
+      lctx.fillStyle='#9ca3af';
+      lctx.font='10px Space Mono, monospace';
+      lctx.textAlign='right';
+      lctx.fillText((0.5*i/4).toFixed(2), PAD.l-6, y+4);
+    }
+
+    // Axis labels
+    lctx.fillStyle='#6b7280';
+    lctx.font='11px Inter, sans-serif';
+    lctx.textAlign='center';
+    lctx.fillText('Epoch', PAD.l + plotW/2, LH-4);
+    lctx.save();
+    lctx.translate(12, PAD.t + plotH/2);
+    lctx.rotate(-Math.PI/2);
+    lctx.fillText('Loss', 0, 0);
+    lctx.restore();
+
+    // Axes
+    lctx.strokeStyle='#d1d5db'; lctx.lineWidth=1;
+    lctx.beginPath();
+    lctx.moveTo(PAD.l, PAD.t); lctx.lineTo(PAD.l, PAD.t+plotH);
+    lctx.lineTo(PAD.l+plotW, PAD.t+plotH);
+    lctx.stroke();
+
+    // Epoch markers
+    for (let i=0;i<=4;i++) {
+      const x = PAD.l + i*(plotW/4);
+      lctx.fillStyle='#9ca3af'; lctx.font='10px Inter, sans-serif'; lctx.textAlign='center';
+      lctx.fillText(Math.round(i*MAX_EPOCH/4), x, PAD.t+plotH+16);
+    }
+
+    if (lossHistory.length < 2) return;
+
+    // Loss curve
+    const maxLoss = 0.5;
+    lctx.beginPath();
+    lctx.strokeStyle = '#2563eb';
+    lctx.lineWidth = 2;
+    lossHistory.forEach((loss, i) => {
+      const x = PAD.l + (i/(MAX_EPOCH-1))*plotW;
+      const y = PAD.t + plotH - Math.min(1, loss/maxLoss)*plotH;
+      i===0 ? lctx.moveTo(x,y) : lctx.lineTo(x,y);
+    });
+    lctx.stroke();
+
+    // Current point
+    if (lossHistory.length > 0) {
+      const i = lossHistory.length-1;
+      const loss = lossHistory[i];
+      const x = PAD.l + (i/Math.max(1,MAX_EPOCH-1))*plotW;
+      const y = PAD.t + plotH - Math.min(1, loss/maxLoss)*plotH;
+      lctx.beginPath(); lctx.arc(x,y,4,0,Math.PI*2);
+      lctx.fillStyle='#2563eb'; lctx.fill();
+    }
+  }
+
+  function drawBoundary() {
+    bctx.clearRect(0,0,BW,BH);
+
+    const PAD = 20;
+    const pW = BW-2*PAD, pH = BH-2*PAD;
+
+    // Decision region background
+    const imgD = bctx.createImageData(BW,BH);
+    for (let py=0;py<BH;py++) {
+      for (let px=0;px<BW;px++) {
+        const x1 = (px-PAD)/pW;
+        const x2 = 1-(py-PAD)/pH;
+        if (x1<0||x1>1||x2<0||x2>1) continue;
+        const {a2} = fwd(net,x1,x2);
+        const idx=(py*BW+px)*4;
+        if (a2>0.5) {
+          imgD.data[idx]=219; imgD.data[idx+1]=234; imgD.data[idx+2]=254; imgD.data[idx+3]=160;
+        } else {
+          imgD.data[idx]=252; imgD.data[idx+1]=231; imgD.data[idx+2]=243; imgD.data[idx+3]=160;
+        }
+      }
+    }
+    bctx.putImageData(imgD,0,0);
+
+    // Data points
+    XOR_DATA.slice(0,4).forEach(([x1,x2,y]) => {
+      const px = PAD + x1*pW;
+      const py = PAD + (1-x2)*pH;
+      bctx.beginPath(); bctx.arc(px,py,8,0,Math.PI*2);
+      bctx.fillStyle = y===1 ? '#2563eb' : '#ef4444';
+      bctx.fill();
+      bctx.strokeStyle='#fff'; bctx.lineWidth=2; bctx.stroke();
+    });
+
+    // Label
+    bctx.fillStyle='#6b7280'; bctx.font='10px Inter, sans-serif'; bctx.textAlign='center';
+    bctx.fillText('XOR 决策边界', BW/2, BH-4);
+  }
+
+  function updateReadouts() {
+    if (lossHistory.length === 0) return;
+    const loss = lossHistory[lossHistory.length-1];
+    const acc  = computeAccuracy(net);
+    document.getElementById('ku3-loss-val').textContent  = loss.toFixed(4);
+    document.getElementById('ku3-epoch-val').textContent = `${epoch} / ${MAX_EPOCH}`;
+    document.getElementById('ku3-acc-val').textContent   = `${Math.round(acc*100)}%`;
+  }
+
+  function step() {
+    lr = parseFloat(document.getElementById('ku3-lr').value);
+    stepsPerFrame = parseInt(document.getElementById('ku3-speed').value);
+    for (let s=0; s<stepsPerFrame && epoch<MAX_EPOCH; s++) {
+      const loss = trainStep(net, lr);
+      lossHistory.push(loss);
+      epoch++;
+    }
+    drawLoss();
+    drawBoundary();
+    updateReadouts();
+    if (epoch >= MAX_EPOCH) {
+      clearInterval(timer); timer=null;
+      playing=false;
+      document.getElementById('ku3-playBtn').textContent='▶ 播放';
+    }
+  }
+
+  document.getElementById('ku3-playBtn').addEventListener('click', () => {
+    if (epoch >= MAX_EPOCH) reset();
+    if (playing) {
+      clearInterval(timer); timer=null;
+      playing=false;
+      document.getElementById('ku3-playBtn').textContent='▶ 播放';
+    } else {
+      playing=true;
+      document.getElementById('ku3-playBtn').textContent='⏸ 暂停';
+      timer=setInterval(step, 40);
+    }
+  });
+
+  document.getElementById('ku3-resetBtn').addEventListener('click', reset);
+
+  document.getElementById('ku3-lr').addEventListener('input', function() {
+    document.getElementById('ku3-lr-val').textContent = parseFloat(this.value).toFixed(2);
+  });
+  document.getElementById('ku3-speed').addEventListener('input', function() {
+    document.getElementById('ku3-speed-val').textContent = this.value;
+  });
+
+  reset();
+})();
+</script>
+
+</body>
+</html>
