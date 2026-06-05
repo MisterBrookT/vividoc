@@ -42,8 +42,6 @@ The key insight is the **SRTC specification** — a four-field interaction desig
 
 ## 🚀 Quick Start
 
-### Option A: Claude Code skill (recommended — zero setup)
-
 Open this repository in [Claude Code](https://claude.ai/code). No API key needed — Claude Code is the model.
 
 ```
@@ -56,32 +54,7 @@ Claude Code reasons about the topic, proposes a visual style, designs SRTC inter
 /vividoc-learn https://ncase.me/trust/
 ```
 
-Fetches the page, extracts its interaction patterns and visual style into SRTC format, and saves a reusable template to `benchmark/datasets/interaction_examples/`.
-
-### Option B: CLI pipeline
-
-```bash
-# Install
-pip install uv && uv sync
-
-# Set API key (OpenRouter covers most models)
-export OPENROUTER_API_KEY="sk-or-..."
-
-# Generate a document
-vividoc run "Fourier Transform" openrouter/google/gemini-2.5-pro
-# → outputs/fourier_transform/vividoc_gemini-2.5-pro/document.html
-
-# Stage-by-stage
-vividoc plan "Fourier Transform" openrouter/google/gemini-2.5-pro -o spec.json
-vividoc exec spec.json openrouter/google/gemini-2.5-pro
-
-# With style guidance
-vividoc run "Fourier Transform" openrouter/google/gemini-2.5-pro \
-  --text-style "Conversational, concrete analogies" \
-  --interaction-style "Dark background, neon accents, physics aesthetic"
-```
-
-Supported models: any `openrouter/<provider>/<model>` string, or `anthropic/claude-*` with `ANTHROPIC_API_KEY`.
+Fetches a real explorable explanation, extracts its interaction patterns and visual style into SRTC format, and saves a reusable template to `benchmark/datasets/interaction_examples/`.
 
 ---
 
@@ -205,17 +178,18 @@ uv run pytest
 # Lint
 uv run ruff check . && uv run ruff format .
 
-# Run benchmark evaluation
-uv run python benchmark/run.py
-
 # Serve showcase locally
 cd frontend && npm install && npm run dev
 ```
 
-### Adding a new LLM provider
+### Running baselines
 
-1. Create `vividoc/utils/llm/callers/<provider>_caller.py` implementing `LLMCaller`
-2. Register it in `vividoc/utils/llm/caller_registry.py`
+The `benchmark/baselines/` directory contains re-implementations of AutoGen, CAMEL, MetaGPT, and a naive baseline for comparison against the harness approach. Each baseline uses the same topic inputs and is evaluated against ViviBench.
+
+```bash
+# Run all baselines on the benchmark dataset
+uv run python benchmark/run.py --baseline autogen   # or camel, metagpt, naive
+```
 
 ### Adding a reference case
 
