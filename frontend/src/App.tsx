@@ -230,6 +230,35 @@ export default function App() {
         </div>
       </div>
 
+      {/* Citation */}
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px 80px' }}>
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 48 }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 20 }}>
+            Citation
+          </h2>
+          <pre style={{
+            background: 'var(--card)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            padding: '20px 24px',
+            fontFamily: 'monospace',
+            fontSize: 12,
+            color: 'var(--dim)',
+            lineHeight: 1.7,
+            overflowX: 'auto',
+            whiteSpace: 'pre',
+          }}>{`@inproceedings{tang2026vividoc,
+  title     = {{ViviDoc}: Generating Interactive Documents through Human-Agent Collaboration},
+  author    = {Tang, Yinghao and Xie, Yupeng and Feng, Yingchaojie and
+               Lan, Tingfeng and Lao, Jiale and Cheng, Yue and Chen, Wei},
+  booktitle = {Proceedings of the 64th Annual Meeting of the Association
+               for Computational Linguistics: System Demonstrations},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2603.27991}
+}`}</pre>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '32px 0' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
