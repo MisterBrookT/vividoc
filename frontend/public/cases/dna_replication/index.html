@@ -47,6 +47,18 @@
         .infobox { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:16px 20px; margin:16px 0; font-size:12px; color:var(--dim); line-height:1.8; }
         .infobox strong { color:var(--text); }
         .phase-bar { padding:6px 16px; border-top:1px solid var(--border); background:var(--card); font-size:11px; color:var(--accent); min-height:28px; }
+        .caption {
+            font-size: 13px;
+            color: var(--muted);
+            border-left: 2px solid var(--accent);
+            padding: 10px 14px;
+            margin: 16px 0 24px;
+            line-height: 1.6;
+        }
+        .caption p { margin: 0 0 4px; }
+        .caption p:last-child { margin: 0; }
+        .insight { margin: 0 0 48px; }
+        .insight p { font-size: 15px; line-height: 1.75; }
     </style>
 </head>
 <body>
@@ -59,17 +71,7 @@
 <section>
     <div class="sl">01 — The Double Helix Unwinds</div>
     <h2>Base Pairing and the Replication Fork</h2>
-    <div class="prose">
-        The DNA double helix is held together by hydrogen bonds between complementary bases: adenine pairs with thymine (2 H-bonds), and guanine pairs with cytosine (3 H-bonds). This specificity is the molecular basis of heredity — each strand is a complete template for the other. <strong style="color:var(--text)">Chargaff's rules</strong> state that in any double-stranded DNA, [A]=[T] and [G]=[C], a fact Chargaff observed empirically in 1950, three years before Watson and Crick's structure.
-    </div>
-    <div class="prose">
-        Replication begins at specific sequences called <strong style="color:var(--text)">origins of replication</strong>. In E. coli, there is one origin (oriC); in human cells, there are ~30,000, allowing the entire 6-billion-base genome to be copied in ~8 hours. At each origin, the enzyme <strong style="color:var(--accent)">helicase</strong> uses ATP hydrolysis to unwind the helix at ~1000 bp/second, creating a Y-shaped replication fork. Single-strand binding proteins (SSBPs) stabilize the unwound strands, and <strong style="color:var(--blue)">topoisomerase</strong> relieves the torsional stress ahead of the fork.
-    </div>
-    <div class="math-block">
-        Chargaff's rules: \([A]=[T]\), \([G]=[C]\)&nbsp;→&nbsp;\([A]+[G]=[T]+[C]=50\%\)<br>
-        GC content: \(\text{GC\%} = \dfrac{[G]+[C]}{[A]+[T]+[G]+[C]}\times 100\)<br>
-        Human genome GC content ≈ 41% (varies by region, e.g., CpG islands &gt; 55%)
-    </div>
+
     <div class="canvas-wrap">
         <canvas id="c1" width="836" height="320"></canvas>
         <div class="controls">
@@ -89,22 +91,28 @@
             <div class="li"><div class="dot" style="background:#bc8cff"></div>helicase</div>
         </div>
     </div>
+
+    <div class="caption">
+        <p>Click "Unwind" to activate the helicase enzyme.</p>
+        <p>Drag the speed slider to control how fast helicase travels along the helix.</p>
+        <p>Watch how the hydrogen bonds between complementary bases break open as the purple helicase passes through.</p>
+    </div>
+
+    <div class="math-block">
+        Chargaff's rules: \([A]=[T]\), \([G]=[C]\)&nbsp;→&nbsp;\([A]+[G]=[T]+[C]=50\%\)<br>
+        GC content: \(\text{GC\%} = \dfrac{[G]+[C]}{[A]+[T]+[G]+[C]}\times 100\)<br>
+        Human genome GC content ≈ 41% (varies by region, e.g., CpG islands &gt; 55%)
+    </div>
+
+    <div class="insight">
+        <p>Each strand is a complete mirror of the other — A always pairs with T, G always with C. Helicase exploits this complementarity by reading the base sequence to unwind precisely. This leads us to the remarkable asymmetry that arises once both strands are exposed.</p>
+    </div>
 </section>
 
 <section>
     <div class="sl">02 — Leading and Lagging Strands</div>
     <h2>The Directionality Constraint</h2>
-    <div class="prose">
-        DNA polymerase III can only synthesize DNA in the <strong style="color:var(--text)">5'→3' direction</strong> — it adds nucleotides to the 3'-OH end of the growing strand. This creates an elegant asymmetry at the replication fork: one template strand (3'→5') allows continuous synthesis, producing the <strong style="color:var(--accent)">leading strand</strong>. The other template (5'→3') must be copied in short segments moving <em>away</em> from the fork — these are <strong style="color:var(--orange)">Okazaki fragments</strong>, each 100–200 nt in eukaryotes (1000–2000 in prokaryotes).
-    </div>
-    <div class="prose">
-        Each Okazaki fragment begins with a short RNA primer (~10 nt) synthesized by <strong style="color:var(--blue)">primase</strong>, which DNA Pol III then extends. After synthesis, RNase H removes the RNA primers, DNA Pol I fills the gaps, and <strong style="color:var(--purple)">DNA ligase</strong> seals the nicks with phosphodiester bonds, using NAD⁺ (bacteria) or ATP (eukaryotes) as energy source. The net result: both strands are copied, but the lagging strand synthesis requires much more coordination.
-    </div>
-    <div class="math-block">
-        E. coli replication speed: \(\sim 1000\) bp/s per fork, \(\sim 2\) forks → full genome (\(4.6 \times 10^6\) bp) in \(\sim 40\) min<br>
-        Human: \(\sim 50\) bp/s per fork, \(\sim 30{,}000\) origins → \(6\times10^9\) bp in \(\sim 8\) h<br>
-        Processivity: Pol III stays on template for \(\sim 5 \times 10^5\) bp per binding event (β-clamp)
-    </div>
+
     <div class="canvas-wrap">
         <canvas id="c2" width="836" height="300"></canvas>
         <div class="controls">
@@ -123,6 +131,18 @@
             <div class="li"><div class="sq" style="background:var(--purple)"></div>ligase seal</div>
         </div>
     </div>
+
+    <div class="caption">
+        <p>Click "Replicate" to advance the replication fork.</p>
+        <p>Watch the top strand grow continuously (green) while the bottom strand assembles in discrete orange fragments.</p>
+    </div>
+
+    <div class="math-block">
+        E. coli replication speed: \(\sim 1000\) bp/s per fork, \(\sim 2\) forks → full genome (\(4.6 \times 10^6\) bp) in \(\sim 40\) min<br>
+        Human: \(\sim 50\) bp/s per fork, \(\sim 30{,}000\) origins → \(6\times10^9\) bp in \(\sim 8\) h<br>
+        Processivity: Pol III stays on template for \(\sim 5 \times 10^5\) bp per binding event (β-clamp)
+    </div>
+
     <div class="two-col">
         <div class="info-card">
             <h4 style="color:var(--accent)">Leading Strand</h4>
@@ -133,22 +153,16 @@
             <p>Template: 5'→3'. Pol III synthesizes each Okazaki fragment away from the fork. Each fragment requires its own primer. Pol I removes primers; ligase seals nicks. ~10× more coordination.</p>
         </div>
     </div>
+
+    <div class="insight">
+        <p>DNA polymerase can only add nucleotides in one direction, so one strand must be copied backwards in fragments — a clumsy but universal solution found in every living cell. This enzymatic constraint is why replication requires so many more proteins on the lagging strand. This leads us to how errors in this complex process are caught.</p>
+    </div>
 </section>
 
 <section>
     <div class="sl">03 — Fidelity and Error Correction</div>
     <h2>One Error per Billion Bases</h2>
-    <div class="prose">
-        Raw base-selection accuracy of DNA Pol III is approximately 1 error per 10⁵ bases — already remarkable, but insufficient for a 6-billion-base genome (60,000 errors per division). Three successive error-correction mechanisms reduce this by nine orders of magnitude. First, the polymerase's own <strong style="color:var(--text)">proofreading activity</strong> (3'→5' exonuclease) catches misincorporated bases immediately, reducing errors ~100-fold. Then <strong style="color:var(--blue)">mismatch repair</strong> (MMR) scans the newly synthesized strand afterward, reducing errors another ~1000-fold.
-    </div>
-    <div class="prose">
-        The net result: approximately 1 mutation per 10⁹–10¹⁰ base pairs per replication. Over a human lifetime, each cell division in skin generates ~1–2 point mutations; stem cells in the colon divide ~800 times — roughly 1600 mutations by age 80, most in non-coding regions. Cancer arises when mutations hit driver genes. This is why error correction fidelity is directly tied to cancer risk, and why MMR-deficient tumors have dramatically elevated mutation loads (Lynch syndrome).
-    </div>
-    <div class="math-block">
-        \[P_{\text{final}} = P_{\text{raw}} \times \varepsilon_{\text{proof}} \times \varepsilon_{\text{MMR}}\]
-        \[\approx 10^{-5} \times 10^{-2} \times 10^{-3} = 10^{-10}\]
-        Genome size \(= 6\times10^9\) bp → \(\sim 0.06\) errors per genome replication
-    </div>
+
     <div class="canvas-wrap">
         <canvas id="c3" width="836" height="280"></canvas>
         <div class="controls">
@@ -164,8 +178,24 @@
             <div class="li"><div class="sq" style="background:var(--accent)"></div>after MMR (10⁻¹⁰)</div>
         </div>
     </div>
+
+    <div class="caption">
+        <p>Drag the slider right to simulate copying more bases — up to a full human genome at 10¹⁰.</p>
+        <p>Watch the red bar (raw polymerase) versus the green bar (after mismatch repair) — notice how the gap between them grows.</p>
+    </div>
+
+    <div class="math-block">
+        \[P_{\text{final}} = P_{\text{raw}} \times \varepsilon_{\text{proof}} \times \varepsilon_{\text{MMR}}\]
+        \[\approx 10^{-5} \times 10^{-2} \times 10^{-3} = 10^{-10}\]
+        Genome size \(= 6\times10^9\) bp → \(\sim 0.06\) errors per genome replication
+    </div>
+
     <div class="infobox">
         <strong>Telomere problem:</strong> DNA Pol III cannot replicate the very end of linear chromosomes (no room for a new primer). <strong>Telomerase</strong> extends the 3' overhang using its own RNA template, solving the end-replication problem in germ cells and stem cells. In somatic cells, telomeres shorten with each division — a molecular clock for cellular aging — and critically short telomeres trigger senescence or apoptosis.
+    </div>
+
+    <div class="insight">
+        <p>Three successive error-correction layers reduce mistakes by nine orders of magnitude — from 1 in 100,000 to 1 in 10 billion. Without this stacked fidelity, every cell division in your body would introduce thousands of mutations, making cancer inevitable within years rather than decades.</p>
     </div>
 </section>
 

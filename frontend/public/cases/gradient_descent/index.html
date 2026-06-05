@@ -105,7 +105,7 @@ p code {
   border: 1px solid #2d1b4e;
   border-radius: 12px;
   padding: 20px;
-  margin-top: 28px;
+  margin-bottom: 0;
 }
 .widget-title {
   font-family: 'JetBrains Mono', monospace;
@@ -230,6 +230,20 @@ button.active, button.primary {
 /* Schedule buttons */
 .sched-btn { border-color: #38bdf8; color: #38bdf8; font-size: 0.72rem; padding: 6px 10px; }
 .sched-btn.active { background: #38bdf8; color: #0d0619; }
+
+/* Caption and insight */
+.caption {
+  font-size: 13px;
+  color: var(--muted, #6d5a9e);
+  border-left: 2px solid var(--accent, #a855f7);
+  padding: 10px 14px;
+  margin: 16px 0 24px;
+  line-height: 1.6;
+}
+.caption p { margin: 0 0 4px; }
+.caption p:last-child { margin: 0; }
+.insight { margin: 0 0 48px; }
+.insight p { font-size: 15px; line-height: 1.75; }
 </style>
 </head>
 <body>
@@ -243,36 +257,6 @@ button.active, button.primary {
   <div class="section-label">Section 01</div>
   <h2 class="section-title">Descending the Loss Landscape</h2>
   <hr class="section-divider"/>
-
-  <p>
-    At the heart of every learning algorithm lies an optimization problem: <strong>find the model parameters
-    that minimize a loss function</strong>. In deep learning, this loss function — measuring the gap between
-    predictions and ground truth — lives in a high-dimensional space. For a network with millions of parameters,
-    it forms a vast, rugged landscape of peaks, valleys, saddle points, and plateaus.
-  </p>
-  <p>
-    The gradient $\nabla L(\mathbf{w})$ points in the direction of <strong>steepest ascent</strong> — the direction
-    that most rapidly increases the loss. To minimize loss, we move in the <em>opposite</em> direction: we subtract
-    the gradient. This is the fundamental intuition of gradient descent. At each step, we measure the local slope
-    of the loss surface and take a small step downhill.
-  </p>
-  <p>
-    The size of that step is controlled by the <strong>learning rate</strong> $\eta$. Choose too large a value and
-    you overshoot — bouncing past minima or even diverging entirely. Choose too small a value and convergence
-    becomes glacially slow, especially in the early stages when gradients are large. The ideal learning rate
-    itself changes throughout training, motivating the scheduling strategies we explore in Section 3.
-  </p>
-  <p>
-    Non-convex loss landscapes (the norm in deep learning) introduce another crucial factor: <strong>initialization</strong>.
-    Where you start determines which minimum you reach. Strategies like <strong>Xavier initialization</strong>
-    (scaling weights by $\sqrt{1/n_{\text{in}}}$, preserving variance through layers) and <strong>He initialization</strong>
-    (scaling by $\sqrt{2/n_{\text{in}}}$, correcting for ReLU activations) are carefully designed to start gradient
-    descent in a regime where it can make rapid progress.
-  </p>
-
-  <div class="math-block">
-    $$\mathbf{w}_{t+1} = \mathbf{w}_t - \eta \cdot \nabla_{\mathbf{w}} L(\mathbf{w}_t)$$
-  </div>
 
   <div class="widget">
     <div class="widget-title">Interactive — Double-Well Loss Landscape</div>
@@ -302,6 +286,19 @@ button.active, button.primary {
       <div class="info-item">w₂: <span id="s1-w2">—</span></div>
     </div>
   </div>
+
+  <div class="caption">
+    <p>Click the loss landscape to place a starting point, then press Run GD.</p>
+    <p>Drag the η slider to change the learning rate. Watch the trajectory change: at high η, the path overshoots and may bounce; at low η, it creeps slowly toward the minimum.</p>
+  </div>
+
+  <div class="insight">
+    <p>The gradient $\nabla L(\mathbf{w})$ points uphill — gradient descent subtracts it at each step to move toward a minimum. The learning rate $\eta$ controls step size, and the double-well surface reveals how initialization determines which minimum is reached. Non-convex losses (the norm in deep learning) make this choice consequential.</p>
+    <div class="math-block">
+      $$\mathbf{w}_{t+1} = \mathbf{w}_t - \eta \cdot \nabla_{\mathbf{w}} L(\mathbf{w}_t)$$
+    </div>
+    <p>Starting position encodes what gradient descent can achieve. Section 2 shows how different optimizers navigate the same landscape.</p>
+  </div>
 </div>
 
 <!-- ===== SECTION 2 ===== -->
@@ -309,36 +306,6 @@ button.active, button.primary {
   <div class="section-label">Section 02</div>
   <h2 class="section-title">Comparing Optimizers</h2>
   <hr class="section-divider"/>
-
-  <p>
-    Plain gradient descent struggles on loss surfaces with different curvatures along different directions — a common
-    situation in deep networks where some parameters are highly sensitive and others are nearly flat. On an
-    <strong>elongated bowl</strong>, where the gradient is steep in one direction and shallow in another, vanilla
-    SGD zigzags furiously while making slow progress along the valley floor.
-  </p>
-  <p>
-    <strong>Momentum</strong> addresses this by accumulating a velocity vector: instead of taking a step purely
-    based on the current gradient, we maintain a running average of past gradients. The parameter $\beta = 0.9$
-    means the velocity is a mix of 10% current gradient and 90% accumulated momentum. This has a beautiful physics
-    analogy: a ball rolling down a hill carries kinetic energy that helps it coast through flat regions and dampens
-    the oscillations caused by steep transverse gradients.
-  </p>
-  <p>
-    <strong>Adam</strong> (Adaptive Moment Estimation) goes further by maintaining per-parameter adaptive learning
-    rates. It tracks both the first moment (mean of gradients, like momentum) and the second moment (uncentered
-    variance). Parameters with consistently large gradients get smaller effective learning rates; rarely updated
-    parameters get larger steps. The <strong>bias correction</strong> terms — dividing by $(1 - \beta_1^t)$ and
-    $(1 - \beta_2^t)$ — correct for the fact that the moment estimates start near zero in early training.
-  </p>
-  <p>
-    Modern deep learning overwhelmingly defaults to Adam, but <strong>SGD with momentum often achieves better
-    generalization</strong> on well-tuned problems — the "sharp minimum" hypothesis suggests that adaptive methods
-    may converge to flatter, more generalizable minima less reliably. The choice is nuanced and task-dependent.
-  </p>
-
-  <div class="math-block">
-    $$\text{Adam: } \hat{m}_t = \frac{m_t}{1-\beta_1^t},\quad \hat{v}_t = \frac{v_t}{1-\beta_2^t},\quad \mathbf{w}_{t+1} = \mathbf{w}_t - \frac{\eta\, \hat{m}_t}{\sqrt{\hat{v}_t}+\varepsilon}$$
-  </div>
 
   <div class="widget">
     <div class="widget-title">Interactive — Optimizer Trajectories on Elongated Bowl</div>
@@ -360,6 +327,19 @@ button.active, button.primary {
       <div class="info-item">Step: <span id="s2-step">—</span></div>
     </div>
   </div>
+
+  <div class="caption">
+    <p>Press Animate to run all three optimizers from the same start. Toggle each optimizer on or off to isolate trajectories.</p>
+    <p>Watch how SGD zigzags across the narrow valley while Momentum and Adam converge more directly to the center.</p>
+  </div>
+
+  <div class="insight">
+    <p>On an elongated bowl — where curvature differs by 10× between axes — vanilla SGD oscillates because it treats both directions equally. Momentum damps transverse oscillations by accumulating velocity. Adam adapts per-parameter step sizes, reaching the minimum fastest here but potentially settling in sharper minima.</p>
+    <div class="math-block">
+      $$\text{Adam: } \hat{m}_t = \frac{m_t}{1-\beta_1^t},\quad \hat{v}_t = \frac{v_t}{1-\beta_2^t},\quad \mathbf{w}_{t+1} = \mathbf{w}_t - \frac{\eta\, \hat{m}_t}{\sqrt{\hat{v}_t}+\varepsilon}$$
+    </div>
+    <p>Optimizer choice interacts with the loss geometry. Section 3 shows that the learning rate itself must change over the course of training.</p>
+  </div>
 </div>
 
 <!-- ===== SECTION 3 ===== -->
@@ -368,39 +348,8 @@ button.active, button.primary {
   <h2 class="section-title">Learning Rate Schedules</h2>
   <hr class="section-divider"/>
 
-  <p>
-    If there is one hyperparameter that dominates all others in its impact on training, it is the <strong>learning
-    rate</strong>. But no single fixed value works well throughout the entire course of training. Early on, large
-    gradients and uninformed parameters mean a moderate learning rate makes rapid progress. Later, as the optimizer
-    approaches a minimum, the same learning rate causes destructive oscillations around the solution.
-  </p>
-  <p>
-    <strong>Step decay</strong> — halving or reducing the learning rate by a factor of 10 at fixed epoch milestones —
-    was the original engineering heuristic, still widely used in computer vision. But it requires manual tuning of
-    the decay schedule. <strong>Cosine annealing</strong> provides a smooth, principled alternative: the learning
-    rate follows a half-cosine from $\eta_{\max}$ down to $\eta_{\min}$, allowing gradual deceleration without
-    abrupt transitions that can cause loss spikes.
-  </p>
-  <p>
-    <strong>Warmup</strong> schedules address a subtle problem in transformer training: in the first iterations,
-    the model's parameters are random, and the Adam moment estimates are unreliable (the bias correction is large).
-    A large initial learning rate can cause catastrophic divergence. Warmup linearly increases the learning rate
-    from near-zero to the target value over the first few hundred or thousand steps, allowing moment estimates
-    to stabilize before the optimizer makes large updates.
-  </p>
-  <p>
-    The <strong>1cycle policy</strong> (popularized by fast.ai and Leslie Smith's research) takes this further:
-    first increasing the learning rate to a peak, then annealing it down, and finishing with a brief phase at very
-    low LR. This aggressive schedule acts as a form of implicit regularization — the brief high-LR phase pushes
-    the model out of sharp minima toward wider, more generalizable basins.
-  </p>
-
-  <div class="math-block">
-    $$\eta_{\text{cosine}}(t) = \eta_{\min} + \frac{\eta_{\max} - \eta_{\min}}{2}\left(1 + \cos\!\left(\frac{t}{T}\pi\right)\right)$$
-  </div>
-
   <div class="widget">
-    <div class="widget-title">Interactive — Learning Rate Schedule & Training Loss</div>
+    <div class="widget-title">Interactive — Learning Rate Schedule &amp; Training Loss</div>
     <div class="controls" style="margin-bottom:14px;">
       <span style="font-size:0.82rem;color:#6d5a9e;font-family:'JetBrains Mono',monospace;">SCHEDULE:</span>
       <button class="sched-btn active" id="sched-const" data-sched="constant">Constant</button>
@@ -425,6 +374,18 @@ button.active, button.primary {
       <div class="info-item">Schedule: <span id="s3-sched-name">Constant</span></div>
       <div class="info-item">Final Loss: <span id="s3-final-loss">—</span></div>
       <div class="info-item">Min Loss: <span id="s3-min-loss">—</span></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <p>Switch between schedules and watch both panels update: the top panel shows how the learning rate evolves, the bottom shows resulting training loss.</p>
+    <p>Raise η₀ to see constant LR diverge. Switch to Warmup+Cosine to see the safest convergence profile.</p>
+  </div>
+
+  <div class="insight">
+    <p>No single fixed learning rate works well throughout training. Early on, large gradients benefit from aggressive steps; near a minimum, the same rate causes oscillations. Cosine annealing smoothly decays from peak to near-zero. Warmup solves a specific problem in transformer training — Adam's moment estimates are unreliable in the first iterations, and a large initial rate causes divergence.</p>
+    <div class="math-block">
+      $$\eta_{\text{cosine}}(t) = \eta_{\min} + \frac{\eta_{\max} - \eta_{\min}}{2}\left(1 + \cos\!\left(\frac{t}{T}\pi\right)\right)$$
     </div>
   </div>
 </div>

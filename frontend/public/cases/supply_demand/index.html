@@ -27,6 +27,8 @@
     --text: #e8ede4;
     --text-muted: #7a8f72;
     --text-dim: #4d6045;
+    --muted: #7a8f72;
+    --accent: #10b981;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -139,7 +141,6 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
-    margin-top: 2.5rem;
     overflow: hidden;
   }
   .viz-header {
@@ -269,6 +270,20 @@
   /* KaTeX */
   .katex { font-size: 1.05em; }
   .katex-display { margin: 0.5em 0; }
+
+  /* Caption & Insight */
+  .caption {
+    font-size: 13px;
+    color: var(--muted);
+    border-left: 2px solid var(--accent);
+    padding: 10px 14px;
+    margin: 16px 0 24px;
+    line-height: 1.6;
+  }
+  .caption p { margin: 0 0 4px; }
+  .caption p:last-child { margin: 0; }
+  .insight { margin: 0 0 48px; }
+  .insight p { font-size: 15px; line-height: 1.75; }
 </style>
 </head>
 <body>
@@ -289,18 +304,6 @@
     <h2>The Curves &amp; Equilibrium</h2>
   </div>
 
-  <div class="prose">
-    <p>At the heart of market economics lies a deceptively simple idea: the price of any good is determined by the intersection of two opposing forces. Buyers want to purchase more when prices fall — this is the <em>Law of Demand</em>. Sellers want to supply more when prices rise — the <em>Law of Supply</em>. Where these two imperatives meet, we find the market equilibrium: the price at which the quantity buyers wish to purchase exactly equals the quantity sellers wish to sell. No shortages, no surpluses — just a clearing price that Adam Smith called the work of an invisible hand.</p>
-    <p>The demand curve captures every consumer's willingness-to-pay aggregated across the market. In its linear form, \(Q_d = a - bP\), the intercept \(a\) represents the quantity demanded when the good is free, while \(b\) captures how sharply demand responds to price increases. The supply curve \(Q_s = c + dP\) similarly encodes producers' behavior: \(c\) may be negative (reflecting fixed costs that must be overcome) and \(d\) tells us how much additional quantity comes to market as the price rises. It is essential to distinguish between <em>movement along</em> a curve — caused by price changes — and a <em>shift</em> of the entire curve, caused by changes in underlying determinants like income, input costs, or technology.</p>
-    <p>Solving for equilibrium, we set \(Q_d = Q_s\) and find \(P^* = \tfrac{a - c}{b + d}\). Substituting back gives equilibrium quantity \(Q^* = a - b P^*\). The visualization below makes this concrete: drag either curve up or down to simulate a supply or demand shock, and watch the equilibrium recalculate in real time.</p>
-  </div>
-
-  <div class="math-block">
-    <div class="math-label">Equilibrium Conditions</div>
-    \[Q_d = a - bP, \quad Q_s = c + dP\]
-    \[P^* = \frac{a - c}{b + d}, \qquad Q^* = a - bP^*\]
-  </div>
-
   <div class="viz-wrapper">
     <div class="viz-header">
       <span class="viz-title">Supply &amp; Demand Diagram</span>
@@ -314,6 +317,21 @@
       <div class="stat-item"><span class="stat-label">S-shift</span><span class="stat-value" id="s-shift">0</span></div>
     </div>
   </div>
+
+  <div class="caption">
+    <p>Drag the blue D curve up or down to shift demand. Drag the green S curve to shift supply.</p>
+    <p>Watch the amber dot — the equilibrium point — jump to a new price and quantity as you move each curve.</p>
+  </div>
+
+  <div class="insight">
+    <p>Price settles where buyers and sellers agree: \(P^* = (a - c)/(b + d)\). Shift demand up and both price and quantity rise; shift supply up and price falls while quantity rises. Every market shock is just a curve moving — the equilibrium follows automatically.</p>
+  </div>
+
+  <div class="math-block">
+    <div class="math-label">Equilibrium Conditions</div>
+    \[Q_d = a - bP, \quad Q_s = c + dP\]
+    \[P^* = \frac{a - c}{b + d}, \qquad Q^* = a - bP^*\]
+  </div>
 </div>
 </section>
 
@@ -325,18 +343,6 @@
   <div class="section-header">
     <div class="section-number">Section 02</div>
     <h2>Price Elasticity &amp; Total Revenue</h2>
-  </div>
-
-  <div class="prose">
-    <p>Not all demand curves are created equal. A small price increase might cause consumers of insulin to barely reduce their purchases, while the same increase on a luxury handbag might trigger a dramatic collapse in sales. This difference in sensitivity is captured by the <em>price elasticity of demand</em>, defined as the percentage change in quantity demanded divided by the percentage change in price. Formally, the point elasticity is \(\varepsilon = \tfrac{dQ}{dP} \cdot \tfrac{P}{Q}\). Because demand curves slope downward, \(\varepsilon\) is always negative; we typically report its absolute value. When \(|\varepsilon| > 1\), demand is elastic: consumers are highly responsive to price changes. When \(|\varepsilon| < 1\), demand is inelastic: price swings have relatively little impact on quantity.</p>
-    <p>The relationship between elasticity and <em>total revenue</em> \(\text{TR} = P \cdot Q\) is one of the most practically important results in microeconomics. Taking the derivative: \(\tfrac{d(\text{TR})}{dP} = Q\bigl(1 + \varepsilon\bigr)\). This tells us that raising price increases revenue only when demand is inelastic (\(|\varepsilon| < 1\)), because the revenue gained per unit more than compensates for the lost sales. When demand is elastic (\(|\varepsilon| > 1\)), a price increase destroys more revenue than it creates. At unit elasticity (\(|\varepsilon| = 1\)), total revenue is maximized — no price change can improve it.</p>
-    <p>Graphically, this produces a characteristic arch: plot total revenue against price and you get a parabola (for a linear demand curve) whose peak corresponds exactly to the unit-elastic point. The left panel below shows how the demand curve's slope changes with elasticity, and the right panel shows the corresponding TR curve. Adjust the elasticity slider and observe how both panels respond.</p>
-  </div>
-
-  <div class="math-block">
-    <div class="math-label">Point Elasticity &amp; Revenue Theorem</div>
-    \[\varepsilon = \frac{dQ}{dP} \cdot \frac{P}{Q}, \qquad \text{TR} = P \cdot Q\]
-    \[\frac{d(\text{TR})}{dP} = Q(1 + \varepsilon) \begin{cases} > 0 & |\varepsilon| < 1 \text{ (inelastic)} \\ = 0 & |\varepsilon| = 1 \text{ (unit elastic, TR max)} \\ < 0 & |\varepsilon| > 1 \text{ (elastic)} \end{cases}\]
   </div>
 
   <div class="viz-wrapper">
@@ -357,6 +363,21 @@
       </div>
     </div>
   </div>
+
+  <div class="caption">
+    <p>Drag the Elasticity |ε| slider left for inelastic demand (steep curve), right for elastic demand (flat curve).</p>
+    <p>Watch the right panel: the amber peak on the TR curve marks the price that maximizes revenue — it shifts as elasticity changes.</p>
+  </div>
+
+  <div class="insight">
+    <p>Raise price on inelastic demand and revenue climbs; raise it on elastic demand and revenue collapses. The TR peak always sits at unit elasticity (\(|\varepsilon| = 1\)). Pharmaceutical pricing exploits inelasticity; airline seat sales exploit elasticity.</p>
+  </div>
+
+  <div class="math-block">
+    <div class="math-label">Point Elasticity &amp; Revenue Theorem</div>
+    \[\varepsilon = \frac{dQ}{dP} \cdot \frac{P}{Q}, \qquad \text{TR} = P \cdot Q\]
+    \[\frac{d(\text{TR})}{dP} = Q(1 + \varepsilon) \begin{cases} > 0 & |\varepsilon| < 1 \text{ (inelastic)} \\ = 0 & |\varepsilon| = 1 \text{ (unit elastic, TR max)} \\ < 0 & |\varepsilon| > 1 \text{ (elastic)} \end{cases}\]
+  </div>
 </div>
 </section>
 
@@ -368,18 +389,6 @@
   <div class="section-header">
     <div class="section-number">Section 03</div>
     <h2>Market Interventions &amp; Welfare</h2>
-  </div>
-
-  <div class="prose">
-    <p>Markets left to themselves reach an equilibrium that maximizes total welfare — the sum of consumer surplus (the difference between what buyers would have been willing to pay and what they actually pay) and producer surplus (the analogous gain to sellers). Consumer surplus is geometrically the triangle above the price line and below the demand curve; producer surplus is the triangle below the price line and above the supply curve. This insight — that the free-market equilibrium exhausts all gains from trade — is one of the deepest results in welfare economics and the theoretical foundation of the presumption against price controls.</p>
-    <p>Yet governments routinely intervene. A <em>price ceiling</em> set below the equilibrium price is intended to make goods more affordable. It does hold the price down — but it simultaneously increases the quantity demanded and decreases the quantity supplied, creating a persistent shortage. Suppliers who exit the market take with them potential gains from trade that neither buyers nor sellers can now realize; this lost welfare is called <em>deadweight loss</em>. A <em>price floor</em> set above equilibrium (such as a minimum wage or agricultural price support) has the mirror-image effect: it raises revenue for sellers already in the market but creates a surplus, as more sellers enter than buyers wish to accommodate.</p>
-    <p>The welfare arithmetic is straightforward. With equilibrium price \(P^*\) and maximum willingness-to-pay \(P_{\max}\): \(\text{CS} = \tfrac{1}{2}(P_{\max} - P^*)Q^*\). With minimum supply price \(P_{\min}\): \(\text{PS} = \tfrac{1}{2}(P^* - P_{\min})Q^*\). When a ceiling binds at \(\bar{P} < P^*\), the total surplus shrinks and the DWL triangle appears between the ceiling price and the equilibrium. Use the buttons below to toggle between regimes and observe how welfare is redistributed and destroyed.</p>
-  </div>
-
-  <div class="math-block">
-    <div class="math-label">Welfare Measures</div>
-    \[\text{CS} = \tfrac{1}{2}(P_{\max} - P^*)\,Q^*, \quad \text{PS} = \tfrac{1}{2}(P^* - P_{\min})\,Q^*\]
-    \[\text{DWL} = \tfrac{1}{2}|P_{\text{control}} - P^*| \cdot |Q_{\text{control}} - Q^*|\]
   </div>
 
   <div class="viz-wrapper">
@@ -399,6 +408,21 @@
       <div class="stat-item"><span class="stat-label">DWL</span><span class="stat-value" id="w-dwl">—</span></div>
       <div class="stat-item"><span class="stat-label">Total Surplus</span><span class="stat-value" id="w-total">—</span></div>
     </div>
+  </div>
+
+  <div class="caption">
+    <p>Toggle between Free Market, Price Ceiling, and Price Floor.</p>
+    <p>Watch the amber DWL triangle appear when a control binds — and watch Total Surplus fall below the free-market value.</p>
+  </div>
+
+  <div class="insight">
+    <p>Any binding price control destroys gains from trade. A ceiling creates shortage and shrinks producer surplus; a floor creates surplus and shrinks consumer surplus. The amber deadweight-loss triangle represents welfare permanently lost — transferred to no one. Free markets exhaust all mutually beneficial trades.</p>
+  </div>
+
+  <div class="math-block">
+    <div class="math-label">Welfare Measures</div>
+    \[\text{CS} = \tfrac{1}{2}(P_{\max} - P^*)\,Q^*, \quad \text{PS} = \tfrac{1}{2}(P^* - P_{\min})\,Q^*\]
+    \[\text{DWL} = \tfrac{1}{2}|P_{\text{control}} - P^*| \cdot |Q_{\text{control}} - Q^*|\]
   </div>
 </div>
 </section>

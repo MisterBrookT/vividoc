@@ -146,6 +146,18 @@
         }
         .halflife-label { color: var(--muted); }
         .halflife-value { color: var(--yellow); font-size: 15px; }
+        .caption {
+            font-size: 13px;
+            color: var(--muted);
+            border-left: 2px solid var(--accent);
+            padding: 10px 14px;
+            margin: 16px 0 24px;
+            line-height: 1.6;
+        }
+        .caption p { margin: 0 0 4px; }
+        .caption p:last-child { margin: 0; }
+        .insight { margin: 0 0 48px; }
+        .insight p { font-size: 15px; line-height: 1.75; }
     </style>
 </head>
 <body>
@@ -164,53 +176,6 @@
 <section>
     <div class="section-label">01 — Integrated Rate Laws</div>
     <h2>Reaction Order and Concentration Decay</h2>
-
-    <div class="prose">
-        Every chemical reaction has a <strong>rate law</strong>: an equation relating the rate of
-        consumption of reactants to their concentrations. For a simple reaction A → products,
-        the rate law takes the form <em>rate = k[A]ⁿ</em>, where <em>k</em> is the rate constant
-        and <em>n</em> is the <strong>reaction order</strong> — typically 0, 1, or 2.
-        The order is an empirical quantity; it cannot generally be read off from the balanced
-        equation, but must be determined by measuring concentration vs. time in the laboratory.
-    </div>
-
-    <div class="math-block">
-        \[\frac{d[\text{A}]}{dt} = -k[\text{A}]^n\]
-    </div>
-
-    <div class="prose">
-        Integrating the rate law yields the <strong>integrated rate law</strong> — a direct
-        expression for how concentration evolves with time. For a
-        <strong>zeroth-order reaction</strong> (n = 0), the rate is constant and concentration
-        declines linearly: [A](t) = [A]₀ − kt. The reaction proceeds at the same rate regardless
-        of how much reactant remains; this occurs when the reaction is limited by a surface or
-        enzyme that is always saturated. For a
-        <strong>first-order reaction</strong> (n = 1), every molecule decomposes independently,
-        giving exponential decay: [A](t) = [A]₀ · e^(−kt). Radioactive decay and many
-        unimolecular reactions follow this law — each nucleus or molecule has a fixed probability
-        per unit time of reacting. For a
-        <strong>second-order reaction</strong> (n = 2), molecules must collide pairwise, so the
-        rate slows dramatically as concentration drops: [A](t) = [A]₀/(1 + k[A]₀t).
-    </div>
-
-    <div class="prose">
-        One diagnostic tool is the <strong>half-life</strong> t₁/₂ — the time required for
-        concentration to fall to half its initial value. For a zeroth-order reaction,
-        t₁/₂ = [A]₀/(2k), which depends on initial concentration.
-        For a first-order reaction, t₁/₂ = ln 2/k ≈ 0.693/k, which is gloriously
-        <em>independent</em> of initial concentration — this is the familiar constant half-life
-        of radioactive isotopes. For a second-order reaction, t₁/₂ = 1/(k[A]₀), inversely
-        proportional to initial concentration. Experimenters routinely measure half-lives
-        at several starting concentrations to determine reaction order.
-    </div>
-
-    <div class="prose">
-        To identify order experimentally, one plots [A] vs. t (linear for 0th order),
-        ln[A] vs. t (linear for 1st order), or 1/[A] vs. t (linear for 2nd order) — whichever
-        gives a straight line reveals the order. The slope of that line gives k.
-        Use the controls below to explore how the shape of the decay curve changes with order,
-        rate constant, and initial concentration.
-    </div>
 
     <!-- Interactive widget -->
     <div class="canvas-wrap">
@@ -253,6 +218,15 @@
         </div>
     </div>
 
+    <div class="caption">
+        <p>Click 0th, 1st, or 2nd to switch reaction order. Drag k to change the rate constant and [A]₀ to change the initial concentration.</p>
+        <p>Watch how the curve shape changes between linear (0th), exponential (1st), and hyperbolic (2nd) decay — and observe how the t₁/₂ readout responds.</p>
+    </div>
+
+    <div class="insight">
+        <p>Reaction order determines the geometry of decay: zeroth order depletes at a fixed rate regardless of concentration, first order gives each molecule a constant probability of reacting per unit time (constant half-life), and second order slows dramatically as concentration falls. The half-life's dependence on [A]₀ is the sharpest experimental test — plot it at several starting concentrations and the order reveals itself. From here, the question becomes what controls the rate constant itself.</p>
+    </div>
+
     <div class="infobox">
         <strong>Determining order from linearization:</strong><br>
         Plot [A] vs t → if linear, n=0. Plot ln[A] vs t → if linear, n=1. Plot 1/[A] vs t → if linear, n=2.
@@ -267,49 +241,6 @@
 <section>
     <div class="section-label">02 — Arrhenius Equation</div>
     <h2>Temperature and the Energy Barrier</h2>
-
-    <div class="prose">
-        Rate constants are not truly constant — they depend exponentially on temperature.
-        In 1889, Svante Arrhenius proposed an equation that has become one of the most
-        important in all of physical chemistry. It explains why reactions speed up dramatically
-        when heated, why food spoils faster in summer, and why enzymes evolved to work
-        near 37 °C rather than 100 °C.
-    </div>
-
-    <div class="math-block">
-        \[k = A\,e^{-E_a / RT}\]
-    </div>
-
-    <div class="prose">
-        The <strong>activation energy</strong> Eₐ is the minimum energy that colliding molecules
-        must possess for a reaction to occur. Imagine a potential-energy surface: reactants sit
-        in a valley, and the transition state is a mountain pass. Only molecules with enough
-        kinetic energy to climb this barrier contribute to the reaction rate. The
-        <strong>pre-exponential factor A</strong> (also called the frequency factor) captures
-        both the collision frequency and the geometric requirement that molecules be correctly
-        oriented when they collide. It has units of s⁻¹ for first-order reactions or M⁻¹s⁻¹
-        for second-order.
-    </div>
-
-    <div class="prose">
-        The exponential dependence on temperature is striking. At 310 K (near body temperature),
-        a 10 K increase in temperature typically <em>doubles</em> the rate constant for reactions
-        with typical Eₐ values of 50–70 kJ/mol. This "doubling rule" is a rough empirical
-        observation — more precisely, the ratio k(T+10)/k(T) = exp(Eₐ × 10 / [R·T·(T+10)]).
-        High-Eₐ reactions are more sensitive to temperature changes; low-Eₐ reactions (like
-        enzyme-catalysed reactions, Eₐ ≈ 20–40 kJ/mol) are less sensitive. Catalysts work
-        precisely by providing an alternative reaction pathway with a lower activation energy —
-        the same Arrhenius exponential applies, but with a smaller Eₐ, giving an enormously
-        larger k at the same temperature.
-    </div>
-
-    <div class="prose">
-        Taking the natural log of the Arrhenius equation gives
-        ln k = ln A − Eₐ/(RT), so a plot of ln k vs 1/T (an "Arrhenius plot") is a straight line
-        with slope −Eₐ/R. Chemists use Arrhenius plots to extract Eₐ experimentally: measure k
-        at several temperatures, plot ln k vs 1/T, fit a line. The slope gives −Eₐ/R ≈ −Eₐ/8.314.
-        This technique is used in drug stability testing, food science, and materials engineering.
-    </div>
 
     <!-- Interactive widget -->
     <div class="canvas-wrap">
@@ -343,6 +274,15 @@
         </div>
     </div>
 
+    <div class="caption">
+        <p>Drag Eₐ to raise or lower the activation energy barrier. Drag T to move along the curve and observe both the cyan dot (current T) and yellow dot (T + 10 K).</p>
+        <p>Watch the k(T+10)/k(T) ratio in the readout — this is the fold-change from a 10-degree temperature increase.</p>
+    </div>
+
+    <div class="insight">
+        <p>The rate constant grows exponentially with temperature because only molecules in the high-energy tail of the Maxwell–Boltzmann distribution clear the activation barrier. High Eₐ means that tail is thin and temperature sensitivity is extreme; enzymes evolved low Eₐ values (~20–40 kJ/mol) precisely to reduce this sensitivity near 37 °C. Catalysts accelerate reactions not by adding energy but by providing an alternative pathway with a lower barrier — the same Arrhenius exponential, smaller exponent. This sets the stage for enzyme kinetics, where saturation imposes a ceiling the Arrhenius picture alone cannot predict.</p>
+    </div>
+
     <div class="infobox">
         <strong>Catalysis and Eₐ:</strong> A platinum catalyst reduces the Eₐ of H₂ + O₂ → H₂O
         from ~240 kJ/mol to ~50 kJ/mol, making the reaction proceed at room temperature instead
@@ -359,50 +299,6 @@
 <section>
     <div class="section-label">03 — Enzyme Kinetics</div>
     <h2>Michaelis–Menten Saturation</h2>
-
-    <div class="prose">
-        Unlike ordinary chemical reactions, enzyme-catalysed reactions display a characteristic
-        <strong>saturation behaviour</strong>: at low substrate concentrations [S], the rate
-        increases nearly linearly with [S], but at high [S] the rate asymptotes to a maximum
-        velocity Vmax, no matter how much more substrate is added. This is because enzymes have
-        a fixed number of active sites, and when all are occupied, the enzyme is working as fast
-        as it can.
-    </div>
-
-    <div class="math-block">
-        \[v = \frac{V_{\max}[\text{S}]}{K_m + [\text{S}]}\]
-    </div>
-
-    <div class="prose">
-        The Michaelis-Menten mechanism (1913) assumes a two-step process: the enzyme E reversibly
-        binds substrate S to form the enzyme-substrate complex ES (with dissociation constant-like
-        parameter Km), which then breaks down to release product P and regenerate E. The
-        <strong>Michaelis constant Km</strong> is the substrate concentration at which the reaction
-        rate is exactly half of Vmax. A small Km means the enzyme has high affinity for its
-        substrate — the active site is half-saturated at low [S]. A large Km means the enzyme
-        has weak affinity and needs a higher substrate concentration to operate efficiently.
-        Km values span roughly 10 μM to 100 mM across different enzymes; they are fundamental
-        parameters for understanding enzyme specificity.
-    </div>
-
-    <div class="prose">
-        Clinically, Km is crucial in pharmacology. Many drugs work by <em>competitive inhibition</em>:
-        the drug molecule resembles the natural substrate and competes for the active site.
-        A competitive inhibitor increases the apparent Km (makes the enzyme seem to have lower
-        affinity) but does not change Vmax — at saturating substrate, the inhibitor is out-competed.
-        <em>Noncompetitive inhibitors</em> bind a different site (the allosteric site), decreasing
-        Vmax without affecting Km — the enzyme's affinity is unchanged, but its maximum throughput
-        is reduced. HIV protease inhibitors, statins (cholesterol-lowering drugs), and ACE inhibitors
-        (for hypertension) all work by exploiting Km and Vmax relationships.
-    </div>
-
-    <div class="prose">
-        The Lineweaver-Burk double-reciprocal plot (1/v vs 1/[S]) transforms the hyperbola into
-        a straight line with y-intercept 1/Vmax and x-intercept −1/Km. Though imprecise for
-        high-[S] data due to error amplification, it allows graphical determination of both
-        kinetic parameters and is still widely used to classify inhibitor types by comparing
-        the effect on the slope and intercepts.
-    </div>
 
     <!-- Interactive widget -->
     <div class="canvas-wrap">
@@ -440,6 +336,15 @@
             <div class="li"><div class="swatch" style="background:var(--muted);border-top:1px dashed var(--muted)"></div>Vmax/2 (dashed)</div>
             <div class="li"><div class="dot" style="background:var(--red)"></div>probe position</div>
         </div>
+    </div>
+
+    <div class="caption">
+        <p>Drag Vmax to set the enzyme's maximum throughput and Km to change substrate affinity. Move the [S] probe slider to read off the reaction rate at any substrate concentration.</p>
+        <p>Watch v/Vmax approach 1 only asymptotically — and confirm that placing the probe at [S] = Km always gives exactly 50% of Vmax.</p>
+    </div>
+
+    <div class="insight">
+        <p>Saturation is the hallmark of catalysis by a finite resource: once every active site is occupied, adding more substrate changes nothing. Km is the substrate concentration at half-saturation — a low Km enzyme captures substrate efficiently even at trace levels, a high Km enzyme requires abundance. Competitive inhibitors raise the apparent Km (the curve shifts right) without touching Vmax; noncompetitive inhibitors lower Vmax without shifting Km. Recognizing which parameter a drug changes tells you its mechanism without ever resolving the binding site.</p>
     </div>
 
     <div class="infobox">

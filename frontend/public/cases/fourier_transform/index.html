@@ -70,14 +70,6 @@
             padding-bottom: 10px;
             border-bottom: 1px solid var(--border);
         }
-        .text-content { margin-bottom: 28px; }
-        .text-content p {
-            color: #d8c8e8;
-            font-size: 0.88rem;
-            line-height: 1.9;
-            margin-bottom: 14px;
-        }
-        .text-content strong { color: var(--accent); font-weight: 700; }
         .math-block {
             background: var(--card);
             border: 1px solid var(--border);
@@ -201,6 +193,18 @@
             letter-spacing: 1px;
             margin-top: 4px;
         }
+        .caption {
+            font-size: 13px;
+            color: var(--muted);
+            border-left: 2px solid var(--accent);
+            padding: 10px 14px;
+            margin: 16px 0 24px;
+            line-height: 1.6;
+        }
+        .caption p { margin: 0 0 4px; }
+        .caption p:last-child { margin: 0; }
+        .insight { margin: 0 0 48px; }
+        .insight p { font-size: 15px; line-height: 1.75; }
     </style>
 </head>
 <body>
@@ -212,27 +216,7 @@
     <!-- ── KU1: Signal Decomposition ── -->
     <section class="knowledge-unit" id="ku1">
         <h2 class="ku-title">Any periodic signal is built from sinusoidal harmonics at integer-multiple frequencies.</h2>
-        <div class="text-content">
-            <p>
-                The <strong>Fourier Transform</strong> is one of the most powerful ideas in mathematics:
-                every periodic waveform — no matter how sharp, jagged, or complex — is secretly
-                a sum of pure sine waves. Each sine wave vibrates at a specific frequency, carries
-                its own amplitude, and arrives at its own phase.
-            </p>
-            <p>
-                A square wave, a sawtooth, a triangle — each has a characteristic <strong>harmonic signature</strong>.
-                The general formula for the Fourier series is:
-            </p>
-            <div class="math-block">
-                $$ f(t) = \sum_{n=1}^{\infty} \left[ a_n \cos(2\pi n f_0 t) + b_n \sin(2\pi n f_0 t) \right] $$
-            </div>
-            <p>
-                Select a waveform below. The left panel shows the composite signal;
-                the right panel shows each harmonic stacked by frequency.
-                The frequency spectrum at the bottom reveals which harmonics are present —
-                <strong>different waveforms have entirely different spectral signatures</strong>.
-            </p>
-        </div>
+
         <div class="interactive-content">
 
         <style>
@@ -385,34 +369,21 @@
         </script>
 
         </div>
+
+        <div class="caption">
+            <p>Click SQUARE, SAWTOOTH, TRIANGLE, or PULSE to switch waveforms.</p>
+            <p>Watch how the frequency spectrum changes — each waveform has a unique harmonic signature.</p>
+        </div>
+
+        <div class="insight">
+            <p>Every periodic waveform is secretly a sum of pure sine waves, each at an integer multiple of the base frequency. A square wave uses only odd harmonics; a sawtooth uses all of them — that's why it sounds harsher. This hints at why filtering a signal in frequency space is equivalent to reshaping it in time.</p>
+        </div>
     </section>
 
     <!-- ── KU2: Gibbs Phenomenon ── -->
     <section class="knowledge-unit" id="ku2">
         <h2 class="ku-title">Adding more harmonics approximates the target wave — but corners always cause a ~9% Gibbs overshoot.</h2>
-        <div class="text-content">
-            <p>
-                Start with just the fundamental frequency and you have a sine wave.
-                Add the 3rd harmonic (three times the frequency, a third of the amplitude) and the
-                shape begins to square off. Keep adding odd harmonics — 5th, 7th, 9th — and the
-                approximation sharpens dramatically.
-            </p>
-            <p>
-                But something strange happens at the sharp jumps. No matter how many terms you add,
-                the approximation always <strong>overshoots by about 9%</strong>. This is the
-                <strong>Gibbs phenomenon</strong>: a ringing artifact that never disappears, it only
-                narrows. The partial sum is:
-            </p>
-            <div class="math-block">
-                $$ S_N(t) = \frac{4}{\pi} \sum_{\substack{k=1 \\ k \text{ odd}}}^{N} \frac{1}{k} \sin(kt) $$
-            </div>
-            <p>
-                The overshoot converges to exactly $\frac{\text{Si}(\pi)}{\pi/2} - 1 \approx 8.9\%$,
-                where $\text{Si}$ is the sine integral — a constant of nature, not a computational error.
-                Drag the slider and watch the <span style="color:#f87171">red Gibbs marker</span>:
-                it narrows but never vanishes.
-            </p>
-        </div>
+
         <div class="interactive-content">
         <div class="card">
             <div class="ctrl-row">
@@ -535,32 +506,22 @@
         })();
         </script>
         </div>
+
+        <div class="caption">
+            <p>Drag the HARMONICS slider from N=1 up to N=21.</p>
+            <p>Toggle COMPONENTS to see the individual sine waves layered in.</p>
+            <p>Watch the red overshoot marker — it narrows but never disappears no matter how high N goes.</p>
+        </div>
+
+        <div class="insight">
+            <p>The ~9% Gibbs overshoot is a mathematical constant, not a numerical error — it converges to Si(π)/(π/2) − 1 ≈ 8.9% regardless of how many harmonics you add. More terms sharpen the jump but preserve the spike. This hints at why audio engineers use windowing functions: smoothing the discontinuity in frequency space eliminates the ringing in time.</p>
+        </div>
     </section>
 
     <!-- ── KU3: Epicycles ── -->
     <section class="knowledge-unit" id="ku3">
         <h2 class="ku-title">The Fourier series is equivalent to a set of rotating circles — epicycles — whose tip traces the waveform.</h2>
-        <div class="text-content">
-            <p>
-                There is a beautiful geometric interpretation hiding inside the Fourier series.
-                Every harmonic can be visualized as a <strong>rotating circle (an epicycle)</strong>:
-                it spins at its harmonic frequency with a radius proportional to its amplitude.
-                Mount the second circle on the tip of the first, the third on the tip of the second —
-                and let them all rotate simultaneously.
-            </p>
-            <p>
-                The tip of the last circle traces the waveform. In complex notation:
-            </p>
-            <div class="math-block">
-                $$ f(t) = \sum_{n=-\infty}^{\infty} c_n \, e^{i n \omega_0 t} $$
-            </div>
-            <p>
-                Each term $c_n e^{in\omega_0 t}$ is a <strong>phasor</strong> — a point rotating in the
-                complex plane at frequency $n\omega_0$. This is exactly how Ptolemy modelled
-                planetary orbits in 150 AD, and exactly how a Fourier synthesizer works.
-                Add more epicycles and the traced curve converges to a square wave.
-            </p>
-        </div>
+
         <div class="interactive-content">
         <style>
             #ku3-canvases { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -701,6 +662,16 @@
             setTimeout(()=>{ resize(); start(); },150);
         })();
         </script>
+        </div>
+
+        <div class="caption">
+            <p>Press PLAY to start the animation, then drag CIRCLES to add more epicycles.</p>
+            <p>Adjust SPEED to slow down and see each circle's contribution.</p>
+            <p>Watch the right panel — more circles produce a waveform that increasingly resembles a square wave.</p>
+        </div>
+
+        <div class="insight">
+            <p>Each Fourier harmonic is literally a rotating circle: its radius is the amplitude, its angular speed is the harmonic frequency. Ptolemy used the same epicycle machinery to model planetary orbits in 150 AD — and was correct, just for the wrong reason. Any closed curve, no matter how complex, can be traced by a finite chain of epicycles.</p>
         </div>
     </section>
 
