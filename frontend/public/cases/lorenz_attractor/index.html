@@ -34,9 +34,6 @@
 
         .knowledge-unit { max-width:900px; margin:48px auto 0; padding:0 24px; }
         .ku-title { font-size:1rem; font-weight:700; color:var(--dim); letter-spacing:0.5px; margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid var(--border); line-height:1.5; }
-        .text-content { margin-bottom:28px; }
-        .text-content p { color:#9cbfc8; font-size:0.85rem; line-height:1.9; margin-bottom:14px; }
-        .text-content strong { color:var(--accent); }
         .math-block { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); padding:16px 20px; margin:16px 0; border-radius:4px; overflow-x:auto; text-align:center; }
 
         .card { background:var(--card); border:1px solid var(--border); border-top:3px solid var(--accent); border-radius:6px; padding:20px; }
@@ -50,6 +47,19 @@
         canvas { display:block; background:var(--bg); border:1px solid var(--border); border-radius:3px; }
         .canvas-label { font-size:0.72rem; color:var(--muted); text-align:center; letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
         .twin-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+        .caption {
+            font-size: 13px;
+            color: var(--muted);
+            border-left: 2px solid var(--accent);
+            padding: 10px 14px;
+            margin: 16px 0 24px;
+            line-height: 1.6;
+        }
+        .caption p { margin: 0 0 4px; }
+        .caption p:last-child { margin: 0; }
+        .insight { margin: 0 0 48px; }
+        .insight p { font-size: 15px; line-height: 1.75; }
     </style>
 </head>
 <body>
@@ -61,23 +71,7 @@
     <!-- KU1: The Attractor -->
     <section class="knowledge-unit" id="ku1">
         <h2 class="ku-title">A simple deterministic system can produce infinitely complex, never-repeating trajectories — the Lorenz attractor.</h2>
-        <div class="text-content">
-            <p>
-                In 1963, Edward Lorenz derived a simplified model of atmospheric convection.
-                Three coupled differential equations — deceptively simple — but the trajectory
-                never repeats and is exquisitely sensitive to initial conditions.
-                This was the first mathematical demonstration of <strong>deterministic chaos</strong>.
-            </p>
-            <div class="math-block">
-                $$ \frac{dx}{dt} = \sigma(y - x), \quad \frac{dy}{dt} = x(\rho - z) - y, \quad \frac{dz}{dt} = xy - \beta z $$
-            </div>
-            <p>
-                With the classic parameters $\sigma = 10$, $\rho = 28$, $\beta = \tfrac{8}{3}$,
-                the trajectory spirals outward on one lobe, then unpredictably switches to the other —
-                forever, without ever crossing itself.
-                Press play and watch the attractor emerge from a single initial point.
-            </p>
-        </div>
+
         <div class="interactive-content">
         <div class="card">
             <div class="ctrl-row">
@@ -121,7 +115,6 @@
                 const x3=x+k2x*dt/2, y3=y+k2y*dt/2, z3=z+k2z*dt/2;
                 const k3x=σ*(y3-x3), k3y=x3*(ρ-z3)-y3, k3z=x3*y3-β*z3;
                 const x4=x+k3x*dt, y4=y+k3y*dt, z4=z+k3z*dt;
-                const k4x=σ*(y4-x4), k4y=x4*(ρ-z4)-y4, k4z=x4*y4-β*z4;
                 return {
                     nx:x+(k1x+2*k2x+2*k3x+k4x)*dt/6,
                     ny:y+(k1y+2*k2y+2*k3y+k4y)*dt/6,
@@ -208,30 +201,22 @@
         })();
         </script>
         </div>
+
+        <div class="caption">
+            <p>Press Play and watch the trajectory grow from a single point.</p>
+            <p>Drag SPEED to fast-forward through time.</p>
+            <p>Watch how the path spirals outward on one lobe, then unpredictably flips to the other — never repeating, never crossing itself.</p>
+        </div>
+
+        <div class="insight">
+            <p>Three coupled differential equations — deceptively simple — produce a trajectory that fills space without ever repeating. The two-lobed butterfly shape is an attractor: trajectories starting anywhere nearby collapse toward it, yet never settle. This hints at why long-range weather prediction is fundamentally impossible, not just practically hard.</p>
+        </div>
     </section>
 
     <!-- KU2: Sensitive dependence -->
     <section class="knowledge-unit" id="ku2">
         <h2 class="ku-title">Two trajectories starting arbitrarily close together diverge exponentially — the butterfly effect.</h2>
-        <div class="text-content">
-            <p>
-                The defining property of chaos is <strong>sensitive dependence on initial conditions</strong>.
-                Start two trajectories at positions separated by a tiny distance $\varepsilon$ —
-                far smaller than any physical measurement error — and watch them quickly diverge to
-                completely different regions of the attractor.
-            </p>
-            <p>
-                The rate of divergence is characterized by the <strong>Lyapunov exponent</strong> $\lambda$:
-            </p>
-            <div class="math-block">
-                $$ \|x_1(t) - x_2(t)\| \approx \varepsilon \, e^{\lambda t}, \quad \lambda \approx 0.906 \text{ for the Lorenz system} $$
-            </div>
-            <p>
-                This means that any uncertainty in measurement — no matter how small — doubles
-                roughly every $\ln 2 / \lambda \approx 0.76$ time units. Adjust the initial separation
-                and observe how quickly the two trajectories lose synchrony.
-            </p>
-        </div>
+
         <div class="interactive-content">
         <div class="card">
             <div class="ctrl-row">
@@ -379,27 +364,22 @@
         })();
         </script>
         </div>
+
+        <div class="caption">
+            <p>Drag the ε slider to set how close the two starting points are — try from 1e-6 to 1e-1.</p>
+            <p>Click Run to simulate both trajectories simultaneously.</p>
+            <p>Watch the cyan and red paths: at first indistinguishable, they eventually diverge to completely different regions of the attractor.</p>
+        </div>
+
+        <div class="insight">
+            <p>Uncertainty doubles roughly every 0.76 time units — no matter how tiny your initial measurement error, it eventually swamps the prediction. This isn't a failure of computation; it's a fundamental property of the equations. This hints at ρ: the same sensitivity exists at the classic chaotic parameter, but disappears entirely below ρ = 1.</p>
+        </div>
     </section>
 
     <!-- KU3: Rho parameter -->
     <section class="knowledge-unit" id="ku3">
         <h2 class="ku-title">The parameter ρ controls the system's behavior — from stable equilibrium, through limit cycles, to full chaos.</h2>
-        <div class="text-content">
-            <p>
-                Not all parameters produce chaos. The Lorenz system transitions through
-                qualitatively different regimes as $\rho$ increases:
-            </p>
-            <p>
-                <strong>ρ &lt; 1:</strong> All trajectories converge to the origin — stable equilibrium.<br>
-                <strong>1 &lt; ρ &lt; 13.93:</strong> Two stable fixed points emerge (the "butterfly wings" centers).<br>
-                <strong>ρ ≈ 24.74:</strong> The fixed points become unstable — <strong>chaos begins</strong>.<br>
-                <strong>ρ = 28:</strong> The classic Lorenz attractor — fully chaotic, never repeating.
-            </p>
-            <p>
-                Drag the slider to move through these regimes. Watch the attractor shape change
-                from a single point, to two isolated spirals, to the iconic butterfly.
-            </p>
-        </div>
+
         <div class="interactive-content">
         <div class="card">
             <div class="ctrl-row">
@@ -493,6 +473,15 @@
             setTimeout(resize,250);
         })();
         </script>
+        </div>
+
+        <div class="caption">
+            <p>Drag the ρ slider slowly from 0.5 up to 30.</p>
+            <p>Watch the regime label change — STABLE ORIGIN, FIXED POINTS, TRANSIENT CHAOS, then CHAOTIC — and see the attractor shape transform with each transition.</p>
+        </div>
+
+        <div class="insight">
+            <p>A single parameter separates order from chaos: below ρ = 1 every trajectory collapses to the origin; above ρ ≈ 24.74 the fixed points destabilize and chaos erupts. The iconic butterfly shape exists only in a narrow band of ρ values — change one number and an entirely different universe appears.</p>
         </div>
     </section>
 

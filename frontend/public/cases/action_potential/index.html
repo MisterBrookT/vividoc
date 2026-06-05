@@ -113,6 +113,18 @@
             font-size: 12px; color: var(--dim); line-height: 1.8;
         }
         .infobox strong { color: var(--text); }
+        .caption {
+            font-size: 13px;
+            color: var(--muted);
+            border-left: 2px solid var(--accent);
+            padding: 10px 14px;
+            margin: 16px 0 24px;
+            line-height: 1.6;
+        }
+        .caption p { margin: 0 0 4px; }
+        .caption p:last-child { margin: 0; }
+        .insight { margin: 0 0 48px; }
+        .insight p { font-size: 15px; line-height: 1.75; }
     </style>
 </head>
 <body>
@@ -127,12 +139,6 @@
 <section>
     <div class="section-label">01 — The Voltage Trace</div>
     <h2>The All-or-Nothing Law</h2>
-    <div class="prose">
-        A neuron at rest sits at about −70 mV. When an incoming stimulus depolarizes the membrane
-        past a <strong style="color:var(--red)">threshold</strong> of roughly −55 mV, the cell fires:
-        a rapid, stereotyped voltage spike that reaches +40 mV before repolarizing.
-        Below threshold, nothing happens — <em>all or nothing</em>.
-    </div>
 
     <div class="canvas-wrap">
         <canvas id="cv" width="836" height="300"></canvas>
@@ -155,8 +161,14 @@
         </div>
     </div>
 
-    <div class="prose">
-        The voltage trace passes through four phases. Hover over the chart to see each annotated.
+    <div class="caption">
+        <p>Click "Fire" to inject a stimulus current into the neuron.</p>
+        <p>Drag the stimulus slider left to reduce current, right to increase it.</p>
+        <p>Watch whether the voltage trace crosses the red threshold line — and what happens when it does.</p>
+    </div>
+
+    <div class="insight">
+        <p>A neuron either fires completely or not at all — there is no partial spike. Once the membrane crosses −55 mV, a self-amplifying Na⁺ flood drives voltage to +40 mV regardless of stimulus strength. This leads us to the ion channels responsible for that all-or-nothing behavior.</p>
     </div>
 </section>
 
@@ -164,11 +176,7 @@
 <section>
     <div class="section-label">02 — Ion Channels</div>
     <h2>Na⁺ and K⁺ Conductances</h2>
-    <div class="prose">
-        The spike is driven by voltage-gated ion channels. The Hodgkin–Huxley model (Nobel Prize 1963)
-        describes membrane conductance using three gating variables: <strong>m</strong> (Na⁺ activation),
-        <strong>h</strong> (Na⁺ inactivation), and <strong>n</strong> (K⁺ activation).
-    </div>
+
     <div class="math-block">
         \[C_m \frac{dV}{dt} = -\bar{g}_{\text{Na}}\,m^3 h\,(V - E_{\text{Na}}) - \bar{g}_{\text{K}}\,n^4(V-E_{\text{K}}) - g_L(V-E_L) + I_{\text{ext}}\]
     </div>
@@ -182,6 +190,11 @@
         </div>
     </div>
 
+    <div class="caption">
+        <p>Fire the neuron in Section 01 — this chart updates in sync with the voltage trace.</p>
+        <p>Watch how the orange Na⁺ spike precedes the purple K⁺ rise by several milliseconds.</p>
+    </div>
+
     <div class="ion-grid">
         <div class="ion-card">
             <h4 style="color:var(--na)">Na⁺ — Depolarization</h4>
@@ -192,18 +205,16 @@
             <p>Slower voltage-gated K⁺ channels open after Na⁺ inactivation. K⁺ flows out (E_K ≈ −77 mV), pulling voltage back below rest — a brief <em>hyperpolarization</em> (refractory period).</p>
         </div>
     </div>
+
+    <div class="insight">
+        <p>Na⁺ and K⁺ act as sequential relay runners: Na⁺ sprints first to depolarize, K⁺ follows to restore order. Their timing difference, not their magnitude, shapes the spike. This sequential gating is why threshold exists — and why crossing it is irreversible.</p>
+    </div>
 </section>
 
 <!-- Section 3: Gating variables & threshold -->
 <section>
     <div class="section-label">03 — Threshold Dynamics</div>
     <h2>Why All-or-Nothing?</h2>
-    <div class="prose">
-        The threshold emerges from a race between Na⁺ activation (fast, positive feedback)
-        and the combined K⁺ + Na⁺ inactivation (slow, negative feedback).
-        Below threshold, the slower processes win and the perturbation decays.
-        Above threshold, the fast Na⁺ feedback wins explosively.
-    </div>
 
     <div class="canvas-wrap">
         <canvas id="ct" width="836" height="280"></canvas>
@@ -217,6 +228,11 @@
         </div>
     </div>
 
+    <div class="caption">
+        <p>Drag the stimulus slider slowly from left to right.</p>
+        <p>Watch for the critical point where subthreshold humps abruptly become full spikes.</p>
+    </div>
+
     <div class="math-block">
         Gating variable steady-states: \(m_\infty(V) = \dfrac{1}{1+e^{-(V+40)/5}}\) ,
         \(n_\infty(V) = \dfrac{1}{1+e^{-(V+55)/14}}\)
@@ -227,6 +243,10 @@
         are still open, making a second spike impossible (absolute refractory, ~1 ms) or
         requiring a larger stimulus (relative refractory, ~4 ms). This limits firing rates
         to ~500–1000 Hz and ensures one-way propagation along axons.
+    </div>
+
+    <div class="insight">
+        <p>The sharp threshold is a race between positive and negative feedback: fast Na⁺ activation versus slow K⁺ and Na⁺ inactivation. Below threshold, the slower processes win and the perturbation decays; above it, Na⁺ wins explosively. This bistability is what makes neurons reliable digital switches inside analog tissue.</p>
     </div>
 </section>
 
