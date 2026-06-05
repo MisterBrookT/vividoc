@@ -110,10 +110,30 @@ Then replace the `<style>` block with the custom CSS from Step 1.
 
 ## 5 — Generate each section
 
+**Writing philosophy — interaction first, explanation second.**
+
+Every section follows this exact order:
+1. **Section header** — brief, e.g. `01 — Concept Name`
+2. **Interactive widget** — immediately, no preamble
+3. **Caption** (right under the widget, styled distinctly):
+   - *How*: one imperative sentence per control — "Drag [X] to change [Y]."
+   - *What to notice*: one sentence pointing to the constraint — "Watch [Z] approach [limit]."
+4. **Insight** (1–3 sentences, **conclusion first**):
+   - Open with the key finding, not the setup
+   - Follow with one implication or surprising fact
+   - Close with a bridge to the next section (last section of the document omits this)
+
+**Voice rules:**
+- Conclusion first. Never build to the point — state it, then support it.
+- Short sentences. Active voice. Second person ("you", "notice", "try").
+- No filler: delete "In this section we will…", "It can be seen that…"
+- No hedging: "typically", "in most cases" → remove unless genuinely necessary.
+- Max ~60 words of body text per section. The interaction carries the explanation.
+
 For each knowledge unit, in order:
 
-**Stage 1 (text):** Write `<p>` / `<strong>` / KaTeX HTML matching the text_description.
-Tone should match the visual register (dark/precise → formal language; vivid → analogies).
+**Stage 1 (text):** Write the caption + insight only (not a full introduction).
+Tone should match the visual register (dark/precise → terse; vivid → one sharp analogy).
 
 **Stage 2 (interaction):** Write `<style>` + HTML + `<script>` (IIFE).
 - All IDs: `ku{n}-` prefix. All CSS selectors: `#ku{n}` scoped.
