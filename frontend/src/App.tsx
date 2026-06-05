@@ -29,90 +29,40 @@ const DOMAINS = [
     id: 'physics',
     name: 'Physics & Mathematics',
     cases: [
-      { slug: 'fourier_transform',    title: 'Fourier Transform',     category: 'Temporal Control',      desc: 'Signal decomposition, Gibbs phenomenon, epicycles.' },
-      { slug: 'lorenz_attractor',     title: 'Lorenz Attractor',      category: 'Parameter Exploration', desc: 'Deterministic chaos and the butterfly effect.' },
-      { slug: 'bezier_curves',        title: 'Bézier Curves',         category: 'Direct Manipulation',   desc: 'De Casteljau construction through draggable control points.' },
-    ],
-  },
-  {
-    id: 'cs',
-    name: 'Computer Science',
-    cases: [
-      { slug: 'merge_sort',           title: 'Merge Sort',            category: 'Temporal Control',      desc: 'Divide-and-conquer sorting visualised step by step.' },
-      { slug: 'neural_network',       title: 'Neural Network',        category: 'Freeform Construction', desc: 'Build a network and watch forward propagation unfold.' },
-      { slug: 'voronoi',              title: 'Voronoi Tessellation',  category: 'Inspection',            desc: 'Hover to reveal spatial partitioning and proximity.' },
+      { slug: 'fourier_transform',    title: 'Fourier Transform',      category: 'Temporal Control',      desc: 'Signal decomposition, Gibbs phenomenon, epicycles.' },
+      { slug: 'lorenz_attractor',     title: 'Lorenz Attractor',       category: 'Parameter Exploration', desc: 'Deterministic chaos and the butterfly effect.' },
     ],
   },
   {
     id: 'biology',
     name: 'Biology & Medicine',
     cases: [
-      { slug: 'action_potential',     title: 'Action Potential',      category: 'Temporal Control',      desc: 'Ion channels, threshold dynamics, and the all-or-nothing law.' },
-      { slug: 'dna_replication',      title: 'DNA Replication',       category: 'Temporal Control',      desc: 'Helicase unwinds, polymerase copies — fidelity down to one error per billion bases.' },
-      { slug: 'geometric_optics',     title: 'Geometric Optics',      category: 'Direct Manipulation',   desc: 'Drag lenses and sources to trace real-time refraction paths.' },
-    ],
-  },
-  {
-    id: 'stats',
-    name: 'Statistics & Probability',
-    cases: [
-      { slug: 'central_limit_theorem', title: 'Central Limit Theorem', category: 'Parameter Exploration', desc: 'Any distribution converges to normal as sample size grows.' },
-      { slug: 'quantum_orbitals',      title: 'Quantum Orbitals',      category: 'State Switching',       desc: 'Switch between 1s, 2p, 3d electron probability clouds.' },
-      { slug: 'entropy',               title: 'Entropy',               category: 'Scroll-driven Narrative', desc: 'Scroll through thermodynamic irreversibility as particles mix.' },
-    ],
-  },
-  {
-    id: 'economics',
-    name: 'Economics & Game Theory',
-    cases: [
-      { slug: 'supply_demand',        title: 'Supply & Demand',       category: 'Direct Manipulation',   desc: 'Drag curves to shift equilibrium; add price ceilings and floors to reveal surplus and deadweight loss.' },
-      { slug: 'black_scholes',        title: 'Black–Scholes',         category: 'Parameter Exploration', desc: 'Five sliders reveal how volatility, time, and strike price determine option value and the Greeks.' },
-      { slug: 'prisoners_dilemma',    title: "Prisoner's Dilemma",    category: 'State Switching',       desc: 'From dominant defection to evolved cooperation — why rational actors can trap themselves.' },
-    ],
-  },
-  {
-    id: 'mechanics',
-    name: 'Mechanics & Waves',
-    cases: [
-      { slug: 'double_pendulum',      title: 'Double Pendulum',       category: 'Direct Manipulation',   desc: 'Drag the initial angles and watch deterministic chaos erase predictability within seconds.' },
-      { slug: 'wave_interference',    title: 'Wave Interference',     category: 'Parameter Exploration', desc: 'Superpose two waves, drag point sources, and explore beats and standing wave harmonics.' },
-      { slug: 'spring_mass',          title: 'Spring–Mass System',    category: 'Parameter Exploration', desc: 'Tune stiffness, mass, and damping to see underdamped oscillation, critical damping, and resonance.' },
-    ],
-  },
-  {
-    id: 'chemistry',
-    name: 'Chemistry',
-    cases: [
-      { slug: 'reaction_kinetics',    title: 'Reaction Kinetics',     category: 'Parameter Exploration', desc: 'Tune rate constants and activation energy to see how concentration evolves and temperature accelerates reactions.' },
-      { slug: 'molecular_orbitals',   title: 'Molecular Orbitals',    category: 'State Switching',       desc: 'Toggle bonding vs antibonding orbitals in H₂ and watch the MO diagram determine bond order and stability.' },
-      { slug: 'acid_base',            title: 'Acid–Base Chemistry',   category: 'Parameter Exploration', desc: 'Henderson-Hasselbalch in action: slide pKa and ratio to trace titration curves and buffer capacity.' },
-    ],
-  },
-  {
-    id: 'infotheory',
-    name: 'Information Theory',
-    cases: [
-      { slug: 'shannon_entropy',      title: 'Shannon Entropy',       category: 'Parameter Exploration', desc: 'Adjust symbol probabilities and watch entropy peak at maximum uncertainty — the mathematical surprise.' },
-      { slug: 'huffman_coding',       title: 'Huffman Coding',        category: 'Freeform Construction', desc: 'Edit symbol frequencies and watch the optimal prefix-free tree rebuild itself to minimize average code length.' },
-      { slug: 'channel_capacity',     title: 'Channel Capacity',      category: 'Parameter Exploration', desc: 'Shannon\'s noisy-channel theorem: slide SNR and bandwidth to see the fundamental limit of error-free communication.' },
+      { slug: 'action_potential',     title: 'Action Potential',       category: 'Temporal Control',      desc: 'Ion channels, threshold dynamics, and the all-or-nothing law.' },
+      { slug: 'dna_replication',      title: 'DNA Replication',        category: 'Temporal Control',      desc: 'Helicase unwinds, polymerase copies — fidelity down to one error per billion bases.' },
     ],
   },
   {
     id: 'ml',
     name: 'Machine Learning',
     cases: [
-      { slug: 'gradient_descent',     title: 'Gradient Descent',      category: 'Direct Manipulation',   desc: 'Click to place the starting point on a 3D loss surface and watch SGD, momentum, and Adam navigate to minima.' },
+      { slug: 'gradient_descent',     title: 'Gradient Descent',       category: 'Direct Manipulation',   desc: 'Click to place the starting point on a 3D loss surface and watch SGD, momentum, and Adam navigate to minima.' },
       { slug: 'bias_variance',        title: 'Bias–Variance Tradeoff', category: 'Parameter Exploration', desc: 'Fit polynomials to noisy data — as degree grows, watch bias collapse and variance explode into overfitting.' },
-      { slug: 'decision_boundary',    title: 'Decision Boundaries',   category: 'Direct Manipulation',   desc: 'Place class points and see how k-NN, logistic regression, and SVM carve the space into regions.' },
     ],
   },
   {
-    id: 'relativity',
-    name: 'Relativity & Spacetime',
+    id: 'infotheory',
+    name: 'Information Theory',
     cases: [
-      { slug: 'time_dilation',        title: 'Time Dilation',         category: 'Parameter Exploration', desc: 'Drag a starship to near-light speed and watch proper time diverge from coordinate time on a live Lorentz factor curve.' },
-      { slug: 'lorentz_transform',    title: 'Lorentz Transformation', category: 'Direct Manipulation',  desc: 'Drag a moving frame on the Minkowski diagram to see simultaneity shatter and length-contracted rulers emerge.' },
-      { slug: 'spacetime_interval',   title: 'Spacetime Interval',    category: 'Inspection',            desc: 'Click to place events on a spacetime diagram and hover to classify their causal relationship via the light cone.' },
+      { slug: 'shannon_entropy',      title: 'Shannon Entropy',        category: 'Parameter Exploration', desc: 'Adjust symbol probabilities and watch entropy peak at maximum uncertainty — the mathematical surprise.' },
+      { slug: 'huffman_coding',       title: 'Huffman Coding',         category: 'Freeform Construction', desc: 'Edit symbol frequencies and watch the optimal prefix-free tree rebuild itself to minimize average code length.' },
+    ],
+  },
+  {
+    id: 'economics',
+    name: 'Economics & Game Theory',
+    cases: [
+      { slug: 'supply_demand',        title: 'Supply & Demand',        category: 'Direct Manipulation',   desc: 'Drag curves to shift equilibrium; add price ceilings and floors to reveal surplus and deadweight loss.' },
+      { slug: 'black_scholes',        title: 'Black–Scholes',          category: 'Parameter Exploration', desc: 'Five sliders reveal how volatility, time, and strike price determine option value and the Greeks.' },
     ],
   },
 ];
