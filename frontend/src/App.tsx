@@ -204,7 +204,7 @@ export default function App() {
         {/* How it works — inline */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '32px 0' }}>
           {[
-            { n: '01', t: 'SRTC Interaction Spec', d: 'Claude reasons about your topic and designs custom interactions: State · Render · Transition · Constraint.' },
+            { n: '01', t: 'SRTC Interaction Spec', d: 'Your harness reasons about the topic and designs custom interactions: State · Render · Transition · Constraint.' },
             { n: '02', t: 'Purpose-built style',   d: 'Each document gets a visual identity derived from the concept\'s emotional register and domain.' },
             { n: '03', t: 'One HTML file',          d: 'KaTeX math, canvas visualizations, interactive controls. Open in any browser, no server.' },
           ].map(({ n, t, d }) => (
@@ -247,14 +247,33 @@ export default function App() {
             lineHeight: 1.7,
             overflowX: 'auto',
             whiteSpace: 'pre',
-          }}>{`@inproceedings{tang2026vividoc,
-  title     = {{ViviDoc}: Generating Interactive Documents through Human-Agent Collaboration},
-  author    = {Tang, Yinghao and Xie, Yupeng and Feng, Yingchaojie and
-               Lan, Tingfeng and Lao, Jiale and Cheng, Yue and Chen, Wei},
+            marginBottom: 12,
+          }}>{`@article{tang2026vividoc,
+  title   = {{ViviDoc}: Generating Interactive Documents through Human-Agent Collaboration},
+  author  = {Tang, Yinghao and Xie, Yupeng and Feng, Yingchaojie and
+             Lan, Tingfeng and Lao, Jiale and Cheng, Yue and Chen, Wei},
+  journal = {arXiv preprint arXiv:2603.27991},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2603.27991}
+}`}</pre>
+          <pre style={{
+            background: 'var(--card)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            padding: '20px 24px',
+            fontFamily: 'monospace',
+            fontSize: 12,
+            color: 'var(--dim)',
+            lineHeight: 1.7,
+            overflowX: 'auto',
+            whiteSpace: 'pre',
+          }}>{`@inproceedings{tang2026demonstrating,
+  title     = {Demonstrating {ViviDoc}: Generating Interactive Documents through Human-Agent Collaboration},
+  author    = {Tang, Yinghao and Xie, Yupeng and Feng, Yingchaojie and Lan, Tingfeng and Chen, Wei},
   booktitle = {Proceedings of the 64th Annual Meeting of the Association
                for Computational Linguistics: System Demonstrations},
   year      = {2026},
-  url       = {https://arxiv.org/abs/2603.27991}
+  url       = {https://arxiv.org/abs/2603.01912}
 }`}</pre>
         </div>
       </section>
