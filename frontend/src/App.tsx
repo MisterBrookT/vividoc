@@ -24,47 +24,15 @@ const css = `
 `;
 
 /* ── Data ── */
-const DOMAINS = [
-  {
-    id: 'physics',
-    name: 'Physics & Mathematics',
-    cases: [
-      { slug: 'fourier_transform',    title: 'Fourier Transform',      category: 'Temporal Control',      desc: 'Signal decomposition, Gibbs phenomenon, epicycles.' },
-      { slug: 'lorenz_attractor',     title: 'Lorenz Attractor',       category: 'Parameter Exploration', desc: 'Deterministic chaos and the butterfly effect.' },
-    ],
-  },
-  {
-    id: 'biology',
-    name: 'Biology & Medicine',
-    cases: [
-      { slug: 'action_potential',     title: 'Action Potential',       category: 'Temporal Control',      desc: 'Ion channels, threshold dynamics, and the all-or-nothing law.' },
-      { slug: 'dna_replication',      title: 'DNA Replication',        category: 'Temporal Control',      desc: 'Helicase unwinds, polymerase copies — fidelity down to one error per billion bases.' },
-    ],
-  },
-  {
-    id: 'ml',
-    name: 'Machine Learning',
-    cases: [
-      { slug: 'gradient_descent',     title: 'Gradient Descent',       category: 'Direct Manipulation',   desc: 'Click to place the starting point on a 3D loss surface and watch SGD, momentum, and Adam navigate to minima.' },
-      { slug: 'bias_variance',        title: 'Bias–Variance Tradeoff', category: 'Parameter Exploration', desc: 'Fit polynomials to noisy data — as degree grows, watch bias collapse and variance explode into overfitting.' },
-    ],
-  },
-  {
-    id: 'infotheory',
-    name: 'Information Theory',
-    cases: [
-      { slug: 'shannon_entropy',      title: 'Shannon Entropy',        category: 'Parameter Exploration', desc: 'Adjust symbol probabilities and watch entropy peak at maximum uncertainty — the mathematical surprise.' },
-      { slug: 'huffman_coding',       title: 'Huffman Coding',         category: 'Freeform Construction', desc: 'Edit symbol frequencies and watch the optimal prefix-free tree rebuild itself to minimize average code length.' },
-    ],
-  },
-  {
-    id: 'economics',
-    name: 'Economics & Game Theory',
-    cases: [
-      { slug: 'supply_demand',        title: 'Supply & Demand',        category: 'Direct Manipulation',   desc: 'Drag curves to shift equilibrium; add price ceilings and floors to reveal surplus and deadweight loss.' },
-      { slug: 'black_scholes',        title: 'Black–Scholes',          category: 'Parameter Exploration', desc: 'Five sliders reveal how volatility, time, and strike price determine option value and the Greeks.' },
-    ],
-  },
+const CASES = [
+  { slug: 'fourier_transform',    title: 'Fourier Transform',      domain: 'Physics & Math',      category: 'Temporal Control',      desc: 'Signal decomposition, Gibbs phenomenon, epicycles.' },
+  { slug: 'lorenz_attractor',     title: 'Lorenz Attractor',       domain: 'Physics & Math',      category: 'Parameter Exploration', desc: 'Deterministic chaos and the butterfly effect.' },
+  { slug: 'action_potential',     title: 'Action Potential',       domain: 'Biology',             category: 'Temporal Control',      desc: 'Ion channels, threshold dynamics, and the all-or-nothing law.' },
+  { slug: 'dna_replication',      title: 'DNA Replication',        domain: 'Biology',             category: 'Temporal Control',      desc: 'Helicase unwinds, polymerase copies — fidelity down to one error per billion bases.' },
+  { slug: 'gradient_descent',     title: 'Gradient Descent',       domain: 'Machine Learning',    category: 'Direct Manipulation',   desc: 'Click to place the starting point on a 3D loss surface and watch SGD, momentum, and Adam navigate to minima.' },
+  { slug: 'bias_variance',        title: 'Bias–Variance Tradeoff', domain: 'Machine Learning',    category: 'Parameter Exploration', desc: 'Fit polynomials to noisy data — as degree grows, watch bias collapse and variance explode into overfitting.' },
+  { slug: 'shannon_entropy',      title: 'Shannon Entropy',        domain: 'Information Theory',  category: 'Parameter Exploration', desc: 'Adjust symbol probabilities and watch entropy peak at maximum uncertainty — the mathematical surprise.' },
+  { slug: 'huffman_coding',       title: 'Huffman Coding',         domain: 'Information Theory',  category: 'Freeform Construction', desc: 'Edit symbol frequencies and watch the optimal prefix-free tree rebuild itself to minimize average code length.' },
 ];
 
 const CATEGORY_DOT: Record<string, string> = {
@@ -79,7 +47,7 @@ const CATEGORY_DOT: Record<string, string> = {
 };
 
 /* ── Sub-components ── */
-function CaseCard({ c, onOpen }: { c: { slug: string; title: string; category: string; desc: string }; onOpen: (s: string) => void }) {
+function CaseCard({ c, onOpen }: { c: { slug: string; title: string; domain: string; category: string; desc: string }; onOpen: (s: string) => void }) {
   return (
     <div
       onClick={() => onOpen(c.slug)}
@@ -117,14 +85,19 @@ function CaseCard({ c, onOpen }: { c: { slug: string; title: string; category: s
 
       {/* Info */}
       <div style={{ padding: '11px 13px 13px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
-          <span style={{
-            width: 5, height: 5, borderRadius: '50%',
-            background: CATEGORY_DOT[c.category] || '#888',
-            flexShrink: 0,
-          }} />
-          <span style={{ fontSize: 10, color: 'var(--dim)', fontFamily: 'Inter, sans-serif', letterSpacing: '0.05em' }}>
-            {c.category}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{
+              width: 5, height: 5, borderRadius: '50%',
+              background: CATEGORY_DOT[c.category] || '#888',
+              flexShrink: 0,
+            }} />
+            <span style={{ fontSize: 10, color: 'var(--dim)', fontFamily: 'Inter, sans-serif', letterSpacing: '0.05em' }}>
+              {c.category}
+            </span>
+          </div>
+          <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'Inter, sans-serif', opacity: 0.7 }}>
+            {c.domain}
           </span>
         </div>
         <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'Inter, sans-serif', marginBottom: 3, lineHeight: 1.3 }}>
@@ -244,35 +217,17 @@ export default function App() {
         </div>
       </section>
 
-      {/* Domain sections */}
+      {/* Cases grid — flat 4-column layout */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px 100px' }}>
-        {DOMAINS.map((domain) => (
-          <section key={domain.id} style={{ marginBottom: 80 }}>
-            {/* Domain header */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 20, marginBottom: 28, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
-              <h2 style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: 28, fontWeight: 700,
-                color: 'var(--text)',
-                letterSpacing: '0.01em',
-              }}>{domain.name}</h2>
-              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'var(--muted)' }}>
-                {domain.cases.length} document{domain.cases.length > 1 ? 's' : ''}
-              </span>
-            </div>
-
-            {/* Cases grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
-              gap: 14,
-            }}>
-              {domain.cases.map(c => (
-                <CaseCard key={c.slug} c={c} onOpen={setOpenSlug} />
-              ))}
-            </div>
-          </section>
-        ))}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 16,
+        }}>
+          {CASES.map(c => (
+            <CaseCard key={c.slug} c={c} onOpen={setOpenSlug} />
+          ))}
+        </div>
       </div>
 
       {/* Footer */}
