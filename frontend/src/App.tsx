@@ -153,7 +153,7 @@ function CaseCard({ c, onOpen }: { c: { slug: string; title: string; category: s
       }}
     >
       {/* iframe preview */}
-      <div style={{ position: 'relative', height: 200, overflow: 'hidden', background: '#080706', pointerEvents: 'none' }}>
+      <div style={{ position: 'relative', height: 150, overflow: 'hidden', background: '#080706', pointerEvents: 'none' }}>
         <iframe
           src={`/cases/${c.slug}/index.html`}
           style={{ position: 'absolute', top: 0, left: 0, width: '200%', height: '200%', transform: 'scale(0.5)', transformOrigin: 'top left', border: 'none' }}
@@ -166,21 +166,21 @@ function CaseCard({ c, onOpen }: { c: { slug: string; title: string; category: s
       </div>
 
       {/* Info */}
-      <div style={{ padding: '14px 16px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+      <div style={{ padding: '11px 13px 13px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
           <span style={{
-            width: 6, height: 6, borderRadius: '50%',
+            width: 5, height: 5, borderRadius: '50%',
             background: CATEGORY_DOT[c.category] || '#888',
             flexShrink: 0,
           }} />
-          <span style={{ fontSize: 11, color: 'var(--dim)', fontFamily: 'Inter, sans-serif', letterSpacing: '0.05em' }}>
+          <span style={{ fontSize: 10, color: 'var(--dim)', fontFamily: 'Inter, sans-serif', letterSpacing: '0.05em' }}>
             {c.category}
           </span>
         </div>
-        <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', fontFamily: 'Inter, sans-serif', marginBottom: 4, lineHeight: 1.3 }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'Inter, sans-serif', marginBottom: 3, lineHeight: 1.3 }}>
           {c.title}
         </p>
-        <p style={{ fontSize: 12, color: 'var(--muted)', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}>
+        <p style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'Inter, sans-serif', lineHeight: 1.55 }}>
           {c.desc}
         </p>
       </div>
@@ -314,8 +314,8 @@ export default function App() {
             {/* Cases grid */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: `repeat(${Math.min(domain.cases.length, 3)}, 1fr)`,
-              gap: 16,
+              gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
+              gap: 14,
             }}>
               {domain.cases.map(c => (
                 <CaseCard key={c.slug} c={c} onOpen={setOpenSlug} />
