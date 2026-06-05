@@ -155,24 +155,16 @@ Two Claude Code skills are provided in `.claude/commands/`:
 
 The 8 built-in cases cover the full interaction taxonomy. Add more with `/vividoc-learn`.
 
-### Batch / research mode (CLI with external LLM)
+### Baseline comparisons (research use only)
 
-The Python pipeline still works for benchmarking and batch generation:
+The Python CLI pipeline exists **only** to run baseline comparisons for the paper evaluation. Do not use it for document generation — the harness is the method.
 
 ```bash
-vividoc run "<topic>" openrouter/google/gemini-2.5-pro \
-  --output-dir outputs \
-  --text-style "Use a conversational tone" \
-  --interaction-style "Dark background, bright accents"
+# Run a baseline (autogen / camel / metagpt / naive) on the benchmark dataset
+uv run python benchmark/run.py --baseline autogen
 ```
 
-Individual stages:
-```bash
-vividoc plan "<topic>" openrouter/google/gemini-2.5-pro -o spec.json
-vividoc exec spec.json openrouter/google/gemini-2.5-pro --text-style "..."
-```
-
-Resume partial runs: `--resume` skips already-completed sections.
+The CLI code in `vividoc/cli.py` and `vividoc/core/` supports this, but is not the recommended generation path.
 
 ---
 
