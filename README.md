@@ -9,56 +9,33 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
 [![Demo](https://img.shields.io/badge/Demo-vividoc.vercel.app-000000?style=flat-square&logo=vercel)](https://vividoc.vercel.app)
 
-**[Live Demo](https://vividoc.vercel.app)** · **[Paper (arXiv)](https://arxiv.org/abs/2603.27991)** · **[PDF](assets/paper.pdf)** · **[Quick Start](#-quick-start)**
+**[Live Demo](https://vividoc.vercel.app)** · **[Paper (arXiv)](https://arxiv.org/abs/2603.27991)** · **[PDF](assets/paper.pdf)**
 
 <br/>
 
-<img src="assets/demo-screenshot.png" alt="ViviDoc Showcase — interactive educational documents across 10 domains" width="100%"/>
+<img src="assets/demo-screenshot.png" alt="ViviDoc showcase — 8 interactive documents across 4 domains" width="100%"/>
 
 </div>
 
 ---
 
-## What is ViviDoc?
-
-ViviDoc is an LLM-powered pipeline that generates **self-contained interactive HTML documents** — explorable explanations — from a single topic input. Given a topic, ViviDoc designs a purpose-built visual style, plans a structured document using the **SRTC Interaction Spec**, and writes a single HTML file with explanatory text, KaTeX math, and interactive Canvas visualizations that open in any browser with no server.
-
-The key insight is the **SRTC specification** — a four-field interaction design language (State · Render · Transition · Constraint) that separates *what the learner should discover* from *how it's rendered*. This allows an LLM to reason about pedagogy before touching code.
+ViviDoc generates **self-contained interactive HTML documents** from a single topic input. It designs a purpose-built visual style, structures the document using the **SRTC Interaction Spec** (State · Render · Transition · Constraint), and writes a single `.html` file with KaTeX math and Canvas visualizations — no build step, no server.
 
 > **Accepted at ACL 2026 System Demonstrations** — [arXiv:2603.27991](https://arxiv.org/abs/2603.27991)
 
 ---
 
-## ✨ Features
-
-- **Zero-dependency output** — Each document is a single `.html` file with embedded CSS and JS. No build step, no server. Open it in a browser.
-- **Purpose-built visual style** — ViviDoc reasons about the topic's emotional register and domain conventions (physics → monospace + dark; biology → organic + warm) to synthesize a custom visual identity per document.
-- **Structured interaction design** — The SRTC spec (State · Render · Transition · Constraint) grounds every visualization in a pedagogical invariant — the one thing the learner must discover.
-- **8 interaction categories** — Grounded in empirical analysis of 482 interaction instances across 101 real-world explorable explanations (ViviBench).
-- **One-line install** — `curl … | bash` drops the skills into `~/.claude/commands/`. Works in any project, no API key needed.
-- **Extensible template library** — Add reference cases with `/vividoc-learn <url>` to distill real explorable explanations into reusable SRTC templates.
-
----
-
 ## 🚀 Quick Start
-
-**Install the skills** (one-liner — works in any project):
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/MisterBrookT/vividoc/main/install.sh | bash
 ```
 
-This downloads `/vividoc` and `/vividoc-learn` into `~/.claude/commands/`. No API key needed — Claude Code is the model.
-
-Then open any project in [Claude Code](https://claude.ai/code) and run:
+Installs `/vividoc` and `/vividoc-learn` into `~/.claude/commands/`. No API key needed — Claude Code is the model.
 
 ```
 /vividoc Fourier Transform
 ```
-
-Claude Code reasons about the topic, proposes a visual style, designs SRTC interactions, and writes the document directly. Output: `outputs/fourier_transform/document.html`
-
-To distill a real explorable explanation into a reusable template:
 
 ```
 /vividoc-learn https://ncase.me/trust/
@@ -66,110 +43,20 @@ To distill a real explorable explanation into a reusable template:
 
 ---
 
-## 🧠 How It Works
-
-ViviDoc decomposes document generation into three stages:
-
-```
-Topic (string)
-    │
-    ▼  Plan
-┌─────────────────────────────┐
-│  Planner                    │
-│  LLM → DocumentSpec         │  spec.json
-│  (SRTC per knowledge unit)  │
-└─────────────┬───────────────┘
-              │
-    ▼  Execute (per section)
-┌─────────────────────────────┐
-│  Executor                   │
-│  Stage 1: text + KaTeX      │  HTML fragments
-│  Stage 2: JS + Canvas viz   │
-└─────────────┬───────────────┘
-              │
-    ▼  Evaluate
-┌─────────────────────────────┐
-│  Evaluator                  │
-│  Coherence + render check   │  document.html
-└─────────────────────────────┘
-```
-
-### The SRTC Interaction Spec
-
-Every knowledge unit has an `interaction_spec` with four fields:
-
-| Field | Role |
-|---|---|
-| **S** (State) | Variables the user controls or that are derived |
-| **R** (Render) | List of visual elements to display |
-| **T** (Transition) | Cause → effect rules (`[]` = static, no interaction needed) |
-| **C** (Constraint) | The pedagogical invariant the learner must discover |
-
-The constraint is the design target: *every* visual element should be built to make it unmissable.
-
-**Interaction is not mandatory.** If `T = []`, the executor creates a beautiful static or auto-animated visualization — static is sometimes the right answer.
-
----
-
-## 🎛️ Interaction Taxonomy
-
-ViviDoc's interaction design is grounded in **482 interaction instances** across **101 real-world explorable explanations** from 63 websites and 11 domains (ViviBench dataset):
-
-| # | Category | When to use | Example |
-|---|----------|-------------|---------|
-| 1 | **Parameter Exploration** | Continuous variable has a nonlinear effect | Lorenz Attractor — σ, ρ sliders |
-| 2 | **State Switching** | Discrete modes produce qualitatively different results | Quantum Orbitals — 1s / 2p / 3d |
-| 3 | **Direct Manipulation** | Dragging objects; spatial relationships are the concept | Geometric Optics — drag lens/object |
-| 4 | **Freeform Construction** | Build structure to observe emergent behavior | Neural Network — click-to-place neurons |
-| 5 | **Temporal Control** | Concept has a time dimension; play/pause/scrub | Fourier Epicycles — play + harmonic slider |
-| 6 | **Inspection** | Spatial structure revealed by hovering | Voronoi — hover highlights cell |
-| 7 | **Spatial Navigation** | Inherently 3D; rotate/pan/zoom | Möbius Strip — drag to rotate 3D mesh |
-| 8 | **Scroll-driven Narrative** | Linear progression reveals the concept | Entropy — scroll removes wall, particles mix |
-
-Reference implementations (self-contained HTML + SRTC spec + style guide) for all 8 categories: [`benchmark/datasets/interaction_examples/`](benchmark/datasets/interaction_examples/)
-
----
-
 ## 📚 Showcase
 
-**[→ Browse all documents at vividoc.vercel.app](https://vividoc.vercel.app)**
+**[→ vividoc.vercel.app](https://vividoc.vercel.app)**
 
-8 hand-verified documents across 4 domains, each generated by ViviDoc and reviewed for pedagogical accuracy:
-
-| Document | Domain | Interaction | Key Concept |
-|---|---|---|---|
-| [Fourier Transform](https://vividoc.vercel.app) | Physics & Math | Temporal Control | Epicycles, Gibbs phenomenon, signal decomposition |
-| [Lorenz Attractor](https://vividoc.vercel.app) | Physics & Math | Parameter Exploration | Sensitive dependence, strange attractor, butterfly effect |
-| [Action Potential](https://vividoc.vercel.app) | Biology | Temporal Control | Hodgkin-Huxley ion channels, all-or-nothing threshold |
-| [DNA Replication](https://vividoc.vercel.app) | Biology | Temporal Control | Helicase, polymerase fidelity, Okazaki fragments |
-| [Gradient Descent](https://vividoc.vercel.app) | Machine Learning | Direct Manipulation | Loss landscapes, optimizers (SGD/Adam), learning rate |
-| [Bias–Variance Tradeoff](https://vividoc.vercel.app) | Machine Learning | Parameter Exploration | Overfitting, regularization, model complexity |
-| [Shannon Entropy](https://vividoc.vercel.app) | Information Theory | Parameter Exploration | Information content, source coding theorem |
-| [Huffman Coding](https://vividoc.vercel.app) | Information Theory | Freeform Construction | Prefix-free codes, optimal compression, entropy bound |
-
----
-
-## 🗂️ Repository Structure
-
-```
-.claude/commands/        # Claude Code skills: /vividoc and /vividoc-learn
-prompts/                 # LLM prompt templates (planner, executor, evaluator, styler, video)
-vividoc/
-├── core/                # Pipeline stages: planner, executor, evaluator, runner, styler
-│   ├── video_codegen.py # Video generation: DocumentSpec → Manim scenes
-│   └── narration_gen.py # Narration synthesis from SRTC T-field keyframes
-├── utils/llm/           # LLM client + provider adapters (OpenRouter, Anthropic)
-└── cli.py               # CLI entry points (run, plan, exec, eval, video)
-benchmark/
-├── datasets/
-│   ├── interaction_examples/   # 8 reference cases (HTML + SRTC spec + style guide)
-│   └── prepped/                # ViviBench — 101-topic evaluation dataset
-├── baselines/                  # AutoGen, CAMEL, MetaGPT, naive baselines
-└── evals/                      # Automated evaluation scripts
-frontend/                # React showcase (vividoc.vercel.app)
-docs/                    # Design docs, video generation roadmap
-examples/                # Standalone demos (Manim video generation)
-```
+| Document | Domain | Interaction |
+|---|---|---|
+| [Fourier Transform](https://vividoc.vercel.app) | Physics & Math | Temporal Control |
+| [Lorenz Attractor](https://vividoc.vercel.app) | Physics & Math | Parameter Exploration |
+| [Action Potential](https://vividoc.vercel.app) | Biology | Temporal Control |
+| [DNA Replication](https://vividoc.vercel.app) | Biology | Temporal Control |
+| [Gradient Descent](https://vividoc.vercel.app) | Machine Learning | Direct Manipulation |
+| [Bias–Variance Tradeoff](https://vividoc.vercel.app) | Machine Learning | Parameter Exploration |
+| [Shannon Entropy](https://vividoc.vercel.app) | Information Theory | Parameter Exploration |
+| [Huffman Coding](https://vividoc.vercel.app) | Information Theory | Freeform Construction |
 
 ---
 
@@ -177,39 +64,15 @@ examples/                # Standalone demos (Manim video generation)
 
 ```bash
 uv sync --dev
-
-# Run tests
 uv run pytest
-
-# Lint
-uv run ruff check . && uv run ruff format .
-
-# Serve showcase locally
 cd frontend && npm install && npm run dev
 ```
 
-### Running baselines
-
-The `benchmark/baselines/` directory contains re-implementations of AutoGen, CAMEL, MetaGPT, and a naive baseline for comparison against the harness approach. Each baseline uses the same topic inputs and is evaluated against ViviBench.
-
-```bash
-# Run all baselines on the benchmark dataset
-uv run python benchmark/run.py --baseline autogen   # or camel, metagpt, naive
-```
-
-### Adding a reference case
-
-```
-/vividoc-learn https://example.com/interactive-page my-case-name
-```
-
-Saves to `benchmark/datasets/interaction_examples/my-case-name/` with SRTC spec, HTML, and style notes. Immediately available as a template for future `/vividoc` runs.
+Baselines (AutoGen, CAMEL, MetaGPT, naive): `uv run python benchmark/run.py --baseline autogen`
 
 ---
 
 ## 📄 Citation
-
-If you use ViviDoc in your research, please cite:
 
 ```bibtex
 @inproceedings{tang2026vividoc,
