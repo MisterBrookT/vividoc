@@ -35,14 +35,22 @@ The key insight is the **SRTC specification** — a four-field interaction desig
 - **Purpose-built visual style** — ViviDoc reasons about the topic's emotional register and domain conventions (physics → monospace + dark; biology → organic + warm) to synthesize a custom visual identity per document.
 - **Structured interaction design** — The SRTC spec (State · Render · Transition · Constraint) grounds every visualization in a pedagogical invariant — the one thing the learner must discover.
 - **8 interaction categories** — Grounded in empirical analysis of 482 interaction instances across 101 real-world explorable explanations (ViviBench).
-- **Two usage modes** — Interactive Claude Code skill (`/vividoc`) for zero-setup generation, or CLI pipeline for batch generation and benchmarking.
+- **One-line install** — `curl … | bash` drops the skills into `~/.claude/commands/`. Works in any project, no API key needed.
 - **Extensible template library** — Add reference cases with `/vividoc-learn <url>` to distill real explorable explanations into reusable SRTC templates.
 
 ---
 
 ## 🚀 Quick Start
 
-Open this repository in [Claude Code](https://claude.ai/code). No API key needed — Claude Code is the model.
+**Install the skills** (one-liner — works in any project):
+
+```bash
+curl -sSL https://raw.githubusercontent.com/MisterBrookT/vividoc/main/install.sh | bash
+```
+
+This downloads `/vividoc` and `/vividoc-learn` into `~/.claude/commands/`. No API key needed — Claude Code is the model.
+
+Then open any project in [Claude Code](https://claude.ai/code) and run:
 
 ```
 /vividoc Fourier Transform
@@ -50,11 +58,11 @@ Open this repository in [Claude Code](https://claude.ai/code). No API key needed
 
 Claude Code reasons about the topic, proposes a visual style, designs SRTC interactions, and writes the document directly. Output: `outputs/fourier_transform/document.html`
 
+To distill a real explorable explanation into a reusable template:
+
 ```
 /vividoc-learn https://ncase.me/trust/
 ```
-
-Fetches a real explorable explanation, extracts its interaction patterns and visual style into SRTC format, and saves a reusable template to `benchmark/datasets/interaction_examples/`.
 
 ---
 
