@@ -17,13 +17,20 @@ Content Description: {text_description}
 1. Maintain the SAME writing style, tone, and detail level as completed sections
 2. Ensure content difficulty progresses naturally from previous sections
 3. Use HTML formatting:
-   - <p> tags for paragraphs
-   - <strong> for emphasis
+   - <p> tags for paragraphs (2–3 sentences max per paragraph)
+   - <strong> for key terms inline — not as fake sub-headings
    - <em> for italics
    - KaTeX syntax for math: $\\pi$, $E=mc^2$, $\\frac{{a}}{{b}}$
 4. ONLY return the HTML fragment for the text content
 5. DO NOT include <div class="text-content"> tags
 6. DO NOT include any other sections
+
+=== TYPOGRAPHY CONSTRAINTS (strictly enforced) ===
+- PROSE ONLY. Do not use <ul><li> or <ol><li> for core explanations. Lists are forbidden for concept text.
+- Do NOT create colored callout boxes, info blocks, or <div> with background-color. No border-left highlights.
+- Emphasis = <strong> inline only. Not headers, not boxes, not colored text spans.
+- Conclusion first: open every paragraph with the key finding, then support it. Never build to the point.
+- Second person, active voice: "you", "notice", "drag", not "one can observe that".
 
 === OUTPUT FORMAT ===
 Return ONLY the HTML fragment (no div wrapper):
@@ -81,13 +88,34 @@ FRAGMENT_STAGE2_PROMPT = """You are an expert at creating interactive educationa
   If the spec's "transition" list is empty, do NOT add controls. Create a beautiful static or auto-animated
   visualization using requestAnimationFrame. The goal is clarity, not interactivity.
 
+**REVEAL ON DEMAND** — use this pattern when the concept IS the transformation:
+  Show the initial state. Add a single "Reveal" or "Show result" button. On click, animate to the transformed
+  state. The gap between before and after is the aha moment. Don't show both states simultaneously by default.
+  Example: PCA — show raw scatter plot first, button reveals PC axes overlaid and projected coordinates.
+
+**JUXTAPOSITION** — use this pattern when the concept IS sensitivity to a parameter:
+  Render two canvases side by side under two fixed parameter values. A shared slider controls both simultaneously.
+  The learner sees the difference without needing to remember "what it looked like before".
+  Example: t-SNE perplexity=5 vs perplexity=50 side-by-side, single slider shifts both in sync.
+
 ---
+
+=== INTERACTION INTEGRITY — check before implementing ===
+Ask: "If I replaced this interaction with a static image, what insight would the learner LOSE?"
+If the answer is "not much", simplify or make it static. The interaction must be the only way to convey the concept.
+The manipulated variable must be the variable the section is teaching — not a decorative parameter.
 
 === THE CONSTRAINT IS THE PEDAGOGICAL CORE ===
 The spec's "constraint" field is the key insight the learner should discover. Design for it:
   - Display the constraint's formula or value as a live label/badge
-  - Use a color change, annotation, or callout to make it unmissable
+  - Use a color change or direct annotation to make it unmissable
   - For static visualizations, the render should directly demonstrate the constraint
+
+=== VISUAL STYLE CONSTRAINTS ===
+- Page frame decoration = zero. No colored border-top/border-left on section containers. No ornamental dividers.
+- The accent color appears ONLY on: interactive controls (sliders, buttons), live numeric readouts, annotations
+  drawn directly on the canvas. Not on section backgrounds, card borders, or text containers.
+- Controls should be minimal: plain range inputs, text labels, simple buttons. No drop shadows on UI chrome.
 
 ---
 
