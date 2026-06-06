@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>矩阵变换的几何直觉</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Inter:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #fafaf8;
+    --card: #ffffff;
+    --accent: #7c3aed;
+    --accent-light: #ede9fe;
+    --border: #e5e7eb;
+    --text: #111827;
+    --muted: #6b7280;
+    --font-body: 'Noto Sans SC', sans-serif;
+    --font-ui: 'Inter', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --radius: 10px;
+  }
+
+  html { font-size: 16px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.75;
+    padding: 0;
+  }
+
+  .page-header {
+    max-width: 720px;
+    margin: 64px auto 16px;
+    padding: 0 24px;
+  }
+  .page-header h1 {
+    font-family: var(--font-body);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  .page-header .subtitle {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .section-wrap {
+    max-width: 720px;
+    margin: 56px auto;
+    padding: 0 24px;
+  }
+
+  .section-wrap h2 {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .canvas-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 20px 20px 0;
+    background: var(--card);
+  }
+  canvas {
+    display: block;
+    border-radius: 6px;
+    cursor: crosshair;
+  }
+
+  .controls {
+    padding: 16px 20px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .slider-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+    margin-bottom: 12px;
+  }
+  .slider-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .slider-label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+  .slider-label span {
+    font-family: var(--font-mono);
+    color: var(--text);
+    font-size: 0.78rem;
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .matrix-display {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text);
+    background: #f5f3ff;
+    border: 1px solid var(--accent-light);
+    border-radius: 6px;
+    padding: 10px 16px;
+    display: inline-block;
+    line-height: 1.8;
+  }
+
+  .badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .badge.green { background: #d1fae5; color: #065f46; }
+  .badge.yellow { background: #fef3c7; color: #92400e; }
+  .badge.red { background: #fee2e2; color: #991b1b; }
+
+  .controls-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .caption {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--muted);
+    padding: 10px 20px 14px;
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  .insight {
+    margin-top: 20px;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .insight p { margin-bottom: 10px; }
+  .insight p:last-child { margin-bottom: 0; }
+
+  .char-eq {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--accent);
+    background: #f5f3ff;
+    border: 1px solid var(--accent-light);
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin-top: 10px;
+    display: inline-block;
+  }
+
+  .preset-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .preset-btn {
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-btn.active, .preset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .play-btn {
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 7px 18px;
+    border-radius: 20px;
+    border: 1.5px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .play-btn:hover { opacity: 0.85; }
+
+  .reset-btn {
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .eigen-panel {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .epoch-display {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text);
+    background: #f5f3ff;
+    border: 1px solid var(--accent-light);
+    border-radius: 6px;
+    padding: 5px 12px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 48px 0 0;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page-footer {
+    max-width: 720px;
+    margin: 40px auto 80px;
+    padding: 0 24px;
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>矩阵变换的几何直觉</h1>
+  <p class="subtitle">改编自 Gilbert Strang《MIT 18.06 线性代数》第 3–6 讲</p>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 1: Direct Manipulation
+     ═══════════════════════════════════════════════════════ -->
+<div id="ku1" class="section-wrap">
+  <h2>01 — 矩阵即变换：向量如何被拉伸与旋转</h2>
+  <div class="card">
+    <div class="canvas-wrap">
+      <canvas id="ku1-canvas" width="480" height="400"></canvas>
+    </div>
+    <div class="controls">
+      <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px;">
+        <div id="ku1-matrix" class="matrix-display"></div>
+        <div>
+          <div class="badges">
+            <div class="badge" id="ku1-det-badge">|det| = 1.00</div>
+          </div>
+          <div id="ku1-collapse-msg" style="display:none;font-family:var(--font-ui);font-size:0.75rem;color:#dc2626;margin-top:6px;font-weight:600;">
+            行列式 = 0 → 空间坍缩为一条线
+          </div>
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-item">
+          <div class="slider-label">a <span id="ku1-a-val">1.0</span></div>
+          <input type="range" id="ku1-a" min="-2" max="2" step="0.1" value="1">
+        </div>
+        <div class="slider-item">
+          <div class="slider-label">b <span id="ku1-b-val">0.0</span></div>
+          <input type="range" id="ku1-b" min="-2" max="2" step="0.1" value="0">
+        </div>
+        <div class="slider-item">
+          <div class="slider-label">c <span id="ku1-c-val">0.0</span></div>
+          <input type="range" id="ku1-c" min="-2" max="2" step="0.1" value="0">
+        </div>
+        <div class="slider-item">
+          <div class="slider-label">d <span id="ku1-d-val">1.0</span></div>
+          <input type="range" id="ku1-d" min="-2" max="2" step="0.1" value="1">
+        </div>
+      </div>
+      <button class="reset-btn" id="ku1-reset">重置为单位矩阵</button>
+    </div>
+    <div class="caption">
+      拖动蓝色箭头改变输入向量，滑块控制矩阵参数；红色箭头实时显示变换后的输出 $A\mathbf{v}$。令行列式趋近于 0，观察空间如何坍缩成一条线。
+    </div>
+  </div>
+  <div class="insight">
+    <p><strong>矩阵乘法不是数字运算，是空间变换。</strong>每个 2×2 矩阵都定义了一种线性变换：把整个平面均匀地拉伸、旋转、翻转或压缩。两个基向量 $\hat{i}$ 与 $\hat{j}$ 的去向完全决定了变换的效果——矩阵的列就是基向量的像。</p>
+    <p>行列式 $\det(A) = ad - bc$ 衡量面积的缩放比例。当 $\det = 0$，变换将整个平面压缩到一条直线——输入是二维的，输出只剩一维，信息彻底丢失。不同的变换可以复合——这就是矩阵乘法的本质。</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 2: Parameter Exploration — Eigenvectors
+     ═══════════════════════════════════════════════════════ -->
+<div id="ku2" class="section-wrap">
+  <h2>02 — 特征向量：不被旋转的方向</h2>
+  <div class="card">
+    <div class="canvas-wrap">
+      <canvas id="ku2-canvas" width="480" height="350"></canvas>
+    </div>
+    <div class="controls">
+      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px;">
+        <div id="ku2-matrix" class="matrix-display"></div>
+        <div>
+          <div class="eigen-panel">
+            <div class="badge" id="ku2-lam1-badge">λ₁ = —</div>
+            <div class="badge" id="ku2-lam2-badge">λ₂ = —</div>
+          </div>
+          <div id="ku2-char-eq" class="char-eq">λ² - tr·λ + det = 0</div>
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-item">
+          <div class="slider-label">a <span id="ku2-a-val">2.0</span></div>
+          <input type="range" id="ku2-a" min="-2" max="3" step="0.1" value="2">
+        </div>
+        <div class="slider-item">
+          <div class="slider-label">b <span id="ku2-b-val">1.0</span></div>
+          <input type="range" id="ku2-b" min="-2" max="3" step="0.1" value="1">
+        </div>
+        <div class="slider-item">
+          <div class="slider-label">c <span id="ku2-c-val">1.0</span></div>
+          <input type="range" id="ku2-c" min="-2" max="3" step="0.1" value="1">
+        </div>
+        <div class="slider-item">
+          <div class="slider-label">d <span id="ku2-d-val">2.0</span></div>
+          <input type="range" id="ku2-d" min="-2" max="3" step="0.1" value="2">
+        </div>
+      </div>
+      <button class="reset-btn" id="ku2-sym-btn" style="margin-right:8px;">令 c = b（对称矩阵）</button>
+      <button class="reset-btn" id="ku2-reset">重置</button>
+    </div>
+    <div class="caption">
+      灰色细箭头为均匀分布的单位向量变换后的方向；<strong style="color:#7c3aed">紫色粗箭头</strong>标出特征向量——变换后方向不变，只是被缩放。令 $b = c$（对称矩阵），观察特征值始终为实数。
+    </div>
+  </div>
+  <div class="insight">
+    <p><strong>特征向量是矩阵"偏爱"的方向，特征值是沿该方向的缩放比例。</strong>对向量 $\mathbf{v}$，若 $A\mathbf{v} = \lambda\mathbf{v}$，则 $\mathbf{v}$ 只被拉伸或压缩，不被旋转。特征方程 $\lambda^2 - \text{tr}(A)\lambda + \det(A) = 0$ 完整地决定了两个特征值。</p>
+    <p>实对称矩阵（$b = c$）保证特征值为实数，且特征向量相互正交。这一性质是主成分分析（PCA）与奇异值分解（SVD）的数学基础——每张人脸都可以用几十个"特征脸"精确表示。</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 3: Temporal Control — Matrix Powers
+     ═══════════════════════════════════════════════════════ -->
+<div id="ku3" class="section-wrap">
+  <h2>03 — 矩阵幂次与迭代：特征值决定长期行为</h2>
+  <div class="card">
+    <div class="canvas-wrap">
+      <canvas id="ku3-canvas" width="480" height="320"></canvas>
+    </div>
+    <div class="controls">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+        <button class="play-btn" id="ku3-play">▶ 播放</button>
+        <button class="reset-btn" id="ku3-reset">重置</button>
+        <div class="epoch-display" id="ku3-epoch">n = 0</div>
+        <div class="badge" id="ku3-lambda-badge">|λ| = —</div>
+      </div>
+      <div class="preset-btns" id="ku3-presets">
+        <button class="preset-btn active" data-preset="0">螺旋收缩</button>
+        <button class="preset-btn" data-preset="1">旋转稳定</button>
+        <button class="preset-btn" data-preset="2">螺旋发散</button>
+      </div>
+    </div>
+    <div class="caption">
+      点击播放观察轨迹演化；拖尾显示最近 8 帧历史。切换三种矩阵，感受特征值模长 $|\lambda|$ 如何决定最终命运：收缩（$|\lambda|&lt;1$）、旋转（$|\lambda|=1$）或发散（$|\lambda|&gt;1$）。
+    </div>
+  </div>
+  <div class="insight">
+    <p><strong>特征值的模长是系统长期行为的唯一决定因素。</strong>无论初始位置如何，只要所有特征值满足 $|\lambda| &lt; 1$，迭代序列 $A^n\mathbf{x}_0$ 必然收敛到原点；$|\lambda| = 1$ 时系统维持稳定轨道；$|\lambda| &gt; 1$ 时一切向量最终都会逃逸到无穷远。</p>
+    <p>这正是深度网络梯度消失与梯度爆炸问题的数学根源：反向传播本质上是矩阵的反复相乘，权重矩阵的特征值分布决定了梯度能否完整地传回早期层。</p>
+  </div>
+</div>
+
+<div class="divider" style="margin:48px auto 0;"></div>
+<div class="page-footer">
+  改编自 Gilbert Strang《MIT 18.06 线性代数》第 3–6 讲 · ViviDoc 交互式文档
+</div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 1 SCRIPT
+     ═══════════════════════════════════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('ku1-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const CX = W / 2, CY = H / 2;
+  const SCALE = 60; // pixels per unit
+
+  let a = 1, b = 0, c = 0, d = 1;
+  let vecX = 1.5, vecY = -1.0; // input vector in math coords
+  let dragging = false;
+
+  function toScreen(mx, my) {
+    return [CX + mx * SCALE, CY - my * SCALE];
+  }
+  function toMath(sx, sy) {
+    return [(sx - CX) / SCALE, (CY - sy) / SCALE];
+  }
+
+  function drawArrow(x0, y0, x1, y1, color, width, headSize) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+    // arrowhead
+    const angle = Math.atan2(y1 - y0, x1 - x0);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - headSize * Math.cos(angle - 0.4), y1 - headSize * Math.sin(angle - 0.4));
+    ctx.lineTo(x1 - headSize * Math.cos(angle + 0.4), y1 - headSize * Math.sin(angle + 0.4));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawGrid() {
+    // Draw transformed grid lines
+    const det = a * d - b * c;
+    const GRID = 5;
+
+    ctx.save();
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = 'rgba(200,200,220,0.5)';
+
+    // Original grid (very faint)
+    for (let i = -GRID; i <= GRID; i++) {
+      // vertical lines x=i
+      let [x0, y0] = toScreen(i, -GRID);
+      let [x1, y1] = toScreen(i, GRID);
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      // horizontal lines y=i
+      [x0, y0] = toScreen(-GRID, i);
+      [x1, y1] = toScreen(GRID, i);
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    }
+
+    // Transformed grid
+    ctx.strokeStyle = 'rgba(124,58,237,0.18)';
+    ctx.lineWidth = 0.8;
+    for (let i = -GRID; i <= GRID; i++) {
+      // Transform vertical lines (x=i, y varies)
+      let [tx0, ty0] = [a * i + b * (-GRID), c * i + d * (-GRID)];
+      let [tx1, ty1] = [a * i + b * GRID, c * i + d * GRID];
+      let [sx0, sy0] = toScreen(tx0, ty0);
+      let [sx1, sy1] = toScreen(tx1, ty1);
+      ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(sx1, sy1); ctx.stroke();
+
+      // Transform horizontal lines (y=i, x varies)
+      [tx0, ty0] = [a * (-GRID) + b * i, c * (-GRID) + d * i];
+      [tx1, ty1] = [a * GRID + b * i, c * GRID + d * i];
+      [sx0, sy0] = toScreen(tx0, ty0);
+      [sx1, sy1] = toScreen(tx1, ty1);
+      ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(sx1, sy1); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawAxes() {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(150,150,150,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, CY); ctx.lineTo(W, CY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, 0); ctx.lineTo(CX, H); ctx.stroke();
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    drawAxes();
+    drawGrid();
+
+    const det = a * d - b * c;
+    const absDet = Math.abs(det);
+
+    // Draw î = [1,0] → [a, c] (column 1 of A)
+    const [ix0, iy0] = toScreen(0, 0);
+    const [ix1, iy1] = toScreen(a, c);
+    drawArrow(ix0, iy0, ix1, iy1, '#10b981', 2, 8);
+
+    // Draw ĵ = [0,1] → [b, d] (column 2 of A)
+    const [jx1, jy1] = toScreen(b, d);
+    drawArrow(ix0, iy0, jx1, jy1, '#f59e0b', 2, 8);
+
+    // Labels for î and ĵ
+    ctx.save();
+    ctx.font = '600 12px Inter';
+    ctx.fillStyle = '#10b981';
+    ctx.fillText('î', ix1 + 6, iy1 - 4);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText('ĵ', jx1 + 6, jy1 - 4);
+    ctx.restore();
+
+    // Input vector (blue)
+    const [bx0, by0] = toScreen(0, 0);
+    const [bx1, by1] = toScreen(vecX, vecY);
+    drawArrow(bx0, by0, bx1, by1, '#3b82f6', 2.5, 10);
+
+    // Output vector Av (red)
+    const outX = a * vecX + b * vecY;
+    const outY = c * vecX + d * vecY;
+    const [rx1, ry1] = toScreen(outX, outY);
+    drawArrow(bx0, by0, rx1, ry1, '#ef4444', 2.5, 10);
+
+    // Input dot for drag target
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(bx1, by1, 7, 0, Math.PI * 2);
+    ctx.fillStyle = '#3b82f6';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+
+    // Vector labels
+    ctx.save();
+    ctx.font = '600 11px Inter';
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillText('v', bx1 + 8, by1 - 4);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillText('Av', rx1 + 8, ry1 - 4);
+    ctx.restore();
+
+    // det=0 collapse line hint
+    if (absDet < 0.05) {
+      // Draw the collapse line (image of transform)
+      const lineDir = [a, c];
+      const len = Math.sqrt(lineDir[0] ** 2 + lineDir[1] ** 2);
+      if (len > 0.01) {
+        const nx = lineDir[0] / len, ny = lineDir[1] / len;
+        const [lx0, ly0] = toScreen(-nx * 8, -ny * 8);
+        const [lx1, ly1] = toScreen(nx * 8, ny * 8);
+        ctx.save();
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.lineTo(lx1, ly1); ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+
+  function updateFromSliders() {
+    a = parseFloat(document.getElementById('ku1-a').value);
+    b = parseFloat(document.getElementById('ku1-b').value);
+    c = parseFloat(document.getElementById('ku1-c').value);
+    d = parseFloat(document.getElementById('ku1-d').value);
+
+    document.getElementById('ku1-a-val').textContent = a.toFixed(1);
+    document.getElementById('ku1-b-val').textContent = b.toFixed(1);
+    document.getElementById('ku1-c-val').textContent = c.toFixed(1);
+    document.getElementById('ku1-d-val').textContent = d.toFixed(1);
+
+    const det = a * d - b * c;
+    const absDet = Math.abs(det);
+
+    document.getElementById('ku1-det-badge').textContent = `|det| = ${absDet.toFixed(2)}`;
+
+    const collapse = absDet < 0.05;
+    document.getElementById('ku1-collapse-msg').style.display = collapse ? 'block' : 'none';
+
+    document.getElementById('ku1-matrix').innerHTML =
+      `A = [ ${a.toFixed(1)} &nbsp; ${b.toFixed(1)} ]<br>` +
+      `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ ${c.toFixed(1)} &nbsp; ${d.toFixed(1)} ]`;
+
+    draw();
+  }
+
+  ['ku1-a','ku1-b','ku1-c','ku1-d'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateFromSliders);
+  });
+
+  document.getElementById('ku1-reset').addEventListener('click', () => {
+    document.getElementById('ku1-a').value = 1;
+    document.getElementById('ku1-b').value = 0;
+    document.getElementById('ku1-c').value = 0;
+    document.getElementById('ku1-d').value = 1;
+    updateFromSliders();
+  });
+
+  // Drag input vector
+  function getCanvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width, scaleY = H / rect.height;
+    if (e.touches) {
+      return [(e.touches[0].clientX - rect.left) * scaleX, (e.touches[0].clientY - rect.top) * scaleY];
+    }
+    return [(e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY];
+  }
+
+  function isNearVecTip(sx, sy) {
+    const [tx, ty] = toScreen(vecX, vecY);
+    return Math.hypot(sx - tx, sy - ty) < 14;
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    const [sx, sy] = getCanvasPos(e);
+    if (isNearVecTip(sx, sy)) dragging = true;
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const [sx, sy] = getCanvasPos(e);
+    const [mx, my] = toMath(sx, sy);
+    vecX = Math.max(-3.5, Math.min(3.5, mx));
+    vecY = Math.max(-3, Math.min(3, my));
+    draw();
+  });
+  canvas.addEventListener('mouseup', () => dragging = false);
+  canvas.addEventListener('mouseleave', () => dragging = false);
+  canvas.addEventListener('touchstart', e => {
+    const [sx, sy] = getCanvasPos(e);
+    if (isNearVecTip(sx, sy)) { dragging = true; e.preventDefault(); }
+  }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    if (!dragging) return; e.preventDefault();
+    const [sx, sy] = getCanvasPos(e);
+    const [mx, my] = toMath(sx, sy);
+    vecX = Math.max(-3.5, Math.min(3.5, mx));
+    vecY = Math.max(-3, Math.min(3, my));
+    draw();
+  }, { passive: false });
+  canvas.addEventListener('touchend', () => dragging = false);
+
+  updateFromSliders();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════
+     SECTION 2 SCRIPT
+     ═══════════════════════════════════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('ku2-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const CX = W / 2, CY = H / 2;
+  const SCALE = 55;
+
+  let a = 2, b = 1, c = 1, d = 2;
+
+  function toScreen(mx, my) {
+    return [CX + mx * SCALE, CY - my * SCALE];
+  }
+
+  function computeEigen(ma, mb, mc, md) {
+    const tr = ma + md;
+    const det = ma * md - mb * mc;
+    const disc = tr * tr - 4 * det;
+    if (disc < 0) return null; // complex eigenvalues
+    const sqrtDisc = Math.sqrt(disc);
+    const lam1 = (tr + sqrtDisc) / 2;
+    const lam2 = (tr - sqrtDisc) / 2;
+
+    // eigenvectors
+    let v1, v2;
+    if (Math.abs(mc) > 1e-6) {
+      v1 = [lam1 - md, mc];
+      v2 = [lam2 - md, mc];
+    } else if (Math.abs(mb) > 1e-6) {
+      v1 = [mb, lam1 - ma];
+      v2 = [mb, lam2 - ma];
+    } else {
+      v1 = [1, 0];
+      v2 = [0, 1];
+    }
+    // normalize
+    const n1 = Math.hypot(v1[0], v1[1]);
+    const n2 = Math.hypot(v2[0], v2[1]);
+    if (n1 > 1e-8) { v1[0] /= n1; v1[1] /= n1; }
+    if (n2 > 1e-8) { v2[0] /= n2; v2[1] /= n2; }
+    return { lam1, lam2, v1, v2 };
+  }
+
+  function isEigenvector(dx, dy, v1, v2) {
+    // Check if direction (dx,dy) is (anti)parallel to v1 or v2
+    const dot1 = Math.abs(dx * v1[0] + dy * v1[1]);
+    const dot2 = Math.abs(dx * v2[0] + dy * v2[1]);
+    return dot1 > 0.985 || dot2 > 0.985;
+  }
+
+  function drawArrow(x0, y0, x1, y1, color, width, headSize) {
+    ctx.save();
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    const angle = Math.atan2(y1 - y0, x1 - x0);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - headSize * Math.cos(angle - 0.4), y1 - headSize * Math.sin(angle - 0.4));
+    ctx.lineTo(x1 - headSize * Math.cos(angle + 0.4), y1 - headSize * Math.sin(angle + 0.4));
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Axes
+    ctx.save();
+    ctx.strokeStyle = 'rgba(150,150,150,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, CY); ctx.lineTo(W, CY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, 0); ctx.lineTo(CX, H); ctx.stroke();
+    ctx.restore();
+
+    // Unit circle (dashed)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(150,150,150,0.35)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath();
+    ctx.arc(CX, CY, SCALE, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    const eigen = computeEigen(a, b, c, d);
+    const [ox, oy] = toScreen(0, 0);
+
+    const NUM_ARROWS = 12;
+    for (let i = 0; i < NUM_ARROWS; i++) {
+      const angle = (i / NUM_ARROWS) * Math.PI * 2;
+      const ix = Math.cos(angle), iy = Math.sin(angle);
+      const ox2 = a * ix + b * iy;
+      const oy2 = c * ix + d * iy;
+      const outLen = Math.hypot(ox2, oy2);
+
+      // Clamp output for display
+      const maxLen = 4.5;
+      const scale = outLen > maxLen ? maxLen / outLen : 1;
+      const dox = ox2 * scale, doy = oy2 * scale;
+
+      const isEig = eigen && isEigenvector(ix, iy, eigen.v1, eigen.v2);
+
+      if (isEig) {
+        const [ex1, ey1] = toScreen(dox, doy);
+        drawArrow(ox, oy, ex1, ey1, '#7c3aed', 2.5, 9);
+        // dot at tip
+        ctx.save();
+        ctx.beginPath(); ctx.arc(ex1, ey1, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#7c3aed'; ctx.fill();
+        ctx.restore();
+      } else {
+        const [ex1, ey1] = toScreen(dox, doy);
+        drawArrow(ox, oy, ex1, ey1, 'rgba(107,114,128,0.5)', 1, 6);
+      }
+    }
+
+    // Eigenvalue label arrows
+    if (eigen) {
+      ctx.save();
+      ctx.font = '600 12px Inter';
+      for (let k = 0; k < 2; k++) {
+        const v = k === 0 ? eigen.v1 : eigen.v2;
+        const lam = k === 0 ? eigen.lam1 : eigen.lam2;
+        const [tx, ty] = toScreen(v[0] * 1.15, v[1] * 1.15);
+        ctx.fillStyle = '#7c3aed';
+        ctx.fillText(`λ${k + 1}=${lam.toFixed(2)}`, tx + 5, ty - 4);
+      }
+      ctx.restore();
+    }
+  }
+
+  function updateUI() {
+    document.getElementById('ku2-a-val').textContent = a.toFixed(1);
+    document.getElementById('ku2-b-val').textContent = b.toFixed(1);
+    document.getElementById('ku2-c-val').textContent = c.toFixed(1);
+    document.getElementById('ku2-d-val').textContent = d.toFixed(1);
+
+    document.getElementById('ku2-matrix').innerHTML =
+      `A = [ ${a.toFixed(1)} &nbsp; ${b.toFixed(1)} ]<br>` +
+      `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ ${c.toFixed(1)} &nbsp; ${d.toFixed(1)} ]`;
+
+    const tr = a + d;
+    const det = a * d - b * c;
+    const disc = tr * tr - 4 * det;
+
+    const eigen = computeEigen(a, b, c, d);
+    if (eigen) {
+      document.getElementById('ku2-lam1-badge').textContent = `λ₁ = ${eigen.lam1.toFixed(3)}`;
+      document.getElementById('ku2-lam2-badge').textContent = `λ₂ = ${eigen.lam2.toFixed(3)}`;
+    } else {
+      document.getElementById('ku2-lam1-badge').textContent = 'λ₁ = 复数';
+      document.getElementById('ku2-lam2-badge').textContent = 'λ₂ = 复数';
+    }
+
+    document.getElementById('ku2-char-eq').textContent =
+      `λ² − (${tr.toFixed(2)})λ + (${det.toFixed(2)}) = 0   Δ = ${disc.toFixed(2)}`;
+
+    draw();
+  }
+
+  function syncFromSliders() {
+    a = parseFloat(document.getElementById('ku2-a').value);
+    b = parseFloat(document.getElementById('ku2-b').value);
+    c = parseFloat(document.getElementById('ku2-c').value);
+    d = parseFloat(document.getElementById('ku2-d').value);
+    updateUI();
+  }
+
+  ['ku2-a','ku2-b','ku2-c','ku2-d'].forEach(id => {
+    document.getElementById(id).addEventListener('input', syncFromSliders);
+  });
+
+  document.getElementById('ku2-sym-btn').addEventListener('click', () => {
+    // set c = b
+    document.getElementById('ku2-c').value = document.getElementById('ku2-b').value;
+    syncFromSliders();
+  });
+
+  document.getElementById('ku2-reset').addEventListener('click', () => {
+    document.getElementById('ku2-a').value = 2;
+    document.getElementById('ku2-b').value = 1;
+    document.getElementById('ku2-c').value = 1;
+    document.getElementById('ku2-d').value = 2;
+    syncFromSliders();
+  });
+
+  updateUI();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════
+     SECTION 3 SCRIPT
+     ═══════════════════════════════════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('ku3-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const CX = W / 2, CY = H / 2;
+  const SCALE = 55;
+  const TRAIL_LEN = 8;
+  const N_POINTS = 20;
+
+  const PRESETS = [
+    { name: '螺旋收缩', A: [[0.85, 0.4], [-0.4, 0.85]] },
+    { name: '旋转稳定', A: [[0.0, -1.0], [1.0, 0.0]] },
+    { name: '螺旋发散', A: [[1.1, 0.4], [-0.4, 1.1]] },
+  ];
+
+  let presetIdx = 0;
+  let A = PRESETS[0].A;
+  let playing = false;
+  let rafId = null;
+  let epoch = 0;
+  let points = []; // each: { x, y, trail: [{x,y}] }
+
+  function computeMaxLambda(mat) {
+    const a = mat[0][0], b = mat[0][1], c = mat[1][0], d = mat[1][1];
+    const tr = a + d, det = a * d - b * c;
+    const disc = tr * tr - 4 * det;
+    if (disc >= 0) {
+      const sq = Math.sqrt(disc);
+      const l1 = Math.abs((tr + sq) / 2);
+      const l2 = Math.abs((tr - sq) / 2);
+      return Math.max(l1, l2);
+    } else {
+      // complex: |λ| = sqrt(det)
+      return Math.sqrt(Math.abs(det));
+    }
+  }
+
+  function initPoints() {
+    points = [];
+    const rng = mulberry32(42);
+    for (let i = 0; i < N_POINTS; i++) {
+      const x = (rng() - 0.5) * 5;
+      const y = (rng() - 0.5) * 5;
+      points.push({ x, y, trail: [] });
+    }
+    epoch = 0;
+  }
+
+  function mulberry32(seed) {
+    let s = seed;
+    return function() {
+      s |= 0; s = s + 0x6D2B79F5 | 0;
+      let t = Math.imul(s ^ s >>> 15, 1 | s);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function applyMatrix(pt) {
+    return {
+      x: A[0][0] * pt.x + A[0][1] * pt.y,
+      y: A[1][0] * pt.x + A[1][1] * pt.y,
+    };
+  }
+
+  function toScreen(mx, my) {
+    return [CX + mx * SCALE, CY - my * SCALE];
+  }
+
+  function isOnScreen(sx, sy) {
+    return sx > -10 && sx < W + 10 && sy > -10 && sy < H + 10;
+  }
+
+  function stepAll() {
+    for (const pt of points) {
+      pt.trail.push({ x: pt.x, y: pt.y });
+      if (pt.trail.length > TRAIL_LEN) pt.trail.shift();
+      const nxt = applyMatrix(pt);
+      pt.x = nxt.x; pt.y = nxt.y;
+    }
+    epoch++;
+  }
+
+  function getPointColor(idx) {
+    const hues = [220, 180, 260, 30, 150, 320, 0, 60, 195, 290, 10, 130,
+                  240, 170, 340, 80, 200, 350, 110, 280];
+    const h = hues[idx % hues.length];
+    return `hsl(${h},70%,55%)`;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Axes
+    ctx.save();
+    ctx.strokeStyle = 'rgba(150,150,150,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, CY); ctx.lineTo(W, CY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX, 0); ctx.lineTo(CX, H); ctx.stroke();
+    ctx.restore();
+
+    // Grid (light)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(200,200,220,0.3)';
+    ctx.lineWidth = 0.5;
+    for (let i = -4; i <= 4; i++) {
+      const [x0, y0] = toScreen(i, -4), [x1, y1] = toScreen(i, 4);
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      const [x2, y2] = toScreen(-4, i), [x3, y3] = toScreen(4, i);
+      ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke();
+    }
+    ctx.restore();
+
+    for (let i = 0; i < points.length; i++) {
+      const pt = points[i];
+      const color = getPointColor(i);
+
+      // Trail
+      const trail = pt.trail;
+      for (let t = 0; t < trail.length; t++) {
+        const alpha = (t + 1) / (trail.length + 1) * 0.7;
+        const r = 3 * (t + 1) / trail.length;
+        const [sx, sy] = toScreen(trail[t].x, trail[t].y);
+        if (!isOnScreen(sx, sy)) continue;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+        ctx.restore();
+      }
+
+      // Current point
+      const [sx, sy] = toScreen(pt.x, pt.y);
+      if (isOnScreen(sx, sy)) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // Epoch
+    document.getElementById('ku3-epoch').textContent = `n = ${epoch}`;
+  }
+
+  function animate() {
+    if (!playing) return;
+    stepAll();
+    draw();
+    rafId = requestAnimationFrame(() => {
+      setTimeout(() => { if (playing) animate(); }, 80);
+    });
+  }
+
+  function updateLambdaBadge() {
+    const lam = computeMaxLambda(A);
+    const badge = document.getElementById('ku3-lambda-badge');
+    badge.textContent = `|λ| = ${lam.toFixed(3)}`;
+    badge.className = 'badge';
+    if (Math.abs(lam - 1) < 0.02) badge.classList.add('yellow');
+    else if (lam < 1) badge.classList.add('green');
+    else badge.classList.add('red');
+  }
+
+  document.getElementById('ku3-play').addEventListener('click', () => {
+    playing = !playing;
+    document.getElementById('ku3-play').textContent = playing ? '⏸ 暂停' : '▶ 播放';
+    if (playing) animate();
+  });
+
+  document.getElementById('ku3-reset').addEventListener('click', () => {
+    playing = false;
+    document.getElementById('ku3-play').textContent = '▶ 播放';
+    if (rafId) cancelAnimationFrame(rafId);
+    initPoints();
+    draw();
+  });
+
+  document.querySelectorAll('#ku3-presets .preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#ku3-presets .preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      presetIdx = parseInt(btn.dataset.preset);
+      A = PRESETS[presetIdx].A;
+      playing = false;
+      document.getElementById('ku3-play').textContent = '▶ 播放';
+      if (rafId) cancelAnimationFrame(rafId);
+      initPoints();
+      updateLambdaBadge();
+      draw();
+    });
+  });
+
+  initPoints();
+  updateLambdaBadge();
+  draw();
+})();
+</script>
+
+</body>
+</html>

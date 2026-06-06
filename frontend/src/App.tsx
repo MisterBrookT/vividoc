@@ -37,6 +37,7 @@ const CASES: Case[] = [
   { slug: 'huffman_coding',       title: 'Huffman Coding',           domain: 'Information Theory', category: 'Freeform Construction', desc: 'Edit symbol frequencies and watch the optimal prefix-free tree rebuild itself to minimize average code length.' },
   { slug: 'neural_network_zh',    title: '神经网络：从感知机到深度学习', domain: '机器学习',         category: 'Parameter Exploration', lang: 'zh',                        desc: '从感知机到多层网络，感受非线性激活与反向传播如何让机器学会分类。' },
   { slug: 'linear_regression_zh', title: '线性回归：机器学习的第一课',  domain: '机器学习',         category: 'Direct Manipulation',   lang: 'zh', source: 'slides',      desc: '改编自 Andrew Ng CS229 讲义。拖动回归直线感受最小二乘，动画演示梯度下降收敛。' },
+  { slug: 'linear_transform_zh',  title: '矩阵变换的几何直觉',          domain: '线性代数',         category: 'Direct Manipulation',   lang: 'zh', source: 'slides',      desc: '改编自 Gilbert Strang MIT 18.06。拖动向量观察矩阵变换，找到不被旋转的特征方向，看特征值如何决定系统命运。' },
 ];
 
 const CATEGORY_DOT: Record<string, string> = {
