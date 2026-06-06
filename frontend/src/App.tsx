@@ -24,15 +24,20 @@ const css = `
 `;
 
 /* ── Data ── */
-const CASES = [
-  { slug: 'fourier_transform',    title: 'Fourier Transform',      domain: 'Physics & Math',      category: 'Temporal Control',      desc: 'Signal decomposition, Gibbs phenomenon, epicycles.' },
-  { slug: 'lorenz_attractor',     title: 'Lorenz Attractor',       domain: 'Physics & Math',      category: 'Parameter Exploration', desc: 'Deterministic chaos and the butterfly effect.' },
-  { slug: 'action_potential',     title: 'Action Potential',       domain: 'Biology',             category: 'Temporal Control',      desc: 'Ion channels, threshold dynamics, and the all-or-nothing law.' },
-  { slug: 'dna_replication',      title: 'DNA Replication',        domain: 'Biology',             category: 'Temporal Control',      desc: 'Helicase unwinds, polymerase copies — fidelity down to one error per billion bases.' },
-  { slug: 'gradient_descent',     title: 'Gradient Descent',       domain: 'Machine Learning',    category: 'Direct Manipulation',   desc: 'Click to place the starting point on a 3D loss surface and watch SGD, momentum, and Adam navigate to minima.' },
-  { slug: 'bias_variance',        title: 'Bias–Variance Tradeoff', domain: 'Machine Learning',    category: 'Parameter Exploration', desc: 'Fit polynomials to noisy data — as degree grows, watch bias collapse and variance explode into overfitting.' },
-  { slug: 'shannon_entropy',      title: 'Shannon Entropy',        domain: 'Information Theory',  category: 'Parameter Exploration', desc: 'Adjust symbol probabilities and watch entropy peak at maximum uncertainty — the mathematical surprise.' },
-  { slug: 'huffman_coding',       title: 'Huffman Coding',         domain: 'Information Theory',  category: 'Freeform Construction', desc: 'Edit symbol frequencies and watch the optimal prefix-free tree rebuild itself to minimize average code length.' },
+type Case = { slug: string; title: string; domain: string; category: string; desc: string; lang?: string; source?: string };
+
+const CASES: Case[] = [
+  { slug: 'fourier_transform',    title: 'Fourier Transform',        domain: 'Physics & Math',   category: 'Temporal Control',      desc: 'Signal decomposition, Gibbs phenomenon, epicycles.' },
+  { slug: 'lorenz_attractor',     title: 'Lorenz Attractor',         domain: 'Physics & Math',   category: 'Parameter Exploration', desc: 'Deterministic chaos and the butterfly effect.' },
+  { slug: 'action_potential',     title: 'Action Potential',         domain: 'Biology',           category: 'Temporal Control',      desc: 'Ion channels, threshold dynamics, and the all-or-nothing law.' },
+  { slug: 'dna_replication',      title: 'DNA Replication',          domain: 'Biology',           category: 'Temporal Control',      desc: 'Helicase unwinds, polymerase copies — fidelity down to one error per billion bases.' },
+  { slug: 'gradient_descent',     title: 'Gradient Descent',         domain: 'Machine Learning',  category: 'Direct Manipulation',   desc: 'Click to place the starting point on a 3D loss surface and watch SGD, momentum, and Adam navigate to minima.' },
+  { slug: 'bias_variance',        title: 'Bias–Variance Tradeoff',   domain: 'Machine Learning',  category: 'Parameter Exploration', desc: 'Fit polynomials to noisy data — as degree grows, watch bias collapse and variance explode into overfitting.' },
+  { slug: 'shannon_entropy',      title: 'Shannon Entropy',          domain: 'Information Theory', category: 'Parameter Exploration', desc: 'Adjust symbol probabilities and watch entropy peak at maximum uncertainty — the mathematical surprise.' },
+  { slug: 'huffman_coding',       title: 'Huffman Coding',           domain: 'Information Theory', category: 'Freeform Construction', desc: 'Edit symbol frequencies and watch the optimal prefix-free tree rebuild itself to minimize average code length.' },
+  { slug: 'neural_network_zh',    title: '神经网络：从感知机到深度学习', domain: '机器学习',         category: 'Parameter Exploration', lang: 'zh',                        desc: '从感知机到多层网络，感受非线性激活与反向传播如何让机器学会分类。' },
+  { slug: 'linear_regression_zh', title: '线性回归：机器学习的第一课',  domain: '机器学习',         category: 'Direct Manipulation',   lang: 'zh', source: 'slides',      desc: '改编自 Andrew Ng CS229 讲义。拖动回归直线感受最小二乘，动画演示梯度下降收敛。' },
+  { slug: 'linear_transform_zh',  title: '矩阵变换的几何直觉',          domain: '线性代数',         category: 'Direct Manipulation',   lang: 'zh', source: 'slides',      desc: '改编自 Gilbert Strang MIT 18.06。拖动向量观察矩阵变换，找到不被旋转的特征方向，看特征值如何决定系统命运。' },
 ];
 
 const CATEGORY_DOT: Record<string, string> = {
@@ -47,7 +52,7 @@ const CATEGORY_DOT: Record<string, string> = {
 };
 
 /* ── Sub-components ── */
-function CaseCard({ c, onOpen }: { c: { slug: string; title: string; domain: string; category: string; desc: string }; onOpen: (s: string) => void }) {
+function CaseCard({ c, onOpen }: { c: Case; onOpen: (s: string) => void }) {
   return (
     <div
       onClick={() => onOpen(c.slug)}
@@ -81,6 +86,17 @@ function CaseCard({ c, onOpen }: { c: { slug: string; title: string; domain: str
           title={c.title}
         />
         <div style={{ position: 'absolute', inset: 0 }} />
+        {/* Input-type badges */}
+        {(c.lang === 'zh' || c.source === 'slides') && (
+          <div style={{ position: 'absolute', top: 6, left: 6, display: 'flex', gap: 4, zIndex: 2 }}>
+            {c.lang === 'zh' && (
+              <span style={{ fontSize: 9, fontFamily: 'Inter, sans-serif', background: 'rgba(200,150,30,0.9)', color: '#0a0908', borderRadius: 3, padding: '2px 5px', fontWeight: 700, letterSpacing: '0.02em' }}>中文</span>
+            )}
+            {c.source === 'slides' && (
+              <span style={{ fontSize: 9, fontFamily: 'Inter, sans-serif', background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 3, padding: '2px 5px', fontWeight: 500 }}>讲义</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Info */}
@@ -219,6 +235,12 @@ export default function App() {
 
       {/* Cases grid — flat 4-column layout */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px 100px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 24 }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>Showcase</h2>
+          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'var(--muted)' }}>
+            input: text topic · lecture slides · 中文 &nbsp;→&nbsp; output: interactive HTML
+          </span>
+        </div>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
