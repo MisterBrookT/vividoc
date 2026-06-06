@@ -31,7 +31,7 @@ ViviDoc generates **self-contained interactive HTML documents** from a single to
 curl -sSL https://raw.githubusercontent.com/MisterBrookT/vividoc/main/install.sh | bash
 ```
 
-Installs `/vividoc` and `/vividoc-learn` into `~/.claude/commands/`. Your harness is the model — no separate API key needed.
+Installs `/vividoc`, `/vividoc-learn`, and `/vividoc-slides` into `~/.claude/commands/`. Your harness is the model — no separate API key needed.
 
 ```
 /vividoc Fourier Transform
@@ -39,6 +39,10 @@ Installs `/vividoc` and `/vividoc-learn` into `~/.claude/commands/`. Your harnes
 
 ```
 /vividoc-learn https://ncase.me/trust/
+```
+
+```
+/vividoc-slides https://example.edu/lecture.pdf
 ```
 
 ---

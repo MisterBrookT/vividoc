@@ -10,7 +10,7 @@ echo "Installing ViviDoc skills for Claude Code..."
 
 mkdir -p "${COMMANDS_DIR}"
 
-for skill in vividoc vividoc-learn; do
+for skill in vividoc vividoc-learn vividoc-slides; do
   echo "  → /${skill}"
   curl -fsSL "${BASE_URL}/${skill}.md" -o "${COMMANDS_DIR}/${skill}.md"
 done
@@ -23,4 +23,8 @@ echo ""
 echo "Or distill an existing explorable explanation:"
 echo ""
 echo "   /vividoc-learn https://ncase.me/trust/"
+echo ""
+echo "Or convert lecture slides into an interactive document:"
+echo ""
+echo "   /vividoc-slides https://example.edu/lecture.pdf"
 echo ""
