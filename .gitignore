@@ -57,6 +57,9 @@ output/
 test_output/
 tmp/
 
+# Manim render output
+media/
+
 # Logs
 *.log
 logs/
