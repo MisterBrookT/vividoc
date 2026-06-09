@@ -6,21 +6,21 @@ Usage:
     uv run python runner.py "Fourier Transform"
 """
 
+import argparse
+import asyncio
+import json
 import os
 import re
 import sys
-import json
 import time
-import asyncio
-import argparse
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from shared_prompts import (
-    PLANNER_SYSTEM,
     CODER_SYSTEM,
     EVALUATOR_SYSTEM,
+    PLANNER_SYSTEM,
     TASK_TEMPLATE,
 )
 
@@ -88,8 +88,8 @@ async def run_async(
 
     from metagpt.actions import Action
     from metagpt.roles import Role
-    from metagpt.team import Team
     from metagpt.schema import Message
+    from metagpt.team import Team
 
     # --- Action definitions ---
 

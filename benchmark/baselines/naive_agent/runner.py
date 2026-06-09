@@ -2,12 +2,13 @@
 
 import json
 import time
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from vividoc.utils.llm.client import LLMClient
 from vividoc.utils.logger import logger
-from vividoc.utils.naming import topic_to_dirname, model_to_method_suffix
+from vividoc.utils.naming import model_to_method_suffix, topic_to_dirname
+
 from .prompt import get_naive_agent_prompt
 
 BASELINE_NAME = "naive_agent"

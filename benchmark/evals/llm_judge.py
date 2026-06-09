@@ -13,12 +13,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from pydantic import BaseModel
-from vividoc.utils.llm.client import LLMClient
+
 from benchmark.evals.prompts import (
     CONTENT_RICHNESS_PROMPT,
     INTERACTION_DESIGN_PROMPT,
     VISUAL_QUALITY_PROMPT,
 )
+from vividoc.utils.llm.client import LLMClient
 
 
 def extract_text_content(html: str) -> str:

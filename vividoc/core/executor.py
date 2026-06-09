@@ -2,16 +2,18 @@
 
 import json
 from pathlib import Path
+
 from bs4 import BeautifulSoup
-from vividoc.utils.llm.client import LLMClient
-from vividoc.core.models import DocumentSpec, GeneratedDocument, KnowledgeUnitState
-from vividoc.core.config import RunnerConfig
-from vividoc.utils.html.validator import HTMLValidator
-from vividoc.utils.html.template import create_document_skeleton
+
 from prompts.executor_prompt import (
     get_fragment_stage1_prompt,
     get_fragment_stage2_prompt,
 )
+from vividoc.core.config import RunnerConfig
+from vividoc.core.models import DocumentSpec, GeneratedDocument, KnowledgeUnitState
+from vividoc.utils.html.template import create_document_skeleton
+from vividoc.utils.html.validator import HTMLValidator
+from vividoc.utils.llm.client import LLMClient
 
 
 class Executor:
@@ -356,8 +358,8 @@ class Executor:
 
     def run(self, doc_spec: DocumentSpec) -> GeneratedDocument:
         """Execute the fragment-based HTML generation process."""
-        from vividoc.utils.logger import logger
         from vividoc.utils.io import save_json
+        from vividoc.utils.logger import logger
 
         # Setup paths
         output_dir = Path(self.config.output_dir)

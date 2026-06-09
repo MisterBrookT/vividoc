@@ -8,7 +8,9 @@ Also captures a screenshot for Visual Quality evaluation.
 """
 
 from pathlib import Path
-from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
+
+from playwright.sync_api import TimeoutError as PWTimeout
+from playwright.sync_api import sync_playwright
 
 
 def _element_label(el) -> str:

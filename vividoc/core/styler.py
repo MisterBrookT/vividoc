@@ -1,6 +1,7 @@
 """LLM-based Styler — generates dynamic style options from spec content."""
 
 from pydantic import BaseModel, Field
+
 from vividoc.core.models import DocumentSpec
 
 
@@ -40,8 +41,8 @@ class Styler:
 
         Returns dict with text_dimensions and interaction_dimensions.
         """
-        from vividoc.utils.llm.client import LLMClient
         from prompts.styler_prompt import get_styler_prompt
+        from vividoc.utils.llm.client import LLMClient
 
         # Build KU summaries
         ku_lines = []

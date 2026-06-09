@@ -2,8 +2,9 @@
 
 import re
 from typing import List
-from vividoc.core.models import GeneratedDocument, EvaluationFeedback
+
 from vividoc.core.config import RunnerConfig
+from vividoc.core.models import EvaluationFeedback, GeneratedDocument
 from vividoc.utils.logger import logger
 
 

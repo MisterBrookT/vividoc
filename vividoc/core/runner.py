@@ -1,14 +1,15 @@
 """Runner workflow for vividoc pipeline."""
 
 from pathlib import Path
-from vividoc.core.planner import Planner
-from vividoc.core.executor import Executor
-from vividoc.core.evaluator import Evaluator
-from vividoc.core.models import GeneratedDocument, DocumentSpec
+
 from vividoc.core.config import RunnerConfig
-from vividoc.utils.io import save_json, load_json
+from vividoc.core.evaluator import Evaluator
+from vividoc.core.executor import Executor
+from vividoc.core.models import DocumentSpec, GeneratedDocument
+from vividoc.core.planner import Planner
+from vividoc.utils.io import load_json, save_json
 from vividoc.utils.logger import logger
-from vividoc.utils.naming import topic_to_dirname, model_to_method_suffix
+from vividoc.utils.naming import model_to_method_suffix, topic_to_dirname
 
 
 class Runner:

@@ -1,10 +1,11 @@
 import csv
 import json
 import os
-from tqdm import tqdm
 
 from google import genai
 from google.genai.types import GenerateContentConfig
+from tqdm import tqdm
+
 from prompts.prep.prompt_extract_topic import prompt_topic_extraction
 from vividoc.utils.io import extract_from_markdown
 

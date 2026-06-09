@@ -1,9 +1,10 @@
 """Service for spec generation and management."""
 
-from typing import Dict, Tuple, List
 import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Tuple
+
 from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
 from vividoc.core.planner import Planner
 from vividoc.utils.naming import topic_to_dirname

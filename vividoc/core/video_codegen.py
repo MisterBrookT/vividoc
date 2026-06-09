@@ -20,11 +20,10 @@ import textwrap
 from pathlib import Path
 from typing import Optional
 
+from prompts.video_prompt import get_video_scene_prompt
 from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec
 from vividoc.utils.llm.client import LLMClient
 from vividoc.utils.logger import logger
-from prompts.video_prompt import get_video_scene_prompt
-
 
 # ---------------------------------------------------------------------------
 # Boilerplate header prepended to every generated main.py

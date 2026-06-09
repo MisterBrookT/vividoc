@@ -1,8 +1,9 @@
 """Executor extension with progress callback support."""
 
-from typing import Optional, Callable
-from vividoc.core.executor import Executor
+from typing import Callable, Optional
+
 from vividoc.core.config import RunnerConfig
+from vividoc.core.executor import Executor
 from vividoc.core.models import DocumentSpec, GeneratedDocument
 
 
@@ -73,10 +74,11 @@ class ExecutorWithProgress(Executor):
         Returns:
             GeneratedDocument with HTML file path and metadata
         """
-        from vividoc.utils.logger import logger
-        from vividoc.utils.io import save_json
         from pathlib import Path
+
         from vividoc.utils.html.template import create_document_skeleton
+        from vividoc.utils.io import save_json
+        from vividoc.utils.logger import logger
 
         # Report start of execution phase
         self._report_progress("executing", None, None)

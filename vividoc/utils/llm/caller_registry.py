@@ -1,4 +1,4 @@
-from typing import Dict, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Type
 
 if TYPE_CHECKING:
     from .llm_caller import LLMCaller

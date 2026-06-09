@@ -1,16 +1,17 @@
 """Simple CLI pipeline for vividoc."""
 
 import typer
+
 from vividoc.core import (
-    Planner,
-    Executor,
+    DocumentSpec,
     Evaluator,
+    Executor,
+    GeneratedDocument,
+    Planner,
     Runner,
     RunnerConfig,
-    DocumentSpec,
-    GeneratedDocument,
 )
-from vividoc.utils.io import save_json, load_json
+from vividoc.utils.io import load_json, save_json
 
 # Create main app
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_enable=False)
@@ -74,8 +75,12 @@ def exec(
         ..., help="LLM model in format provider/model-name"
     ),
     output: str = typer.Option("output/generated_doc.json", help="Output file path"),
-    text_style: str = typer.Option("", "--text-style", help="Style instructions for text generation"),
-    interaction_style: str = typer.Option("", "--interaction-style", help="Style instructions for interaction generation"),
+    text_style: str = typer.Option(
+        "", "--text-style", help="Style instructions for text generation"
+    ),
+    interaction_style: str = typer.Option(
+        "", "--interaction-style", help="Style instructions for interaction generation"
+    ),
 ):
     """Execute execution phase - Generate text and code."""
     typer.echo(f"🚀 Executing document generation from: {spec_file}")
@@ -144,8 +149,16 @@ def run(
     resume: bool = typer.Option(
         False, "--resume", help="Resume from existing files if available"
     ),
-    text_style: str = typer.Option("", "--text-style", help="Style instructions for text generation (e.g. 'Use a playful, conversational tone with concrete analogies')"),
-    interaction_style: str = typer.Option("", "--interaction-style", help="Style instructions for interaction generation (e.g. 'Prefer dark backgrounds with bright accent colors, smooth transitions')"),
+    text_style: str = typer.Option(
+        "",
+        "--text-style",
+        help="Style instructions for text generation (e.g. 'Use a playful, conversational tone with concrete analogies')",
+    ),
+    interaction_style: str = typer.Option(
+        "",
+        "--interaction-style",
+        help="Style instructions for interaction generation (e.g. 'Prefer dark backgrounds with bright accent colors, smooth transitions')",
+    ),
 ):
     """Run complete pipeline: plan → exec → eval."""
     typer.echo(f"🔄 Running complete pipeline for topic: {topic}")
@@ -174,16 +187,22 @@ def video(
     llm_model: str = typer.Option(
         ..., "--model", "-m", help="LLM model in format provider/model-name"
     ),
-    output_dir: str = typer.Option("outputs", help="Output directory (video/main.py will be placed inside)"),
+    output_dir: str = typer.Option(
+        "outputs", help="Output directory (video/main.py will be placed inside)"
+    ),
     render: bool = typer.Option(
-        False, "--render", help="Render the generated Manim script to MP4 (requires manim>=0.18)"
+        False,
+        "--render",
+        help="Render the generated Manim script to MP4 (requires manim>=0.18)",
     ),
     render_quality: str = typer.Option(
         "medium",
         "--quality",
         help="Manim render quality: low | medium | high | production",
     ),
-    style: str = typer.Option("", "--style", help="Optional free-text style instructions for the LLM"),
+    style: str = typer.Option(
+        "", "--style", help="Optional free-text style instructions for the LLM"
+    ),
 ):
     """Generate a Manim video script from a document spec.
 
@@ -192,16 +211,19 @@ def video(
         vividoc video spec.json --model openrouter/google/gemini-2.5-pro
         vividoc video spec.json --model openrouter/google/gemini-2.5-pro --render
     """
+    from pathlib import Path
+
     from vividoc.core.video_codegen import VideoCodegen, manim_is_available
     from vividoc.utils.llm.client import LLMClient
-    from pathlib import Path
 
     typer.echo(f"🎬 Generating Manim video script from: {spec_file}")
     typer.echo(f"🤖 Using model: {llm_model}")
 
     # Load spec
     doc_spec = load_json(spec_file, DocumentSpec)
-    typer.echo(f"📋 Loaded {len(doc_spec.knowledge_units)} knowledge units for topic: {doc_spec.topic}")
+    typer.echo(
+        f"📋 Loaded {len(doc_spec.knowledge_units)} knowledge units for topic: {doc_spec.topic}"
+    )
 
     # Warn if render requested but manim missing
     if render and not manim_is_available():

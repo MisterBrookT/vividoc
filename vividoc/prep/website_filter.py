@@ -1,10 +1,11 @@
 import csv
 import os
+
+from google import genai
+from google.genai.types import GenerateContentConfig
 from tqdm import tqdm
 
 from prompts.prep.promtp_website_category import prompt_website_category
-from google import genai
-from google.genai.types import GenerateContentConfig
 from vividoc.utils.io import extract_from_markdown
 from vividoc.utils.logger import logger
 

@@ -41,3 +41,11 @@ dev = [
 
 [project.scripts]
 vividoc = "vividoc.cli:main"
+
+[tool.ruff]
+target-version = "py312"
+exclude = ["examples/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

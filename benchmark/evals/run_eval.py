@@ -23,15 +23,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from benchmark.evals.functional_eval import evaluate_functional
 from benchmark.evals.llm_judge import (
+    _parse_score,
     evaluate_content_richness,
     evaluate_interaction_design,
     evaluate_visual_quality,
     extract_text_content,
-    _parse_score,
 )
 from benchmark.evals.prompts import VISUAL_QUALITY_PROMPT
-from benchmark.evals.functional_eval import evaluate_functional
 from vividoc.utils.llm.client import LLMClient
 
 OUTPUTS_DIR = Path(__file__).parent.parent / "outputs"

@@ -1,13 +1,15 @@
 """Service for document generation and management."""
 
-from typing import Dict, Optional
 import uuid
 from datetime import datetime
-from vividoc.core.models import DocumentSpec
+from typing import Dict, Optional
+
 from vividoc.core.config import RunnerConfig
 from vividoc.core.evaluator import Evaluator
-from .job_manager import JobManager, KUProgress
+from vividoc.core.models import DocumentSpec
+
 from .executor_with_progress import ExecutorWithProgress
+from .job_manager import JobManager, KUProgress
 
 
 class DocumentService:
@@ -93,8 +95,8 @@ class DocumentService:
                 self._progress_callback(job_id, phase, ku_id, stage, ku_progress_list)
 
             # Create executor config with spec-specific output directory
-            from pathlib import Path
             from dataclasses import replace
+            from pathlib import Path
 
             # Get project root and create output directory: outputs/{spec_id}/vividoc/
             project_root = Path(__file__).parent.parent.parent.parent

@@ -1,6 +1,7 @@
 """CLI entry point: python -m baselines.naive_agent <topic> <model>"""
 
 import argparse
+
 from .runner import NaiveAgentRunner
 
 

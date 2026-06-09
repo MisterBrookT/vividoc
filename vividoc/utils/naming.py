@@ -1,7 +1,7 @@
 """Shared naming utilities for topic-based directory names."""
 
-import re
 import hashlib
+import re
 import uuid
 
 

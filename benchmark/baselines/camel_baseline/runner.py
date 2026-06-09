@@ -9,14 +9,14 @@ Usage:
     uv run python runner.py "Fourier Transform"
 """
 
+import argparse
+import json
 import os
 import re
 import sys
-import json
 import time
-import argparse
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from shared_prompts import EVALUATOR_SYSTEM, TASK_TEMPLATE
@@ -65,11 +65,11 @@ def extract_best_html_from_messages(messages: list[str]) -> str:
 
 
 def run(topic: str, model: str, output_dir: str, force: bool = False) -> dict:
-    from camel.societies import RolePlaying
     from camel.agents import ChatAgent
-    from camel.types import ModelPlatformType
     from camel.configs import ChatGPTConfig
     from camel.models import ModelFactory
+    from camel.societies import RolePlaying
+    from camel.types import ModelPlatformType
 
     # Strip "openrouter/" prefix — OpenRouter API expects e.g. "google/gemini-3-flash-preview"
     api_model = model.removeprefix("openrouter/")

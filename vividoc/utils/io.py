@@ -2,7 +2,9 @@ import json
 import re
 from pathlib import Path
 from typing import Type
+
 from pydantic import BaseModel
+
 from vividoc.utils.logger import logger
 
 

@@ -269,7 +269,9 @@ def _infer_interaction_category(interaction_spec) -> str:
     if any(kw in trans_str for kw in ["scroll", "narrative", "reveal", "progress"]):
         return "Scroll-driven Narrative (linear progression reveals concept)"
 
-    if any(kw in trans_str for kw in ["hover", "inspect", "tooltip", "highlight nearest"]):
+    if any(
+        kw in trans_str for kw in ["hover", "inspect", "tooltip", "highlight nearest"]
+    ):
         return "Inspection (hover → highlight nearest element)"
 
     if any(kw in trans_str for kw in ["rotate", "pan", "3d", "orbit", "zoom"]):
@@ -278,7 +280,10 @@ def _infer_interaction_category(interaction_spec) -> str:
     if any(kw in trans_str for kw in ["play", "pause", "time", "frame", "animate"]):
         return "Temporal Control (play/pause + time scrub)"
 
-    if any(kw in state_str for kw in ["mode", "type", "state", "option", "switch", "select"]):
+    if any(
+        kw in state_str
+        for kw in ["mode", "type", "state", "option", "switch", "select"]
+    ):
         return "State Switching (discrete configs → different renders)"
 
     # Default to Parameter Exploration for continuous sliders
@@ -307,6 +312,7 @@ def get_video_scene_prompt(
 
     # Sanitize unit_id for use as a Python class name suffix
     import re
+
     scene_class_name = re.sub(r"[^a-zA-Z0-9]", "_", unit_id)
 
     user_prompt = VIDEO_SCENE_USER_PROMPT.format(
