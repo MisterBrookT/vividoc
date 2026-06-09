@@ -267,6 +267,34 @@ The missing piece is a **visual understanding loop**: the critic needs to *watch
 
 **Taste as infrastructure**: The real bottleneck is taste — the ability to recognize that a 0.3s pause before revealing the key equation is the difference between "oh I see it" and "wait, what just happened." This is hard to encode in a rubric. The practical path is: build a growing library of examples that the creator marks as "good" or "not quite," and use those as few-shot examples in the critic prompt.
 
+### Lightweight Screen Recording Tools for Indie Developers (Mac, mid-2026)
+
+OBS is the industry standard but genuinely heavy for solo creators. Alternatives, ranked by fit for "product demo + talking head" use case:
+
+| Tool | Platform | Price | Webcam+Screen | Key Differentiator | Main Limit |
+|---|---|---|---|---|---|
+| **Screen Studio** | Mac only | $9/mo | ✓ PiP | Auto-zoom tracks clicks/scrolls; local AI transcription; minimal post-editing | Mac only, no lifetime option |
+| **Tella** | Mac+Win+Web | $13/mo | ✓ Flexible layouts | Clip-based editing, AI filler removal, fastest exports | Cloud-based editing |
+| **Descript** | Mac+Win | Free tier + paid | ✓ Multi-track | Edit video by editing transcript; AI eye-contact correction | Steeper learning curve |
+| **Cap** | Mac+Win | Free / $8/mo | ✓ | Open source, self-hostable, lightweight (Rust/Tauri) | Stability issues in 2026 (audio sync, hangs) |
+| **Loom** | Mac+Win+Web | Free (25 vids, 5min) / $15/mo | ✓ | Instant shareable link | Performance degraded post-Atlassian acquisition |
+| **ScreenFlow** | Mac only | $169 one-time | ✓ | Built-in stock media + multitrack editor | Higher upfront cost, heavier than alternatives |
+
+**Recommendation for indie dev product videos:**
+
+- **First choice: Screen Studio ($9/mo)** — the auto-zoom-on-click feature alone justifies it for product demos; recordings look polished without any editing. Local AI transcription means no data leaves your machine.
+- **If you want recording + editing in one app: Descript** — record face cam + screen as separate tracks, edit by editing the transcript, AI removes filler words. Free tier exists to try.
+- **Cross-platform fallback: Tella ($13/mo)** — closest experience to Screen Studio on Windows.
+- **Avoid Loom for anything serious** — quality has declined noticeably since the Atlassian acquisition.
+
+**Workflow that works today (Mac, minimal friction):**
+
+1. Screen Studio: record screen + face cam in one click
+2. Descript: upload → AI transcribes → delete filler words by deleting text → export
+3. Add captions (Descript auto-generates, or CapCut for free)
+
+Total time from raw recording to publishable: ~30 min for a 5-min video with light editing.
+
 ---
 
 ## References
