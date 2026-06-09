@@ -188,6 +188,87 @@ Extend ViviBench (101 topics) with paired video targets:
 
 ---
 
+---
+
+## Design Notes: Quality, Tools, and the Creator Problem
+
+### The 3B1B Quality Gap
+
+The gap between a generated Manim video and a 3Blue1Brown video is not about the framework — 3B1B uses Manim too. It operates at three distinct layers:
+
+**Layer 1 — Script / Pedagogy (hardest to fix)**
+3B1B's scripts are built around a single "aha moment" per video. Every sentence exists to build one specific geometric intuition before the abstract formula appears. Generated scripts tend to follow a textbook path: state the formula, show a graph, list properties. This is the inverse of how understanding actually forms. A better prompt frame: "Design the moment at second N when the learner will understand X. What do they need to have seen in the N−1 seconds before that?" This is a planning problem, not a rendering problem.
+
+**Layer 2 — Audio (easiest quick win)**
+Silent math animations feel cold and hard to follow. 3B1B's warmly-paced narration does half the pedagogical work. Integrating TTS (OpenAI TTS, ElevenLabs) synchronized to Manim keyframes is the highest-ROI improvement available today. Even mediocre narration beats silence.
+
+**Layer 3 — Timing and choreography**
+3B1B controls exactly when each element appears, how long pauses are, and what gets highlighted. The rhythm creates suspense and resolution. Generated animations tend to play sequentially without dramatic timing — they feel like slideshow transitions rather than a narrative unfolding. This is fixable with a "scene critic" pass that adjusts durations and stagger timings based on pedagogical role.
+
+**Summary**: quality is 60% script, 30% audio, 10% visual polish. Most existing work optimizes the 10%.
+
+---
+
+### Manim vs Remotion: Tool Choice Framework
+
+Both are "video from code" tools, but they have fundamentally different mental models.
+
+**Manim** thinks in *mathematical objects and transformations*. Every element is an MObject with a coordinate-space position. LaTeX is native. Elements can morphically transform into each other (e.g., an equation becomes a geometric shape). Rendering is offline, frame-by-frame via Cairo. Designed for precision — if you need to show that two angles are equal, Manim lets you state that mathematically.
+
+**Remotion** thinks in *React components over time*. A Remotion video is a component tree rendered at each timestamp; frame N is just the React DOM at `currentFrame === N`. This means anything the browser can render — CSS, WebGL, Three.js, D3, any npm package — is available. Remotion Cloud is specifically designed for personalized batch rendering (each viewer gets a different video).
+
+| Dimension | Manim | Remotion |
+|---|---|---|
+| Paradigm | Math objects + transforms | React components + time |
+| Best for | Equations, geometric proofs, scientific simulations | Data viz, product demos, personalized videos |
+| Audio sync | Manual and painful | Native (useCurrentFrame = frame-accurate) |
+| Batch/personalized rendering | Not designed for it | First-class (Remotion Cloud) |
+| Math typesetting | LaTeX native | KaTeX possible but not native |
+| Object morphing | Excellent | Hard |
+| Web ecosystem | No | Full access |
+| LLM code generation quality | Poor (Manim API is large and error-prone) | Better (React patterns are LLM-familiar) |
+
+**For ViviDoc specifically:**
+- Manim → deep mathematical education content (the 3B1B direction)
+- Remotion → ViviDoc Learn email videos (personalized per learner, batch rendered)
+
+---
+
+### The Talking Head + Product Demo Problem
+
+A recurring need for independent creators: combining a product screen recording (or Manim animation) with a talking-head webcam feed to build audience trust. This is a genuinely hard composition problem. The state of the art as of mid-2026:
+
+**What exists:**
+- **Descript** / **CapCut** — timeline editors with AI-assist (auto-cut silence, filler words, basic green screen). Good for manual editing; poor for programmatic generation.
+- **HeyGen / Synthesia** — AI avatars that lip-sync to a script. Removes the need to record at all, but avatars still feel uncanny and lose the authenticity benefit of showing your real face.
+- **Runway / Pika** — generative video for B-roll and transitions, not for compositing a real person with a product demo.
+- **Loom / Mmhmm** — webcam overlay on screen recording, good UX but purely manual.
+
+**What's missing:**
+No tool does all of: (1) programmatically compose talking head + product demo, (2) auto-align the speaker's gestures/gaze to the on-screen content, (3) produce broadcast-quality output without manual timeline editing. The closest workflow today is: record talking head separately → record screen separately → stitch manually in DaVinci Resolve or Descript → narration timing done by hand.
+
+**The AI opportunity**: An agent that takes (a) a product demo script, (b) a screen recording or Remotion-generated animation, (c) a webcam recording, and outputs a composed video where gaze direction, pointing gestures, and cut timing are auto-aligned to the script. This doesn't exist as a coherent product yet (June 2026). The nearest research is in talking-head video generation and gaze redirection, but they operate on generated avatars, not real footage.
+
+**Interim recommendation for independent creators**: Record webcam + screen simultaneously with OBS (Picture-in-Picture), keep it rough and honest — audiences trust rough-around-the-edges real footage more than polished AI avatars. Spend time on the script, not the production.
+
+---
+
+### AI-Assisted Video Quality Iteration
+
+The core loop for improving generated video quality with AI:
+
+1. **Generate** a rough Manim or Remotion video from the SRTC spec
+2. **Evaluate** it with an LLM-as-judge against the pedagogical criteria (does the aha moment land? is the constraint visible? is the pacing right?)
+3. **Critique** specific keyframes: "At second 12, the viewer doesn't yet understand why the boundary condition matters — add a visual cue"
+4. **Revise** the animation code based on the critique
+5. **Repeat** until the critic is satisfied
+
+The missing piece is a **visual understanding loop**: the critic needs to *watch* the video, not just read the code. This is now feasible with multimodal LLMs (pass video frames to the model). A tight human-AI collaboration loop — human watches and gives one-sentence feedback, AI revises code — is already achievable and is likely the right model before fully automated critique works reliably.
+
+**Taste as infrastructure**: The real bottleneck is taste — the ability to recognize that a 0.3s pause before revealing the key equation is the difference between "oh I see it" and "wait, what just happened." This is hard to encode in a rubric. The practical path is: build a growing library of examples that the creator marks as "good" or "not quite," and use those as few-shot examples in the critic prompt.
+
+---
+
 ## References
 
 - **Code2Video** — Chen et al., ICML 2026. [arXiv:2510.01174](https://arxiv.org/abs/2510.01174) · [GitHub](https://github.com/showlab/Code2Video)
