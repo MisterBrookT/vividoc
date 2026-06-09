@@ -10,8 +10,8 @@ Usage:
 """
 
 import json
-from pathlib import Path
 from collections import Counter, defaultdict
+from pathlib import Path
 
 TOPICS_FILE = Path(__file__).parent / "prepped" / "topics.jsonl"
 

@@ -7,22 +7,27 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+
 from vividoc.entrypoint.models import (
+    ConfigUpdateRequest,
+    DocumentGenerateRequest,
+    DocumentGenerateResponse,
+    DocumentHTMLResponse,
+    DocumentMetadataResponse,
+    JobStatusResponse,
     SpecGenerateRequest,
     SpecGenerateResponse,
     SpecUpdateRequest,
-    DocumentGenerateRequest,
-    DocumentGenerateResponse,
-    JobStatusResponse,
-    DocumentMetadataResponse,
-    DocumentHTMLResponse,
-    ProgressInfo as APIProgressInfo,
-    KUProgress as APIKUProgress,
-    ConfigUpdateRequest,
-    doc_spec_to_api,
     api_to_doc_spec,
+    doc_spec_to_api,
 )
-from vividoc.entrypoint.services import JobManager, SpecService, DocumentService
+from vividoc.entrypoint.models import (
+    KUProgress as APIKUProgress,
+)
+from vividoc.entrypoint.models import (
+    ProgressInfo as APIProgressInfo,
+)
+from vividoc.entrypoint.services import DocumentService, JobManager, SpecService
 
 # Create router
 router = APIRouter(prefix="/api")
@@ -406,10 +411,9 @@ async def get_config():
 @router.put("/config")
 async def update_config(request: ConfigUpdateRequest):
     """Update configuration (LLM model)."""
-    from vividoc.core.config import RunnerConfig
-    from vividoc.core import Planner, Evaluator
+    from vividoc.core import Evaluator, Planner
+    from vividoc.core.config import AVAILABLE_LLM_MODELS, RunnerConfig
     from vividoc.entrypoint.models import ConfigResponse
-    from vividoc.core.config import AVAILABLE_LLM_MODELS
 
     try:
         # Create new config with updated model
@@ -612,8 +616,10 @@ async def chat_stream(request: ChatRequest):
                             # Convert to API format and update
                             from vividoc.core.models import (
                                 DocumentSpec as InternalDocSpec,
-                                KnowledgeUnitSpec,
+                            )
+                            from vividoc.core.models import (
                                 InteractionSpec,
+                                KnowledgeUnitSpec,
                             )
 
                             new_kus = []

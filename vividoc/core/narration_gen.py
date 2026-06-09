@@ -28,10 +28,10 @@ import textwrap
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from prompts.video_prompt import get_narration_prompt
 from vividoc.core.models import KnowledgeUnitSpec
 from vividoc.utils.llm.client import LLMClient
 from vividoc.utils.logger import logger
-from prompts.video_prompt import get_narration_prompt
 
 
 @dataclass
@@ -141,10 +141,7 @@ class NarrationGen:
         spec = ku.interaction_spec
 
         # Build script sections
-        intro = (
-            f"In this section we explore {ku.unit_content}. "
-            f"{ku.text_description}"
-        )
+        intro = f"In this section we explore {ku.unit_content}. {ku.text_description}"
         intro = _truncate(intro, max_words=80)
 
         render_desc = _render_description(spec.render)
@@ -159,19 +156,22 @@ class NarrationGen:
             f"In the next section we will build on what we've just seen about {topic}."
         )
 
-        script = " ".join(
-            [intro, render_desc, transition_desc, constraint_line, outro]
-        )
+        script = " ".join([intro, render_desc, transition_desc, constraint_line, outro])
         script = _ensure_word_count(script, target=200)
 
         # Build cues tied to approximate keyframe timestamps
         cues: list[dict[str, Any]] = [
-            {"timestamp": 0.0, "cue": f"Welcome to our exploration of {ku.unit_content}."},
+            {
+                "timestamp": 0.0,
+                "cue": f"Welcome to our exploration of {ku.unit_content}.",
+            },
             {"timestamp": 2.0, "cue": render_desc},
         ]
         t = 7.0
         for transition in spec.transition:
-            cues.append({"timestamp": t, "cue": f"Now, {transition.lower().rstrip('.')}."})
+            cues.append(
+                {"timestamp": t, "cue": f"Now, {transition.lower().rstrip('.')}."}
+            )
             t += max(3.0, len(transition.split()) * 0.5)
 
         cues.append({"timestamp": t, "cue": constraint_line})

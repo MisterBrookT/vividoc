@@ -64,6 +64,22 @@ Installs `/vividoc`, `/vividoc-learn`, and `/vividoc-slides` into `~/.claude/com
 
 ---
 
+## 🗺️ Roadmap
+
+**ViviDoc Learn** *(concept)*
+
+An email-based personalized learning product built on top of ViviDoc's generative visualization engine:
+
+- **Assess** — a short interactive quiz at signup determines the learner's current level on a chosen topic
+- **Generate** — ViviDoc produces a personalized interactive document (or short quiz) for each learning unit
+- **Deliver** — content is emailed on a daily/weekly cadence, in the learner's preferred language
+- **Test** — each delivery includes a small embedded quiz; results feed the next generation cycle
+- **Progress** — staged curriculum that adapts to demonstrated understanding over time
+
+This would be a separate hosted product ("ViviDoc Learn") from the current open-source harness skill, requiring server-side generation, email infrastructure, and subscription accounts. The current harness-skill approach remains the core open-source offering.
+
+---
+
 ## 🔬 Development
 
 ```bash

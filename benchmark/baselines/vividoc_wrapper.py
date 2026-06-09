@@ -16,8 +16,8 @@ DEFAULT_MODEL = "openrouter/google/gemini-3-flash-preview"
 def main():
     # Lazy import: add codebase root so we can import vividoc
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-    from vividoc.core.runner import Runner  # noqa: E402
     from vividoc.core.config import RunnerConfig  # noqa: E402
+    from vividoc.core.runner import Runner  # noqa: E402
 
     parser = argparse.ArgumentParser(description="ViviDoc single-topic runner")
     parser.add_argument("topic", help="Topic for the document")

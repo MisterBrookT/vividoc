@@ -1,9 +1,9 @@
 """Planner workflow for vividoc pipeline."""
 
-from vividoc.utils.llm.client import LLMClient
-from vividoc.core.models import DocumentSpec
-from vividoc.core.config import RunnerConfig
 from prompts.planner_prompt import get_planner_prompt
+from vividoc.core.config import RunnerConfig
+from vividoc.core.models import DocumentSpec
+from vividoc.utils.llm.client import LLMClient
 
 
 class Planner:

@@ -1,9 +1,11 @@
 """Pydantic models for API requests and responses."""
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-from vividoc.core.models import DocumentSpec, KnowledgeUnitSpec, InteractionSpec
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
+from vividoc.core.models import DocumentSpec, InteractionSpec, KnowledgeUnitSpec
 
 
 class InteractionSpecAPI(BaseModel):

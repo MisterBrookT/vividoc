@@ -3,11 +3,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from vividoc.core import Planner, Evaluator, RunnerConfig
-
-from vividoc.entrypoint.services import JobManager, SpecService, DocumentService
+from vividoc.core import Evaluator, Planner, RunnerConfig
 from vividoc.entrypoint.api import router
 from vividoc.entrypoint.api.routes import init_services
+from vividoc.entrypoint.services import DocumentService, JobManager, SpecService
 
 
 def create_app() -> FastAPI:
